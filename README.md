@@ -1,10 +1,10 @@
-# Nocodefunctions: web app data analysis for non coders
+# Nocodefunctions: in-browser data analysis for non coders
 ## free, no registration, open source
 
 > Just visit https://nocodefunctions.com
 
 ### Goal
-The goal of nocodefunctions is to make best-in-class data analysis functions available to all. See [more details](https://nocodefunctions.com/blog/)
+Nocodefunctions is a web app which makes best-in-class data analysis functions available to all. See [more details](https://nocodefunctions.com/blog/)
 
 ### 1. free
 The app is free with no limitation on usage
@@ -41,11 +41,14 @@ You are here on the Github repository which hosts the code of the web app.
 The license is Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International Public License:
 https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode
 
+Most of the functions have their dedicated repository. See the [list of all repos](https://github.com/stars/seinecle/lists/opened-with-nocodefunctions) tied to Nocodefunctions.
+
 ### 5. Respectful of your data
 The data is not stored nor re-used in any way.
 
 ### 6. Available in 107 different languages
 See [more details]( https://nocodefunctions.com/blog/translated-web-app-in-107-languages-i18n/).
+
 
 ### 7. Contributing
 Contributions are welcome:
@@ -56,4 +59,4 @@ Contributions are welcome:
 You can open an issue here or send an email to analysis@exploreyourdata.com
 
 ### 8. Author
-Nocodunctions is developed since July 2021 by [Clement Levallois](https://clementlevallois.net)
+Nocodefunctions is developed since July 2021 by [Clement Levallois](https://clementlevallois.net)
