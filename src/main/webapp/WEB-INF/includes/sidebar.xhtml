@@ -1,0 +1,60 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition 
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:f="http://xmlns.jcp.org/jsf/core"
+    xmlns:h="http://xmlns.jcp.org/jsf/html"
+    xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+    xmlns:p="http://primefaces.org/ui">
+
+    <h:form>
+        <p:sidebar widgetVar="sidebar" style="overflow: scroll">
+            <p:spacer height="30"/>
+            <p:panel header="#{text['sidebar.report_bad_translation']}">
+                <small style="font-size: 80%;">#{text['sidebar.copypaste_incorrect']}</small>
+                <br/>
+                <div id="container"
+                     style="display: block;
+                     overflow: hidden;
+                     ">
+                    <p:inputText id="sourceLang" value="#{feedbackBean.sourceLang}" placeholder="#{text['general.message.write_here']}" style="width: 100%;"/>
+                </div>
+                <br/>
+                <br/>
+                <small style="font-size: 80%;">#{text['sidebar.write_better_phrasing']}</small>
+                <br/>
+                <div id="container"
+                     style="display: block;
+                     overflow: hidden;
+                     ">
+                    <p:inputText id="suggestion" value="#{feedbackBean.suggestion}" placeholder="#{text['general.message.write_here']}" style="width: 100%;"/>
+                </div>
+            </p:panel>
+            <p:spacer height="10"/>
+            <p:panel header="#{text['sidebar.report_error_in_app']}" style="width:100%;">
+                <div id="container"
+                     style="display: block;
+                     overflow: hidden;
+                     ">
+                    <p:inputTextarea value="#{feedbackBean.freeCommentError}" placeholder="#{text['general.message.write_here']}" rows="3" cols="30"  style="width: 100%;"/>
+                </div>
+            </p:panel>
+            <p:spacer height="10"/>
+            <p:panel header="#{text['sidebar.suggestion_new_feature']}">
+                <div id="container"
+                     style="display: block;
+                     overflow: hidden;
+                     padding-right:10px;
+                     ">
+                    <p:inputTextarea value="#{feedbackBean.freeCommentSuggestion}" rows="3" cols="30" placeholder="#{text['general.message.write_here']}" style="width: 100%;"/>
+                </div>
+            </p:panel>
+            <p:spacer height="20"/>
+            <p:commandButton
+                value="#{text['general.verbs.send']}"
+                action="#{feedbackBean.sendFeedback()}"
+                onclick="PF('sidebar').hide()"
+                update=":header:messages"/>
+        </p:sidebar>
+    </h:form>
+</ui:composition>     

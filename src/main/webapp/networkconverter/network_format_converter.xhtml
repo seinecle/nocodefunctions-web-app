@@ -1,0 +1,242 @@
+<html 
+    lang="#{activeLocale.languageTag}"
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:p="http://primefaces.org/ui"
+    xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+    <f:view locale="#{activeLocale.current}">
+
+        <h:head>        <!-- Primary Meta Tags -->
+            <title>#{text['network_converter.title']}</title>
+            <meta name="description" content="#{text['network_converter.description']}"/>
+            <meta http-equiv="content-language" content="en-us"/>
+            <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+            <meta http-equiv="cleartype" content="on"/>
+            <meta name="HandheldFriendly" content="true"/>
+
+            <!-- Open Graph / Facebook -->
+            <meta property="og:type" content="website"/>
+            <meta property="og:site_name" content="Nocode functions"/>
+            <meta property="og:url" content="https://nocodefunctions.com/networkconverter/network_format_converter.html"/>
+            <meta property="og:title" content="#{text['network_converter.title']}"/>
+            <meta property="og:description" content="#{text['network_converter.description']}"/>
+            <meta property="og:image" content="/images/vosviewer_logo.jpg"/>
+
+            <!-- Twitter -->
+            <meta property="twitter:card" content="summary_large_image"/>
+            <meta property="twitter:url" content="https://nocodefunctions.com/networkconverter/network_format_converter.html"/>
+            <meta property="twitter:title" content="#{text['network_converter.title']}"/>
+            <meta property="twitter:description" content="#{text['network_converter.description']}"/>
+            <meta property="twitter:image" content="/images/vosviewer_logo.jpg"/>
+
+            <link rel="apple-touch-icon" sizes="180x180" href="#{resource['images/favicons/apple-touch-icon.png']}"/>
+            <link rel="icon" type="image/png" sizes="32x32" href="#{resource['images/favicons/favicon-32x32.png']}"/>
+            <link rel="icon" type="image/png" sizes="16x16" href="#{resource['images/favicons/favicon-16x16.png']}"/>
+            <link rel="manifest" href="#{resource['images/favicons/site.webmanifest']}"/>
+            <link rel="mask-icon" href="#{resource['images/favicons/safari-pinned-tab.svg']}" color="#5bbad5"/>
+            <link rel="shortcut icon" href="#{resource['images/favicons/favicon.ico']}"/>
+            <meta name="msapplication-TileColor" content="#da532c"/>
+            <meta name="msapplication-config" content="#{resource['images/favicons/browserconfig.xml']}"/>
+            <meta name="theme-color" content="#ffffff"/>
+            <link rel="shortcut icon" type="image/x-icon" href="#{resource['images/favicons/favicon.ico']}"/>
+
+            <p:outputLabel value="#{sessionBean.noRobot}" escape="false" rendered="#{sessionBean.testServer}"/>
+            <link rel="stylesheet" href="https://unpkg.com/primeflex@3.1.0/primeflex.css"/>
+        </h:head>
+
+        <h:body>
+            <f:metadata>
+                <f:viewParam name="lang" value="#{activeLocale.languageTag}" />
+                <f:viewParam name="function" value="#{sessionBean.function}" />
+            </f:metadata>
+            <f:facet name="last">
+                <h:outputStylesheet name="css/custom.css" />
+            </f:facet>
+            <script type="text/javascript">
+                //<![CDATA[
+                function start() {
+                    PF('statusDialog').show();
+                }
+
+                function stop() {
+                    PF('statusDialog').hide();
+                }
+                //]]>
+            </script>
+            <p:panel>
+                <ui:include src="/WEB-INF/includes/header.xhtml"/>
+                <ui:include src="/WEB-INF/includes/sidebar.xhtml"/>
+
+                <h1>#{text['network_converter.tagline']}</h1>
+            </p:panel>
+            <p:spacer height="20"/>
+            <p:panel>
+                <div>
+                    <i>#{text['network_converter.choose_file_or_read_below']}</i>
+                </div>
+                <div>
+                    <p:spacer height="30" width="10"/>            
+                </div>
+                <h:form enctype="multipart/form-data">
+                    <p:selectOneRadio value="#{converterBean.option}" required="true" layout="pageDirection">
+                        <f:selectItem itemLabel="#{text['network_converter.option1']}" itemValue="sourceGexf"/>
+                        <f:selectItem itemLabel="#{text['network_converter.option2']}" itemValue="sourceVV"/>
+                        <p:ajax update="parameters launchButtons"/>
+                    </p:selectOneRadio>
+                </h:form>
+            </p:panel>
+            <div>
+                <p:spacer height="20" width="10"/>            
+            </div>
+            <h:form id="launchButtons">
+                <p:panel>
+                    <h:graphicImage name="images/round_1_orange.png" width="20" height="20" style="vertical-align: middle;"/>
+                    <p:spacer width="5"/>
+                    <p:fileUpload value="#{converterBean.uploadedFile}" label="#{converterBean.uploadButtonMessage}" mode="simple" auto="true" skinSimple="true" sizeLimit="100000000"
+                                  process="@this" listener="#{converterBean.handleFileUpload}" allowTypes="/(\.|\/)(json|gexf)$/" update="launchButtons" chooseIcon="ui-icon-person">                                
+                    </p:fileUpload>
+                    <p:spacer width="10"/>
+                    <p:outputLabel rendered="#{converterBean.uploadedFile ne null}" escape="false">#{text['general.message.file_loaded']} <strong style="color:#FF6347">#{converterBean.uploadedFile.fileName}</strong>. #{text['network_converter.click_to_convert']}</p:outputLabel>
+                    <div>
+                        <p:spacer height="15" width="10"/>            
+                    </div>
+                    <p>
+                        <p:outputLabel rendered="#{converterBean.renderGephiWarning}" value="#{text['network_converter.warning_not_gephi_file']}" escape="false"/>
+                        <p:outputLabel value="#{text['general.message.max_file_size']}: 100Mb" escape="false"/>
+                    </p>
+                    <div>
+                        <p:spacer height="15" width="10"/>            
+                    </div>
+                </p:panel>
+                <div>
+                    <p:spacer height="20" width="10"/>            
+                </div>
+
+                <p:panel id = "buttonConvertToVV" rendered="#{converterBean.option == 'sourceGexf'}">
+                    <h:graphicImage name="images/round_2_orange.png" width="20" height="20" style="vertical-align: middle;"/>
+                    <p:spacer width="5"/>
+                    <p:commandButton value="#{text['network_converter.convert_to_vosviewer']}" action ="#{converterBean.gotoVV()}" styleClass="p-mr-2"/>
+                    <br/>
+                    <br/>
+                    <p:selectBooleanCheckbox value="#{converterBean.shareVVPublicly}" itemLabel="#{text['network_converter.share_vosviewer_publicly.question']}"/>
+                    <br/>
+                    <br/>
+                    <p:outputLabel value="#{text['network_converter.share_vosviewer_publicly.details']}" escape="false"/>
+                </p:panel>
+                <p:panel id = "buttonConvertToGexf" rendered="#{converterBean.option == 'sourceVV'}">
+                    <h:graphicImage name="images/round_2_orange.png" width="20" height="20" style="vertical-align: middle;"/>
+                    <p:spacer width="5"/>
+                    <p:commandButton value="#{text['network_converter.convert_to_gephi']}" ajax="false" onclick="PrimeFaces.monitorDownload(start, stop);"
+                                     icon="pi pi-arrow-down" styleClass="p-mr-2">
+                        <p:fileDownload value="#{converterBean.fileToSave}"/>
+                    </p:commandButton>
+                </p:panel>
+                <div>
+                    <p:spacer height="50" width="10"/>            
+                </div>
+            </h:form>
+            <p:panel id="parameters">
+                <h:form enctype="multipart/form-data">
+                    <p:spacer height="10"/>
+                    <p:panel id = "parametersGephi" rendered="#{converterBean.option == 'sourceVV'}">
+                    </p:panel>
+
+                    <p:panel id="parametersVV" rendered="#{converterBean.option == 'sourceGexf'}">
+                        <p>
+                            <strong>
+                                <p:outputLabel value="#{text['network_converter.howto']}" escape="false"/>
+                            </strong>
+                        </p>
+                        <br/>
+                        <br/>
+                        <p>
+                            <strong>
+                            <p:outputLabel value="#{text['network_converter.limit_to_500_nodes.question']}" escape="false"/>    
+                            </strong>
+                        </p>
+                            <p:outputLabel value="#{text['network_converter.limit_to_500_nodes.details']}" escape="false"/>    
+                        <br/>
+                        <br/>
+                        <p:fieldset>
+                            <f:facet name="legend">
+                                #{text['network_converter.customize_legend.title']}
+                            </f:facet>
+                            <br/>
+                            <div class="p-field">
+                                <p:outputLabel for="item" value="#{text['general.nouns.item']} " styleClass="p-d-block"/>
+                                <p:inputText id="item" styleClass="p-d-block" value="#{converterBean.item}">
+                                    <p:ajax event="keyup" process="@this"/>
+                                </p:inputText>
+                                <small class="p-d-block">#{text['network_converter.items.question']}</small>
+                            </div>
+                            <br/>
+                            <div class="p-field">
+                                <p:outputLabel for="link" value="#{text['general.nouns.link']} " styleClass="p-d-block"/>
+                                
+                                <p:inputText id="link" styleClass="p-d-block" value="#{converterBean.link}">
+                                    <p:ajax event="keyup" process="@this"/>
+                                </p:inputText>
+                                <small class="p-d-block">#{text['network_converter.links.question']}</small>
+                            </div>
+                            <br/>
+                            <div class="p-field">
+                                <p:outputLabel for="link_strength" value="#{text['general.nouns.link_strength']} " styleClass="p-d-block"/>
+                                <p:inputText id="link_strength" styleClass="p-d-block" value="#{converterBean.linkStrength}">
+                                    <p:ajax event="keyup" process="@this"/>
+                                </p:inputText>
+                                <small class="p-d-block">#{text['network_converter.links_strength.question']}</small>
+                            </div>
+                        </p:fieldset>
+                    </p:panel>
+                    <p:panel>
+                        <p:spacer height="20"/>
+                        <p:fieldset>
+                            <f:facet name="legend">
+                                <h3>#{text['general.message.gephi.long_title']}</h3>
+                            </f:facet>
+                            <p>
+                                <div id="reduce-desktop"> 
+                                    <h:graphicImage name="images/gephi.png" style="vertical-align: middle;"/>
+                                </div> 
+                            </p>
+                            <br/>
+                            <p:outputLabel value="#{text['general.message.gephi.description']}" styleClass="p-d-block" escape="false"/>                            
+                        </p:fieldset>
+                        <div>
+                            <p:spacer height="30" width="10"/>            
+                        </div>
+
+                        <p:fieldset>
+                            <f:facet name="legend">
+                                <h3>#{text['general.message.vosviewer.long_title']}</h3>
+                            </f:facet>
+                            <p>
+                                <div id="reduce-desktop"> 
+                                    <h:graphicImage name="images/vosviewer_logo.jpg" style="vertical-align: middle;"/>
+                                </div>
+                            </p>
+                            <br/>
+                            <p:outputLabel value="#{text['general.message.vosviewer.description']}" styleClass="p-d-block" escape="false"/>                            
+                        </p:fieldset>
+
+                        <p:fieldset>
+                            <f:facet name="legend">
+                                <h3>#{text['network_converter.creating_a_bridge.title']}</h3>
+                            </f:facet>
+                            <p:outputLabel value="#{text['network_converter.creating_a_bridge.details_first_part']}" styleClass="p-d-block" escape="false"/>                            
+                            <p>
+                                <div id="reduce-desktop"> 
+                                    <h:graphicImage name="images/graph-format-table-comparison.png" style="vertical-align: middle;"/>
+                                </div>
+                            </p>
+                            <p:outputLabel value="#{text['network_converter.creating_a_bridge.details_second_part']}" styleClass="p-d-block" escape="false"/>                            
+                        </p:fieldset>
+
+                    </p:panel>
+                </h:form>            
+            </p:panel>
+            <ui:include src="/WEB-INF/includes/footer.xhtml" />
+        </h:body>
+    </f:view>
+</html>

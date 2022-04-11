@@ -1,0 +1,14 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core">
+
+    <h:head>
+        <meta name="robots" content="noindex"/>
+    </h:head>
+    <h:body>
+        <f:metadata>
+            <f:viewParam name="code" value="#{googleSheetsImportBean.code}" />
+            <f:viewAction action="#{googleSheetsImportBean.onloadingRedirectPage}" />
+        </f:metadata>
+    </h:body>
+</html>

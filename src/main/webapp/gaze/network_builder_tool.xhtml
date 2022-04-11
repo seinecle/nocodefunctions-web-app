@@ -1,0 +1,134 @@
+<html 
+    lang="#{activeLocale.languageTag}"
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:p="http://primefaces.org/ui"
+    xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+    <f:view locale="#{activeLocale.current}">
+
+        <h:head>        <!-- Primary Meta Tags -->
+            <title>#{text['gaze.network_builder.title']}</title>
+            <meta name="description" content="#{text['gaze.network_builder.description']}"/>
+            <meta http-equiv="content-language" content="en-us"/>
+            <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+            <meta http-equiv="cleartype" content="on"/>
+            <meta name="HandheldFriendly" content="true"/>
+
+            <!-- Open Graph / Facebook -->
+            <meta property="og:type" content="website"/>
+            <meta property="og:site_name" content="Nocode functions"/>
+            <meta property="og:url" content="https://nocodefunctions.com/gaze/network_builder_tool.html"/>
+            <meta property="og:title" content="#{text['gaze.network_builder.title']}"/>
+            <meta property="og:description" content="#{text['gaze.network_builder.description']}"/>
+            <meta property="og:image" content="/images/workflow_medium.jpg"/>
+
+            <!-- Twitter -->
+            <meta property="twitter:card" content="summary_large_image"/>
+            <meta property="twitter:url" content="https://nocodefunctions.com/gaze/network_builder_tool.html"/>
+            <meta property="twitter:title" content="#{text['gaze.network_builder.title']}"/>
+            <meta property="twitter:description" content="#{text['gaze.network_builder.description']}"/>
+            <meta property="twitter:image" content="/images/workflow_medium.jpg"/>
+
+            <link rel="apple-touch-icon" sizes="180x180" href="#{resource['images/favicons/apple-touch-icon.png']}"/>
+            <link rel="icon" type="image/png" sizes="32x32" href="#{resource['images/favicons/favicon-32x32.png']}"/>
+            <link rel="icon" type="image/png" sizes="16x16" href="#{resource['images/favicons/favicon-16x16.png']}"/>
+            <link rel="manifest" href="#{resource['images/favicons/site.webmanifest']}"/>
+            <link rel="mask-icon" href="#{resource['images/favicons/safari-pinned-tab.svg']}" color="#5bbad5"/>
+            <link rel="shortcut icon" href="#{resource['images/favicons/favicon.ico']}"/>
+            <meta name="msapplication-TileColor" content="#da532c"/>
+            <meta name="msapplication-config" content="#{resource['images/favicons/browserconfig.xml']}"/>
+            <meta name="theme-color" content="#ffffff"/>
+            <link rel="shortcut icon" type="image/x-icon" href="#{resource['images/favicons/favicon.ico']}"/>
+
+            <p:outputLabel value="#{sessionBean.noRobot}" escape="false" rendered="#{sessionBean.testServer}"/>
+            <link rel="stylesheet" href="https://unpkg.com/primeflex@3.1.0/primeflex.css"/>
+
+        </h:head>
+
+        <h:body>
+            <f:metadata>
+                <f:viewParam name="lang" value="#{activeLocale.languageTag}" />
+                <f:viewParam name="function" value="#{sessionBean.function}" />
+            </f:metadata>
+            <f:facet name="last">
+                <h:outputStylesheet name="css/custom.css" />
+            </f:facet>
+            <p:panel>
+                <ui:include src="/WEB-INF/includes/header.xhtml" />
+                <h1>#{text['gaze.network_builder.tagline']}</h1>
+            </p:panel>
+            <p:spacer height="20"/>
+            <p:panel>
+                <div>
+                    <i>#{text['gaze.network_builder.use_it_directly']}</i></div>
+                <div>
+                    <p:spacer height="30" width="10"/>            
+                </div>
+                <h:form>
+                    <p:selectOneRadio value="#{gazeBean.option}">
+                        <f:selectItem itemLabel="#{text['gaze.network_builder.option_1']}" itemValue="1"/>
+                        <f:selectItem itemLabel="#{text['gaze.network_builder.option_2']}" itemValue="2"/>
+                        <p:ajax update="button parametersCooc" event="valueChange" />
+                    </p:selectOneRadio>
+                    <br/>
+                    <br/>
+                    <p:button id="button" value="#{text['gaze.network_builder.go_with_option']} #{gazeBean.option} 🔎" outcome="/import_your_data_network_builder_option_#{gazeBean.option}.xhtml?function=gaze&amp;faces-redirect=true" styleClass="btn btn-primary" style="min-width: 15em;"/>
+                </h:form>
+            </p:panel>
+            <p:spacer height="20"/>
+            <h:form enctype="multipart/form-data" id="parametersCooc">
+                <p:panel header="#{text['general.nouns.parameters']}" rendered="#{gazeBean.option == 1}">
+                    <p:accordionPanel widgetVar="basic" activeIndex="null">
+                        <p:tab title="#{text['gaze.network_builder.if_you_need_more_parameters']}">
+                            <p class="p-m-0">
+
+                                <p:divider align="left">
+                                    <div class="p-d-inline-flex p-ai-center">
+                                        <i class="pi pi-chart-bar p-mr-2"/>
+                                        <b>#{text['general.nouns.pmi']}</b>
+                                    </div>
+                                </p:divider>
+                                <p:outputLabel escape="false" value="#{text['gaze.network_builder.apply_pmi_correction']}"/>
+                                <br/>
+                                <br/>
+                                <p:selectBooleanCheckbox value="#{gazeBean.applyPMI}" itemLabel="#{text['general.message.use_pmi']}">
+                                </p:selectBooleanCheckbox>                
+                            </p>
+                        </p:tab>
+                    </p:accordionPanel>
+                </p:panel>        
+            </h:form>
+            <p:spacer height="20"/>
+            <p:panel>
+                <p><i>#{text['gaze.network_builder.or_read_below']}</i></p>
+                <p:spacer height="40"/>
+                <p:fieldset>
+                    <f:facet name="legend">
+                        <h3>#{text['gaze.network_builder.two_options']}</h3>
+                    </f:facet>
+                    <div id="reduce-desktop" style="text-align:center;">
+                        <h:graphicImage name="images/cooccurrences_explanations.jpg" style="vertical-align: bottom; -webkit-filter: drop-shadow(5px 5px 5px #222222);
+                                        filter: drop-shadow(5px 5px 5px #222222);" alt="explanations for how to transform a table of coccurrences into a network"/>
+                        <br/>
+                        <div>
+                            <p:spacer height="60"/>
+                        </div>
+                        <h:graphicImage name="images/sources_targets_explanations.jpg" style="vertical-align: bottom; -webkit-filter: drop-shadow(5px 5px 5px #222222);
+                                        filter: drop-shadow(5px 5px 5px #222222);" alt="explanations for how to transform items into a network, based on their similarities"/>
+                    </div>
+                </p:fieldset>
+                <p:spacer height="20"/>
+                <p:fieldset>
+                    <f:facet name="legend">
+                        <h3>#{text['gaze.network_builder.tips_and_tricks.title']}</h3>
+                    </f:facet>
+                    <p>
+                        <p:outputLabel escape="false" value="#{text['gaze.network_builder.tips_and_tricks.details']}"/>
+                    </p>
+                </p:fieldset>
+            </p:panel>
+            <ui:include src="/WEB-INF/includes/footer.xhtml" />
+        </h:body>
+    </f:view>
+</html>

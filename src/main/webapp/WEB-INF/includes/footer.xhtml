@@ -1,0 +1,35 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition 
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:f="http://xmlns.jcp.org/jsf/core"
+    xmlns:h="http://xmlns.jcp.org/jsf/html"
+    xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+    xmlns:p="http://primefaces.org/ui">
+    <p:spacer height="10" width="10"/>
+    <p:panel>
+        <div class="flex justify-content-between flex-wrap">
+            <div class="flex align-items-center justify-content-center h-4rem">
+                <p:outputLabel value="#{text['index.footer.author']}" escape="false" />       
+            </div>
+            <div class="flex align-items-center justify-content-center w-24rem h-4rem">
+                <h:form>
+                    <small></small>
+                    <h:selectOneMenu value="#{activeLocale.languageTag}" onchange="submit()">
+                        <f:selectItems value="#{activeLocale.available}" var="l"
+                                       itemValue="#{l.toLanguageTag()}"
+                                       itemLabel="#{l.getDisplayLanguage(l)} #{empty l.getDisplayCountry()?'':'('}#{l.getDisplayCountry(l)}#{empty l.getDisplayCountry()?'':')'}">
+                        </f:selectItems>
+                    </h:selectOneMenu>
+                </h:form>
+            </div>
+            <div class="flex align-items-center justify-content-center w-4rem h-4rem">
+                <a href="https://twitter.com/seinecle" target="_blank"><i class="pi pi-twitter"></i></a>
+                <p:spacer width="10"/>
+                <a href="mailto:analysis@exploreyourdata.com" target="_blank"><i class="pi pi-envelope"></i></a>
+                <p:spacer width="10"/>
+                <a href="https://github.com/seinecle/nocodefunctions/discussions" target="_blank"><i class="pi pi-github"></i></a>
+            </div>
+        </div>
+    </p:panel>
+</ui:composition>     

@@ -1,0 +1,258 @@
+<html 
+    lang="#{activeLocale.languageTag}"
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:o="http://omnifaces.org/ui"
+    xmlns:p="http://primefaces.org/ui"
+    xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+    <f:view locale="#{activeLocale.current}">
+
+        <h:head>
+            <!-- Primary Meta Tags -->
+            <title>#{text['import_data.structured_data.title']}</title>
+            <meta name="description" content="#{text['import_data.structured_data.description']}"/>
+            <meta http-equiv="content-language" content="en-us"/>
+            <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+            <meta http-equiv="cleartype" content="on"/>
+            <meta name="HandheldFriendly" content="true"/>
+            
+            <link rel="apple-touch-icon" sizes="180x180" href="#{resource['images/favicons/apple-touch-icon.png']}"/>
+            <link rel="icon" type="image/png" sizes="32x32" href="#{resource['images/favicons/favicon-32x32.png']}"/>
+            <link rel="icon" type="image/png" sizes="16x16" href="#{resource['images/favicons/favicon-16x16.png']}"/>
+            <link rel="manifest" href="#{resource['images/favicons/site.webmanifest']}"/>
+            <link rel="mask-icon" href="#{resource['images/favicons/safari-pinned-tab.svg']}" color="#5bbad5"/>
+            <link rel="shortcut icon" href="#{resource['images/favicons/favicon.ico']}"/>
+            <meta name="msapplication-TileColor" content="#da532c"/>
+            <meta name="msapplication-config" content="#{resource['images/favicons/browserconfig.xml']}"/>
+            <meta name="theme-color" content="#ffffff"/>
+            <link rel="shortcut icon" type="image/x-icon" href="#{resource['images/favicons/favicon.ico']}"/>
+
+            <meta name="robots" content="noindex"/>
+            <link rel="stylesheet" href="https://unpkg.com/primeflex@3.1.0/primeflex.css"/>
+        </h:head>
+
+        <h:body>
+            <f:metadata>
+                <f:viewParam name="function" value="#{sessionBean.function}" />
+                <f:viewParam name="datasetUUID" value="#{dataImportBean.taskId}" />
+                <f:viewParam name="persistToDisk" value="#{dataImportBean.persistToDisk}" />
+                <f:viewAction action="#{dataImportBean.setBulkData(false)}" />
+            </f:metadata>
+
+            <script type="text/javascript">
+                //<![CDATA[
+                window.twttr = (function (d, s, id) {
+                    var js, fjs = d.getElementsByTagName(s)[0],
+                            t = window.twttr || {};
+                    if (d.getElementById(id))
+                        return t;
+                    js = d.createElement(s);
+                    js.id = id;
+                    js.src = "https://platform.twitter.com/widgets.js";
+                    fjs.parentNode.insertBefore(js, fjs);
+
+                    t._e = [];
+                    t.ready = function (f) {
+                        t._e.push(f);
+                    };
+
+                    return t;
+                }(document, "script", "twitter-wjs"));
+                //]]>
+            </script>
+            <f:facet name="last">
+                <h:outputStylesheet name="css/custom.css" />
+            </f:facet>
+            <p:dialog
+                header="#{text['general.verbs.wait_exclamation']}"
+                widgetVar="modDialog"
+                resizable="false"
+                showEffect="explode"
+                modal="true"
+                draggable="false"
+                hideEffect="explode"
+                visible="#{sessionBean.mobileDevice}">
+                <h:outputText value="#{text['general.message.switch_to_desktop']}" />
+            </p:dialog>
+            <p:panel>
+                <ui:include src="/WEB-INF/includes/header.xhtml" />
+                <ui:include src="/WEB-INF/includes/sidebar.xhtml" />
+
+                <h1>#{text['import_data.general.upload_a_dataset']}</h1>
+            </p:panel>
+            <p:spacer height="20"/>
+            <p:panel>
+                <div class="grid" >
+                    <div class="col-9">
+                        <p:spacer height="20"/>
+                        <h:form enctype="multipart/form-data" id="launchButtons">
+
+                            <h:graphicImage name="images/round_1_orange.png" width="20" height="20" style="vertical-align: bottom;"/>
+                            <p:spacer width="5"/>
+                            <p:commandLink id="fileBtn" value="#{text['import_data.general.open_a_file']}" type="button" />
+                            <p:overlayPanel
+                                for="fileBtn"
+                                dynamic="true"
+                                widgetVar="fileInputChooser"
+                                style="width:700px;"
+                                >
+                                <p:fileUpload value="#{dataImportBean.file}" label="#{text['import_data.general.choose_csv_or_excel']}" mode="simple" auto="true" skinSimple="true" sizeLimit="50000000"
+                                              process="@this" listener="#{dataImportBean.handleFileUpload}" oncomplete="PF('fileInputChooser').hide()" update=" :twitterSearchPanel :formRead :notifications :launchButtons"
+                                              allowTypes="/(\.|\/)(csv|xlsx)$/">                                
+                                </p:fileUpload>
+                                #{text['general.message.max_file_size']}: 50Mb.
+                            </p:overlayPanel>
+                            <p:outputLabel rendered="#{dataImportBean.file ne null}" escape="false">#{text['general.message.file_loaded']} <strong style="color:#FF6347">#{dataImportBean.file.fileName}</strong>. #{text['import_data.general.click_below_to_read_it']}</p:outputLabel>
+                        </h:form>
+
+<!--                        SEARCH TWITTER 
+                        <p:outputPanel id="twitterSearchPanel" rendered="#{dataImportBean.isTwitter}">
+                            <h:form>
+                                <div class="p-field">
+                                    <p:inputText styleClass="p-d-block" placeholder="example: Four more years by Barack Obama" value="#{twitterImportBean.queryString}" size="60"/>
+                                    <small class="p-d-block">write a query here</small>
+                                </div>
+                                <div class="p-field">
+                                    <p:inputText styleClass="p-d-block" placeholder="EN" value="#{twitterImportBean.languageString}" size="60"/>
+                                    <small class="p-d-block">language of tweets: EN or FR or leave empty</small>
+                                </div>
+                                <div class="p-field">
+                                    <p:inputText styleClass="p-d-block" placeholder="2012-11-07" value="#{twitterImportBean.sinceString}" size="60"/>
+                                    <small class="p-d-block">beginning date of the search, must be format YYYY-MM-DD or leave empty</small>
+                                </div>
+                                <div class="p-field">
+                                    <p:inputText styleClass="p-d-block" placeholder="2012-31-12" value="#{twitterImportBean.untilString}" size="60"/>
+                                    <small class="p-d-block">end date of the search, must be format YYYY-MM-DD or leave empty</small>
+                                </div>
+                                <br/>
+                                <br/>
+                                <p:commandButton value="Search tweets"
+                                                 widgetVar="searchTweetsButton"
+                                                 action="#{dataImportBean.searchTweets}"
+                                                 onclick="PF('twitterProgressBar').start()"
+                                                 styleClass="btn btn-primary"
+                                                 update=":formMessages:messages :notifications :tab"
+                                                 oncomplete="twttr.widgets.load();"/>                        
+                                PROGRESS BAR FOR TWITTER SEARCH OPERATION
+                                PROGRESS BAR FOR READ OPERATION
+                                <p:progressBar id="pb" widgetVar="twitterProgressBar" ajax="true" value="#{dataImportBean.progress}" rendered="#{dataImportBean.renderProgressBar}"
+                                               labelTemplate="{value}%" styleClass="p-mt-3" global="false" interval="500">
+                                    <p:ajax event="complete" update=":formMessages:messages :tab"/>
+                                </p:progressBar>
+                            </h:form>
+                        </p:outputPanel>-->
+                        <br/>
+                        <!--READ FILE OPERATION-->
+                        <p:outputPanel id="formRead" rendered="#{not dataImportBean.isTwitter}">
+                            <h:form enctype="multipart/form-data" >
+                                <!--READ FILE BUTTON-->
+                                <h:graphicImage name="images/round_2_orange.png" width="20" height="20" style="vertical-align: bottom;"/>
+                                <p:spacer width="5"/>
+                                <p:commandLink id="readFileBtn" value="#{text['import_data.general.read_data']}" onclick="PF('pbAjaxLong').start()"
+                                               action="#{dataImportBean.readData}" update=":tab"/>
+                                <br/>
+                                <br/>
+                                <!--PROGRESS BAR FOR READ OPERATION-->
+                                <p:progressBar id="pb" widgetVar="pbAjaxLong" ajax="true" value="#{dataImportBean.progress}" rendered="#{dataImportBean.renderProgressBar}"
+                                               labelTemplate="{value}%" styleClass="p-mt-3" global="false" interval="500">
+                                    <p:ajax event="complete" update=":tab"/>
+                                </p:progressBar>
+                            </h:form>
+                        </p:outputPanel>
+
+                        <p:spacer height="20"/>
+
+                        <p:tabView value="#{dataImportBean.dataInSheets}" var="dataInSheet" id="tab">
+                            <p:tab title="#{dataInSheet.name}">
+                                <div class="card">
+                                    <h:form id="formTable">
+                                        <p:dataTable id="tbl" var="data"
+                                                     value="#{dataInSheet.sheetData}"
+                                                     rowIndexVar="rowIndex"
+                                                     style="display:block; text-align:center"
+                                                     rendered="#{not empty dataImportBean.dataInSheets}"
+                                                     >
+                                            <f:facet name="header">
+                                                <p:selectBooleanCheckbox id="renderHeaders" value="#{dataImportBean.hasHeaders}" itemLabel="#{text['import_data.general.my_data_has_headers']}">
+                                                    <p:ajax update="tbl" listener="#{dataImportBean.toggleHeaders}"/>
+                                                </p:selectBooleanCheckbox>
+                                            </f:facet>
+                                            <p:column  width="25">
+                                                <h:outputText value="#{rowIndex+1}" />
+                                            </p:column>
+                                            <p:columns value="#{dataInSheet.tableHeaderNames}" var="mycolHeader" columnIndexVar="colIndex">
+                                                <f:facet name="header">
+                                                    <div align="center">
+                                                        <h:graphicImage name="images/round_3_orange.png" width="20" height="20" style="vertical-align: bottom;"/>
+                                                        <p:spacer width="5"/>
+                                                        <p:commandLink value="#{text['import_data.structured_data.click_for_this_column']}" action="#{dataImportBean.selectColumn(colIndex, dataInSheet.name)}" styleClass="p-mr-2" rendered="#{sessionBean.function != 'labelling'}" >
+                                                            <p:confirm type="popup" header="#{text['general.verbs.confirm']}" message="#{text['import_data.structured_data.confirm_analysis_on_this_column']}" icon="pi pi-exclamation-triangle"/>
+                                                        </p:commandLink>
+                                                        <p:commandLink value="#{text['import_data.structured_data.click_for_this_column']}" action="#{dataImportBean.goBackToLabellingPage(colIndex, dataInSheet.name)}" styleClass="p-mr-2" rendered="#{sessionBean.function == 'labelling'}">
+                                                            <p:confirm type="popup" header="#{text['general.verbs.confirm']}" message="#{text['import_data.structured_data.confirm_analysis_on_this_column']}" icon="pi pi-exclamation-triangle"/>
+                                                        </p:commandLink>
+                                                        <p:confirmPopup global="true">
+                                                            <p:panel rendered="#{sessionBean.function == 'labelling'}" class="ui-fluid">
+                                                                <div class="p-field">
+                                                                    <label for="name">#{text['import_data.structured_data.labelling.short_name']}</label>
+                                                                    <br/>
+                                                                    <small><span style="color:red;">#{text['general.message.keep_it_short_exclamation']}</span></small>
+                                                                    <br/>
+                                                                    <br/>
+                                                                    <p:inputText id="name" value="#{dataImportBean.datasetName}" placeholder="#{text['general.message.name_of_dataset']}">
+                                                                        <p:ajax event="keyup"/>
+                                                                    </p:inputText>
+                                                                </div>
+                                                                <br/>
+                                                                <br/>
+                                                                <div class="p-field">
+                                                                    <label for="description">#{text['import_data.structured_data.labelling.description_visible_to_annotators']}</label>
+                                                                    <br/>
+                                                                    <small>#{text['general.message.describe_items_short']}</small>
+                                                                    <br/>
+                                                                    <br/>
+                                                                    <p:inputText id="description" value="#{dataImportBean.datasetDescription}" placeholder="#{text['general.message.your_description_here']}">
+                                                                        <p:ajax event="keyup"/>
+                                                                    </p:inputText>
+                                                                </div>
+                                                            </p:panel>
+                                                            <p:commandButton value="#{text['general.small_words.no']}" type="button" styleClass="ui-confirm-popup-no ui-button-flat"/>
+                                                            <p:commandButton value="#{text['general.small_words.yes']}" type="button" styleClass="ui-confirm-popup-yes" />
+                                                        </p:confirmPopup>
+                                                        <br/>
+                                                        <h:outputText value="#{mycolHeader.cellValue}" />
+                                                    </div>
+                                                </f:facet>
+                                                <h:outputText value="#{data[mycolHeader.colIndex].cellValue}"/>
+                                                <br />
+                                            </p:columns>
+                                        </p:dataTable>
+                                    </h:form>
+                                </div>
+                            </p:tab>
+                        </p:tabView>
+
+                    </div>
+                    <div id="thirdcol" class="col-3">
+                        <p:panel header="Log">
+                            <p:scrollPanel id="scrollPanel" mode="native" style="height:100%">
+                                <h:dataTable id="notifications" value="#{logBean.notifications}" var="notification">
+                                    <h:column>#{notification.message}</h:column>
+                                </h:dataTable>
+                                <h:form>
+                                    <!--wrong error from netbeans, do not add onmessage in o:socket when there is a f:ajax inside-->
+                                    <o:socket channel="push" scope="session">
+                                        <f:ajax event="updateNotifications" render=":notifications" />
+                                    </o:socket>
+                                </h:form>
+                            </p:scrollPanel>
+                        </p:panel>
+                    </div>
+                </div>
+            </p:panel>
+
+            <ui:include src="/WEB-INF/includes/footer.xhtml" />
+        </h:body>
+    </f:view>
+</html>

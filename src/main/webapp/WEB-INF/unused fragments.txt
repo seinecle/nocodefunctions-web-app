@@ -1,0 +1,11 @@
+<!--                        <p:outputLabel> or get data directly from Twitter: </p:outputLabel> 
+                        CONNECT TO TWITTER
+                        <p:commandLink action="#{twitterImportBean.goToConnectURL}" actionListener="#{dataImportBean.chooseTwitter}">
+                            <h:graphicImage name="images/twitter_signin.png" width="141" height="16" style="vertical-align: middle;" />
+                        </p:commandLink>
+-->
+
+<!--                            <p:spacer width="10"/>
+                            <p:commandButton value="Submit" ajax="false" action="#{dataImportBean.uploadMultiple}" styleClass="p-mt-3 ui-button-outlined p-d-block"/>-->
+
+

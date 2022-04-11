@@ -1,0 +1,133 @@
+/*
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+*/
+/* 
+    Created on : 9 mai 2021, 18:23:22
+    Author     : LEVALLOIS
+*/
+
+.ui-fileupload{
+    /*height: 400px;*/
+}
+
+p {
+    line-height: 1.5;
+    margin: 0;
+}
+html{
+    background-color: #f1f1f1;
+}
+
+.ui-panel{
+    background-color: blue;
+}
+
+.ui-orderlist .ui-orderlist-list{
+    height: 300px !important;
+    width: 800px !important;
+}
+
+.ui-orderlist .ui-orderlist-caption {
+    height: 50px !important;
+    width: 800px !important;
+}
+
+body .ui-divider .ui-divider-content {
+    background-color: #f1f1f1;
+}
+
+.capitalized {
+    text-transform: capitalize;
+}
+
+
+h2 {
+    /*    h2 tags are used in the app as a normal text, but enclosed in h2 for SEO referencing purposes
+        For this reason the css is reworked to make h2 tags look like regular p tags.*/
+    all: initial;
+    line-height: 1.5;
+    margin: 0;
+    color:#495057;
+    font-family:-apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica Neue, Arial, Noto Sans, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
+}
+
+/*h2 * {
+    all: unset;
+}*/
+
+.fileupload-buttonbar .fileinput-button .ui-icon-plusthick{
+    background-image: url('toto.jpg') !important;
+}
+
+
+.feedback-button-wrapper {
+    position:fixed;
+    width: 52px;
+    height: 52px;
+    line-height: 52px;
+    text-align: center;
+/*    background-color: green;
+    color: red;*/
+    top: 15px;
+    left: 10px;
+    z-index: 998;
+    cursor: pointer;
+    border-top-left-radius: 3px;
+    border-top-right-radius: 3px;
+    border-bottom-left-radius: 3px;
+    border-bottom-right-radius: 3px;
+    transition: transform 0.4s cubic-bezier(0.05, 0.74, 0.2, 0.99);
+    transform: translateX(100%);
+    backface-visibility: hidden;
+}
+
+.feedback-button {
+    font-size: 60% !important;
+}
+
+/*@media screen and (min-width: 0px) and (max-width: 800px) {
+  #hide-mobile { display: block !important; }   show it on small screens 
+}
+
+@media screen and (min-width: 801px) and (max-width: 1024px) {
+  #hide-mobile { display: none !important; }    hide it elsewhere 
+}*/
+
+@media (max-width:930px){
+    #hide-mobile {
+        display: none !important;
+    }
+    #reduce-desktop * {
+        max-width: 100%;
+        padding: 0;
+        display: block;
+        margin: 0 auto;
+    }
+    #reduce-pic-when-mobile-below-930-width * {
+        max-width: 60%;
+        padding: 0;
+        display: block;
+        margin: 0 auto;
+    }
+
+}
+
+@media (min-width:930px){
+    #hide-desktop {
+        display: none !important;
+    }
+    #reduce-desktop * {
+        max-width: 60%;
+        padding: 0;
+        display: block;
+        margin: 0 auto;
+    }
+}
+
+@media (max-width:500px){
+    #hide-desktop {
+        display: none !important;
+    }
+}

@@ -1,0 +1,148 @@
+<html 
+    lang="#{activeLocale.languageTag}"
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:o="http://omnifaces.org/ui"
+    xmlns:p="http://primefaces.org/ui"
+    xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+    <f:view locale="#{activeLocale.current}">
+
+        <h:head>
+            <title>#{text['cowo.cowo.title']}</title>
+            <link rel="apple-touch-icon" sizes="180x180" href="#{resource['images/favicons/apple-touch-icon.png']}"/>
+            <link rel="icon" type="image/png" sizes="32x32" href="#{resource['images/favicons/favicon-32x32.png']}"/>
+            <link rel="icon" type="image/png" sizes="16x16" href="#{resource['images/favicons/favicon-16x16.png']}"/>
+            <link rel="manifest" href="#{resource['images/favicons/site.webmanifest']}"/>
+            <link rel="mask-icon" href="#{resource['images/favicons/safari-pinned-tab.svg']}" color="#5bbad5"/>
+            <link rel="shortcut icon" href="#{resource['images/favicons/favicon.ico']}"/>
+            <meta name="msapplication-TileColor" content="#da532c"/>
+            <meta name="msapplication-config" content="#{resource['images/favicons/browserconfig.xml']}"/>
+            <meta name="theme-color" content="#ffffff"/>
+            <link rel="shortcut icon" type="image/x-icon" href="#{resource['images/favicons/favicon.ico']}"/>
+
+            <meta name="robots" content="noindex"/>
+            <link rel="stylesheet" href="https://unpkg.com/primeflex@3.1.0/primeflex.css"/>
+        </h:head>
+
+        <h:body>
+            <f:facet name="last">
+                <h:outputStylesheet name="css/custom.css" />
+            </f:facet>
+            <p:panel>
+                <ui:include src="/WEB-INF/includes/header.xhtml"/>
+                <ui:include src="/WEB-INF/includes/sidebar.xhtml"/>
+
+                <h1>#{text['cowo.cowo.tagline']}</h1>
+            </p:panel>
+            <p:spacer height="20"/>
+
+            <div class="grid" >
+                <div class="col">
+                    <p:panel>
+                        #{text['general.message.language_of_text_to_analyze']}
+                        <br/>
+                        <br/>
+                        <h:form id="form3">
+                            <p:selectOneListbox id="lang" value="#{cowoBean.selectedLanguage}" style="width: 50px !important">
+                                <f:selectItems value="#{cowoBean.available}" var="l"
+                                               itemValue="#{l.toLanguageTag()}"
+                                               itemLabel="#{l.getDisplayLanguage(activeLocale.current)}">
+                                </f:selectItems>
+                            </p:selectOneListbox>
+                            <div>
+                                <p:spacer width="30" height="20"/>
+                            </div>
+                        </h:form>
+                        <p:accordionPanel widgetVar="basic" activeIndex="null">
+                            <p:tab title="#{text['general.title.if_you_need_more_parameters']}">
+                                <h:form enctype="multipart/form-data">
+                                    <p class="p-m-0">
+                                        <p:divider align="left">
+                                            <div class="p-d-inline-flex p-ai-center">
+                                                <i class="pi pi-chart-bar p-mr-2"/>
+                                                <b>#{text['general.message.min_word_length']}</b>
+                                            </div>
+                                        </p:divider>
+                                        #{text['cowo.cowo.remove_smaller_words']} 5
+                                        <br/>
+                                        <br/>
+                                        <p:spinner id="spinner1" value="#{cowoBean.minCharNumber}" min="0" max="10" stepFactor="1">
+                                        </p:spinner>
+                                        <p:slider for="spinner1" minValue="0" maxValue="10" step="1"/>
+
+                                        <p:divider align="left">
+                                            <div class="p-d-inline-flex p-ai-center">
+                                                <i class="pi pi-chart-bar p-mr-2"/>
+                                                <b>#{text['general.nouns.academic_stopwords']}</b>
+                                            </div>
+                                        </p:divider>
+                                        #{text['cowo.cowo.remove_academic_stopwords']}
+                                        <br/>
+                                        <br/>
+                                        <p:selectBooleanCheckbox value="#{cowoBean.scientificCorpus}" itemLabel="#{text['general.message.remove_academic_stopwords']}">
+                                        </p:selectBooleanCheckbox>                
+                                        <div>
+                                            <p:spacer width="30" height="20"/>
+                                        </div>
+                                        <p:divider align="left">
+                                            <div class="p-d-inline-flex p-ai-center">
+                                                <i class="pi pi-user p-mr-2"/>
+                                                <b>#{text['general.message.use_own_stopwords']}</b>
+                                            </div>
+                                        </p:divider>
+                                        #{text['general.message.use_own_stopwords.instructions']}
+                                        <br/>
+                                        <br/>
+                                        <p:fileUpload value="#{cowoBean.fileUserStopwords}" mode="simple" skinSimple="true" allowTypes="/(\.|\/)(txt)$/"/>
+                                        <br/>
+                                        <br/>
+                                        <p:selectBooleanCheckbox value="#{cowoBean.replaceStopwords}" itemLabel="#{text['general.message.your_stopwords_replace']}">
+                                            <p:ajax/>
+                                        </p:selectBooleanCheckbox>
+                                        <br/>
+                                        <br/>
+                                        <p:selectBooleanCheckbox value="#{cowoBean.okToShareStopwords}" itemLabel="#{text['general.message.ok_sharing_stopwords']}">
+                                            <p:ajax/>
+                                        </p:selectBooleanCheckbox>                                        
+                                        <br/>
+                                        <br/>
+                                        <p:commandButton value="#{text['general.verbs.confirm_options']}" ajax="false" action="#{cowoBean.uploadFile}" styleClass="p-mt-3 ui-button-outlined p-d-block"/> 
+                                    </p>
+                                </h:form>
+                            </p:tab>
+                        </p:accordionPanel>
+
+                    </p:panel> 
+                    <p:spacer width="10" height="50"/>
+                    <!--RUN ANALYSIS BUTTON-->
+                    <p:commandButton value="#{text['general.verbs.compute']}" widgetVar="cowoButton" action="#{cowoBean.runAnalysis}" onclick="PF('pbAjaxLong').start();PF('cowoButton').disable()" styleClass="btn btn-primary"/>
+                    <br/>
+                    <br/>
+                    <p:spacer height="20"/>
+                    <!--PROGRESS BAR FOR RUN ANALYSIS-->
+                    <p:progressBar id="pb" widgetVar="pbAjaxLong" ajax="true" value="#{cowoBean.progress}"
+                                   labelTemplate="{value}%" styleClass="p-mt-3" global="false" interval="500">
+                        <p:ajax event="complete" update=":header:messages"/>
+                    </p:progressBar>
+                </div>
+                <div class="col-3">
+                    <p:panel header="Log">
+                        <p:scrollPanel id="scrollPanel" mode="native" style="height:100%">
+                            <h:dataTable id="notifications" value="#{logBean.notifications}" var="notification">
+                                <h:column>#{notification.message}</h:column>
+                            </h:dataTable>
+                            <h:form>
+                                <!--wrong error from netbeans, do not add onmessage in o:socket when there is a f:ajax inside-->
+                                <o:socket channel="push" scope="session">
+                                    <f:ajax event="updateNotifications" render=":notifications" />
+                                </o:socket>
+                            </h:form>
+                        </p:scrollPanel>
+                    </p:panel>
+                </div>
+            </div>
+            <ui:include src="/WEB-INF/includes/footer.xhtml" />
+        </h:body>
+    </f:view>
+</html>
