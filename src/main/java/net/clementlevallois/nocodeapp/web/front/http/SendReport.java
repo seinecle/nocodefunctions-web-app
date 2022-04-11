@@ -15,7 +15,6 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
-import static net.clementlevallois.nocodeapp.web.front.backingbeans.SingletonBean.privateProperties;
 import org.openide.util.Exceptions;
 
 /**

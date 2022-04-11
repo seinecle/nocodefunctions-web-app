@@ -42,7 +42,14 @@ body .ui-divider .ui-divider-content {
     text-transform: capitalize;
 }
 
-
+.buttonIndexPage {
+    width: 250px;
+    min-width: 250px;
+    height: 10px;
+    min-height: 100px;
+    margin-bottom: 20px;
+    margin-top: 20px;
+}
 h2 {
     /*    h2 tags are used in the app as a normal text, but enclosed in h2 for SEO referencing purposes
         For this reason the css is reworked to make h2 tags look like regular p tags.*/
@@ -68,8 +75,8 @@ h2 {
     height: 52px;
     line-height: 52px;
     text-align: center;
-/*    background-color: green;
-    color: red;*/
+    /*    background-color: green;
+        color: red;*/
     top: 15px;
     left: 10px;
     z-index: 998;

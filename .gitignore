@@ -1,4 +1,6 @@
 /target/
+/bws/
+/html/
 private/
 faces-config.NavData
 list-process.sh

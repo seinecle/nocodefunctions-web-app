@@ -16,6 +16,7 @@ import javax.servlet.http.HttpServletRequest;
 import net.clementlevallois.nocodeapp.web.front.http.RemoteLocal;
 import net.clementlevallois.nocodeapp.web.front.http.SendReport;
 import javax.annotation.PostConstruct;
+import javax.inject.Inject;
 
 /**
  *
@@ -32,6 +33,9 @@ public class SessionBean implements Serializable {
     private boolean testServer;
     private String noRobot;
 
+    @Inject
+    SingletonBean singletonBean;
+    
     public SessionBean() {
     }
 
@@ -43,7 +47,7 @@ public class SessionBean implements Serializable {
         } else {
             userAgent = "unknown-user-agent";
         }
-        localeBundle = ResourceBundle.getBundle(SingletonBean.PATHLOCALE, FacesContext.getCurrentInstance().getViewRoot().getLocale());
+        localeBundle = ResourceBundle.getBundle(singletonBean.getPATHLOCALE(), FacesContext.getCurrentInstance().getViewRoot().getLocale());
     }
 
     ;
@@ -109,7 +113,7 @@ public class SessionBean implements Serializable {
     }
 
     public void refreshLocaleBundle() {
-        localeBundle = ResourceBundle.getBundle(SingletonBean.PATHLOCALE, FacesContext.getCurrentInstance().getViewRoot().getLocale());
+        localeBundle = ResourceBundle.getBundle(singletonBean.getPATHLOCALE(), FacesContext.getCurrentInstance().getViewRoot().getLocale());
     }
 
     public ResourceBundle getLocaleBundle() {

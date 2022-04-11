@@ -30,7 +30,7 @@ public class DocumentConverter implements Converter<Document> {
         if (document == null) {
             return "";
         }
-        ResourceBundle bundle = ResourceBundle.getBundle(SingletonBean.PATHLOCALE, FacesContext.getCurrentInstance().getViewRoot().getLocale());
+        ResourceBundle bundle = ResourceBundle.getBundle("", FacesContext.getCurrentInstance().getViewRoot().getLocale());
         HttpServletRequest origRequest = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
         String requestURI = origRequest.getRequestURI();
         if (requestURI.contains("umigon")) {

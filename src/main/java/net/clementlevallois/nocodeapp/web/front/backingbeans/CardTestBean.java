@@ -17,6 +17,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.inject.Named;
@@ -50,15 +51,23 @@ public class CardTestBean implements Serializable {
     private String organicResultFR = "";
     private String organicTestInputEN = "We\u2019re stoked to announce our new partnership with @SurfingEngland which will run over the next four years. Read more about it here: https://bit.ly/3g9xaLM";
     private String organicResultEN = "";
-    private static String baseURI =  "http://localhost:" + SingletonBean.privateProperties.getProperty("nocode_api_port") + "/api/";
+    private static String baseURI;
 
     @Inject
     SessionBean sessionBean;
+    
+    @Inject
+    SingletonBean singletonBean;
 
     public CardTestBean() {
         if (sessionBean == null) {
             sessionBean = new SessionBean();
         }
+        if (singletonBean == null) {
+            singletonBean = new SingletonBean();
+        }
+        Properties privateProperties = singletonBean.getPrivateProperties();
+        baseURI =  "http://localhost:" + privateProperties.getProperty("nocode_api_port") + "/api/";
     }
 
     public String getUmigonTestInputFR() {

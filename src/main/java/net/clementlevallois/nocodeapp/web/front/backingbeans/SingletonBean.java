@@ -13,7 +13,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.UnknownHostException;
 import java.util.Properties;
-import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import org.omnifaces.cdi.Startup;
 import org.openide.util.Exceptions;
@@ -33,13 +32,21 @@ public class SingletonBean {
     static TwitterFactory tf;
     static ObjectMapper mapper;
     static JedisPool jedisPool;
-    public static String PATHLOCALE = "net.clementlevallois.nocodeapp.web.front.resources.i18n.text";
-    public static Properties privateProperties;
+    private final String PATHLOCALE = "net.clementlevallois.nocodeapp.web.front.resources.i18n.text";
+    private Properties privateProperties;
+    private final String PATHLOCALDEV = "C:\\Users\\levallois\\Google Drive\\open\\no code app\\webapp\\jsf-app\\";
+    private final String PATHREMOTEDEV = "/home/waouh/nocodeapp-web/";
 
-    @PostConstruct
-    public void config() {
+    public SingletonBean() {
         try {
-            InputStream is = new FileInputStream("private/private.properties");
+            String rootProps;
+            System.out.println("user dir: " + System.getProperty("user.dir"));
+            if (System.getProperty("os.name").toLowerCase().contains("win")) {
+                rootProps = PATHLOCALDEV;
+            } else {
+                rootProps = PATHREMOTEDEV;
+            }
+            InputStream is = new FileInputStream(rootProps + "private/private.properties");
             privateProperties = new Properties();
             privateProperties.load(is);
             ConfigurationBuilder cb = new ConfigurationBuilder();
@@ -89,6 +96,12 @@ public class SingletonBean {
         return jedisPool;
     }
 
-    
+    public Properties getPrivateProperties() {
+        return privateProperties;
+    }
+
+    public String getPATHLOCALE() {
+        return PATHLOCALE;
+    }
 
 }
