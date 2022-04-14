@@ -36,11 +36,10 @@ public class SingletonBean {
     private Properties privateProperties;
     private final String PATHLOCALDEV = "C:\\Users\\levallois\\Google Drive\\open\\no code app\\webapp\\jsf-app\\";
     private final String PATHREMOTEDEV = "/home/waouh/nocodeapp-web/";
+    private String rootProps;
 
     public SingletonBean() {
         try {
-            String rootProps;
-            System.out.println("user dir: " + System.getProperty("user.dir"));
             if (System.getProperty("os.name").toLowerCase().contains("win")) {
                 rootProps = PATHLOCALDEV;
             } else {
@@ -103,5 +102,11 @@ public class SingletonBean {
     public String getPATHLOCALE() {
         return PATHLOCALE;
     }
+
+    public String getRootProps() {
+        return rootProps;
+    }
+    
+    
 
 }

@@ -17,8 +17,10 @@ import net.clementlevallois.umigon.model.Document;
  *
  * @author LEVALLOIS
  */
-@FacesConverter(forClass = Document.class, managed=true)
+@FacesConverter(forClass = Document.class, managed = true)
 public class DocumentConverter implements Converter<Document> {
+
+    private final String PATHLOCALE = "net.clementlevallois.nocodeapp.web.front.resources.i18n.text";
 
     @Override
     public Document getAsObject(FacesContext context, UIComponent component, String value) {
@@ -30,7 +32,7 @@ public class DocumentConverter implements Converter<Document> {
         if (document == null) {
             return "";
         }
-        ResourceBundle bundle = ResourceBundle.getBundle("", FacesContext.getCurrentInstance().getViewRoot().getLocale());
+        ResourceBundle bundle = ResourceBundle.getBundle(PATHLOCALE, FacesContext.getCurrentInstance().getViewRoot().getLocale());
         HttpServletRequest origRequest = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
         String requestURI = origRequest.getRequestURI();
         if (requestURI.contains("umigon")) {

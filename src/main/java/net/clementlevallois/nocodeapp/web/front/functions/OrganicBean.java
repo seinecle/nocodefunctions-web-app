@@ -253,6 +253,9 @@ public class OrganicBean implements Serializable {
                     }
                     );
                     futures.add(future);
+                    // this is because we need to slow down a bit the requests to DeepL - sending too many thros a
+                    // java.util.concurrent.CompletionException: java.io.IOException: too many concurrent streams
+                    Thread.sleep(2);
                 }
                 this.progress = 40;
                service.create(sessionBean.getLocaleBundle().getString("general.message.almost_done"));

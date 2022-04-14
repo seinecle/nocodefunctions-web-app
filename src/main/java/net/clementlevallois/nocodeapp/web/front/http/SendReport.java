@@ -21,6 +21,7 @@ import org.openide.util.Exceptions;
  *
  * @author LEVALLOIS
  */
+
 public class SendReport extends Thread {
 
     String event;
@@ -43,11 +44,21 @@ public class SendReport extends Thread {
     String locale;
     boolean testLocalOnWindows = true;
     Properties privateProperties;
+    private String rootProps;
+
+    private final String PATHLOCALDEV = "C:\\Users\\levallois\\Google Drive\\open\\no code app\\webapp\\jsf-app\\";
+    private final String PATHREMOTEDEV = "/home/waouh/nocodeapp-web/";
 
     public SendReport() {
         InputStream is = null;
+
         try {
-            is = new FileInputStream("private/private.properties");
+            if (System.getProperty("os.name").toLowerCase().contains("win")) {
+                rootProps = PATHLOCALDEV;
+            } else {
+                rootProps = PATHREMOTEDEV;
+            }
+            is = new FileInputStream(rootProps + "private/private.properties");
             privateProperties = new Properties();
             privateProperties.load(is);
         } catch (FileNotFoundException ex) {
@@ -170,7 +181,7 @@ public class SendReport extends Thread {
             endPoint = "sendAnnotatorCredentials";
             params.put("emailAnnotator", email);
             params.put("pass", pass);
-            
+
             // this is to obfuscate the correct keycode.
             // When the keycode is parsed back in the app, the 3 last characters are removed
             params.put("keycode", keycode + "2ie");
