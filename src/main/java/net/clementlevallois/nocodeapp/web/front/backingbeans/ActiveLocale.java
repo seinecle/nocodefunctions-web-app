@@ -48,7 +48,23 @@ public class ActiveLocale implements Serializable {
     }
 
     public void setLanguageTag(String languageTag) {
-        current = Locale.forLanguageTag(languageTag);
+
+        String correctLangTag;
+        if (languageTag == null) {
+            System.out.println("language Tag param was null??");
+            return;
+        }
+        if (languageTag.contains("=") & !languageTag.contains("?")) {
+            System.out.println("weird url parameters decoded in sessionBean");
+            System.out.println("url param for lang is: " + languageTag);
+            correctLangTag = languageTag.split("=")[1];
+        } else if (languageTag.contains("=") & languageTag.contains("?")) {
+            correctLangTag = languageTag.split("\\?")[0];
+        } else {
+            correctLangTag = languageTag;
+        }
+
+        current = Locale.forLanguageTag(correctLangTag);
         FacesContext.getCurrentInstance().getViewRoot().setLocale(current);
         sessionBean.refreshLocaleBundle();
     }

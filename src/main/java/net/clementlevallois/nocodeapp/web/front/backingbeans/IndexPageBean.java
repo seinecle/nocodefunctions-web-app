@@ -17,13 +17,10 @@ import net.clementlevallois.nocodeapp.web.front.http.RemoteLocal;
  *
  * @author LEVALLOIS
  */
-@Named("indexPageBean")
+@Named
 @ViewScoped
 public class IndexPageBean implements Serializable {
 
-    /**
-     * Creates a new instance of cardTestBean
-     */
     public IndexPageBean() {
     }
 
