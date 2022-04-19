@@ -7,7 +7,6 @@
     xmlns:p="http://primefaces.org/ui"
     xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
     <f:view locale="#{activeLocale.current}">
-
         <h:head>
             <title>#{text['cowo.cowo.title']}</title>
             <link rel="apple-touch-icon" sizes="180x180" href="#{resource['images/favicons/apple-touch-icon.png']}"/>
@@ -36,7 +35,6 @@
                 <h1>#{text['cowo.cowo.tagline']}</h1>
             </p:panel>
             <p:spacer height="20"/>
-
             <div class="grid" >
                 <div class="col">
                     <p:panel>
@@ -44,11 +42,14 @@
                         <br/>
                         <br/>
                         <h:form id="form3">
-                            <p:selectOneListbox id="lang" value="#{cowoBean.selectedLanguage}" style="width: 50px !important">
-                                <f:selectItems value="#{cowoBean.available}" var="l"
-                                               itemValue="#{l.toLanguageTag()}"
-                                               itemLabel="#{l.getDisplayLanguage(activeLocale.current)}">
-                                </f:selectItems>
+                            <p:selectOneListbox
+                                id="lang"
+                                value="#{cowoBean.selectedLanguage}"
+                                style="width: 50px !important">
+                                <f:selectItems
+                                    value="#{cowoBean.available}" var="l"
+                                    itemValue="#{l.toLanguageTag()}"
+                                    itemLabel="#{l.getDisplayLanguage(activeLocale.current)}"/>
                             </p:selectOneListbox>
                             <div>
                                 <p:spacer width="30" height="20"/>

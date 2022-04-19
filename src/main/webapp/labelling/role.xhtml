@@ -103,7 +103,7 @@
                                     value="#{text['labelling_role.login_to_display_tasks']}"
                                     icon="pi pi-key"
                                     iconPos="right"
-                                    update="annotator2 msg"
+                                    update="annotator2 :header:messages"
                                     action="#{labellingBean.annotatorLogin}"
                                     styleClass="btn btn-primary"
                                     style="min-width: 15em;"/>
@@ -187,7 +187,7 @@
                             <p:commandButton
                                 value="#{text['general.message.upload_your_data']}"
                                 icon="pi pi-cloud-upload"
-                                iconPos="right" update="msg logoffForm"
+                                iconPos="right" update=":header:messages logoffForm"
                                 action="#{labellingBean.navigateToDataImportation()}"
                                 styleClass="btn btn-primary"
                                 style="min-width: 15em;"/>
@@ -213,7 +213,7 @@
                                 <p:inputText id="passDesigner2" value="#{labellingBean.passwordDesigner}" required="true" label="#{text['general.message.your_password']}"/>
                                 <br/>
                                 <br/>
-                                <p:commandButton value="#{text['labelling_role.login_to_list_tasks_created']}" icon="pi pi-key" iconPos="right" update="annotator1 msg :actions existingTask logoffForm" action="#{labellingBean.designerLogin}" styleClass="btn btn-primary" style="min-width: 15em;"/>
+                                <p:commandButton value="#{text['labelling_role.login_to_list_tasks_created']}" icon="pi pi-key" iconPos="right" update="annotator1 :header:messages :actions existingTask logoffForm" action="#{labellingBean.designerLogin}" styleClass="btn btn-primary" style="min-width: 15em;"/>
                                 <br/>
                                 <p:outputLabel id="successLogin" value="#{text['labelling_role.login_succcessful_pick_a_task']}" rendered="#{labellingBean.designerLoggedIn}"/>
                             </p:outputPanel>

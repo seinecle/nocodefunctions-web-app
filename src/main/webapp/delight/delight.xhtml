@@ -42,9 +42,13 @@
                         <br/>
                         <br/>
                         <h:form id="form3">
-                            <p:selectOneListbox id="lang" value="#{delightBean.selectedLanguage}" style="width: 50px !important">
-                                <f:selectItem itemLabel="#{text['general.languages.english']} 🏏" itemValue="en">
-                                </f:selectItem>
+                            <p:selectOneListbox
+                                id="lang"
+                                value="#{delightBean.selectedLanguage}"
+                                style="width: 50px !important">
+                               <f:selectItem
+                                   itemLabel="#{text['general.languages.english']} 🏏"
+                                   itemValue="en"/>                                
                                 <p:ajax event="change" update="@this" />
                             </p:selectOneListbox>
                         </h:form>
