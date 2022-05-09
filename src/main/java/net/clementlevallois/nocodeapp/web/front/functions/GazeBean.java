@@ -499,9 +499,9 @@ public class GazeBean implements Serializable {
             path = "C:\\Users\\levallois\\Google Drive\\open\\no code app\\webapp\\jsf-app\\private\\";
         }
 
-        BufferedWriter bw = Files.newBufferedWriter(Path.of(path + vosviewerJsonFileName), StandardCharsets.UTF_8);
-        bw.write(convertToJson);
-        bw.close();
+        try (BufferedWriter bw = Files.newBufferedWriter(Path.of(path + vosviewerJsonFileName), StandardCharsets.UTF_8)) {
+            bw.write(convertToJson);
+        }
 
         ExternalContext externalContext = FacesContext.getCurrentInstance().getExternalContext();
         String urlVV = "https://test.nocodefunctions.com/html/vosviewer/index.html?json=data/" + subfolder + vosviewerJsonFileName;

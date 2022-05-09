@@ -50,6 +50,18 @@
                 </div>
             </p:panel>
             <p:spacer height="20"/>
+            <p:panel header="#{text['general.message.your_email']}">
+                <div id="container"
+                     style="display: block;
+                     overflow: hidden;
+                     padding-right:10px;
+                     ">
+                    <p:inputTextarea value="#{feedbackBean.email}" rows="3" cols="30" placeholder="#{text['general.message.your_email']}" style="width: 100%;"/>
+                </div>
+            </p:panel>
+            <div>
+                <p:spacer height="20"/>
+            </div>
             <p:commandButton
                 value="#{text['general.verbs.send']}"
                 action="#{feedbackBean.sendFeedback()}"

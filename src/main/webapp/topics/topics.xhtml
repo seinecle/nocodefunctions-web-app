@@ -7,8 +7,8 @@
     xmlns:p="http://primefaces.org/ui"
     xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
     <f:view locale="#{activeLocale.current}">
-
         <h:head>
+            <title>#{text['topics.topics_extraction_tool.title']}</title>
             <link rel="apple-touch-icon" sizes="180x180" href="#{resource['images/favicons/apple-touch-icon.png']}"/>
             <link rel="icon" type="image/png" sizes="32x32" href="#{resource['images/favicons/favicon-32x32.png']}"/>
             <link rel="icon" type="image/png" sizes="16x16" href="#{resource['images/favicons/favicon-16x16.png']}"/>
@@ -19,7 +19,6 @@
             <meta name="msapplication-config" content="#{resource['images/favicons/browserconfig.xml']}"/>
             <meta name="theme-color" content="#ffffff"/>
             <link rel="shortcut icon" type="image/x-icon" href="#{resource['images/favicons/favicon.ico']}"/>
-
 
             <meta name="robots" content="noindex"/>
             <link rel="stylesheet" href="https://unpkg.com/primeflex@3.1.0/primeflex.css"/>
@@ -54,11 +53,14 @@
                         <br/>
                         <br/>
                         <h:form id="form3">
-                            <p:selectOneListbox id="lang" value="#{topicsBean.selectedLanguage}" style="width: 50px !important">
-                                <f:selectItems value="#{topicsBean.available}" var="l"
-                                               itemValue="#{l.toLanguageTag()}"
-                                               itemLabel="#{l.getDisplayLanguage(activeLocale.current)}">
-                                </f:selectItems>
+                            <p:selectOneListbox
+                                id="lang"
+                                value="#{topicsBean.selectedLanguage}"
+                                style="width: 50px !important">
+                                <f:selectItems
+                                    value="#{topicsBean.available}" var="l"
+                                    itemValue="#{l.toLanguageTag()}"
+                                    itemLabel="#{l.getDisplayLanguage(activeLocale.current)}"/>
                                 <p:ajax event="change" update="@this" />
                             </p:selectOneListbox>
                         </h:form>                    

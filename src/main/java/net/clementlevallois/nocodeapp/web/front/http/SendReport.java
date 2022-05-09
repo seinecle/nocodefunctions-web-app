@@ -24,27 +24,27 @@ import org.openide.util.Exceptions;
 
 public class SendReport extends Thread {
 
-    String event;
-    String errorReport;
-    String userAgent;
-    String stopwords;
+    String event = "";
+    String errorReport = "";
+    String userAgent = "";
+    String stopwords = "";
     Integer responseCodeLocal;
     String TYPE;
-    String email;
-    String emailDesigner;
-    String pass;
-    String keycode;
-    String description;
+    String email = "";
+    String emailDesigner = "";
+    String pass = "";
+    String keycode = "";
+    String description = "";
     String annotationTypeOfTask;
-    String sourceLang;
-    String suggestion;
-    String freeCommentError;
-    String freeCommentSuggestion;
-    String url;
-    String locale;
+    String sourceLang = "";
+    String suggestion = "";
+    String freeCommentError = "";
+    String freeCommentSuggestion = "";
+    String url = "";
+    String locale = "";
     boolean testLocalOnWindows = true;
     Properties privateProperties;
-    private String rootProps;
+    private String rootProps = "";
 
     private final String PATHLOCALDEV = "C:\\Users\\levallois\\Google Drive\\open\\no code app\\webapp\\jsf-app\\";
     private final String PATHREMOTEDEV = "/home/waouh/nocodeapp-web/";
@@ -104,12 +104,13 @@ public class SendReport extends Thread {
         this.TYPE = "sendTaskDesignerCredentials";
     }
 
-    public void initFeedback(String url, String locale, String sourceLang, String suggestion, String freeCommentError, String freeCommentSuggestion) {
+    public void initFeedback(String url, String locale, String sourceLang, String suggestion, String freeCommentError, String freeCommentSuggestion, String email) {
         this.sourceLang = sourceLang;
         this.suggestion = suggestion;
         this.freeCommentError = freeCommentError;
         this.freeCommentSuggestion = freeCommentSuggestion;
         this.url = url;
+        this.email = email;
         this.locale = locale;
         this.TYPE = "sendFeedback";
     }
@@ -153,6 +154,9 @@ public class SendReport extends Thread {
             }
             if (!freeCommentError.isBlank()) {
                 sb.append(" | ").append("free comment on error detected: ").append(freeCommentError);
+            }
+            if (!email.isBlank()) {
+                sb.append(" | ").append("email: ").append(email);
             }
             if (!freeCommentSuggestion.isBlank()) {
                 sb.append(" | ").append("free comment on new feature suggestion: ").append(freeCommentSuggestion);
