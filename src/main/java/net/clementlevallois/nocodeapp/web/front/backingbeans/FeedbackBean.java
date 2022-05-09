@@ -31,7 +31,6 @@ public class FeedbackBean implements Serializable {
     private String suggestion;
     private String freeCommentError;
     private String freeCommentSuggestion;
-    private String email;
 
     private Locale current;
 
@@ -58,7 +57,7 @@ public class FeedbackBean implements Serializable {
         HttpServletRequest request = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
         String url = request.getRequestURL().toString();
         SendReport send = new SendReport();
-        send.initFeedback(url, current.getDisplayName(), sourceLang, suggestion, freeCommentError, freeCommentSuggestion, email);
+        send.initFeedback(url, current.getDisplayName(), sourceLang, suggestion, freeCommentError, freeCommentSuggestion);
         send.start();
 
         service.create(sessionBean.getLocaleBundle().getString("general.message.feedback_sent"));
@@ -97,15 +96,5 @@ public class FeedbackBean implements Serializable {
     public void setFreeCommentSuggestion(String freeCommentSuggestion) {
         this.freeCommentSuggestion = freeCommentSuggestion;
     }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-    
-    
 
 }

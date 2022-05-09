@@ -26,9 +26,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 import static java.util.stream.Collectors.toSet;
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.SessionScoped;
@@ -172,18 +169,12 @@ public class TopicsBean implements Serializable {
                     Exceptions.printStackTrace(ex);
                 }
             } else {
-                String lemmatization = sessionBean.getLocaleBundle().getString("general.message.heavy_duty_lemmatization");
-                String wait = sessionBean.getLocaleBundle().getString("general.message.please_wait_seconds");
-                FacesContext.getCurrentInstance().
-                        addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, lemmatization, wait));
-                service.create(lemmatization + " " + wait);
-                progress = 15;
-                Runnable incrementProgress = () -> {
-                    progress = progress + 1;
-                };
-                ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
-                executor.scheduleAtFixedRate(incrementProgress, 0, 2, TimeUnit.SECONDS);
                 try {
+                    String lemmatization = sessionBean.getLocaleBundle().getString("general.message.heavy_duty_lemmatization");
+                    String wait = sessionBean.getLocaleBundle().getString("general.message.please_wait_seconds");
+                    FacesContext.getCurrentInstance().
+                            addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, lemmatization, wait));
+                    service.create(lemmatization + " " + wait);
                     JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
                     for (Map.Entry<Integer, String> entry : mapOfLines.entrySet()) {
                         objectBuilder.add(String.valueOf(entry.getKey()), entry.getValue());
@@ -212,7 +203,6 @@ public class TopicsBean implements Serializable {
                 } catch (URISyntaxException | IOException | InterruptedException ex) {
                     Exceptions.printStackTrace(ex);
                 }
-                executor.shutdown();
             }
 
             service.create(sessionBean.getLocaleBundle().getString("general.message.finding_key_terms"));
@@ -285,9 +275,6 @@ public class TopicsBean implements Serializable {
             service.create(sessionBean.getLocaleBundle().getString("general_message.retaining_freq_terms"));
             progress = 40;
             freqNGramsGlobal = freqNGramsGlobal.keepMostfrequent(freqNGramsGlobal, 2_000);
-
-            service.create(sessionBean.getLocaleBundle().getString("general_message.counting_pairs_terms"));
-            progress = 50;
 
 //        // #### COUNTING CO-OCCURRENCES PER LINE
             Set<String> ngramsInLine;
@@ -454,6 +441,7 @@ public class TopicsBean implements Serializable {
             Exceptions.printStackTrace(ex);
         }
         return "/" + sessionBean.getFunction() + "/results.xhtml?faces-redirect=true";
+
     }
 
     public Boolean getRenderSeeResultsButton() {
@@ -565,11 +553,9 @@ public class TopicsBean implements Serializable {
         }
         Collections.sort(available, new TopicsBean.LocaleComparator());
         return available;
-
     }
 
     public class LocaleComparator implements Comparator<Locale> {
-
         Locale requestLocale = FacesContext.getCurrentInstance().getExternalContext().getRequestLocale();
 
         @Override

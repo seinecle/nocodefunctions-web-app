@@ -50,10 +50,11 @@
                                     value="#{cowoBean.available}" var="l"
                                     itemValue="#{l.toLanguageTag()}"
                                     itemLabel="#{l.getDisplayLanguage(activeLocale.current)}"/>
-                                    <p:ajax event="change" update="@this" />
                             </p:selectOneListbox>
+                            <div>
+                                <p:spacer width="30" height="20"/>
+                            </div>
                         </h:form>
-                        <p:spacer width="10" height="10"/>
                         <p:accordionPanel widgetVar="basic" activeIndex="null">
                             <p:tab title="#{text['general.title.if_you_need_more_parameters']}">
                                 <h:form enctype="multipart/form-data">
