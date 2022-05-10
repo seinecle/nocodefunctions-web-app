@@ -5,12 +5,21 @@
  */
 package net.clementlevallois.nocodeapp.web.front.importdata;
 
+import com.twitter.clientlib.model.Tweet;
+import com.twitter.clientlib.model.TweetSearchResponse;
 import io.github.redouane59.twitter.TwitterClient;
 import io.github.redouane59.twitter.signature.TwitterCredentials;
+import io.mikael.urlbuilder.UrlBuilder;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectInputStream;
 import java.io.Serializable;
+import java.net.URI;
 import java.net.URLEncoder;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -21,17 +30,15 @@ import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.json.bind.Jsonb;
+import javax.json.bind.JsonbBuilder;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SingletonBean;
+import net.clementlevallois.nocodeapp.web.front.functions.UmigonBean;
 import net.clementlevallois.nocodeapp.web.front.http.RemoteLocal;
 import net.clementlevallois.nocodeapp.web.front.logview.NotificationService;
 import org.openide.util.Exceptions;
 import twitter4j.OEmbed;
 import twitter4j.OEmbedRequest;
-import twitter4j.Query;
-import twitter4j.QueryResult;
-import twitter4j.RateLimitStatusEvent;
-import twitter4j.RateLimitStatusListener;
-import twitter4j.Status;
 import twitter4j.Twitter;
 import twitter4j.TwitterException;
 import twitter4j.auth.RequestToken;
@@ -53,13 +60,18 @@ public class TwitterImportBean implements Serializable {
     private String secretUser;
     private Twitter twitter;
     private TwitterClient twitterClient;
-    private String queryString;
+    private String query;
     private String languageString;
     private String sinceString;
     private String untilString;
+    private List<SheetModel> sheets;
+    private String searchType; // RECENT or FULL
 
     @Inject
     NotificationService notifService;
+
+    @Inject
+    SingletonBean singletonBean;    
 
     public TwitterImportBean() {
     }
@@ -94,15 +106,15 @@ public class TwitterImportBean implements Serializable {
             String callbackURL = RemoteLocal.getDomain() + "twitter_auth.html";
             requestToken = twitter.getOAuthRequestToken(callbackURL);
 
-        InputStream in = TwitterImportBean.class.getResourceAsStream(CREDENTIALS_FILE_PATH);
-        TwitterCredentials tc = TwitterClient.OBJECT_MAPPER.readValue(in, TwitterCredentials.class);
-        twitterClient = new TwitterClient(tc);
-        String callBackURL = URLEncoder.encode(RemoteLocal.getDomain() + "twitter_auth.html", StandardCharsets.UTF_8);
-        requestTokenRedouane = twitterClient.getOauth1Token(callBackURL);
-        ExternalContext externalContext = FacesContext.getCurrentInstance().getExternalContext();
-        String authenticationURL = requestToken.getAuthorizationURL();
-        System.out.println(authenticationURL);
-        externalContext.redirect(authenticationURL);
+            InputStream in = TwitterImportBean.class.getResourceAsStream(CREDENTIALS_FILE_PATH);
+            TwitterCredentials tc = TwitterClient.OBJECT_MAPPER.readValue(in, TwitterCredentials.class);
+            twitterClient = new TwitterClient(tc);
+            String callBackURL = URLEncoder.encode(RemoteLocal.getDomain() + "twitter_auth.html", StandardCharsets.UTF_8);
+            requestTokenRedouane = twitterClient.getOauth1Token(callBackURL);
+            ExternalContext externalContext = FacesContext.getCurrentInstance().getExternalContext();
+            String authenticationURL = requestToken.getAuthorizationURL();
+            System.out.println(authenticationURL);
+            externalContext.redirect(authenticationURL);
 
         } catch (TwitterException ex) {
             Logger.getLogger(TwitterImportBean.class.getName()).log(Level.SEVERE, null, ex);
@@ -127,85 +139,48 @@ public class TwitterImportBean implements Serializable {
     }
 
     public List<SheetModel> searchTweets() {
-        List<SheetModel> sheets = new ArrayList();
-        SheetModel sheetModel = new SheetModel();
-        List<ColumnModel> headerNames = new ArrayList();
-        ColumnModel cm;
-        cm = new ColumnModel("0", "tweets");
-        headerNames.add(cm);
-        int[] limitReached = {0};
-
         try {
-            twitter.addRateLimitStatusListener(new RateLimitStatusListener() {
-                @Override
-                public void onRateLimitStatus(RateLimitStatusEvent event) {
-//                    System.out.println("Limit[" + event.getRateLimitStatus().getLimit() + "], Remaining[" + event.getRateLimitStatus().getRemaining() + "]");
-                }
+            URI uri = UrlBuilder.empty().withScheme("http").withPort(7002).withHost("localhost").withPath("api/tweets/bytes").addParameter("query", query).addParameter("days_start", "7").addParameter("days_end", "0").toUri();
+            System.out.println("uri: " + uri);
+            HttpClient client = HttpClient.newHttpClient();
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(uri)
+                    .build();
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            String body = response.body();
+            Jsonb jsonb = JsonbBuilder.create();
+            TweetSearchResponse tweetSearchResponse = jsonb.fromJson(body, TweetSearchResponse.class);
 
-                @Override
-                public void onRateLimitReached(RateLimitStatusEvent event) {
-//                    System.out.println("Limit[" + event.getRateLimitStatus().getLimit() + "], Remaining[" + event.getRateLimitStatus().getRemaining() + "]");
-                    sheetModel.setName("Limit reached");
-                    sheetModel.setTableHeaderNames(headerNames);
-                    CellRecord cellRecord = new CellRecord(0, 0, "Limit[" + event.getRateLimitStatus().getLimit() + "], Remaining[" + event.getRateLimitStatus().getRemaining() + "]");
-                    sheetModel.addCellRecord(cellRecord);
-
-                    sheets.add(sheetModel);
-                    limitReached[0]++;
-                }
-            });
-            if (limitReached[0] > 0) {
-                return sheets;
-            }
-            if (queryString.isBlank()) {
-                queryString = "data science";
-            }
-            String encoded = URLEncoder.encode(queryString, StandardCharsets.UTF_8);
-            Query query = new Query(encoded);
-            query.setCount(100);
-            if (sinceString != null && sinceString.matches("\\d{4}-\\d{2}-\\d{2}")) {
-                query.setSince(sinceString);
-            }
-            if (untilString != null && untilString.matches("\\d{4}-\\d{2}-\\d{2}")) {
-                query.setUntil(untilString);
-            }
-            if (languageString != null && languageString.toLowerCase().equals("en") || languageString.toLowerCase().equals("fr")) {
-                query.setLang(languageString);
-            }
-            QueryResult result;
-            result = twitter.search(query);
-            List<Status> tweets = result.getTweets();
+            sheets = new ArrayList();
+            SheetModel sheetModel = new SheetModel();
+            List<ColumnModel> headerNames = new ArrayList();
+            ColumnModel cm;
+            cm = new ColumnModel("0", "tweets");
+            headerNames.add(cm);
             int i = 0;
-            for (Status tweet : tweets) {
+
+            for (Tweet tweet : tweetSearchResponse.getData()) {
                 String url = "";
-                OEmbedRequest oEmbedRequest = new OEmbedRequest(tweet.getId(), url);
+                OEmbedRequest oEmbedRequest = new OEmbedRequest(Long.valueOf(tweet.getId()), url);
                 oEmbedRequest.setMaxWidth(550);
                 oEmbedRequest.setOmitScript(true);
-                if (limitReached[0] > 0) {
-                    return sheets;
-                }
+                            twitter = singletonBean.getTf().getInstance();
+
                 OEmbed embed = twitter.getOEmbed(oEmbedRequest);
-//                System.out.println("url: " + embed.getURL());
                 CellRecord cellRecord = new CellRecord(i++, 0, tweet.getText(), embed.getHtml());
                 sheetModel.addCellRecord(cellRecord);
             }
 
+            sheetModel.setName("tweets found");
+            sheetModel.setTableHeaderNames(headerNames);
+            sheets.add(sheetModel);
+
+        } catch (IOException | InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
         } catch (TwitterException ex) {
-            Logger.getLogger(TwitterImportBean.class.getName()).log(Level.SEVERE, null, ex);
+            Exceptions.printStackTrace(ex);
         }
-        sheetModel.setName("tweets found");
-        sheetModel.setTableHeaderNames(headerNames);
-        sheets.add(sheetModel);
-
         return sheets;
-    }
-
-    public String getQueryString() {
-        return queryString;
-    }
-
-    public void setQueryString(String queryString) {
-        this.queryString = queryString;
     }
 
     public String getLanguageString() {
@@ -230,6 +205,30 @@ public class TwitterImportBean implements Serializable {
 
     public void setUntilString(String untilString) {
         this.untilString = untilString;
+    }
+
+    public List<SheetModel> getSheets() {
+        return sheets;
+    }
+
+    public void setSheets(List<SheetModel> sheets) {
+        this.sheets = sheets;
+    }
+
+    public String getSearchType() {
+        return searchType;
+    }
+
+    public void setSearchType(String searchType) {
+        this.searchType = searchType;
+    }
+
+    public String getQuery() {
+        return query;
+    }
+
+    public void setQuery(String query) {
+        this.query = query;
     }
 
 }
