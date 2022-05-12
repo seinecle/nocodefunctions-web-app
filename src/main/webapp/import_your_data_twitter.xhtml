@@ -79,7 +79,8 @@
                 <div class="grid" >
                     <div class="col-9">
                         <h:form id="search">
-                            <p:spacer height="5" width="5"/>
+                            <h:graphicImage name="images/round_1_orange.png" width="20" height="20" style="vertical-align: bottom;"/>
+                            <p:spacer width="5"/>
                             <h5 class="p-mt-0">Type your query</h5>
                             <p:inputText value="#{twitterImportBean.query}">
                                 <p:ajax/>
@@ -91,7 +92,20 @@
                                 <f:selectItem itemLabel="full historical search" itemValue="FULL"/>
                             </p:selectOneRadio>
                             <p:spacer height="5" width="5"/>
-                            <p:commandButton id="fileBtn" process="@this" value="#{text['import_data.twitter.launch_the_search']}" action="#{twitterImportBean.searchTweets()}"/>
+                            <p:commandButton
+                                id="searchBtn"
+                                process="@this"
+                                value="#{text['import_data.twitter.launch_the_search']}"
+                                action="#{twitterImportBean.searchTweets()}"
+                                update="dataTable"/>
+                            <p:spacer height="5" width="5"/>
+                            <p:commandButton
+                                value="#{text['general.verbs.compute']}"
+                                action="#{dataImportBean.gotToFunctionWithDataInBulk}"
+                                onclick="PF('pbAjaxLong').start();PF('gazeLaunchButton').disable()"
+                                styleClass="btn btn-primary"
+                                rendered="#{not empty twitterImportBean.sheets and sessionBean.function != 'labelling'}"/>
+
                         </h:form>
                         <p:outputPanel id="dataTable">
                             <p:outputPanel  rendered="#{not empty twitterImportBean.sheets}">
@@ -111,7 +125,7 @@
                                                     </p:column>
                                                     <p:columns value="#{dataInSheet.tableHeaderNames}"
                                                                var="mycolHeader" columnIndexVar="colIndex">
-                                                        <h:outputText value="#{data[mycolHeader.colIndex].cellValue}"/>
+                                                        <h:outputText value="#{data[mycolHeader.colIndex].cellValue}" escape="false"/>
                                                         <br />
                                                     </p:columns>
                                                 </p:dataTable>

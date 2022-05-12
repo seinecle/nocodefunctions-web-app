@@ -52,9 +52,9 @@ public class SingletonBean {
             // app is by @seinecle_fr: https://developer.twitter.com/en/portal/apps/21043553/settings
             cb.setDebugEnabled(true)
                     .setOAuthConsumerKey(privateProperties.getProperty("twitter_consumer_key"))
-                    .setOAuthConsumerSecret(privateProperties.getProperty("twitter_consumer_secret"));
-//                .setOAuthAccessToken(privateProperties.getProperty("twitter_access_token"))
-//                .setOAuthAccessTokenSecret(privateProperties.getProperty("twitter_access_token_secret"));
+                    .setOAuthConsumerSecret(privateProperties.getProperty("twitter_consumer_secret"))
+                    .setOAuthAccessToken(privateProperties.getProperty("twitter_access_token"))
+                    .setOAuthAccessTokenSecret(privateProperties.getProperty("twitter_access_token_secret"));
             tf = new TwitterFactory(cb.build());
 
             String redisPort;
@@ -106,7 +106,5 @@ public class SingletonBean {
     public String getRootProps() {
         return rootProps;
     }
-    
-    
 
 }

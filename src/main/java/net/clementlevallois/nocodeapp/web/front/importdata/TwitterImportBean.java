@@ -23,6 +23,9 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.enterprise.context.SessionScoped;
@@ -32,6 +35,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.json.bind.Jsonb;
 import javax.json.bind.JsonbBuilder;
+import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SingletonBean;
 import net.clementlevallois.nocodeapp.web.front.functions.UmigonBean;
 import net.clementlevallois.nocodeapp.web.front.http.RemoteLocal;
@@ -67,11 +71,16 @@ public class TwitterImportBean implements Serializable {
     private List<SheetModel> sheets;
     private String searchType; // RECENT or FULL
 
-    @Inject
-    NotificationService notifService;
+    private Integer progress;
 
     @Inject
-    SingletonBean singletonBean;    
+    NotificationService service;
+
+    @Inject
+    SingletonBean singletonBean;
+
+    @Inject
+    SessionBean sessionBean;
 
     public TwitterImportBean() {
     }
@@ -138,8 +147,18 @@ public class TwitterImportBean implements Serializable {
         this.oauth_verifier = oauth_verifier;
     }
 
-    public List<SheetModel> searchTweets() {
+    public String searchTweets() {
         try {
+
+            this.progress = 3;
+            service.create(sessionBean.getLocaleBundle().getString("back.import.searching_tweets"));
+
+            Runnable incrementProgress = () -> {
+                progress = progress + 1;
+            };
+            ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
+            executor.scheduleAtFixedRate(incrementProgress, 0, 250, TimeUnit.MILLISECONDS);
+
             URI uri = UrlBuilder.empty().withScheme("http").withPort(7002).withHost("localhost").withPath("api/tweets/bytes").addParameter("query", query).addParameter("days_start", "7").addParameter("days_end", "0").toUri();
             System.out.println("uri: " + uri);
             HttpClient client = HttpClient.newHttpClient();
@@ -164,7 +183,7 @@ public class TwitterImportBean implements Serializable {
                 OEmbedRequest oEmbedRequest = new OEmbedRequest(Long.valueOf(tweet.getId()), url);
                 oEmbedRequest.setMaxWidth(550);
                 oEmbedRequest.setOmitScript(true);
-                            twitter = singletonBean.getTf().getInstance();
+                twitter = singletonBean.getTf().getInstance();
 
                 OEmbed embed = twitter.getOEmbed(oEmbedRequest);
                 CellRecord cellRecord = new CellRecord(i++, 0, tweet.getText(), embed.getHtml());
@@ -174,13 +193,22 @@ public class TwitterImportBean implements Serializable {
             sheetModel.setName("tweets found");
             sheetModel.setTableHeaderNames(headerNames);
             sheets.add(sheetModel);
+            executor.shutdown();
 
-        } catch (IOException | InterruptedException ex) {
+        } catch (IOException | InterruptedException | TwitterException ex) {
             Exceptions.printStackTrace(ex);
-        } catch (TwitterException ex) {
-            Exceptions.printStackTrace(ex);
+
         }
-        return sheets;
+        progress = 100;
+        if (!sheets.isEmpty()) {
+            service.create(sessionBean.getLocaleBundle().getString("back.import.finished_searching_tweets") + sheets.get(0).getCellRecords().size() + sessionBean.getLocaleBundle().getString("back.import.number_tweets_found"));
+        }
+        return "";
+    }
+
+    public String gotToFunctionWithDataInBulk() {
+        System.out.println("function is: " + sessionBean.getFunction());
+        return "/" + sessionBean.getFunction() + "/" + sessionBean.getFunction() + ".xhtml?faces-redirect=true";
     }
 
     public String getLanguageString() {
@@ -229,6 +257,14 @@ public class TwitterImportBean implements Serializable {
 
     public void setQuery(String query) {
         this.query = query;
+    }
+
+    public Integer getProgress() {
+        return progress;
+    }
+
+    public void setProgress(Integer progress) {
+        this.progress = progress;
     }
 
 }

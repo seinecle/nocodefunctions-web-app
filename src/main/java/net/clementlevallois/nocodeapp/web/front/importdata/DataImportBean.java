@@ -81,9 +81,6 @@ public class DataImportBean implements Serializable {
     GoogleSheetsImportBean googleBean;
 
     @Inject
-    TwitterImportBean twitterBean;
-
-    @Inject
     GazeBean gazeBean;
 
     @Inject
@@ -105,8 +102,6 @@ public class DataImportBean implements Serializable {
     private Boolean isTxtFile = false;
     private Boolean isCsvFile = false;
     private Boolean isPdfFile = false;
-
-    private Boolean isTwitter = false;
 
     private Boolean renderHeadersCheckBox = false;
     private Boolean readButtonDisabled = true;
@@ -138,7 +133,6 @@ public class DataImportBean implements Serializable {
         TXT,
         CSV,
         XLSX,
-        TWITTER,
         PDF,
         GS
     }
@@ -273,23 +267,6 @@ public class DataImportBean implements Serializable {
         return "";
     }
 
-    public String searchTweets() {
-        this.progress = 3;
-        service.create(sessionBean.getLocaleBundle().getString("back.import.searching_tweets"));
-
-        Runnable incrementProgress = () -> {
-            progress = progress + 1;
-        };
-        ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
-        executor.scheduleAtFixedRate(incrementProgress, 0, 250, TimeUnit.MILLISECONDS);
-
-        dataInSheets = twitterBean.searchTweets();
-        executor.shutdown();
-        progress = 100;
-        service.create(sessionBean.getLocaleBundle().getString("back.import.finished_searching_tweets") + dataInSheets.get(0).getCellRecords().size() + sessionBean.getLocaleBundle().getString("back.import.number_tweets_found"));
-        return "";
-    }
-
     public String handleFileUpload(FileUploadEvent event) {
         progress = 0;
         file = event.getFile();
@@ -346,24 +323,11 @@ public class DataImportBean implements Serializable {
         isExcelFile = false;
         isTxtFile = false;
         isCsvFile = false;
-        isTwitter = false;
         isGSheet = true;
         file = null;
         dataInSheets = new ArrayList();
         renderProgressBar = true;
         setSource(Source.GS);
-    }
-
-    public void chooseTwitter(ActionEvent event) {
-        isExcelFile = false;
-        isTxtFile = false;
-        isCsvFile = false;
-        isTwitter = true;
-        isGSheet = false;
-        file = null;
-        dataInSheets = new ArrayList();
-        renderProgressBar = true;
-        setSource(Source.TWITTER);
     }
 
     private List<SheetModel> readTextFile(UploadedFile file) {
@@ -714,14 +678,6 @@ public class DataImportBean implements Serializable {
 
     public void setIsGSheet(Boolean isGSheet) {
         this.isGSheet = isGSheet;
-    }
-
-    public Boolean getIsTwitter() {
-        return isTwitter;
-    }
-
-    public void setIsTwitter(Boolean isTwitter) {
-        this.isTwitter = isTwitter;
     }
 
     public String selectColumn(String colIndex, String sheetName) {
