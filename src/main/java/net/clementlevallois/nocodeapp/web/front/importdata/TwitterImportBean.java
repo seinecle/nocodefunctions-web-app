@@ -5,15 +5,14 @@
  */
 package net.clementlevallois.nocodeapp.web.front.importdata;
 
+import com.twitter.clientlib.TwitterCredentialsOAuth2;
 import com.twitter.clientlib.model.Tweet;
 import com.twitter.clientlib.model.TweetSearchResponse;
 import io.github.redouane59.twitter.TwitterClient;
 import io.github.redouane59.twitter.signature.TwitterCredentials;
 import io.mikael.urlbuilder.UrlBuilder;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.net.URI;
 import java.net.URLEncoder;
@@ -37,7 +36,6 @@ import javax.json.bind.Jsonb;
 import javax.json.bind.JsonbBuilder;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SingletonBean;
-import net.clementlevallois.nocodeapp.web.front.functions.UmigonBean;
 import net.clementlevallois.nocodeapp.web.front.http.RemoteLocal;
 import net.clementlevallois.nocodeapp.web.front.logview.NotificationService;
 import org.openide.util.Exceptions;
@@ -80,11 +78,20 @@ public class TwitterImportBean implements Serializable {
     SingletonBean singletonBean;
 
     @Inject
+    DataImportBean dataInputBean;
+
+    @Inject
     SessionBean sessionBean;
 
     public TwitterImportBean() {
     }
 
+    public void initTwitter(){
+        TwitterCredentialsOAuth2 credentials = new TwitterCredentialsOAuth2(System.getenv("TWITTER_OAUTH2_CLIENT_ID"),
+        System.getenv("TWITTER_OAUTH2_CLIENT_SECRET"),
+        System.getenv("TWITTER_OAUTH2_ACCESS_TOKEN"),
+        System.getenv("TWITTER_OAUTH2_REFRESH_TOKEN"));
+    }
     public void onloadingRedirectPage() {
         try {
             //        try {
@@ -202,7 +209,9 @@ public class TwitterImportBean implements Serializable {
         progress = 100;
         if (!sheets.isEmpty()) {
             service.create(sessionBean.getLocaleBundle().getString("back.import.finished_searching_tweets") + sheets.get(0).getCellRecords().size() + sessionBean.getLocaleBundle().getString("back.import.number_tweets_found"));
+            dataInputBean.setDataInSheets(sheets);
         }
+        
         return "";
     }
 

@@ -64,6 +64,7 @@ import net.clementlevallois.nocodeapp.web.front.http.RemoteLocal;
 import net.clementlevallois.nocodeapp.web.front.http.SendReport;
 import net.clementlevallois.nocodeapp.web.front.importdata.DataFormatConverter;
 import net.clementlevallois.nocodeapp.web.front.importdata.DataImportBean;
+import net.clementlevallois.nocodeapp.web.front.importdata.TwitterImportBean;
 import net.clementlevallois.nocodeapp.web.front.io.GEXFSaver;
 import net.clementlevallois.nocodeapp.web.front.logview.NotificationService;
 import net.clementlevallois.nocodeapp.web.front.textops.TextOps;

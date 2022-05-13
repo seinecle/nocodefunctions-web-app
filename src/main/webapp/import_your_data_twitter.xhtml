@@ -30,7 +30,7 @@
             <f:metadata>
                 <f:viewParam name="function" value="#{sessionBean.function}" />
                 <f:viewParam name="persistToDisk" value="#{dataImportBean.persistToDisk}" />
-                <f:viewAction action="#{dataImportBean.setBulkData(true)}" />
+                <f:viewAction action="#{twitterImportBean.initTwitter()}" />
             </f:metadata>
 
             <script type="text/javascript">
@@ -85,13 +85,14 @@
                             <p:inputText value="#{twitterImportBean.query}">
                                 <p:ajax/>
                             </p:inputText>
-                            <p:spacer height="5" width="5"/>
+                            <br/>
                             <h5 class="p-mt-0">Select the type of search</h5>
                             <p:selectOneRadio id="type_of_search" value="#{twitterImportBean.searchType}" unselectable="true">
                                 <f:selectItem itemLabel="recent search (last 7 days)" itemValue="RECENT"/>
                                 <f:selectItem itemLabel="full historical search" itemValue="FULL"/>
                             </p:selectOneRadio>
-                            <p:spacer height="5" width="5"/>
+                            <br/>
+                            <br/>
                             <p:commandButton
                                 id="searchBtn"
                                 process="@this"
