@@ -497,6 +497,11 @@ public class CowoBean implements Serializable {
             renderSeeResultsButton = true;
             runButtonDisabled = true;
 
+            if (graphResult.getEdges().toCollection().isEmpty()) {
+                service.create(sessionBean.getLocaleBundle().getString("general_message.empty_network_no_connection"));
+                return "";
+            }
+
         } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
         }

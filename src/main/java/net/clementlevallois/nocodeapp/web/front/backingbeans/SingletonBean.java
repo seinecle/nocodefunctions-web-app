@@ -7,19 +7,24 @@ package net.clementlevallois.nocodeapp.web.front.backingbeans;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.scribejava.core.model.OAuth2AccessToken;
+import com.github.scribejava.core.pkce.PKCE;
+import com.github.scribejava.core.pkce.PKCECodeChallengeMethod;
+import com.twitter.clientlib.TwitterCredentialsOAuth2;
+import com.twitter.clientlib.auth.TwitterOAuth20Service;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.UnknownHostException;
 import java.util.Properties;
+import java.util.concurrent.ExecutionException;
 import javax.enterprise.context.ApplicationScoped;
+import net.clementlevallois.nocodeapp.web.front.http.RemoteLocal;
 import org.omnifaces.cdi.Startup;
 import org.openide.util.Exceptions;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
-import twitter4j.TwitterFactory;
-import twitter4j.conf.ConfigurationBuilder;
 
 /**
  *
@@ -29,7 +34,6 @@ import twitter4j.conf.ConfigurationBuilder;
 @ApplicationScoped
 public class SingletonBean {
 
-    static TwitterFactory tf;
     static ObjectMapper mapper;
     static JedisPool jedisPool;
     private final String PATHLOCALE = "net.clementlevallois.nocodeapp.web.front.resources.i18n.text";
@@ -37,6 +41,8 @@ public class SingletonBean {
     private final String PATHLOCALDEV = "C:\\Users\\levallois\\Google Drive\\open\\no code app\\webapp\\jsf-app\\";
     private final String PATHREMOTEDEV = "/home/waouh/nocodeapp-web/";
     private String rootProps;
+    private TwitterOAuth20Service twitterOAuthService;
+    private String twitterAuthorizationUrl;
 
     public SingletonBean() {
         try {
@@ -48,14 +54,29 @@ public class SingletonBean {
             InputStream is = new FileInputStream(rootProps + "private/private.properties");
             privateProperties = new Properties();
             privateProperties.load(is);
-            ConfigurationBuilder cb = new ConfigurationBuilder();
-            // app is by @seinecle_fr: https://developer.twitter.com/en/portal/apps/21043553/settings
-            cb.setDebugEnabled(true)
-                    .setOAuthConsumerKey(privateProperties.getProperty("twitter_consumer_key"))
-                    .setOAuthConsumerSecret(privateProperties.getProperty("twitter_consumer_secret"))
-                    .setOAuthAccessToken(privateProperties.getProperty("twitter_access_token"))
-                    .setOAuthAccessTokenSecret(privateProperties.getProperty("twitter_access_token_secret"));
-            tf = new TwitterFactory(cb.build());
+            
+
+            // This is the new Twitter client for java by Twitter.
+            String twitterClientId = privateProperties.getProperty("twitter_client_id");
+            String twitterClientSecret = privateProperties.getProperty("twitter_client_secret");
+
+            TwitterCredentialsOAuth2 credentials = new TwitterCredentialsOAuth2(twitterClientId,
+                    twitterClientSecret,
+                    "",
+                    "");
+
+            twitterOAuthService = new TwitterOAuth20Service(
+                    credentials.getTwitterOauth2ClientId(),
+                    credentials.getTwitterOAuth2ClientSecret(),
+                    RemoteLocal.getDomain() + "twitter_auth.html",
+                    "offline.access tweet.read users.read");
+
+            final String secretState = "state";
+            PKCE pkce = new PKCE();
+            pkce.setCodeChallenge("challenge");
+            pkce.setCodeChallengeMethod(PKCECodeChallengeMethod.PLAIN);
+            pkce.setCodeVerifier("challenge");
+            twitterAuthorizationUrl = twitterOAuthService.getAuthorizationUrl(pkce, secretState);
 
             String redisPort;
             if (System.getProperty("os.name").toLowerCase().contains("win")) {
@@ -87,10 +108,6 @@ public class SingletonBean {
         jedisPool = new JedisPool(poolConfig, "localhost", Integer.valueOf(redisPort), 2000);
     }
 
-    public static TwitterFactory getTf() {
-        return tf;
-    }
-
     public static JedisPool getJedisPool() {
         return jedisPool;
     }
@@ -105,6 +122,28 @@ public class SingletonBean {
 
     public String getRootProps() {
         return rootProps;
+    }
+
+    public TwitterOAuth20Service getTwitterOAuthService() {
+        return twitterOAuthService;
+    }
+
+    public String getTwitterAuthorizationUrl() {
+        return twitterAuthorizationUrl;
+    }
+
+    public OAuth2AccessToken getOAuth2AccessToken(String code) {
+        try {
+            PKCE pkce = new PKCE();
+            pkce.setCodeChallenge("challenge");
+            pkce.setCodeChallengeMethod(PKCECodeChallengeMethod.PLAIN);
+            pkce.setCodeVerifier("challenge");
+            return twitterOAuthService.getAccessToken(pkce, code);
+        } catch (IOException | ExecutionException | InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+            return null;
+        }
+        
     }
 
 }

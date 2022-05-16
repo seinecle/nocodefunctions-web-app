@@ -6,6 +6,7 @@
 package net.clementlevallois.nocodeapp.web.front.backingbeans;
 
 import au.com.flyingkite.mobiledetect.UAgentInfo;
+import com.github.scribejava.core.model.OAuth2AccessToken;
 import javax.inject.Named;
 import java.io.Serializable;
 import java.util.Locale;
@@ -32,6 +33,7 @@ public class SessionBean implements Serializable {
     private ResourceBundle localeBundle;
     private boolean testServer;
     private String noRobot;
+    private OAuth2AccessToken twitterOAuth2AccessToken;
 
     @Inject
     SingletonBean singletonBean;
@@ -136,6 +138,24 @@ public class SessionBean implements Serializable {
     public void setNoRobot(String noRobot) {
         this.noRobot = noRobot;
     }
+
+    public OAuth2AccessToken getTwitterOAuth2AccessToken() {
+        return twitterOAuth2AccessToken;
+    }
+
+    public void setTwitterOAuth2AccessToken(OAuth2AccessToken twitterOAuth2AccessToken) {
+        this.twitterOAuth2AccessToken = twitterOAuth2AccessToken;
+    }
+
+    public SingletonBean getSingletonBean() {
+        return singletonBean;
+    }
+
+    public void setSingletonBean(SingletonBean singletonBean) {
+        this.singletonBean = singletonBean;
+    }
+    
+    
     
     
     

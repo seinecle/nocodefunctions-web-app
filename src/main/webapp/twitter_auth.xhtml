@@ -7,8 +7,7 @@
     </h:head>
     <h:body>
         <f:metadata>
-            <f:viewParam name="oauth_token" value="#{twitterImportBean.oauth_token}" />
-            <f:viewParam name="oauth_verifier" value="#{twitterImportBean.oauth_verifier}" />
+            <f:viewParam name="code" value="#{twitterImportBean.code}" />
             <f:viewAction action="#{twitterImportBean.onloadingRedirectPage}" />
         </f:metadata>
     </h:body>

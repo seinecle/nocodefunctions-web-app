@@ -21,48 +21,31 @@ import org.openide.util.Exceptions;
 public class RemoteLocal {
 
     public static String getDomain() {
-        try {
-            HttpServletRequest request = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
-            String string = request.getRequestURL().toString();
-            URL url = new URL(string);
-            String interm;
-            String post;
-            if (url.getAuthority().contains("localhost")) {
-                interm = "://";
-                post = "jsf-app/";
+        String post;
+        String protocol;
+        String domain;
+        if (System.getProperty("os.name").toLowerCase().contains("win")) {
+            post = "jsf-app/";
+            protocol = "http://";
+            domain = "localhost:8080";
+        } else {
+            post = "";
+            protocol = "https://";
+            if (System.getProperty("test") != null && System.getProperty("test").equals("yes")) {
+                domain = "test.nocodefunctions.com";
             } else {
-                interm = "s://";
-                post = "";
+                domain = "nocodefunctions.com";
             }
-            String result = url.getProtocol() + interm + url.getAuthority() + "/" + post;
-//            System.out.println("return url is: " + result);
-            return result;
-        } catch (MalformedURLException ex) {
-            Logger.getLogger(GoogleSheetsImportBean.class.getName()).log(Level.SEVERE, null, ex);
         }
-        return "error in url retrieval";
+        String result = protocol + domain + "/" + post;
+        return result;
     }
 
     public static boolean isLocal() {
-        try {
-            HttpServletRequest request = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
-            String string = request.getRequestURL().toString();
-            URL url = new URL(string);
-            return url.getAuthority().contains("localhost");
-        } catch (MalformedURLException ex) {
-            Exceptions.printStackTrace(ex);
-            return false;
-        }
+        return System.getProperty("test") == null || System.getProperty("test").isBlank();
     }
+
     public static boolean isTest() {
-        try {
-            HttpServletRequest request = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
-            String string = request.getRequestURL().toString();
-            URL url = new URL(string);
-            return url.getAuthority().contains("test");
-        } catch (MalformedURLException ex) {
-            Exceptions.printStackTrace(ex);
-            return false;
-        }
+        return System.getProperty("test") != null && System.getProperty("test").equals("yes");
     }
 }

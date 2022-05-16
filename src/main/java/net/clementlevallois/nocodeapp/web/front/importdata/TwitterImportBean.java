@@ -5,45 +5,39 @@
  */
 package net.clementlevallois.nocodeapp.web.front.importdata;
 
-import com.twitter.clientlib.TwitterCredentialsOAuth2;
+import com.github.scribejava.core.model.OAuth2AccessToken;
 import com.twitter.clientlib.model.Tweet;
 import com.twitter.clientlib.model.TweetSearchResponse;
-import io.github.redouane59.twitter.TwitterClient;
-import io.github.redouane59.twitter.signature.TwitterCredentials;
 import io.mikael.urlbuilder.UrlBuilder;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.Serializable;
+import java.io.StringReader;
 import java.net.URI;
-import java.net.URLEncoder;
+import java.net.URL;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
 import javax.json.bind.Jsonb;
 import javax.json.bind.JsonbBuilder;
+import javax.json.stream.JsonParser;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SingletonBean;
 import net.clementlevallois.nocodeapp.web.front.http.RemoteLocal;
 import net.clementlevallois.nocodeapp.web.front.logview.NotificationService;
 import org.openide.util.Exceptions;
-import twitter4j.OEmbed;
-import twitter4j.OEmbedRequest;
-import twitter4j.Twitter;
-import twitter4j.TwitterException;
-import twitter4j.auth.RequestToken;
 
 /**
  *
@@ -53,15 +47,7 @@ import twitter4j.auth.RequestToken;
 @SessionScoped
 public class TwitterImportBean implements Serializable {
 
-    private String oauth_token;
-    private String oauth_verifier;
-    private static final String CREDENTIALS_FILE_PATH = "twitter.json";
-    private RequestToken requestToken;
-    io.github.redouane59.twitter.dto.others.RequestToken requestTokenRedouane;
-    private String tokenUser;
-    private String secretUser;
-    private Twitter twitter;
-    private TwitterClient twitterClient;
+    private String code = "";
     private String query;
     private String languageString;
     private String sinceString;
@@ -84,31 +70,22 @@ public class TwitterImportBean implements Serializable {
     SessionBean sessionBean;
 
     public TwitterImportBean() {
+
     }
 
-    public void initTwitter(){
-        TwitterCredentialsOAuth2 credentials = new TwitterCredentialsOAuth2(System.getenv("TWITTER_OAUTH2_CLIENT_ID"),
-        System.getenv("TWITTER_OAUTH2_CLIENT_SECRET"),
-        System.getenv("TWITTER_OAUTH2_ACCESS_TOKEN"),
-        System.getenv("TWITTER_OAUTH2_REFRESH_TOKEN"));
+    public void initTwitter() {
     }
+
     public void onloadingRedirectPage() {
         try {
-            //        try {
 
-            //this is because on the server (*not locally*), the oauth_verifier query parameter GETS JOINED WITH THE NEXT ONE!!
-//            oauth_verifier = oauth_verifier.split("\\?")[0];
-//            twitter.getOAuthAccessToken(requestToken, oauth_verifier);
-//            System.out.println("logged in user with : " + twitter.getOAuthAccessToken().getScreenName());
-            twitterClient.getOAuth1AccessToken(requestTokenRedouane, oauth_verifier);
-            twitterClient.getUserFromUserName("seinecle");
-//            System.out.println(userFromUserName.getDescription());
+            //this is because on the server (*not locally*), the code url param GETS JOINED WITH THE NEXT ONE!!
+            code = code.split("\\?")[0];
+            OAuth2AccessToken accessToken = singletonBean.getOAuth2AccessToken(code);
+            sessionBean.setTwitterOAuth2AccessToken(accessToken);
             ExternalContext externalContext = FacesContext.getCurrentInstance().getExternalContext();
-            externalContext.redirect(RemoteLocal.getDomain() + "import_your_data_bulk_text.html");
+            externalContext.redirect(RemoteLocal.getDomain() + "import_your_data_twitter.html");
 
-//        } catch (IOException | TwitterException ex) {
-//            Logger.getLogger(TwitterImportBean.class.getName()).log(Level.SEVERE, null, ex);
-//        }
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -116,49 +93,20 @@ public class TwitterImportBean implements Serializable {
     }
 
     public String goToConnectURL() throws IOException {
-        try {
-            twitter = SingletonBean.getTf().getInstance();
-            twitter.setOAuthAccessToken(null);
-            String callbackURL = RemoteLocal.getDomain() + "twitter_auth.html";
-            requestToken = twitter.getOAuthRequestToken(callbackURL);
-
-            InputStream in = TwitterImportBean.class.getResourceAsStream(CREDENTIALS_FILE_PATH);
-            TwitterCredentials tc = TwitterClient.OBJECT_MAPPER.readValue(in, TwitterCredentials.class);
-            twitterClient = new TwitterClient(tc);
-            String callBackURL = URLEncoder.encode(RemoteLocal.getDomain() + "twitter_auth.html", StandardCharsets.UTF_8);
-            requestTokenRedouane = twitterClient.getOauth1Token(callBackURL);
-            ExternalContext externalContext = FacesContext.getCurrentInstance().getExternalContext();
-            String authenticationURL = requestToken.getAuthorizationURL();
-            System.out.println(authenticationURL);
-            externalContext.redirect(authenticationURL);
-
-        } catch (TwitterException ex) {
-            Logger.getLogger(TwitterImportBean.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        ExternalContext externalContext = FacesContext.getCurrentInstance().getExternalContext();
+        externalContext.redirect(singletonBean.getTwitterAuthorizationUrl());
         return "error.xhtml";
     }
 
-    public String getOauth_token() {
-        return oauth_token;
-    }
-
-    public void setOauth_token(String oauth_token) {
-        this.oauth_token = oauth_token;
-    }
-
-    public String getOauth_verifier() {
-        return oauth_verifier;
-    }
-
-    public void setOauth_verifier(String oauth_verifier) {
-        this.oauth_verifier = oauth_verifier;
-    }
-
     public String searchTweets() {
+        if (sessionBean.getTwitterOAuth2AccessToken() == null) {
+            service.create(sessionBean.getLocaleBundle().getString("back.import.twitter_credentials_not found"));
+            return "";
+        }
         try {
-
             this.progress = 3;
             service.create(sessionBean.getLocaleBundle().getString("back.import.searching_tweets"));
+            service.create(sessionBean.getLocaleBundle().getString("general.message.wait_long_operation"));
 
             Runnable incrementProgress = () -> {
                 progress = progress + 1;
@@ -166,13 +114,38 @@ public class TwitterImportBean implements Serializable {
             ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
             executor.scheduleAtFixedRate(incrementProgress, 0, 250, TimeUnit.MILLISECONDS);
 
-            URI uri = UrlBuilder.empty().withScheme("http").withPort(7002).withHost("localhost").withPath("api/tweets/bytes").addParameter("query", query).addParameter("days_start", "7").addParameter("days_end", "0").toUri();
-            System.out.println("uri: " + uri);
+            URI uri = UrlBuilder
+                    .empty()
+                    .withScheme("http")
+                    .withPort(7002)
+                    .withHost("localhost")
+                    .withPath("api/tweets/json")
+                    .addParameter("accessToken", sessionBean.getTwitterOAuth2AccessToken().getAccessToken())
+                    .addParameter("refreshToken", sessionBean.getTwitterOAuth2AccessToken().getRefreshToken())
+                    .addParameter("query", query)
+                    .addParameter("days_start", "7")
+                    .addParameter("days_end", "0")
+                    .toUri();
+//            System.out.println("uri: " + uri);
             HttpClient client = HttpClient.newHttpClient();
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(uri)
                     .build();
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() != 200) {
+                System.out.println("error! "+ response.body());
+                if (response.statusCode() == 429) {
+                    service.create(sessionBean.getLocaleBundle().getString("back.import.twitter.too_many_requests"));
+                    JsonReader jr = Json.createReader(new StringReader(response.body()));
+                    JsonObject read = jr.readObject();
+                    service.create("wait " + read.getString("time to wait") + " seconds.");
+                    service.create(sessionBean.getLocaleBundle().getString("general.message.see_more_details") + " https://t.co/uWmGyb9rf0");
+                } else {
+                    service.create(sessionBean.getLocaleBundle().getString("back.import.error_fetching_tweets"));
+                    service.create("error fetching tweets: " + response.body());
+                }
+                return "";
+            }
             String body = response.body();
             Jsonb jsonb = JsonbBuilder.create();
             TweetSearchResponse tweetSearchResponse = jsonb.fromJson(body, TweetSearchResponse.class);
@@ -186,14 +159,29 @@ public class TwitterImportBean implements Serializable {
             int i = 0;
 
             for (Tweet tweet : tweetSearchResponse.getData()) {
-                String url = "";
-                OEmbedRequest oEmbedRequest = new OEmbedRequest(Long.valueOf(tweet.getId()), url);
-                oEmbedRequest.setMaxWidth(550);
-                oEmbedRequest.setOmitScript(true);
-                twitter = singletonBean.getTf().getInstance();
-
-                OEmbed embed = twitter.getOEmbed(oEmbedRequest);
-                CellRecord cellRecord = new CellRecord(i++, 0, tweet.getText(), embed.getHtml());
+                String url = "https://publish.twitter.com/oembed?url=https://twitter.com/" + tweet.getAuthorId() + "/status/" + tweet.getId();
+                String html = "";
+                try ( JsonParser jsonParser = Json.createParser(new URL(url).openStream())) {
+                    String keyName = "";
+                    boolean found = false;
+                    while (jsonParser.hasNext() & !found) {
+                        JsonParser.Event event = jsonParser.next();
+                        switch (event) {
+                            case KEY_NAME:
+                                keyName = jsonParser.getString();
+                                break;
+                            case VALUE_STRING:
+                                if (keyName.equals("html")) {
+                                    html = jsonParser.getString();
+                                    found = true;
+                                }
+                                break;
+                            default:
+                            // No need..
+                        }
+                    }
+                }
+                CellRecord cellRecord = new CellRecord(i++, 0, tweet.getText(), html);
                 sheetModel.addCellRecord(cellRecord);
             }
 
@@ -202,8 +190,10 @@ public class TwitterImportBean implements Serializable {
             sheets.add(sheetModel);
             executor.shutdown();
 
-        } catch (IOException | InterruptedException | TwitterException ex) {
+        } catch (IOException | InterruptedException ex) {
+            service.create(sessionBean.getLocaleBundle().getString("back.import.error_fetching_tweets"));
             Exceptions.printStackTrace(ex);
+            return "";
 
         }
         progress = 100;
@@ -211,7 +201,7 @@ public class TwitterImportBean implements Serializable {
             service.create(sessionBean.getLocaleBundle().getString("back.import.finished_searching_tweets") + sheets.get(0).getCellRecords().size() + sessionBean.getLocaleBundle().getString("back.import.number_tweets_found"));
             dataInputBean.setDataInSheets(sheets);
         }
-        
+
         return "";
     }
 
@@ -274,6 +264,14 @@ public class TwitterImportBean implements Serializable {
 
     public void setProgress(Integer progress) {
         this.progress = progress;
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
     }
 
 }

@@ -78,39 +78,55 @@
             <p:panel>
                 <div class="grid" >
                     <div class="col-9">
-                        <h:form id="search">
-                            <h:graphicImage name="images/round_1_orange.png" width="20" height="20" style="vertical-align: bottom;"/>
-                            <p:spacer width="5"/>
-                            <h5 class="p-mt-0">Type your query</h5>
-                            <p:inputText value="#{twitterImportBean.query}">
-                                <p:ajax/>
-                            </p:inputText>
-                            <br/>
-                            <h5 class="p-mt-0">Select the type of search</h5>
-                            <p:selectOneRadio id="type_of_search" value="#{twitterImportBean.searchType}" unselectable="true">
-                                <f:selectItem itemLabel="recent search (last 7 days)" itemValue="RECENT"/>
-                                <f:selectItem itemLabel="full historical search" itemValue="FULL"/>
-                            </p:selectOneRadio>
-                            <br/>
-                            <br/>
-                            <p:commandButton
-                                id="searchBtn"
-                                process="@this"
-                                value="#{text['import_data.twitter.launch_the_search']}"
-                                action="#{twitterImportBean.searchTweets()}"
-                                update="dataTable"/>
-                            <p:spacer height="5" width="5"/>
-                            <p:commandButton
-                                value="#{text['general.verbs.compute']}"
-                                action="#{dataImportBean.gotToFunctionWithDataInBulk}"
-                                onclick="PF('pbAjaxLong').start();PF('gazeLaunchButton').disable()"
-                                styleClass="btn btn-primary"
-                                rendered="#{not empty twitterImportBean.sheets and sessionBean.function != 'labelling'}"/>
+                        <h:form id="twitter_ops">
 
+                            <p:outputPanel  rendered="#{sessionBean.twitterOAuth2AccessToken == null}">
+                                <h:graphicImage name="images/round_1_orange.png" width="20" height="20" style="vertical-align: bottom;"/>
+                                <p:spacer width="5"/>
+                                <p:commandButton
+                                    id="connectBtn"
+                                    process="@this"
+                                    value="#{text['import_data.twitter.connect']}"
+                                    action="#{twitterImportBean.goToConnectURL()}"
+                                    />
+                            </p:outputPanel>
+                                    
+                            <p:outputPanel  rendered="#{empty twitterImportBean.sheets and sessionBean.twitterOAuth2AccessToken != null}">
+                                <h:graphicImage name="images/round_2_orange.png" width="20" height="20" style="vertical-align: bottom;"/>
+                                <p:spacer width="5"/>
+                                <h5 class="p-mt-0">#{text['general.message.type_your_query']}</h5>
+                                <p:inputText value="#{twitterImportBean.query}">
+                                    <p:ajax/>
+                                </p:inputText>
+                                <br/>
+                                <br/>
+<!--                                <h5 class="p-mt-0">Select the type of search</h5>
+                                <p:selectOneRadio id="type_of_search" value="#{twitterImportBean.searchType}" unselectable="true">
+                                    <f:selectItem itemLabel="recent search (last 7 days)" itemValue="RECENT"/>
+                                    <f:selectItem itemLabel="full historical search" itemValue="FULL"/>
+                                </p:selectOneRadio>
+                                <br/>
+                                <br/>-->
+                                <p:commandButton
+                                    id="searchBtn"
+                                    process="@this"
+                                    value="#{text['import_data.twitter.launch_the_search']}"
+                                    action="#{twitterImportBean.searchTweets()}"
+                                    update="dataTable launch"/>
+                            </p:outputPanel>
+                            
+                            <p:outputPanel id="launch">
+                                <p:commandButton
+                                    value="#{text['general.verbs.compute']}"
+                                    action="#{dataImportBean.gotToFunctionWithDataInBulk}"
+                                    styleClass="btn btn-primary"
+                                    rendered="#{not empty twitterImportBean.sheets and sessionBean.function != 'labelling'}"
+                                    />
+                            </p:outputPanel>
                         </h:form>
                         <p:outputPanel id="dataTable">
-                            <p:outputPanel  rendered="#{not empty twitterImportBean.sheets}">
-                                <h3>#{text['import_data.general.preview_your_data']}</h3>
+                            <p:outputPanel rendered="#{not empty twitterImportBean.sheets}">
+                                <h3>#{text['import_data.general.preview_your_tweets']}</h3>
                                 <p:tabView value="#{twitterImportBean.sheets}" var="dataInSheet">
                                     <p:tab title="#{dataInSheet.name}">
                                         <div class="card">
