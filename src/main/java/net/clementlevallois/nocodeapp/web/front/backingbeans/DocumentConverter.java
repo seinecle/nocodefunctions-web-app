@@ -36,10 +36,10 @@ public class DocumentConverter implements Converter<Document> {
         HttpServletRequest origRequest = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
         String requestURI = origRequest.getRequestURI();
         if (requestURI.contains("umigon")) {
-            if (document.getSentiment().equals(Category._11)) {
+            if (document.getSentiment().equals(new Category("11"))) {
                 return bundle.getString("general.nouns.sentiment_positive");
             }
-            if (document.getSentiment().equals(Category._12)) {
+            if (document.getSentiment().equals(new Category("12"))) {
                 return bundle.getString("general.nouns.sentiment_negative");
             } else if (document.getSentiment().equals(Category._10)) {
                 return bundle.getString("general.nouns.sentiment_neutral");

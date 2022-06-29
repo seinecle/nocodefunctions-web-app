@@ -16,6 +16,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
+import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.SessionScoped;
@@ -93,7 +94,11 @@ public class ActiveLocale implements Serializable {
                 available.add(l);
             }
         }
-        Collections.sort(available, new ActiveLocale.LocaleComparator());
+        List<Locale> sortedList = available.stream()
+			.sorted(new ActiveLocale.LocaleComparator())
+			.collect(Collectors.toList());
+        available = new ArrayList();
+        available.addAll(sortedList);
         if (!requestLocale.getLanguage().equals("en")) {
             available.add(Locale.ENGLISH);
         }

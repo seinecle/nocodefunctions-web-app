@@ -508,6 +508,7 @@ public class DataImportBean implements Serializable {
             sheets.add(sheetModel);
             executor.shutdown();
             this.progress = 100;
+            parser.stopParsing();
         } catch (IOException ex) {
             Logger.getLogger(DataImportBean.class.getName()).log(Level.SEVERE, null, ex);
         }

@@ -84,7 +84,7 @@ public class SingletonBean {
             } else {
                 redisPort = System.getProperty("redis.port");
             }
-            System.out.println("redis port is: " + redisPort);
+//            System.out.println("redis port is: " + redisPort);
 
             initRedis(redisPort);
         } catch (UnknownHostException ex) {

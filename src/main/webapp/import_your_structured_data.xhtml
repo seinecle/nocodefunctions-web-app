@@ -83,46 +83,9 @@
                             </p:overlayPanel>
                             <p:outputLabel rendered="#{dataImportBean.file ne null}" escape="false">#{text['general.message.file_loaded']} <strong style="color:#FF6347">#{dataImportBean.file.fileName}</strong>. #{text['import_data.general.click_below_to_read_it']}</p:outputLabel>
                         </h:form>
-
-<!--                        SEARCH TWITTER 
-                        <p:outputPanel id="twitterSearchPanel" rendered="#{dataImportBean.isTwitter}">
-                            <h:form>
-                                <div class="p-field">
-                                    <p:inputText styleClass="p-d-block" placeholder="example: Four more years by Barack Obama" value="#{twitterImportBean.queryString}" size="60"/>
-                                    <small class="p-d-block">write a query here</small>
-                                </div>
-                                <div class="p-field">
-                                    <p:inputText styleClass="p-d-block" placeholder="EN" value="#{twitterImportBean.languageString}" size="60"/>
-                                    <small class="p-d-block">language of tweets: EN or FR or leave empty</small>
-                                </div>
-                                <div class="p-field">
-                                    <p:inputText styleClass="p-d-block" placeholder="2012-11-07" value="#{twitterImportBean.sinceString}" size="60"/>
-                                    <small class="p-d-block">beginning date of the search, must be format YYYY-MM-DD or leave empty</small>
-                                </div>
-                                <div class="p-field">
-                                    <p:inputText styleClass="p-d-block" placeholder="2012-31-12" value="#{twitterImportBean.untilString}" size="60"/>
-                                    <small class="p-d-block">end date of the search, must be format YYYY-MM-DD or leave empty</small>
-                                </div>
-                                <br/>
-                                <br/>
-                                <p:commandButton value="Search tweets"
-                                                 widgetVar="searchTweetsButton"
-                                                 action="#{dataImportBean.searchTweets}"
-                                                 onclick="PF('twitterProgressBar').start()"
-                                                 styleClass="btn btn-primary"
-                                                 update=":formMessages:messages :notifications :tab"
-                                                 oncomplete="twttr.widgets.load();"/>                        
-                                PROGRESS BAR FOR TWITTER SEARCH OPERATION
-                                PROGRESS BAR FOR READ OPERATION
-                                <p:progressBar id="pb" widgetVar="twitterProgressBar" ajax="true" value="#{dataImportBean.progress}" rendered="#{dataImportBean.renderProgressBar}"
-                                               labelTemplate="{value}%" styleClass="p-mt-3" global="false" interval="500">
-                                    <p:ajax event="complete" update=":formMessages:messages :tab"/>
-                                </p:progressBar>
-                            </h:form>
-                        </p:outputPanel>-->
                         <br/>
                         <!--READ FILE OPERATION-->
-                        <p:outputPanel id="formRead" rendered="#{not dataImportBean.isTwitter}">
+                        <p:outputPanel id="formRead">
                             <h:form enctype="multipart/form-data" >
                                 <!--READ FILE BUTTON-->
                                 <h:graphicImage name="images/round_2_orange.png" width="20" height="20" style="vertical-align: bottom;"/>
