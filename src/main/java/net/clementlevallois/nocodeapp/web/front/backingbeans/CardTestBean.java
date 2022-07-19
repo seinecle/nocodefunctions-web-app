@@ -25,6 +25,9 @@ import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import net.clementlevallois.nocodeapp.web.front.functions.UmigonBean;
 import net.clementlevallois.nocodeapp.web.front.http.SendReport;
+import net.clementlevallois.umigon.explain.controller.UmigonExplain;
+import net.clementlevallois.umigon.explain.parameters.HtmlSettings;
+import net.clementlevallois.umigon.model.Category.CategoryEnum;
 import net.clementlevallois.umigon.model.Document;
 
 /**
@@ -37,8 +40,10 @@ public class CardTestBean implements Serializable {
 
     private String umigonTestInputFR = "nocode c'est tendance :)";
     private String umigonResultFR = "";
+    private String umigonResultFRExplanation = "";
     private String umigonTestInputEN = "nocode is the new thing :)";
     private String umigonResultEN = "";
+    private String umigonResultENExplanation = "";
     private Boolean renderSignalEN = false;
     private Boolean renderSignalFR = false;
     private Boolean reportResultENRendered = false;
@@ -55,9 +60,12 @@ public class CardTestBean implements Serializable {
 
     @Inject
     SessionBean sessionBean;
-    
+
     @Inject
     SingletonBean singletonBean;
+
+    @Inject
+    ActiveLocale activeLocale;
 
     public CardTestBean() {
         if (sessionBean == null) {
@@ -67,7 +75,7 @@ public class CardTestBean implements Serializable {
             singletonBean = new SingletonBean();
         }
         Properties privateProperties = singletonBean.getPrivateProperties();
-        baseURI =  "http://localhost:" + privateProperties.getProperty("nocode_api_port") + "/api/";
+        baseURI = "http://localhost:" + privateProperties.getProperty("nocode_api_port") + "/api/";
     }
 
     public String getUmigonTestInputFR() {
@@ -83,7 +91,16 @@ public class CardTestBean implements Serializable {
         send.initAnalytics("test: umigon fr", sessionBean.getUserAgent());
         send.start();
 
-        URI uri = new URI(baseURI + "sentimentForAText/bytes/fr?text=" + URLEncoder.encode(umigonTestInputFR, StandardCharsets.UTF_8.toString()));
+        StringBuilder sb = new StringBuilder();
+        sb.append("http://localhost:7002/api/sentimentForAText");
+        sb.append("?text-lang=").append("fr");
+        sb.append("&text=").append(URLEncoder.encode(umigonTestInputEN, StandardCharsets.UTF_8.toString()));
+        sb.append("&explanation=on");
+        sb.append("&output-format=bytes");
+        sb.append("&explanation-lang=").append(activeLocale.getLanguageTag());
+        String uriAsString = sb.toString();
+
+        URI uri = new URI(uriAsString);
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(uri)
@@ -95,13 +112,20 @@ public class CardTestBean implements Serializable {
         try (
                  ByteArrayInputStream bis = new ByteArrayInputStream(body);  ObjectInputStream ois = new ObjectInputStream(bis)) {
             Document doc = (Document) ois.readObject();
-            if (doc.isIsNegative()) {
-                umigonResultFR = "😔 " + sessionBean.getLocaleBundle().getString("umigon.general.negativesentiment");
-            } else if (doc.isIsPositive()) {
-                umigonResultFR = "🤗 " + sessionBean.getLocaleBundle().getString("umigon.general.positivesentiment");
-            } else {
-                umigonResultFR = "😐 " + sessionBean.getLocaleBundle().getString("umigon.general.neutralsentiment");
+            switch (doc.getCategorizationResult()) {
+                case _12:
+                    umigonResultFR = "😔 " + sessionBean.getLocaleBundle().getString("umigon.general.negativesentiment");
+                    break;
+                case _11:
+                    umigonResultFR = "🤗 " + sessionBean.getLocaleBundle().getString("umigon.general.positivesentiment");
+                    break;
+                default:
+                    umigonResultFR = "😐 " + sessionBean.getLocaleBundle().getString("umigon.general.neutralsentiment");
+                    break;
             }
+            HtmlSettings htmlSettings = new HtmlSettings();
+            umigonResultFRExplanation = UmigonExplain.getExplanationOfHeuristicResultsHtml(doc, activeLocale.getLanguageTag(), htmlSettings);
+
             renderSignalFR = true;
             reportResultFRRendered = false;
         } catch (IOException | ClassNotFoundException ex) {
@@ -126,7 +150,7 @@ public class CardTestBean implements Serializable {
         try (
                  ByteArrayInputStream bis = new ByteArrayInputStream(body);  ObjectInputStream ois = new ObjectInputStream(bis)) {
             Document doc = (Document) ois.readObject();
-            if (doc.isPromoted()) {
+            if (doc.getCategorizationResult().toString().startsWith("_061")) {
                 organicResultFR = "📢 " + sessionBean.getLocaleBundle().getString("organic.general.soundspromoted");
             } else {
                 organicResultFR = "🌿 " + sessionBean.getLocaleBundle().getString("organic.general.soundsorganic");
@@ -143,7 +167,16 @@ public class CardTestBean implements Serializable {
         send.initAnalytics("test: umigon en", sessionBean.getUserAgent());
         send.start();
 
-        URI uri = new URI(baseURI + "sentimentForAText/bytes/en?text=" + URLEncoder.encode(umigonTestInputEN, StandardCharsets.UTF_8.toString()));
+        StringBuilder sb = new StringBuilder();
+        sb.append("http://localhost:7002/api/sentimentForAText");
+        sb.append("?text-lang=").append("en");
+        sb.append("&text=").append(URLEncoder.encode(umigonTestInputEN, StandardCharsets.UTF_8.toString()));
+        sb.append("&explanation=on");
+        sb.append("&output-format=bytes");
+        sb.append("&explanation-lang=").append(activeLocale.getLanguageTag());
+        String uriAsString = sb.toString();
+
+        URI uri = new URI(uriAsString);
 
         HttpRequest request = HttpRequest.newBuilder().uri(uri).build();
         HttpClient client = HttpClient.newHttpClient();
@@ -153,18 +186,24 @@ public class CardTestBean implements Serializable {
         try (
                  ByteArrayInputStream bis = new ByteArrayInputStream(body);  ObjectInputStream ois = new ObjectInputStream(bis)) {
             Document doc = (Document) ois.readObject();
-            if (doc.isIsNegative()) {
-                umigonResultEN = "😔 " + sessionBean.getLocaleBundle().getString("umigon.general.negativesentiment");
-            } else if (doc.isIsPositive()) {
-                umigonResultEN = "🤗 " + sessionBean.getLocaleBundle().getString("umigon.general.positivesentiment");
-            } else {
-                umigonResultEN = "😐 " + sessionBean.getLocaleBundle().getString("umigon.general.neutralsentiment");
+            switch (doc.getCategorizationResult()) {
+                case _12:
+                    umigonResultEN = "😔 " + sessionBean.getLocaleBundle().getString("umigon.general.negativesentiment");
+                    break;
+                case _11:
+                    umigonResultEN = "🤗 " + sessionBean.getLocaleBundle().getString("umigon.general.positivesentiment");
+                    break;
+                default:
+                    umigonResultEN = "😐 " + sessionBean.getLocaleBundle().getString("umigon.general.neutralsentiment");
+                    break;
             }
+            HtmlSettings htmlSettings = new HtmlSettings();
+            umigonResultENExplanation = UmigonExplain.getExplanationOfHeuristicResultsHtml(doc, activeLocale.getLanguageTag(), htmlSettings);
+
             renderSignalEN = true;
             reportResultENRendered = false;
         } catch (Exception ex) {
-            Logger.getLogger(CardTestBean.class
-                    .getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(CardTestBean.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
@@ -185,7 +224,7 @@ public class CardTestBean implements Serializable {
         try (
                  ByteArrayInputStream bis = new ByteArrayInputStream(body);  ObjectInputStream ois = new ObjectInputStream(bis)) {
             Document doc = (Document) ois.readObject();
-            if (doc.isPromoted()) {
+            if (doc.getCategorizationResult().toString().startsWith("_061")) {
                 organicResultEN = "📢 " + sessionBean.getLocaleBundle().getString("organic.general.soundspromoted");
             } else {
                 organicResultEN = "🌿 " + sessionBean.getLocaleBundle().getString("organic.general.soundsorganic");
@@ -353,6 +392,22 @@ public class CardTestBean implements Serializable {
 
     public void setReportResultFROrganicRendered(Boolean reportResultFROrganicRendered) {
         this.reportResultFROrganicRendered = reportResultFROrganicRendered;
+    }
+
+    public String getUmigonResultFRExplanation() {
+        return umigonResultFRExplanation;
+    }
+
+    public void setUmigonResultFRExplanation(String umigonResultFRExplanation) {
+        this.umigonResultFRExplanation = umigonResultFRExplanation;
+    }
+
+    public String getUmigonResultENExplanation() {
+        return umigonResultENExplanation;
+    }
+
+    public void setUmigonResultENExplanation(String umigonResultENExplanation) {
+        this.umigonResultENExplanation = umigonResultENExplanation;
     }
 
 }

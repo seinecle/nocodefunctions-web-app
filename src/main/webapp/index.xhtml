@@ -102,7 +102,7 @@
                     </div>
                     <p:spacer width="10"/>
                     <div class="flex justify-content-center justify-content-center buttonIndexPage">
-                       <p:button value="#{text['index.button.highlighter']}" outcome="highlighter/highlight_word_in_context.html"/>
+                        <p:button value="#{text['index.button.highlighter']}" outcome="highlighter/highlight_word_in_context.html"/>
                     </div>
                     <p:spacer width="10"/>
                     <div class="flex justify-content-center justify-content-center buttonIndexPage">
@@ -151,6 +151,8 @@
                             <p:outputPanel id="resultFR">
                                 <h:outputText value="#{cardTestBean.umigonResultFR}" style="width:40px;"/>
                                 <p:spacer width="15"/>
+                                <p:commandButton value="🤔" icon="pi pi-question-circle"  update="formInfo:info" oncomplete="PF('detailsWidget').show()"/>
+                                <p:spacer width="15"/>
                                 <p:commandLink style="text-align: center;font-size: 80%" value="#{text['general.verbs.signal_error']}"
                                                action="#{cardTestBean.signalUmigonFR}" update="@this resultFR"
                                                rendered="#{cardTestBean.renderSignalFR}">
@@ -160,6 +162,11 @@
                                 <p:outputLabel style="font-size: 80%" value="#{text['general.message.reportsent']}" rendered ="#{cardTestBean.reportResultFRRendered}" />
                                 <p:graphicImage name="images/check.png" width="24px" rendered ="#{cardTestBean.reportResultFRRendered}"   alt="check mark"/>
                             </p:outputPanel>
+                        </h:form>
+                        <h:form id="formInfo">
+                            <p:dialog id="info" header="explanations" widgetVar="detailsWidget" minHeight="40" width="350" showEffect="fade">
+                                <h:outputText value="#{cardTestBean.umigonResultFRExplanation}" escape="false"/>
+                            </p:dialog>
                         </h:form>
                     </p:card>
                 </div>

@@ -19,7 +19,6 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -37,15 +36,10 @@ import net.clementlevallois.nocodeapp.web.front.backingbeans.SingletonGoogle;
 import net.clementlevallois.nocodeapp.web.front.http.SendReport;
 import net.clementlevallois.nocodeapp.web.front.importdata.DataFormatConverter;
 import net.clementlevallois.nocodeapp.web.front.io.ExcelSaver;
-import net.clementlevallois.nocodeapp.web.front.io.SlidesOperations;
 import net.clementlevallois.nocodeapp.web.front.logview.NotificationService;
-import net.clementlevallois.umigon.model.Categories;
 import net.clementlevallois.umigon.model.Document;
-import net.clementlevallois.utils.Clock;
-import net.clementlevallois.utils.Multiset;
 import org.omnifaces.util.Faces;
 import org.openide.util.Exceptions;
-import org.primefaces.PrimeFaces;
 import org.primefaces.model.StreamedContent;
 
 /**
@@ -109,103 +103,6 @@ public class OrganicBean implements Serializable {
         sessionId = Faces.getSessionId();
     }
 
-    public String getReport() {
-        try {
-            Iterator<Document> iterator = results.iterator();
-            int percentPromoted = 0;
-            int percentOrganic = 0;
-            int nbPromoted = 0;
-            int nbOrganic = 0;
-            int totalDocs = results.size();
-            Multiset<String> termsInOrganicDocs = new Multiset();
-            Multiset<String> termsInPromotedDocs = new Multiset();
-            Multiset<String> emojisInOrganicDocs = new Multiset();
-            Multiset<String> emojisInPromotedDocs = new Multiset();
-            Multiset<String> hashtagsInOrganicDocs = new Multiset();
-            Multiset<String> hashtagsInPromotedDocs = new Multiset();
-
-            while (iterator.hasNext()) {
-                Document doc = iterator.next();
-                if (doc.isPromoted()) {
-                    nbPromoted++;
-                    Set<String> diff = new HashSet();
-                    // TODO
-                    emojisInPromotedDocs.addAllFromListOrSet(doc.getAllEmojis());
-                    hashtagsInPromotedDocs.addAllFromListOrSet(doc.getHashtags());
-                } else if (doc.isIsPositive()) {
-                    nbOrganic++;
-                    emojisInOrganicDocs.addAllFromListOrSet(doc.getAllEmojis());
-                    hashtagsInOrganicDocs.addAllFromListOrSet(doc.getHashtags());
-
-                }
-            }
-            percentPromoted = (int) Math.round((float) nbPromoted / totalDocs * 100.0);
-            percentOrganic = (int) Math.round((float) nbOrganic / totalDocs * 100.0);
-
-//            System.out.println("terms in negative docs:");
-//            System.out.println("terms in positive docs:");
-//            termsInPositiveDocs.printTopRankedElements(10);
-//            termsInNegativeDocs.printTopRankedElements(10);
-            List<Map.Entry<String, Integer>> topTermsInPromotedDocs = termsInPromotedDocs.sortDesckeepMostfrequent(termsInPromotedDocs, 10);
-            List<Map.Entry<String, Integer>> topTermsInOrganicDocs = termsInOrganicDocs.sortDesckeepMostfrequent(termsInOrganicDocs, 10);
-            List<Map.Entry<String, Integer>> topEmojisInPromotedDocs = emojisInPromotedDocs.sortDesckeepMostfrequent(emojisInPromotedDocs, 10);
-            List<Map.Entry<String, Integer>> topEmojisInOrganicDocs = emojisInOrganicDocs.sortDesckeepMostfrequent(emojisInOrganicDocs, 10);
-            List<Map.Entry<String, Integer>> topHashtagsInPromotedDocs = hashtagsInPromotedDocs.sortDesckeepMostfrequent(hashtagsInPromotedDocs, 10);
-            List<Map.Entry<String, Integer>> topHashtagsInOrganicDocs = hashtagsInOrganicDocs.sortDesckeepMostfrequent(hashtagsInOrganicDocs, 10);
-
-            int rows = 11;
-            int columns = 4;
-
-            String prezId = gDrive.createNewSlidePresentationWithOnePage(Faces.getSessionId(), SingletonGoogle.TEMP_FOLDER_UMIGON_REPORTS);
-            SlidesOperations slidesOps = new SlidesOperations();
-            slidesOps.init(gDrive.getGoogleSlides());
-
-            //customize title page
-            slidesOps.customizeTitlePage(prezId);
-
-            // add slide with key metrics
-            slidesOps.createSlideWithKeyMetricsOrganic("key_metrics", prezId, nbPromoted, nbOrganic, percentPromoted, percentOrganic, totalDocs, selectedLanguage);
-
-            // insert a table of top ten freq words on the right of the key results
-            slidesOps.insertTable("tableFreqTerms", "key_metrics", prezId, rows, columns);
-            List<String> freqTermsheaders = List.of("Most frequent terms in organic texts", "count", "Most frequent terms in promoted texts", "count");
-            slidesOps.addHeaders("tableFreqTerms", prezId, freqTermsheaders);
-            slidesOps.insertContentInTable(prezId, "tableFreqTerms", 0, topTermsInOrganicDocs);
-            slidesOps.insertContentInTable(prezId, "tableFreqTerms", 2, topTermsInPromotedDocs);
-
-            // add slide and content with top emojis
-            slidesOps.createNewSlide("slideFreqEmojis", prezId, "Top emojis");
-            slidesOps.insertTable("tableFreqEmojis", "slideFreqEmojis", prezId, rows, columns);
-            List<String> freqEmojisheaders = List.of("Most frequent emojis in organic texts", "count", "Most frequent emojis in promoted texts", "count");
-            slidesOps.addHeaders("tableFreqEmojis", prezId, freqEmojisheaders);
-            slidesOps.insertContentInTable(prezId, "tableFreqEmojis", 0, topEmojisInOrganicDocs);
-            slidesOps.insertContentInTable(prezId, "tableFreqEmojis", 2, topEmojisInPromotedDocs);
-
-            // add slide and content with top hashtags
-            slidesOps.createNewSlide("slideFreqHashtags", prezId, "Top hashtags");
-            slidesOps.insertTable("tableFreqHashtags", "slideFreqHashtags", prezId, rows, columns);
-            List<String> freqHashtagsheaders = List.of("Most frequent hashtags in positive texts", "count", "Most frequent hashtags in promoted texts", "count");
-            slidesOps.addHeaders("tableFreqHashtags", prezId, freqHashtagsheaders);
-            slidesOps.insertContentInTable(prezId, "tableFreqHashtags", 0, topHashtagsInOrganicDocs);
-            slidesOps.insertContentInTable(prezId, "tableFreqHashtags", 2, topHashtagsInPromotedDocs);
-
-            // add slide with notes on methodo
-            slidesOps.createNewSlide("notes_methodo", prezId, "Notes on methodology");
-            slidesOps.insertTextCommentSlide("notes_methodo", prezId);
-
-            String urlSlideReport = "http://docs.google.com/presentation/d/" + prezId + "/edit?usp=sharing";
-//            FacesContext context = FacesContext.getCurrentInstance();
-//            context.getExternalContext().redirect();
-
-            PrimeFaces.current().executeScript("window.open('" + urlSlideReport + "');");
-//            RequestContext.getCurrentInstance().execute("window.open('reportURL');");
-
-        } catch (IOException ex) {
-            Logger.getLogger(OrganicBean.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return "";
-    }
-
     public String runAnalysis() {
         try {
             if (selectedLanguage == null || selectedLanguage.isEmpty()) {
@@ -233,7 +130,6 @@ public class OrganicBean implements Serializable {
                     String id = String.valueOf(entry.getKey());
                     doc.setText(entry.getValue());
                     doc.setId(id);
-                    doc.setSentiment(Categories.Category._10);
 
                     URI uri = new URI("http://localhost:7002/api/organicForAText/bytes/" + selectedLanguage + "?id=" + doc.getId() + "&text=" + URLEncoder.encode(entry.getValue(), StandardCharsets.UTF_8.toString()));
 
@@ -342,7 +238,7 @@ public class OrganicBean implements Serializable {
             docFound.setFlaggedAsFalseLabel(true);
         }
         SendReport sender = new SendReport();
-        sender.initErrorReport(docFound.getText() + " - should not be " + docFound.getSentiment().toString());
+        sender.initErrorReport(docFound.getText() + " - should not be " + docFound.getCategorizationResult().toString());
         sender.start();
         return "";
     }
@@ -351,7 +247,7 @@ public class OrganicBean implements Serializable {
     }
 
     public StreamedContent getFileToSave() {
-        return ExcelSaver.exportOrganic(results);
+        return ExcelSaver.exportOrganic(results, sessionBean.getLocaleBundle());
     }
 
     public void setFileToSave(StreamedContent fileToSave) {

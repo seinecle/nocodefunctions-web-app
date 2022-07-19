@@ -56,7 +56,7 @@ import net.clementlevallois.stopwords.StopWordsRemover;
 import net.clementlevallois.stopwords.Stopwords;
 import net.clementlevallois.utils.Multiset;
 import net.clementlevallois.utils.PerformCombinations;
-import net.clementlevallois.utils.StatusCleaner;
+import net.clementlevallois.utils.TextCleaningOps;
 import org.gephi.graph.api.Edge;
 import org.gephi.graph.api.Graph;
 import org.gephi.graph.api.GraphFactory;
@@ -158,7 +158,7 @@ public class TopicsBean implements Serializable {
             }
             this.progress = 10;
             service.create(sessionBean.getLocaleBundle().getString("general.message.removing_punctuation_and_cleaning"));
-            mapOfLines = StatusCleaner.doAllCleaningOps(mapOfLines);
+            mapOfLines = TextCleaningOps.doAllCleaningOps(mapOfLines);
 
             this.progress = 15;
             if (selectedLanguage.equals("en") | selectedLanguage.equals("fr")) {

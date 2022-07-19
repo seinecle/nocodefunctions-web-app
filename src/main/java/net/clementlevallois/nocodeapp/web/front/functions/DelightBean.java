@@ -37,7 +37,6 @@ import net.clementlevallois.nocodeapp.web.front.http.SendReport;
 import net.clementlevallois.nocodeapp.web.front.importdata.DataFormatConverter;
 import net.clementlevallois.nocodeapp.web.front.io.ExcelSaver;
 import net.clementlevallois.nocodeapp.web.front.logview.NotificationService;
-import net.clementlevallois.umigon.model.Categories;
 import net.clementlevallois.umigon.model.Document;
 import net.clementlevallois.utils.Clock;
 import org.omnifaces.util.Faces;
@@ -131,7 +130,6 @@ public class DelightBean implements Serializable {
                     String id = String.valueOf(entry.getKey());
                     doc.setText(entry.getValue());
                     doc.setId(id);
-                    doc.setSentiment(Categories.Category._10);
 
                     URI uri = new URI("http://localhost:7002/api/sentimentForAText/bytes/" + selectedLanguage + "?id=" + doc.getId() + "&text=" + URLEncoder.encode(entry.getValue(), StandardCharsets.UTF_8.toString()));
 
@@ -242,7 +240,7 @@ public class DelightBean implements Serializable {
             docFound.setFlaggedAsFalseLabel(true);
         }
         SendReport sender = new SendReport();
-        sender.initErrorReport(docFound.getText() + " - should not be " + docFound.getSentiment().toString());
+        sender.initErrorReport(docFound.getText() + " - should not be " + docFound.getCategorizationResult().toString());
         sender.start();
         return "";
     }
@@ -251,7 +249,7 @@ public class DelightBean implements Serializable {
     }
 
     public StreamedContent getFileToSave() {
-        return ExcelSaver.exportUmigon(results);
+        return ExcelSaver.exportUmigon(results, sessionBean.getLocaleBundle());
     }
 
     public void setFileToSave(StreamedContent fileToSave) {

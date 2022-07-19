@@ -41,7 +41,7 @@ import net.clementlevallois.nocodeapp.web.front.importdata.SheetModel;
 import net.clementlevallois.nocodeapp.web.front.io.ExcelSaver;
 import net.clementlevallois.nocodeapp.web.front.logview.NotificationService;
 import net.clementlevallois.pdfmatcher.controller.Occurrence;
-import net.clementlevallois.utils.StatusCleaner;
+import net.clementlevallois.utils.TextCleaningOps;
 import org.omnifaces.util.Faces;
 import org.primefaces.model.StreamedContent;
 
@@ -172,7 +172,7 @@ public class PdfMatcherBean implements Serializable {
         CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(futures.toArray((new CompletableFuture[0])));
         combinedFuture.join();
 
-        searchedTerm = StatusCleaner.doAllCleaningOps(searchedTerm);
+        searchedTerm = TextCleaningOps.doAllCleaningOps(searchedTerm);
         searchedTerm = searchedTerm.toLowerCase();
 
         for (Map.Entry<String, List<Occurrence>> entry : results.entrySet()) {

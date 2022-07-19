@@ -14,7 +14,7 @@
             <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
             <meta http-equiv="cleartype" content="on"/>
             <meta name="HandheldFriendly" content="true"/>
-            
+
             <link rel="apple-touch-icon" sizes="180x180" href="#{resource['images/favicons/apple-touch-icon.png']}"/>
             <link rel="icon" type="image/png" sizes="32x32" href="#{resource['images/favicons/favicon-32x32.png']}"/>
             <link rel="icon" type="image/png" sizes="16x16" href="#{resource['images/favicons/favicon-16x16.png']}"/>
@@ -41,7 +41,7 @@
             <p:panel>
                 <ui:include src="/WEB-INF/includes/header.xhtml"/>
                 <ui:include src="/WEB-INF/includes/sidebar.xhtml"/>
-                
+
                 <h1>#{text['umigon.results.tagline']}</h1>
             </p:panel>
             <p:spacer height="20"/>
@@ -52,18 +52,11 @@
                         ajax="false"
                         onclick="PrimeFaces.monitorDownload(start, stop);"
                         icon="pi pi-arrow-down" styleClass="p-mr-2">
-                        
+
                         <p:fileDownload value="#{umigonBean.fileToSave}"/>
                     </p:commandButton>
-                    
+
                     <p:spacer width="10"/>
-                    
-                    <p:commandButton
-                        value="#{text['general.verbs.open_report']}"
-                        action="#{umigonBean.getReport}"
-                        onclick="PrimeFaces.monitorDownload(start, stop);"
-                        oncomplete="PrimeFaces.monitorDownload(stop);"
-                        icon="pi pi-arrow-right"/>
                 </h:form>
                 <h:form>
                     <div class="card">
@@ -89,8 +82,8 @@
                                 </f:facet>
                                 <h:outputText value="#{item}"/>
                                 <p:spacer width="3"/>
-                                <p:graphicImage name="images/red.png" rendered ="#{item.sentiment eq '_12'}" />
-                                <p:graphicImage name="images/green.png" rendered ="#{item.sentiment eq '_11'}"/>
+                                <p:graphicImage name="images/red.png" rendered ="#{item.categorizationResult.toString() eq '_12'}" />
+                                <p:graphicImage name="images/green.png" rendered ="#{item.categorizationResult.toString() eq '_11'}"/>
                             </p:column>
                             <p:column headerText="#{text['general.verbs.signal_error']}">
                                 <p:commandButton style="text-align: center;font-size: 80%" 

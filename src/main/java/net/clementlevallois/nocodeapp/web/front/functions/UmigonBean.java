@@ -19,7 +19,6 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -31,21 +30,17 @@ import javax.annotation.PostConstruct;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import net.clementlevallois.nocodeapp.web.front.backingbeans.ActiveLocale;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.importdata.DataImportBean;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SingletonGoogle;
 import net.clementlevallois.nocodeapp.web.front.http.SendReport;
 import net.clementlevallois.nocodeapp.web.front.importdata.DataFormatConverter;
 import net.clementlevallois.nocodeapp.web.front.io.ExcelSaver;
-import net.clementlevallois.nocodeapp.web.front.io.SlidesOperations;
 import net.clementlevallois.nocodeapp.web.front.logview.NotificationService;
-import net.clementlevallois.umigon.model.Categories.Category;
 import net.clementlevallois.umigon.model.Document;
-import net.clementlevallois.utils.Clock;
-import net.clementlevallois.utils.Multiset;
 import org.omnifaces.util.Faces;
 import org.openide.util.Exceptions;
-import org.primefaces.PrimeFaces;
 import org.primefaces.model.StreamedContent;
 
 /**
@@ -78,7 +73,7 @@ public class UmigonBean implements Serializable {
     DataImportBean inputData;
 
     @Inject
-    SingletonGoogle gDrive;
+    ActiveLocale activeLocale;
 
     public UmigonBean() {
     }
@@ -110,117 +105,6 @@ public class UmigonBean implements Serializable {
         progress = null;
     }
 
-    public String getReport() {
-        try {
-            Iterator<Document> iterator = results.iterator();
-            int percentNegative = 0;
-            int percentNeutral = 0;
-            int percentPositive = 0;
-            int nbNegative = 0;
-            int nbNeutral = 0;
-            int nbPositive = 0;
-            int totalDocs = results.size();
-            Multiset<String> positiveTerms = new Multiset();
-            Multiset<String> negativeTerms = new Multiset();
-            Multiset<String> termsInPositiveDocs = new Multiset();
-            Multiset<String> termsInNegativeDocs = new Multiset();
-            Multiset<String> emojisInPositiveDocs = new Multiset();
-            Multiset<String> emojisInNegativeDocs = new Multiset();
-            Multiset<String> hashtagsInPositiveDocs = new Multiset();
-            Multiset<String> hashtagsInNegativeDocs = new Multiset();
-
-            while (iterator.hasNext()) {
-                Document doc = iterator.next();
-                if (doc.isIsNegative()) {
-                    nbNegative++;
-                    negativeTerms.addAllFromListOrSet(doc.getListNegative());
-                    Set<String> diff = new HashSet();
-                    termsInNegativeDocs.addAllFromListOrSet(diff);
-                    emojisInNegativeDocs.addAllFromListOrSet(doc.getAllEmojis());
-                    hashtagsInNegativeDocs.addAllFromListOrSet(doc.getHashtags());
-                } else if (doc.isIsPositive()) {
-                    nbPositive++;
-                    positiveTerms.addAllFromListOrSet(doc.getListPositive());
-                    Set<String> diff = new HashSet();
-                    termsInPositiveDocs.addAllFromListOrSet(diff);
-                    emojisInPositiveDocs.addAllFromListOrSet(doc.getAllEmojis());
-                    hashtagsInPositiveDocs.addAllFromListOrSet(doc.getHashtags());
-
-                }
-                Set<String> terms = new HashSet(doc.getListNegative());
-                negativeTerms.addAllFromListOrSet(terms);
-                terms = new HashSet(doc.getListPositive());
-                positiveTerms.addAllFromListOrSet(terms);
-            }
-            percentNegative = (int) Math.round((float) nbNegative / totalDocs * 100.0);
-            percentPositive = (int) Math.round((float) nbPositive / totalDocs * 100.0);
-            percentNeutral = 100 - (percentNegative + percentPositive);
-            nbNeutral = totalDocs - (nbNegative + nbPositive);
-
-//            System.out.println("terms in negative docs:");
-//            System.out.println("terms in positive docs:");
-//            termsInPositiveDocs.printTopRankedElements(10);
-//            termsInNegativeDocs.printTopRankedElements(10);
-            List<Map.Entry<String, Integer>> topTermsInNegativeDocs = termsInNegativeDocs.sortDesckeepMostfrequent(termsInNegativeDocs, 10);
-            List<Map.Entry<String, Integer>> topTermsInPositiveDocs = termsInPositiveDocs.sortDesckeepMostfrequent(termsInPositiveDocs, 10);
-            List<Map.Entry<String, Integer>> topEmojisInNegativeDocs = emojisInNegativeDocs.sortDesckeepMostfrequent(emojisInNegativeDocs, 10);
-            List<Map.Entry<String, Integer>> topEmojisInPositiveDocs = emojisInPositiveDocs.sortDesckeepMostfrequent(emojisInPositiveDocs, 10);
-            List<Map.Entry<String, Integer>> topHashtagsInNegativeDocs = hashtagsInNegativeDocs.sortDesckeepMostfrequent(hashtagsInNegativeDocs, 10);
-            List<Map.Entry<String, Integer>> topHashtagsInPositiveDocs = hashtagsInPositiveDocs.sortDesckeepMostfrequent(hashtagsInPositiveDocs, 10);
-
-            int rows = 11;
-            int columns = 4;
-
-            String prezId = gDrive.createNewSlidePresentationWithOnePage(Faces.getSessionId(), SingletonGoogle.TEMP_FOLDER_UMIGON_REPORTS);
-            SlidesOperations slidesOps = new SlidesOperations();
-            slidesOps.init(gDrive.getGoogleSlides());
-
-            //customize title page
-            slidesOps.customizeTitlePage(prezId);
-
-            // add slide with key metrics
-            slidesOps.createSlideWithKeyMetricsUmigon("key_metrics", prezId, nbNegative, nbPositive, nbNeutral, percentNegative, percentPositive, percentNeutral, totalDocs, selectedLanguage);
-
-            // insert a table of top ten freq words on the right of the key results
-            slidesOps.insertTable("tableFreqTerms", "key_metrics", prezId, rows, columns);
-            List<String> freqTermsheaders = List.of("Most frequent terms in positive texts", "count", "Most frequent terms in negative texts", "count");
-            slidesOps.addHeaders("tableFreqTerms", prezId, freqTermsheaders);
-            slidesOps.insertContentInTable(prezId, "tableFreqTerms", 0, topTermsInPositiveDocs);
-            slidesOps.insertContentInTable(prezId, "tableFreqTerms", 2, topTermsInNegativeDocs);
-
-            // add slide and content with top emojis
-            slidesOps.createNewSlide("slideFreqEmojis", prezId, "Top emojis");
-            slidesOps.insertTable("tableFreqEmojis", "slideFreqEmojis", prezId, rows, columns);
-            List<String> freqEmojisheaders = List.of("Most frequent emojis in positive texts", "count", "Most frequent emojis in negative texts", "count");
-            slidesOps.addHeaders("tableFreqEmojis", prezId, freqEmojisheaders);
-            slidesOps.insertContentInTable(prezId, "tableFreqEmojis", 0, topEmojisInPositiveDocs);
-            slidesOps.insertContentInTable(prezId, "tableFreqEmojis", 2, topEmojisInNegativeDocs);
-
-            // add slide and content with top hashtags
-            slidesOps.createNewSlide("slideFreqHashtags", prezId, "Top hashtags");
-            slidesOps.insertTable("tableFreqHashtags", "slideFreqHashtags", prezId, rows, columns);
-            List<String> freqHashtagsheaders = List.of("Most frequent hashtags in positive texts", "count", "Most frequent hashtags in negative texts", "count");
-            slidesOps.addHeaders("tableFreqHashtags", prezId, freqHashtagsheaders);
-            slidesOps.insertContentInTable(prezId, "tableFreqHashtags", 0, topHashtagsInPositiveDocs);
-            slidesOps.insertContentInTable(prezId, "tableFreqHashtags", 2, topHashtagsInNegativeDocs);
-
-            // add slide with notes on methodo
-            slidesOps.createNewSlide("notes_methodo", prezId, "Notes on methodology");
-            slidesOps.insertTextCommentSlide("notes_methodo", prezId);
-
-            String urlSlideReport = "http://docs.google.com/presentation/d/" + prezId + "/edit?usp=sharing";
-//            FacesContext context = FacesContext.getCurrentInstance();
-//            context.getExternalContext().redirect();
-
-            PrimeFaces.current().executeScript("window.open('" + urlSlideReport + "');");
-//            RequestContext.getCurrentInstance().execute("window.open('reportURL');");
-
-        } catch (IOException ex) {
-            Logger.getLogger(UmigonBean.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return "";
-    }
-
     public String runAnalysis() {
         try {
             if (selectedLanguage == null || selectedLanguage.isEmpty()) {
@@ -242,9 +126,18 @@ public class UmigonBean implements Serializable {
                     String id = String.valueOf(entry.getKey());
                     doc.setText(entry.getValue());
                     doc.setId(id);
-                    doc.setSentiment(Category._10);
 
-                    URI uri = new URI("http://localhost:7002/api/sentimentForAText/bytes/" + selectedLanguage + "?id=" + doc.getId() + "&text=" + URLEncoder.encode(entry.getValue(), StandardCharsets.UTF_8.toString()));
+                    StringBuilder sb = new StringBuilder();
+                    sb.append("http://localhost:7002/api/sentimentForAText");
+                    sb.append("?text-lang=").append(selectedLanguage);
+                    sb.append("?id=").append(doc.getId());
+                    sb.append("&text=").append(URLEncoder.encode(entry.getValue(), StandardCharsets.UTF_8.toString()));
+                    sb.append("&explanation=on");
+                    sb.append("&output-format=bytes");
+                    sb.append("&explanation-lang=").append(activeLocale.getLanguageTag());
+                    String uriAsString = sb.toString();
+
+                    URI uri = new URI(uriAsString);
 
                     request = HttpRequest.newBuilder()
                             .uri(uri)
@@ -353,7 +246,7 @@ public class UmigonBean implements Serializable {
             docFound.setFlaggedAsFalseLabel(true);
         }
         SendReport sender = new SendReport();
-        sender.initErrorReport(docFound.getText() + " - should not be " + docFound.getSentiment().toString());
+        sender.initErrorReport(docFound.getText() + " - should not be " + docFound.getCategorizationResult().toString());
         sender.start();
         return "";
     }
@@ -362,7 +255,7 @@ public class UmigonBean implements Serializable {
     }
 
     public StreamedContent getFileToSave() {
-        return ExcelSaver.exportUmigon(results);
+        return ExcelSaver.exportUmigon(results, sessionBean.getLocaleBundle());
     }
 
     public void setFileToSave(StreamedContent fileToSave) {

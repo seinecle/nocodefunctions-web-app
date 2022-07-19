@@ -243,6 +243,12 @@
             <version>1.0-SNAPSHOT</version>
             <type>jar</type>
         </dependency>
+        <dependency>
+            <groupId>net.clementlevallois.umigonfamily</groupId>
+            <artifactId>umigon-explain</artifactId>
+            <version>1.0-SNAPSHOT</version>
+            <type>jar</type>
+        </dependency>
     </dependencies>
     
     <build>

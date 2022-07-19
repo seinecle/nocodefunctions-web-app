@@ -50,7 +50,7 @@ import net.clementlevallois.nocodeapp.web.front.functions.GazeBean;
 import net.clementlevallois.nocodeapp.web.front.functions.LabellingBean;
 import net.clementlevallois.nocodeapp.web.front.io.ExcelReader;
 import net.clementlevallois.nocodeapp.web.front.logview.NotificationService;
-import net.clementlevallois.utils.StatusCleaner;
+import net.clementlevallois.utils.TextCleaningOps;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -432,11 +432,13 @@ public class DataImportBean implements Serializable {
                 for (String line : linesArray) {
                     line = Jsoup.clean(line, Safelist.basicWithImages().addAttributes("span", "style"));
                     if (!line.isBlank()) {
-                        lines.put(i++, line.toLowerCase());
+                        lines.put(i++, line);
+                    }else{
+                        lines.put(i++, sessionBean.getLocaleBundle().getString("general.message.empty_line"));
                     }
                 }
             }
-            lines = StatusCleaner.doAllCleaningOps(lines);
+            lines = TextCleaningOps.doAllCleaningOps(lines);
             ColumnModel cm;
             cm = new ColumnModel("0", lines.get(0));
             List<ColumnModel> headerNames = new ArrayList();

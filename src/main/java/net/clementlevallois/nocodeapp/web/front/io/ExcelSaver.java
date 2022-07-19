@@ -12,6 +12,7 @@ import java.io.InputStream;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.ResourceBundle;
 import net.clementlevallois.pdfmatcher.controller.Occurrence;
 import net.clementlevallois.umigon.model.Document;
 import net.clementlevallois.utils.Multiset;
@@ -29,7 +30,7 @@ import org.primefaces.model.StreamedContent;
  */
 public class ExcelSaver {
 
-    public static StreamedContent exportUmigon(List<Document> results) {
+    public static StreamedContent exportUmigon(List<Document> results, ResourceBundle localeBundle) {
         XSSFWorkbook wb = new XSSFWorkbook();
         XSSFSheet sheet = wb.createSheet("results");
         int rowNumber = 0;
@@ -56,9 +57,20 @@ public class ExcelSaver {
                 cell1.setCellValue(doc.getText());
             }
             Cell cell2 = row.createCell(2, CellType.STRING);
-            if (doc.getSentiment() != null) {
-                cell2.setCellValue(doc.getSentiment().toString());
+            String sentiment;
+            switch (doc.getCategorizationResult()) {
+                case _12:
+                    sentiment = "😔 " + localeBundle.getString("umigon.general.negativesentiment");
+                    break;
+                case _11:
+                    sentiment = "🤗 " + localeBundle.getString("umigon.general.positivesentiment");
+                    break;
+                default:
+                    sentiment = "😐 " + localeBundle.getString("umigon.general.neutralsentiment");
+                    break;
             }
+
+            cell2.setCellValue(sentiment);
             Cell cell3 = row.createCell(3, CellType.STRING);
             if (doc.getLanguage() != null) {
                 cell3.setCellValue(doc.getLanguage());
@@ -206,7 +218,7 @@ public class ExcelSaver {
         return file;
     }
 
-    public static StreamedContent exportOrganic(List<Document> results) {
+    public static StreamedContent exportOrganic(List<Document> results, ResourceBundle localeBundle) {
         XSSFWorkbook wb = new XSSFWorkbook();
         XSSFSheet sheet = wb.createSheet("results");
         int rowNumber = 0;
@@ -229,7 +241,15 @@ public class ExcelSaver {
             Cell cell1 = row.createCell(1, CellType.STRING);
             cell1.setCellValue(doc.getText());
             Cell cell2 = row.createCell(2, CellType.STRING);
-            cell2.setCellValue(String.valueOf(doc.isPromoted()));
+
+            String organic;
+            if (doc.getCategorizationResult().toString().startsWith("_061")) {
+                organic = "📢 " + localeBundle.getString("organic.general.soundspromoted");
+            } else {
+                organic = "🌿 " + localeBundle.getString("organic.general.soundsorganic");
+            }
+
+            cell2.setCellValue(organic);
         }
         StreamedContent file = null;
         try {
