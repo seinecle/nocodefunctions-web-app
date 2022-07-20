@@ -90,7 +90,49 @@
                 <br/>
                 <br/>
                 <p>#{text['general.message.try_it_just_click_on_link']}</p>
-                <span style="overflow-wrap: break-word;"><a href="#{sessionBean.host()}api/sentimentForAText/text/en?text=this app is amazing" target="_blank">#{sessionBean.host()}<span style="color:blue">api</span>/<span style="color:green">sentimentForAText</span>/<span style="color:red">en</span><span style="color:blue">?</span><span style="color:green">text=</span>this app is amazing</a>
+                <span style="overflow-wrap: break-word;">
+                    <a href="#{sessionBean.host()}api/sentimentForAText?text-lang=en&amp;text=this app is amazing&amp;explanation=on&amp;output-format=html&amp;explanation-lang=#{activeLocale.languageTag}" target="_blank">
+                        #{sessionBean.host()}
+                        <span style="color:blue">
+                            api
+                        </span>
+                        /
+                        <span style="color:green">
+                            sentimentForAText
+                        </span>
+                        ?text-lang=
+                        <span style="color:red">
+                            en
+                        </span>
+                        <span style="color:blue">
+                            &amp;
+                        </span>
+                        <span style="color:green">
+                            text=
+                        </span>
+                        this app is amazing
+                        <span style="color:blue">
+                            &amp;
+                        </span>
+                        <span style="color:green">
+                            explanation=
+                        </span>
+                        on
+                        <span style="color:blue">
+                            &amp;
+                        </span>
+                        <span style="color:green">
+                            output-format=
+                        </span>
+                        html
+                        <span style="color:blue">
+                            &amp;
+                        </span>
+                        <span style="color:green">
+                            explanation-lang=
+                        </span>
+                        fr
+                    </a>
                 </span>
                 <br/>
                 <br/>
@@ -133,7 +175,7 @@
                             alt="how to import a text and do sentiment analysis on it"
                             style="-webkit-filter: drop-shadow(5px 5px 5px #222222);
                             filter: drop-shadow(5px 5px 5px #222222);"/>
-                        </p>
+                    </p>
                 </p:fieldset>
 
                 <p:spacer height="20"/>
@@ -179,7 +221,7 @@
                     </f:facet>
                     <p:outputLabel value="#{text['umigon.sentiment_analysis_tool.argument7.details']}" escape="false"/>
                 </p:fieldset>
-                    
+
                 <div>
                     <p:spacer height="30" width="10"/>            
                 </div>

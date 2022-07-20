@@ -92,9 +92,10 @@ public class CardTestBean implements Serializable {
         send.start();
 
         StringBuilder sb = new StringBuilder();
-        sb.append("http://localhost:7002/api/sentimentForAText");
+        sb.append(baseURI);
+        sb.append("sentimentForAText");
         sb.append("?text-lang=").append("fr");
-        sb.append("&text=").append(URLEncoder.encode(umigonTestInputEN, StandardCharsets.UTF_8.toString()));
+        sb.append("&text=").append(URLEncoder.encode(umigonTestInputFR, StandardCharsets.UTF_8.toString()));
         sb.append("&explanation=on");
         sb.append("&output-format=bytes");
         sb.append("&explanation-lang=").append(activeLocale.getLanguageTag());
@@ -168,7 +169,8 @@ public class CardTestBean implements Serializable {
         send.start();
 
         StringBuilder sb = new StringBuilder();
-        sb.append("http://localhost:7002/api/sentimentForAText");
+        sb.append(baseURI);
+        sb.append("sentimentForAText");
         sb.append("?text-lang=").append("en");
         sb.append("&text=").append(URLEncoder.encode(umigonTestInputEN, StandardCharsets.UTF_8.toString()));
         sb.append("&explanation=on");

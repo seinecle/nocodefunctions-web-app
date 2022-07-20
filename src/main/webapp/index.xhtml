@@ -151,7 +151,7 @@
                             <p:outputPanel id="resultFR">
                                 <h:outputText value="#{cardTestBean.umigonResultFR}" style="width:40px;"/>
                                 <p:spacer width="15"/>
-                                <p:commandButton value="🤔" icon="pi pi-question-circle"  update="formInfo:info" oncomplete="PF('detailsWidget').show()"/>
+                                <p:commandLink value="why? 🤔" update="formInfo:info" oncomplete="PF('detailsWidget').show()"/>
                                 <p:spacer width="15"/>
                                 <p:commandLink style="text-align: center;font-size: 80%" value="#{text['general.verbs.signal_error']}"
                                                action="#{cardTestBean.signalUmigonFR}" update="@this resultFR"
