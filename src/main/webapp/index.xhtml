@@ -74,10 +74,6 @@
                     </div>
                     <p:spacer width="10"/>
                     <div class="flex justify-content-center justify-content-center buttonIndexPage">
-                        <p:button value="#{text['index.button.organic']}" outcome="organic/organic_listening_voice_of_customer_tool.html"/>
-                    </div>
-                    <p:spacer width="10"/>
-                    <div class="flex justify-content-center justify-content-center buttonIndexPage">
                         <p:button value="#{text['index.button.cowo']}" outcome="cowo/semantic_networks_tool.html"/>
                     </div>
                     <p:spacer width="10"/>
@@ -127,12 +123,15 @@
                             <p:outputPanel id="resultEN">   
                                 <h:outputText value="#{cardTestBean.umigonResultEN}" style="width:40px;"/>
                                 <p:spacer width="15"/>
+                                <p:commandLink value="#{text['general.small_words.why']} 🤔" update="formInfoEN:info"
+                                               oncomplete="PF('detailsWidget').show()"
+                                               rendered="#{cardTestBean.renderSignalEN}"/>
+                                <p:spacer width="15"/>
                                 <p:commandLink style="text-align: center;font-size: 80%" value="#{text['general.verbs.signal_error']}"
                                                action="#{cardTestBean.signalUmigonEN}"
                                                update="@this resultEN"
-                                               rendered="#{cardTestBean.renderSignalEN}">
-                                </p:commandLink>
-                                <p:spacer width="20" rendered ="#{cardTestBean.reportResultFRRendered}"/>
+                                               rendered="#{cardTestBean.renderSignalEN}"/>
+                                <p:spacer width="20" rendered ="#{cardTestBean.reportResultENRendered}"/>
                                 <p:outputLabel style="font-size: 80%" value="#{text['general.message.reportsent']}" rendered ="#{cardTestBean.reportResultENRendered}" />
                                 <p:graphicImage name="images/check.png" width="24px" rendered ="#{cardTestBean.reportResultENRendered}"  alt="check mark"/>
                             </p:outputPanel>
@@ -143,29 +142,43 @@
                         <f:facet name="title">
                             #{text['index.testsentimentanalysisfr']}
                         </f:facet>
-                        <h:form>
+                        <h:form id="umigonFR">
                             <div class="ui-inputgroup">
                                 <p:inputText id="umigonTestFR" value="#{cardTestBean.umigonTestInputFR}"/>
-                                <p:commandButton value="#{text['general.verbs.compute']}" widgetVar="umigonButtonFR" action="#{cardTestBean.runUmigonTestFR}" update="resultFR" styleClass="btn btn-primary"/>
+                                <p:commandButton value="#{text['general.verbs.compute']}" widgetVar="umigonButtonFR" action="#{cardTestBean.runUmigonTestFR}" update="resultFR umigonFR:explanationFR" styleClass="btn btn-primary"/>
                             </div>
                             <p:outputPanel id="resultFR">
                                 <h:outputText value="#{cardTestBean.umigonResultFR}" style="width:40px;"/>
                                 <p:spacer width="15"/>
-                                <p:commandLink value="why? 🤔" update="formInfo:info" oncomplete="PF('detailsWidget').show()"/>
+                                <p:commandLink value="#{text['general.small_words.why']} 🤔" rendered="#{cardTestBean.renderSignalFR}" update="umigonFR:explanationFR">
+                                <f:ajax event="click" render="umigonFR:explanationFR" />
+                                </p:commandLink>
                                 <p:spacer width="15"/>
                                 <p:commandLink style="text-align: center;font-size: 80%" value="#{text['general.verbs.signal_error']}"
                                                action="#{cardTestBean.signalUmigonFR}" update="@this resultFR"
-                                               rendered="#{cardTestBean.renderSignalFR}">
-
-                                </p:commandLink>
+                                               rendered="#{cardTestBean.renderSignalFR}"/>
                                 <p:spacer width="20" rendered ="#{cardTestBean.reportResultFRRendered}"/>
                                 <p:outputLabel style="font-size: 80%" value="#{text['general.message.reportsent']}" rendered ="#{cardTestBean.reportResultFRRendered}" />
                                 <p:graphicImage name="images/check.png" width="24px" rendered ="#{cardTestBean.reportResultFRRendered}"   alt="check mark"/>
+                                <p:outputPanel id="explanationFR">
+                                    <br/>
+                                    <br/>
+                                    <small><h:outputText value="#{cardTestBean.umigonResultFRExplanation}" escape="false" rendered="#{cardTestBean.toggleFRExplanation}"/></small>
+                                </p:outputPanel>
                             </p:outputPanel>
                         </h:form>
-                        <h:form id="formInfo">
-                            <p:dialog id="info" header="explanations" widgetVar="detailsWidget" minHeight="40" width="350" showEffect="fade">
-                                <h:outputText value="#{cardTestBean.umigonResultFRExplanation}" escape="false"/>
+                        <h:form id="formInfoFR">
+                            <p:dialog id="info" header="#{text['general.nouns.explanations']}" widgetVar="detailsWidget" minHeight="40" width="450" resizable="true" showEffect="fade">
+                                <p:scrollPanel mode="native" style="max-height:500px">
+                                    <h:outputText value="#{cardTestBean.umigonResultFRExplanation}" escape="false"/>
+                                </p:scrollPanel>
+                            </p:dialog>
+                        </h:form>
+                        <h:form id="formInfoEN">
+                            <p:dialog id="info" header="#{text['general.nouns.explanations']}" widgetVar="detailsWidget" minHeight="40" width="450" resizable="true" showEffect="fade">
+                                <p:scrollPanel mode="native" style="max-height:500px">
+                                    <h:outputText value="#{cardTestBean.umigonResultENExplanation}" escape="false"/>
+                                </p:scrollPanel>
                             </p:dialog>
                         </h:form>
                     </p:card>
@@ -245,10 +258,6 @@
                 <div class="flex justify-content-center flex-wrap" align="center">
                     <div class="flex justify-content-center justify-content-center buttonIndexPage">
                         <p:button value="#{text['index.button.umigon']}" outcome="umigon/sentiment_analysis_tool.html"/>
-                    </div>
-                    <p:spacer width="10"/>
-                    <div class="flex justify-content-center justify-content-center buttonIndexPage">
-                        <p:button value="#{text['index.button.organic']}" outcome="organic/organic_listening_voice_of_customer_tool.html"/>
                     </div>
                     <p:spacer width="10"/>
                     <div class="flex justify-content-center justify-content-center buttonIndexPage">

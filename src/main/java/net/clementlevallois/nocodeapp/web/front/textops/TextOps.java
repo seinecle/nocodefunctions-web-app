@@ -6,7 +6,7 @@
 package net.clementlevallois.nocodeapp.web.front.textops;
 
 import java.util.Map;
-import net.clementlevallois.ngramops.NGramFinder;
+import net.clementlevallois.umigon.ngram.ops.NGramFinder;
 import net.clementlevallois.utils.Multiset;
 
 /**

@@ -94,41 +94,37 @@
                     <a href="#{sessionBean.host()}api/sentimentForAText?text-lang=en&amp;text=this app is amazing&amp;explanation=on&amp;output-format=html&amp;explanation-lang=#{activeLocale.languageTag}" target="_blank">
                         #{sessionBean.host()}
                         <span style="color:blue">
-                            api
+                            api/sentimentForAText?
                         </span>
-                        /
-                        <span style="color:green">
-                            sentimentForAText
-                        </span>
-                        ?text-lang=
                         <span style="color:red">
-                            en
+                            text-lang=
                         </span>
+                        en
                         <span style="color:blue">
                             &amp;
                         </span>
-                        <span style="color:green">
+                        <span style="color:red">
                             text=
                         </span>
                         this app is amazing
                         <span style="color:blue">
                             &amp;
                         </span>
-                        <span style="color:green">
+                        <span style="color:red">
                             explanation=
                         </span>
                         on
                         <span style="color:blue">
                             &amp;
                         </span>
-                        <span style="color:green">
+                        <span style="color:red">
                             output-format=
                         </span>
                         html
                         <span style="color:blue">
                             &amp;
                         </span>
-                        <span style="color:green">
+                        <span style="color:red">
                             explanation-lang=
                         </span>
                         fr
@@ -136,8 +132,19 @@
                 </span>
                 <br/>
                 <br/>
-                <p>
-                    <p:outputLabel value="#{text['umigon.sentiment_analysis_tool.api.try_in_french']}" escape="false"/>
+                <p>#{text['umigon.sentiment_analysis_tool.api.try_with_parameters']}
+                    <br/>
+                    <br/>
+                    <span style="color:red">text-lang</span>: #{text['umigon.sentiment_analysis_tool.api.text-lang.details']}
+                    <br/>
+                    <span style="color:red">text</span>: #{text['umigon.sentiment_analysis_tool.api.text.details']}
+                    <br/>
+                    <span style="color:red">explanation</span>: #{text['umigon.sentiment_analysis_tool.api.explanation.details']}
+                    <br/>
+                    <span style="color:red">output-format</span>: #{text['umigon.sentiment_analysis_tool.api.output-format.details']}
+                    <br/>
+                    <span style="color:red">output-format</span>: #{text['umigon.sentiment_analysis_tool.api.explanation-lang.details']}
+                    <br/>
                 </p>
             </p:panel>
             <p:spacer height="30"/>

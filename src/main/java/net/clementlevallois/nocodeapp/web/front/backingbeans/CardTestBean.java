@@ -18,6 +18,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.util.Properties;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.inject.Named;
@@ -25,10 +26,9 @@ import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import net.clementlevallois.nocodeapp.web.front.functions.UmigonBean;
 import net.clementlevallois.nocodeapp.web.front.http.SendReport;
-import net.clementlevallois.umigon.explain.controller.UmigonExplain;
-import net.clementlevallois.umigon.explain.parameters.HtmlSettings;
-import net.clementlevallois.umigon.model.Category.CategoryEnum;
+import net.clementlevallois.umigon.model.Category;
 import net.clementlevallois.umigon.model.Document;
+import net.clementlevallois.umigon.model.ResultOneHeuristics;
 
 /**
  *
@@ -57,6 +57,9 @@ public class CardTestBean implements Serializable {
     private String organicTestInputEN = "We\u2019re stoked to announce our new partnership with @SurfingEngland which will run over the next four years. Read more about it here: https://bit.ly/3g9xaLM";
     private String organicResultEN = "";
     private static String baseURI;
+
+    private Boolean toggleFRExplanation = false;
+    private Boolean toggleENExplanation = false;
 
     @Inject
     SessionBean sessionBean;
@@ -87,6 +90,7 @@ public class CardTestBean implements Serializable {
     }
 
     public void runUmigonTestFR() throws IOException, URISyntaxException, InterruptedException {
+        toggleFRExplanation = false;
         SendReport send = new SendReport();
         send.initAnalytics("test: umigon fr", sessionBean.getUserAgent());
         send.start();
@@ -124,14 +128,31 @@ public class CardTestBean implements Serializable {
                     umigonResultFR = "😐 " + sessionBean.getLocaleBundle().getString("umigon.general.neutralsentiment");
                     break;
             }
-            HtmlSettings htmlSettings = new HtmlSettings();
-            umigonResultFRExplanation = UmigonExplain.getExplanationOfHeuristicResultsHtml(doc, activeLocale.getLanguageTag(), htmlSettings);
-
-            renderSignalFR = true;
-            reportResultFRRendered = false;
         } catch (IOException | ClassNotFoundException ex) {
             Logger.getLogger(UmigonBean.class.getName()).log(Level.SEVERE, null, ex);
         }
+        sb = new StringBuilder();
+        sb.append(baseURI);
+        sb.append("sentimentForAText");
+        sb.append("?text-lang=").append("fr");
+        sb.append("&text=").append(URLEncoder.encode(umigonTestInputFR, StandardCharsets.UTF_8.toString()));
+        sb.append("&explanation=on");
+        sb.append("&output-format=html");
+        sb.append("&explanation-lang=").append(activeLocale.getLanguageTag());
+        uriAsString = sb.toString();
+
+        uri = new URI(uriAsString);
+
+        request = HttpRequest.newBuilder()
+                .uri(uri)
+                .build();
+
+        HttpResponse<String> responseString = client.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+        umigonResultFRExplanation = responseString.body();
+
+        renderSignalFR = true;
+        reportResultFRRendered = false;
+
     }
 
     public void runOrganicTestFR() throws IOException, InterruptedException, URISyntaxException {
@@ -151,11 +172,14 @@ public class CardTestBean implements Serializable {
         try (
                  ByteArrayInputStream bis = new ByteArrayInputStream(body);  ObjectInputStream ois = new ObjectInputStream(bis)) {
             Document doc = (Document) ois.readObject();
-            if (doc.getCategorizationResult().toString().startsWith("_061")) {
-                organicResultFR = "📢 " + sessionBean.getLocaleBundle().getString("organic.general.soundspromoted");
-            } else {
+            Set<ResultOneHeuristics> map1 = doc.getAllHeuristicsResultsForOneCategory(Category.CategoryEnum._61);
+            Set<ResultOneHeuristics> map2 = doc.getAllHeuristicsResultsForOneCategory(Category.CategoryEnum._611);
+            if (map1.isEmpty() & map2.isEmpty()) {
                 organicResultFR = "🌿 " + sessionBean.getLocaleBundle().getString("organic.general.soundsorganic");
+            } else {
+                organicResultFR = "📢 " + sessionBean.getLocaleBundle().getString("organic.general.soundspromoted");
             }
+
             renderSignalOrganicFR = true;
             reportResultFROrganicRendered = false;
         } catch (IOException | ClassNotFoundException ex) {
@@ -199,14 +223,32 @@ public class CardTestBean implements Serializable {
                     umigonResultEN = "😐 " + sessionBean.getLocaleBundle().getString("umigon.general.neutralsentiment");
                     break;
             }
-            HtmlSettings htmlSettings = new HtmlSettings();
-            umigonResultENExplanation = UmigonExplain.getExplanationOfHeuristicResultsHtml(doc, activeLocale.getLanguageTag(), htmlSettings);
 
-            renderSignalEN = true;
-            reportResultENRendered = false;
         } catch (Exception ex) {
             Logger.getLogger(CardTestBean.class.getName()).log(Level.SEVERE, null, ex);
         }
+        sb = new StringBuilder();
+        sb.append(baseURI);
+        sb.append("sentimentForAText");
+        sb.append("?text-lang=").append("fr");
+        sb.append("&text=").append(URLEncoder.encode(umigonTestInputEN, StandardCharsets.UTF_8.toString()));
+        sb.append("&explanation=on");
+        sb.append("&output-format=html");
+        sb.append("&explanation-lang=").append(activeLocale.getLanguageTag());
+        uriAsString = sb.toString();
+
+        uri = new URI(uriAsString);
+
+        request = HttpRequest.newBuilder()
+                .uri(uri)
+                .build();
+
+        HttpResponse<String> responseString = client.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+        umigonResultENExplanation = responseString.body();
+
+        renderSignalEN = true;
+        reportResultENRendered = false;
+
     }
 
     public void runOrganicTestEN() throws UnsupportedEncodingException, URISyntaxException, IOException, InterruptedException {
@@ -226,10 +268,12 @@ public class CardTestBean implements Serializable {
         try (
                  ByteArrayInputStream bis = new ByteArrayInputStream(body);  ObjectInputStream ois = new ObjectInputStream(bis)) {
             Document doc = (Document) ois.readObject();
-            if (doc.getCategorizationResult().toString().startsWith("_061")) {
-                organicResultEN = "📢 " + sessionBean.getLocaleBundle().getString("organic.general.soundspromoted");
-            } else {
+            Set<ResultOneHeuristics> map1 = doc.getAllHeuristicsResultsForOneCategory(Category.CategoryEnum._61);
+            Set<ResultOneHeuristics> map2 = doc.getAllHeuristicsResultsForOneCategory(Category.CategoryEnum._611);
+            if (map1.isEmpty() & map2.isEmpty()) {
                 organicResultEN = "🌿 " + sessionBean.getLocaleBundle().getString("organic.general.soundsorganic");
+            } else {
+                organicResultEN = "📢 " + sessionBean.getLocaleBundle().getString("organic.general.soundspromoted");
             }
             renderSignalOrganicEN = true;
             reportResultENOrganicRendered = false;
@@ -410,6 +454,26 @@ public class CardTestBean implements Serializable {
 
     public void setUmigonResultENExplanation(String umigonResultENExplanation) {
         this.umigonResultENExplanation = umigonResultENExplanation;
+    }
+
+    public Boolean getToggleFRExplanation() {
+        if (!toggleFRExplanation) {
+            toggleFRExplanation = !toggleFRExplanation;
+        }
+        return toggleFRExplanation;
+    }
+
+    public void setToggleFRExplanation(Boolean toggleFRExplanation) {
+        this.toggleFRExplanation = toggleFRExplanation;
+    }
+
+    public Boolean getToggleENExplanation() {
+        toggleENExplanation = !toggleENExplanation;
+        return toggleENExplanation;
+    }
+
+    public void setToggleENExplanation(Boolean toggleENExplanation) {
+        this.toggleENExplanation = toggleENExplanation;
     }
 
 }
