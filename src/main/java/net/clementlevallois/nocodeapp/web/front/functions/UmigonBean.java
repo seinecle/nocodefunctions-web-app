@@ -32,12 +32,13 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.ActiveLocale;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
+import net.clementlevallois.nocodeapp.web.front.backingbeans.SingletonBean;
 import net.clementlevallois.nocodeapp.web.front.importdata.DataImportBean;
-import net.clementlevallois.nocodeapp.web.front.backingbeans.SingletonGoogle;
 import net.clementlevallois.nocodeapp.web.front.http.SendReport;
 import net.clementlevallois.nocodeapp.web.front.importdata.DataFormatConverter;
 import net.clementlevallois.nocodeapp.web.front.io.ExcelSaver;
 import net.clementlevallois.nocodeapp.web.front.logview.NotificationService;
+import net.clementlevallois.umigon.explain.controller.UmigonExplain;
 import net.clementlevallois.umigon.model.Document;
 import org.omnifaces.util.Faces;
 import org.openide.util.Exceptions;
@@ -73,6 +74,9 @@ public class UmigonBean implements Serializable {
     DataImportBean inputData;
 
     @Inject
+    SingletonBean singletonBean;
+
+    @Inject
     ActiveLocale activeLocale;
 
     public UmigonBean() {
@@ -83,9 +87,9 @@ public class UmigonBean implements Serializable {
         sessionId = Faces.getSessionId();
         sessionBean.setFunction("umigon");
         sessionBean.sendFunctionPageReport();
-        String positive_tone = sessionBean.getLocaleBundle().getString("general.nouns.sentiment_positive");
-        String negative_tone = sessionBean.getLocaleBundle().getString("general.nouns.sentiment_negative");
-        String neutral_tone = sessionBean.getLocaleBundle().getString("general.nouns.sentiment_neutral");
+        String positive_tone = UmigonExplain.getLocaleBundle(activeLocale.getLanguageTag()).getString("sentiment.ispositive");
+        String negative_tone = UmigonExplain.getLocaleBundle(activeLocale.getLanguageTag()).getString("sentiment.isnegative");
+        String neutral_tone = UmigonExplain.getLocaleBundle(activeLocale.getLanguageTag()).getString("sentiment.isneutral");
 
         sentiments = new String[]{positive_tone, negative_tone, neutral_tone};
     }
@@ -106,83 +110,89 @@ public class UmigonBean implements Serializable {
     }
 
     public String runAnalysis() {
+        if (selectedLanguage == null || selectedLanguage.isEmpty()) {
+            selectedLanguage = "en";
+        }
+        service.create(sessionBean.getLocaleBundle().getString("general.message.starting_analysis"));
+        DataFormatConverter dataFormatConverter = new DataFormatConverter();
+        Map<Integer, String> mapOfLines = dataFormatConverter.convertToMapOfLines(inputData.getBulkData(), inputData.getDataInSheets(), inputData.getSelectedSheetName(), inputData.getSelectedColumnIndex(), inputData.getHasHeaders());
+        int maxRecords = mapOfLines.size();
+
+        results = Arrays.asList(new Document[maxRecords]);
+
+        HttpRequest request;
+        HttpClient client = HttpClient.newHttpClient();
+        Set<CompletableFuture> futures = new HashSet();
         try {
-            if (selectedLanguage == null || selectedLanguage.isEmpty()) {
-                selectedLanguage = "en";
-            }
-            service.create(sessionBean.getLocaleBundle().getString("general.message.starting_analysis"));
-            DataFormatConverter dataFormatConverter = new DataFormatConverter();
-            Map<Integer, String> mapOfLines = dataFormatConverter.convertToMapOfLines(inputData.getBulkData(), inputData.getDataInSheets(), inputData.getSelectedSheetName(), inputData.getSelectedColumnIndex(), inputData.getHasHeaders());
-            int maxRecords = mapOfLines.size();
+            for (Map.Entry<Integer, String> entry : mapOfLines.entrySet()) {
+                Document doc = new Document();
+                String id = String.valueOf(entry.getKey());
+                doc.setText(entry.getValue());
+                doc.setId(id);
 
-            results = Arrays.asList(new Document[maxRecords]);
-
-            HttpRequest request;
-            HttpClient client = HttpClient.newHttpClient();
-            Set<CompletableFuture> futures = new HashSet();
-            try {
-                for (Map.Entry<Integer, String> entry : mapOfLines.entrySet()) {
-                    Document doc = new Document();
-                    String id = String.valueOf(entry.getKey());
-                    doc.setText(entry.getValue());
-                    doc.setId(id);
-
-                    StringBuilder sb = new StringBuilder();
+                StringBuilder sb = new StringBuilder();
                     sb.append("http://localhost:7002/api/sentimentForAText");
-                    sb.append("?text-lang=").append(selectedLanguage);
-                    sb.append("?id=").append(doc.getId());
-                    sb.append("&text=").append(URLEncoder.encode(entry.getValue(), StandardCharsets.UTF_8.toString()));
-                    sb.append("&explanation=on");
-                    sb.append("&output-format=bytes");
-                    sb.append("&explanation-lang=").append(activeLocale.getLanguageTag());
-                    String uriAsString = sb.toString();
+//                sb.append("http://test.nocodefunctions.com/api/sentimentForAText");
+                sb.append("?text-lang=").append(selectedLanguage);
+                sb.append("&id=").append(doc.getId());
+                sb.append("&text=").append(URLEncoder.encode(entry.getValue(), StandardCharsets.UTF_8.toString()));
+                sb.append("&explanation=on");
+                sb.append("&owner=").append(singletonBean.getPrivateProperties().getProperty("pwdOwner"));
+                sb.append("&output-format=bytes");
+                sb.append("&explanation-lang=").append(activeLocale.getLanguageTag());
+                String uriAsString = sb.toString();
 
-                    URI uri = new URI(uriAsString);
+                URI uri = new URI(uriAsString);
 
-                    request = HttpRequest.newBuilder()
-                            .uri(uri)
-                            .build();
+                request = HttpRequest.newBuilder()
+                        .uri(uri)
+                        .build();
 
-                    CompletableFuture<Void> future = client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()).thenAccept(resp -> {
-                        byte[] body = resp.body();
-                        try (
-                                 ByteArrayInputStream bis = new ByteArrayInputStream(body);  ObjectInputStream ois = new ObjectInputStream(bis)) {
-                            Document docReturn = (Document) ois.readObject();
-                            tempResults.put(Integer.valueOf(docReturn.getId()), docReturn);
-                        } catch (IOException | ClassNotFoundException ex) {
-                            Logger.getLogger(UmigonBean.class.getName()).log(Level.SEVERE, null, ex);
-                        }
+                CompletableFuture<Void> future = client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()).thenAccept(resp -> {
+                    byte[] body = resp.body();
+                    try (
+                             ByteArrayInputStream bis = new ByteArrayInputStream(body);  ObjectInputStream ois = new ObjectInputStream(bis)) {
+                        Document docReturn = (Document) ois.readObject();
+                        tempResults.put(Integer.valueOf(docReturn.getId()), docReturn);
+                    } catch (Exception ex) {
+                        System.out.println("error in body:");
+                        System.out.println(new String(body, StandardCharsets.UTF_8));
+                        Logger.getLogger(UmigonBean.class.getName()).log(Level.SEVERE, null, ex);
                     }
-                    );
-                    futures.add(future);
-                    // this is because we need to slow down a bit the requests to DeepL - sending too many thros a
-                    // java.util.concurrent.CompletionException: java.io.IOException: too many concurrent streams
-                    Thread.sleep(2);
                 }
-                this.progress = 40;
-                service.create(sessionBean.getLocaleBundle().getString("general.message.almost_done"));
-
-                CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(futures.toArray((new CompletableFuture[0])));
-                combinedFuture.join();
-
-            } catch (URISyntaxException exception) {
-                System.out.println("error!!");
-            } catch (UnsupportedEncodingException ex) {
-                System.out.println("encoding ex");
+                );
+                futures.add(future);
+                // this is because we need to slow down a bit the requests sending too many thros a
+                // java.util.concurrent.CompletionException: java.io.IOException: too many concurrent streams
+                Thread.sleep(2);
             }
-            for (Map.Entry<Integer, Document> entry : tempResults.entrySet()) {
-                results.set(entry.getKey(), entry.getValue());
-            }
+            this.progress = 40;
+            service.create(sessionBean.getLocaleBundle().getString("general.message.almost_done"));
 
-            this.progress = 100;
+            CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(futures.toArray((new CompletableFuture[0])));
+            combinedFuture.join();
 
-            service.create(sessionBean.getLocaleBundle().getString("general.message.analysis_complete"));
-            renderSeeResultsButton = true;
-            runButtonDisabled = true;
-
-        } catch (Exception ex) {
+        } catch (URISyntaxException exception) {
+            System.out.println("error!!");
+        } catch (UnsupportedEncodingException ex) {
+            System.out.println("encoding ex");
+        } catch (InterruptedException ex) {
             Exceptions.printStackTrace(ex);
         }
+
+        /* this little danse between tempResults and results is because:
+            -> we use tempResults which is a ConcurrentMap to handle the concurrent inserts following the parallel calls to the Umigon API
+            -> we use results which is a List to regain the original order of texts (notice that we insert the docs in a precise order)
+         */
+        for (Map.Entry<Integer, Document> entry : tempResults.entrySet()) {
+            results.set(entry.getKey(), entry.getValue());
+        }
+
+        this.progress = 100;
+
+        service.create(sessionBean.getLocaleBundle().getString("general.message.analysis_complete"));
+        renderSeeResultsButton = true;
+        runButtonDisabled = true;
 
         return "/" + sessionBean.getFunction() + "/results.xhtml?faces-redirect=true";
     }
@@ -248,6 +258,48 @@ public class UmigonBean implements Serializable {
         SendReport sender = new SendReport();
         sender.initErrorReport(docFound.getText() + " - should not be " + docFound.getCategorizationResult().toString());
         sender.start();
+        return "";
+    }
+
+    public String showExplanation(int rowId) {
+        Document docFound;
+
+        if (filteredDocuments != null && rowId < filteredDocuments.size() && filteredDocuments.size() != results.size()) {
+            docFound = filteredDocuments.get(rowId);
+            if (docFound == null) {
+                System.out.println("doc to explain not found in backing bean / filtered collection");
+                return "";
+            }
+            docFound.setShowExplanation(true);
+        } else {
+            docFound = results.get(rowId);
+            if (docFound == null) {
+                System.out.println("doc to explain not found in backing bean  / results collection");
+                return "";
+            }
+            docFound.setShowExplanation(true);
+        }
+        return "";
+    }
+
+    public String hideExplanation(int rowId) {
+        Document docFound;
+
+        if (filteredDocuments != null && rowId < filteredDocuments.size() && filteredDocuments.size() != results.size()) {
+            docFound = filteredDocuments.get(rowId);
+            if (docFound == null) {
+                System.out.println("doc explanation to hide not found in backing bean / filtered collection");
+                return "";
+            }
+            docFound.setShowExplanation(false);
+        } else {
+            docFound = results.get(rowId);
+            if (docFound == null) {
+                System.out.println("doc explanation to hide not found in backing bean  / results collection");
+                return "";
+            }
+            docFound.setShowExplanation(false);
+        }
         return "";
     }
 

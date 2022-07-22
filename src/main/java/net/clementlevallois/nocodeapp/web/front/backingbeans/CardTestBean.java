@@ -58,8 +58,8 @@ public class CardTestBean implements Serializable {
     private String organicResultEN = "";
     private static String baseURI;
 
-    private Boolean toggleFRExplanation = false;
-    private Boolean toggleENExplanation = false;
+    private Boolean showFRExplanation = false;
+    private Boolean showENExplanation = false;
 
     @Inject
     SessionBean sessionBean;
@@ -90,7 +90,7 @@ public class CardTestBean implements Serializable {
     }
 
     public void runUmigonTestFR() throws IOException, URISyntaxException, InterruptedException {
-        toggleFRExplanation = false;
+        showFRExplanation = false;
         SendReport send = new SendReport();
         send.initAnalytics("test: umigon fr", sessionBean.getUserAgent());
         send.start();
@@ -101,6 +101,7 @@ public class CardTestBean implements Serializable {
         sb.append("?text-lang=").append("fr");
         sb.append("&text=").append(URLEncoder.encode(umigonTestInputFR, StandardCharsets.UTF_8.toString()));
         sb.append("&explanation=on");
+        sb.append("&shorter=true");
         sb.append("&output-format=bytes");
         sb.append("&explanation-lang=").append(activeLocale.getLanguageTag());
         String uriAsString = sb.toString();
@@ -117,38 +118,22 @@ public class CardTestBean implements Serializable {
         try (
                  ByteArrayInputStream bis = new ByteArrayInputStream(body);  ObjectInputStream ois = new ObjectInputStream(bis)) {
             Document doc = (Document) ois.readObject();
-            switch (doc.getCategorizationResult()) {
-                case _12:
-                    umigonResultFR = "😔 " + sessionBean.getLocaleBundle().getString("umigon.general.negativesentiment");
+            switch (doc.getCategoryCode()) {
+                case "_12":
+                    umigonResultFR = "😔 " + doc.getCategoryLocalizedPlainText();
                     break;
-                case _11:
-                    umigonResultFR = "🤗 " + sessionBean.getLocaleBundle().getString("umigon.general.positivesentiment");
+                case "_11":
+                    umigonResultFR = "🤗 " + doc.getCategoryLocalizedPlainText();
                     break;
                 default:
-                    umigonResultFR = "😐 " + sessionBean.getLocaleBundle().getString("umigon.general.neutralsentiment");
+                    umigonResultFR = "😐 " + doc.getCategoryLocalizedPlainText();
                     break;
             }
+            umigonResultFRExplanation = doc.getExplanationSentimentHtml();
+
         } catch (IOException | ClassNotFoundException ex) {
             Logger.getLogger(UmigonBean.class.getName()).log(Level.SEVERE, null, ex);
         }
-        sb = new StringBuilder();
-        sb.append(baseURI);
-        sb.append("sentimentForAText");
-        sb.append("?text-lang=").append("fr");
-        sb.append("&text=").append(URLEncoder.encode(umigonTestInputFR, StandardCharsets.UTF_8.toString()));
-        sb.append("&explanation=on");
-        sb.append("&output-format=html");
-        sb.append("&explanation-lang=").append(activeLocale.getLanguageTag());
-        uriAsString = sb.toString();
-
-        uri = new URI(uriAsString);
-
-        request = HttpRequest.newBuilder()
-                .uri(uri)
-                .build();
-
-        HttpResponse<String> responseString = client.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
-        umigonResultFRExplanation = responseString.body();
 
         renderSignalFR = true;
         reportResultFRRendered = false;
@@ -199,6 +184,7 @@ public class CardTestBean implements Serializable {
         sb.append("&text=").append(URLEncoder.encode(umigonTestInputEN, StandardCharsets.UTF_8.toString()));
         sb.append("&explanation=on");
         sb.append("&output-format=bytes");
+        sb.append("&shorter=true");
         sb.append("&explanation-lang=").append(activeLocale.getLanguageTag());
         String uriAsString = sb.toString();
 
@@ -212,39 +198,22 @@ public class CardTestBean implements Serializable {
         try (
                  ByteArrayInputStream bis = new ByteArrayInputStream(body);  ObjectInputStream ois = new ObjectInputStream(bis)) {
             Document doc = (Document) ois.readObject();
-            switch (doc.getCategorizationResult()) {
-                case _12:
-                    umigonResultEN = "😔 " + sessionBean.getLocaleBundle().getString("umigon.general.negativesentiment");
+            switch (doc.getCategoryCode()) {
+                case "_12":
+                    umigonResultEN = "😔 " + doc.getCategoryLocalizedPlainText();
                     break;
-                case _11:
-                    umigonResultEN = "🤗 " + sessionBean.getLocaleBundle().getString("umigon.general.positivesentiment");
+                case "_11":
+                    umigonResultEN = "🤗 " + doc.getCategoryLocalizedPlainText();
                     break;
                 default:
-                    umigonResultEN = "😐 " + sessionBean.getLocaleBundle().getString("umigon.general.neutralsentiment");
+                    umigonResultEN = "😐 " + doc.getCategoryLocalizedPlainText();
                     break;
             }
+            umigonResultENExplanation = doc.getExplanationSentimentHtml();
 
         } catch (Exception ex) {
             Logger.getLogger(CardTestBean.class.getName()).log(Level.SEVERE, null, ex);
         }
-        sb = new StringBuilder();
-        sb.append(baseURI);
-        sb.append("sentimentForAText");
-        sb.append("?text-lang=").append("fr");
-        sb.append("&text=").append(URLEncoder.encode(umigonTestInputEN, StandardCharsets.UTF_8.toString()));
-        sb.append("&explanation=on");
-        sb.append("&output-format=html");
-        sb.append("&explanation-lang=").append(activeLocale.getLanguageTag());
-        uriAsString = sb.toString();
-
-        uri = new URI(uriAsString);
-
-        request = HttpRequest.newBuilder()
-                .uri(uri)
-                .build();
-
-        HttpResponse<String> responseString = client.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
-        umigonResultENExplanation = responseString.body();
 
         renderSignalEN = true;
         reportResultENRendered = false;
@@ -456,24 +425,20 @@ public class CardTestBean implements Serializable {
         this.umigonResultENExplanation = umigonResultENExplanation;
     }
 
-    public Boolean getToggleFRExplanation() {
-        if (!toggleFRExplanation) {
-            toggleFRExplanation = !toggleFRExplanation;
-        }
-        return toggleFRExplanation;
+    public Boolean getShowFRExplanation() {
+        return showFRExplanation;
     }
 
-    public void setToggleFRExplanation(Boolean toggleFRExplanation) {
-        this.toggleFRExplanation = toggleFRExplanation;
+    public void setShowFRExplanation(Boolean showFRExplanation) {
+        this.showFRExplanation = showFRExplanation;
     }
 
-    public Boolean getToggleENExplanation() {
-        toggleENExplanation = !toggleENExplanation;
-        return toggleENExplanation;
+    public Boolean getShowENExplanation() {
+        return showENExplanation;
     }
 
-    public void setToggleENExplanation(Boolean toggleENExplanation) {
-        this.toggleENExplanation = toggleENExplanation;
+    public void setShowENExplanation(Boolean showENExplanation) {
+        this.showENExplanation = showENExplanation;
     }
 
 }

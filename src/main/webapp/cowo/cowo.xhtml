@@ -36,7 +36,7 @@
             </p:panel>
             <p:spacer height="20"/>
             <div class="grid" >
-                <div class="col">
+                <div class="col-12 md:9 lg:col-9">
                     <p:panel>
                         #{text['general.message.language_of_text_to_analyze']}
                         <br/>
@@ -127,7 +127,7 @@
                         <p:ajax event="complete" update=":header:messages"/>
                     </p:progressBar>
                 </div>
-                <div class="col-3">
+                <div class="col-3 flex-grow-1">
                     <p:panel header="Log">
                         <p:scrollPanel id="scrollPanel" mode="native" style="height:100%">
                             <h:dataTable id="notifications" value="#{logBean.notifications}" var="notification">

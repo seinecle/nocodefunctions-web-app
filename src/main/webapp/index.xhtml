@@ -115,17 +115,15 @@
                         <f:facet name="title">
                             #{text['index.testsentimentanalysisuk']}
                         </f:facet>
-                        <h:form>
+                        <h:form id="umigonEN">
                             <div class="ui-inputgroup">
                                 <p:inputText id="umigonTestEN" value="#{cardTestBean.umigonTestInputEN}"/>
-                                <p:commandButton value="#{text['general.verbs.compute']}" widgetVar="umigonButtonEN" action="#{cardTestBean.runUmigonTestEN}" update="resultEN" styleClass="btn btn-primary"/>
+                                <p:commandButton value="#{text['general.verbs.compute']}" widgetVar="umigonButtonEN" action="#{cardTestBean.runUmigonTestEN}" update="resultEN umigonEN:explanationEN" styleClass="btn btn-primary"/>
                             </div>
                             <p:outputPanel id="resultEN">   
                                 <h:outputText value="#{cardTestBean.umigonResultEN}" style="width:40px;"/>
                                 <p:spacer width="15"/>
-                                <p:commandLink value="#{text['general.small_words.why']} 🤔" update="formInfoEN:info"
-                                               oncomplete="PF('detailsWidget').show()"
-                                               rendered="#{cardTestBean.renderSignalEN}"/>
+                                <p:commandLink value="#{text['general.small_words.why']} 🤔" action="#{cardTestBean.setShowENExplanation(true)}" rendered="#{cardTestBean.renderSignalEN}" update="umigonEN:explanationEN"/>
                                 <p:spacer width="15"/>
                                 <p:commandLink style="text-align: center;font-size: 80%" value="#{text['general.verbs.signal_error']}"
                                                action="#{cardTestBean.signalUmigonEN}"
@@ -134,6 +132,17 @@
                                 <p:spacer width="20" rendered ="#{cardTestBean.reportResultENRendered}"/>
                                 <p:outputLabel style="font-size: 80%" value="#{text['general.message.reportsent']}" rendered ="#{cardTestBean.reportResultENRendered}" />
                                 <p:graphicImage name="images/check.png" width="24px" rendered ="#{cardTestBean.reportResultENRendered}"  alt="check mark"/>
+                                <p:outputPanel id="explanationEN">
+                                    <br/>
+                                    <br/>
+                                    <small>
+                                        <h:outputText value="#{cardTestBean.umigonResultENExplanation}" escape="false" rendered="#{cardTestBean.showENExplanation}"/>
+                                    </small>
+                                    <br/>
+                                    <br/>
+                                    <p:commandLink value="#{text['general.verbs.hide']} ↩️" action="#{cardTestBean.setShowENExplanation(false)}" rendered="#{cardTestBean.showENExplanation}" update="umigonEN:explanationEN"/>
+                                    <p:spacer width="15"/>
+                                </p:outputPanel>
                             </p:outputPanel>
                         </h:form>
                     </p:card>
@@ -150,9 +159,7 @@
                             <p:outputPanel id="resultFR">
                                 <h:outputText value="#{cardTestBean.umigonResultFR}" style="width:40px;"/>
                                 <p:spacer width="15"/>
-                                <p:commandLink value="#{text['general.small_words.why']} 🤔" rendered="#{cardTestBean.renderSignalFR}" update="umigonFR:explanationFR">
-                                <f:ajax event="click" render="umigonFR:explanationFR" />
-                                </p:commandLink>
+                                <p:commandLink value="#{text['general.small_words.why']} 🤔" action="#{cardTestBean.setShowFRExplanation(true)}" rendered="#{cardTestBean.renderSignalFR}" update="umigonFR:explanationFR"/>
                                 <p:spacer width="15"/>
                                 <p:commandLink style="text-align: center;font-size: 80%" value="#{text['general.verbs.signal_error']}"
                                                action="#{cardTestBean.signalUmigonFR}" update="@this resultFR"
@@ -163,7 +170,13 @@
                                 <p:outputPanel id="explanationFR">
                                     <br/>
                                     <br/>
-                                    <small><h:outputText value="#{cardTestBean.umigonResultFRExplanation}" escape="false" rendered="#{cardTestBean.toggleFRExplanation}"/></small>
+                                    <small>
+                                        <h:outputText value="#{cardTestBean.umigonResultFRExplanation}" escape="false" rendered="#{cardTestBean.showFRExplanation}"/>
+                                    </small>
+                                    <br/>
+                                    <br/>
+                                    <p:commandLink value="#{text['general.verbs.hide']} ↩️" action="#{cardTestBean.setShowFRExplanation(false)}" rendered="#{cardTestBean.showFRExplanation}" update="umigonFR:explanationFR"/>
+                                    <p:spacer width="15"/>
                                 </p:outputPanel>
                             </p:outputPanel>
                         </h:form>

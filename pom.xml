@@ -119,6 +119,11 @@
             <version>1.0</version>
         </dependency>
         <dependency>
+            <groupId>net.clementlevallois.umigonfamily</groupId>
+            <artifactId>umigon-explain</artifactId>
+            <version>1.0</version>
+        </dependency>
+        <dependency>
             <groupId>net.clementlevallois</groupId>
             <artifactId>gaze</artifactId>
             <version>1.0</version>

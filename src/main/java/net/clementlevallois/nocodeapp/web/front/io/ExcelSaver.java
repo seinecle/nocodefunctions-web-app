@@ -37,13 +37,15 @@ public class ExcelSaver {
         // creating the header
         Row rowHeader = sheet.createRow(rowNumber++);
         Cell cell0Header = rowHeader.createCell(0, CellType.STRING);
-        cell0Header.setCellValue(String.valueOf("line number"));
+        cell0Header.setCellValue(localeBundle.getString("general.nouns.line_number"));
         Cell cell1Header = rowHeader.createCell(1, CellType.STRING);
-        cell1Header.setCellValue("text provided as input");
+        cell1Header.setCellValue(localeBundle.getString("general.message.text_provided_as_input"));
         Cell cell2Header = rowHeader.createCell(2, CellType.STRING);
-        cell2Header.setCellValue("sentiment");
+        cell2Header.setCellValue(localeBundle.getString("general.nouns.sentiment"));
         Cell cell3Header = rowHeader.createCell(3, CellType.STRING);
         cell3Header.setCellValue("language");
+        Cell cell4Header = rowHeader.createCell(4, CellType.STRING);
+        cell4Header.setCellValue(localeBundle.getString("general.nouns.explanations"));
 
         for (Document doc : results) {
             if (doc == null) {
@@ -58,15 +60,19 @@ public class ExcelSaver {
             }
             Cell cell2 = row.createCell(2, CellType.STRING);
             String sentiment;
-            switch (doc.getCategorizationResult()) {
-                case _12:
-                    sentiment = "😔 " + localeBundle.getString("umigon.general.negativesentiment");
+            if (doc.getCategoryCode() == null) {
+                System.out.println("no category code for this doc");
+                continue;
+            }
+            switch (doc.getCategoryCode()) {
+                case "_12":
+                    sentiment = "😔 " + doc.getCategoryLocalizedPlainText();
                     break;
-                case _11:
-                    sentiment = "🤗 " + localeBundle.getString("umigon.general.positivesentiment");
+                case "_11":
+                    sentiment = "🤗 " + doc.getCategoryLocalizedPlainText();
                     break;
                 default:
-                    sentiment = "😐 " + localeBundle.getString("umigon.general.neutralsentiment");
+                    sentiment = "😐 " + doc.getCategoryLocalizedPlainText();
                     break;
             }
 
@@ -75,6 +81,8 @@ public class ExcelSaver {
             if (doc.getLanguage() != null) {
                 cell3.setCellValue(doc.getLanguage());
             }
+            Cell cell4 = row.createCell(4, CellType.STRING);
+            cell4.setCellValue(doc.getExplanationPlainText());
         }
         StreamedContent file = null;
         try {

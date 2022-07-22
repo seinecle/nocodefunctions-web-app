@@ -102,7 +102,7 @@ h2 {
   #hide-mobile { display: none !important; }    hide it elsewhere 
 }*/
 
-@media (max-width:930px){
+@media screen and (max-width:930px){
     #hide-mobile {
         display: none !important;
     }
@@ -121,7 +121,7 @@ h2 {
 
 }
 
-@media (min-width:930px){
+@media screen and (min-width:930px){
     #hide-desktop {
         display: none !important;
     }
@@ -133,7 +133,7 @@ h2 {
     }
 }
 
-@media (max-width:500px){
+@media screen and (max-width:500px){
     #hide-desktop {
         display: none !important;
     }

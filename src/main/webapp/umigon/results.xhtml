@@ -62,39 +62,57 @@
                     <div class="card">
                         <p:dataTable
                             id ="resultsTable"
-                            var="item" 
+                            var="doc" 
                             value="#{umigonBean.results}" 
                             filteredValue="#{umigonBean.filteredDocuments}" 
                             widgetVar="resultsTableWidgetVar" paginator="true" 
                             rows ="200"
                             rowIndexVar="rowId"
                             >
-                            <p:column headerText="input" >
-                                <h:outputText value="#{item.text}" />
+                            <p:column headerText="#{text['general.message.text_provided_as_input']}" >
+                                <h:outputText value="#{doc.text}" />
                             </p:column>
 
-                            <p:column field="sentiment" headerText="#{text['umigon.general.sentiment']}" filterMatchMode="exact">
+                            <p:column field="categoryLocalizedPlainText" headerText="#{text['general.nouns.sentiment']}" filterMatchMode="exact">
                                 <f:facet name="filter">
                                     <p:selectOneMenu onchange="PF('resultsTableWidgetVar').filter()" styleClass="custom-filter">
                                         <f:selectItem itemLabel="#{text['general.small_words.all']}" itemValue="#{null}" noSelectionOption="true" />
                                         <f:selectItems value="#{umigonBean.sentiments}"/>
                                     </p:selectOneMenu>
                                 </f:facet>
-                                <h:outputText value="#{item}"/>
+                                <h:outputText value="#{doc.categoryLocalizedPlainText}"/>
                                 <p:spacer width="3"/>
-                                <p:graphicImage name="images/red.png" rendered ="#{item.categorizationResult.toString() eq '_12'}" />
-                                <p:graphicImage name="images/green.png" rendered ="#{item.categorizationResult.toString() eq '_11'}"/>
+                                <p:graphicImage name="images/red.png" rendered ="#{doc.categoryCode eq '_12'}" />
+                                <p:graphicImage name="images/green.png" rendered ="#{doc.categoryCode eq '_11'}"/>
                             </p:column>
+                            <p:column headerText="#{text['general.small_words.why']} 🤔">
+                                <p:commandLink style="text-align: center;font-size: 80%"
+                                               value="#{text['general.small_words.why']} 🤔"
+                                               actionListener="#{umigonBean.showExplanation(rowId)}"
+                                               rendered="#{!doc.showExplanation}"
+                                               update="resultsTable"
+                                               oncomplete="PF('resultsTableWidgetVar').filter()"/>
+                                <p:outputLabel style="font-size: 80%" value="#{doc.explanationSentimentHtml}" rendered ="#{doc.showExplanation}" escape="false"/>
+                                
+                                <p:commandLink style="text-align: center;font-size: 80%"
+                                                value="#{text['general.verbs.hide']} ↩️"
+                                               actionListener="#{umigonBean.hideExplanation(rowId)}"
+                                               rendered="#{doc.showExplanation}"
+                                               update="resultsTable"
+                                               oncomplete="PF('resultsTableWidgetVar').filter()"/>
+
+                            </p:column>
+
                             <p:column headerText="#{text['general.verbs.signal_error']}">
                                 <p:commandButton style="text-align: center;font-size: 80%" 
                                                  value="#{text['general.verbs.signal_error']}"
                                                  actionListener="#{umigonBean.signal(rowId)}" 
                                                  update="resultsTable"
-                                                 rendered ="#{!item.flaggedAsFalseLabel}"
+                                                 rendered ="#{!doc.flaggedAsFalseLabel}"
                                                  oncomplete="PF('resultsTableWidgetVar').filter()">
                                 </p:commandButton>
-                                <p:outputLabel style="font-size: 80%" value="#{text['general.message.reportsent']}" rendered ="#{item.flaggedAsFalseLabel}" />
-                                <p:graphicImage name="images/check.png" width="24px" rendered ="#{item.flaggedAsFalseLabel}" />
+                                <p:outputLabel style="font-size: 80%" value="#{text['general.message.reportsent']}" rendered ="#{doc.flaggedAsFalseLabel}" />
+                                <p:graphicImage name="images/check.png" width="24px" rendered ="#{doc.flaggedAsFalseLabel}" />
                             </p:column>
                         </p:dataTable>
                     </div>

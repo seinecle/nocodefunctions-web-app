@@ -31,12 +31,12 @@
             <p:panel>
                 <ui:include src="/WEB-INF/includes/header.xhtml"/>
                 <ui:include src="/WEB-INF/includes/sidebar.xhtml"/>
-                
+
                 <h1>#{text['general.nouns.parameters']}</h1>
             </p:panel>
             <p:spacer height="20"/>
             <div class="grid" >
-                <div class="col">
+                <div class="col-12 md:9 lg:col-9">
                     <p:panel>
                         #{text['general.message.language_of_text_to_analyze']}
                         <br/>
@@ -46,9 +46,9 @@
                                 id="lang"
                                 value="#{delightBean.selectedLanguage}"
                                 style="width: 50px !important">
-                               <f:selectItem
-                                   itemLabel="#{text['general.languages.english']} 🏏"
-                                   itemValue="en"/>                                
+                                <f:selectItem
+                                    itemLabel="#{text['general.languages.english']} 🏏"
+                                    itemValue="en"/>                                
                                 <p:ajax event="change" update="@this" />
                             </p:selectOneListbox>
                         </h:form>
@@ -67,7 +67,7 @@
                         </p:progressBar>
                     </p:panel>
                 </div>
-                <div id="thirdcol" class="col-3">
+                <div id="thirdcol" class="col-3 flex-grow-1">
                     <p:panel header="Log">
                         <p:scrollPanel id="scrollPanel" mode="native" style="height:100%">
                             <h:dataTable id="notifications" value="#{logBean.notifications}" var="notification">
