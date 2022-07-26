@@ -33,6 +33,7 @@ public class SessionBean implements Serializable {
     private ResourceBundle localeBundle;
     private boolean testServer;
     private String noRobot;
+
     private OAuth2AccessToken twitterOAuth2AccessToken;
 
     @Inject
@@ -154,6 +155,9 @@ public class SessionBean implements Serializable {
     public void setSingletonBean(SingletonBean singletonBean) {
         this.singletonBean = singletonBean;
     }
+
+    
+    
     
     
     

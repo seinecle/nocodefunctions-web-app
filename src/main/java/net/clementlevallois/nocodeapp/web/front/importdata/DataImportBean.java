@@ -36,7 +36,6 @@ import static java.util.stream.Collectors.toList;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
-import javax.faces.event.ActionEvent;
 import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -102,6 +101,7 @@ public class DataImportBean implements Serializable {
     private Boolean isTxtFile = false;
     private Boolean isCsvFile = false;
     private Boolean isPdfFile = false;
+    private Boolean isTwitterSearch = false;
 
     private Boolean renderHeadersCheckBox = false;
     private Boolean readButtonDisabled = true;
@@ -228,7 +228,7 @@ public class DataImportBean implements Serializable {
                 isCsvFile = false;
                 isPdfFile = false;
                 isGSheet = false;
-
+                isTwitterSearch = false;
                 if (f != null && f.getFileName().endsWith("xlsx")) {
                     isExcelFile = true;
                 } else if (f != null && f.getFileName().endsWith("txt")) {
@@ -276,6 +276,7 @@ public class DataImportBean implements Serializable {
         isCsvFile = false;
         isPdfFile = false;
         isGSheet = false;
+        isTwitterSearch = false;
         if (file != null && file.getFileName().endsWith("xlsx")) {
             isExcelFile = true;
             setSource(Source.XLSX);
@@ -323,6 +324,7 @@ public class DataImportBean implements Serializable {
         isExcelFile = false;
         isTxtFile = false;
         isCsvFile = false;
+        isTwitterSearch = false;
         isGSheet = true;
         file = null;
         dataInSheets = new ArrayList();
@@ -426,14 +428,14 @@ public class DataImportBean implements Serializable {
             int pageNumber;
             int i = 0;
             for (pageNumber = 1; pageNumber <= numberOfPages; pageNumber++) {
-                sheetModel.getPageAndStartingLine().put(pageNumber,i);
+                sheetModel.getPageAndStartingLine().put(pageNumber, i);
                 String textInDoc = PdfTextExtractor.getTextFromPage(myDocument.getPage(pageNumber), new SimpleTextExtractionStrategy());
                 String linesArray[] = textInDoc.split("\\r?\\n");
                 for (String line : linesArray) {
                     line = Jsoup.clean(line, Safelist.basicWithImages().addAttributes("span", "style"));
                     if (!line.isBlank()) {
                         lines.put(i++, line);
-                    }else{
+                    } else {
                         lines.put(i++, sessionBean.getLocaleBundle().getString("general.message.empty_line"));
                     }
                 }
@@ -572,7 +574,7 @@ public class DataImportBean implements Serializable {
                 // if we are computing cooccurrences, we need to set the file name for a sheet name and the column to zero.
                 if (sessionBean.getFunction().equals("gaze") && gazeBean != null && gazeBean.getOption().equals("1")) {
                     setSelectedColumnIndex("0");
-                    setSelectedSheetName(file.getFileName()+"_"+ sheet.getSheetName());
+                    setSelectedSheetName(file.getFileName() + "_" + sheet.getSheetName());
                 }
             }
 
@@ -682,6 +684,40 @@ public class DataImportBean implements Serializable {
     public void setIsGSheet(Boolean isGSheet) {
         this.isGSheet = isGSheet;
     }
+
+    public Boolean getIsTxtFile() {
+        return isTxtFile;
+    }
+
+    public void setIsTxtFile(Boolean isTxtFile) {
+        this.isTxtFile = isTxtFile;
+    }
+
+    public Boolean getIsCsvFile() {
+        return isCsvFile;
+    }
+
+    public void setIsCsvFile(Boolean isCsvFile) {
+        this.isCsvFile = isCsvFile;
+    }
+
+    public Boolean getIsPdfFile() {
+        return isPdfFile;
+    }
+
+    public void setIsPdfFile(Boolean isPdfFile) {
+        this.isPdfFile = isPdfFile;
+    }
+
+    public Boolean getIsTwitterSearch() {
+        return isTwitterSearch;
+    }
+
+    public void setIsTwitterSearch(Boolean isTwitterSearch) {
+        this.isTwitterSearch = isTwitterSearch;
+    }
+    
+    
 
     public String selectColumn(String colIndex, String sheetName) {
         System.out.println("column selected: " + colIndex + ", sheet selected: " + sheetName);

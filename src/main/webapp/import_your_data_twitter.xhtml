@@ -28,9 +28,9 @@
 
         <h:body>
             <f:metadata>
+                <f:viewParam name="newSearch" value="#{twitterImportBean.dummyToResetSearch}" />
                 <f:viewParam name="function" value="#{sessionBean.function}" />
-                <f:viewParam name="persistToDisk" value="#{dataImportBean.persistToDisk}" />
-                <f:viewAction action="#{twitterImportBean.initTwitter()}" />
+                <f:viewAction action="#{twitterImportBean.setSearchButtonDisabled(false)}" />
             </f:metadata>
 
             <script type="text/javascript">
@@ -53,7 +53,9 @@
                     return t;
                 }(document, "script", "twitter-wjs"));
                 //]]>
+
             </script>
+
             <f:facet name="last">
                 <h:outputStylesheet name="css/custom.css" />
             </f:facet>
@@ -101,10 +103,15 @@
                                                                     <br/>-->
                                     <p:commandButton
                                         id="searchBtn"
-                                        process="@this"
-                                        value="#{text['import_data.twitter.launch_the_search']}"
+                                        widgetVar="searchBtnWidgetVar"
+                                        onclick="PF('searchBtnWidgetVar').jq.text('#{text['general.message.please_wait_seconds']}');PF('searchBtnWidgetVar').disable()"
+                                        value="#{twitterImportBean.searchButtonDisabled ? text['general.message.please_wait_seconds'] : text['import_data.twitter.launch_the_search']}"
                                         action="#{twitterImportBean.searchTweets()}"
-                                        update="dataTable launch"/>
+                                        disabled="#{twitterImportBean.searchButtonDisabled}"
+                                        update="dataTable launch twitter_ops">
+                                        <f:setPropertyActionListener value="true"
+                                                                     target="#{twitterImportBean.searchButtonDisabled}" />
+                                    </p:commandButton>
                                 </p:outputPanel>
                                 <p:outputPanel id="launch">
                                     <br/>

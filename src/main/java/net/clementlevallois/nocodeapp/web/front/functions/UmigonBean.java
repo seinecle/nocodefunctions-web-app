@@ -6,7 +6,6 @@
 package net.clementlevallois.nocodeapp.web.front.functions;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
@@ -53,9 +52,10 @@ import org.primefaces.model.StreamedContent;
 
 public class UmigonBean implements Serializable {
 
-    private Integer progress;
+    private Integer progress = 3;
+    private Integer countTreated = 0;
     private List<Document> results;
-    private ConcurrentHashMap<Integer, Document> tempResults = new ConcurrentHashMap();
+    private ConcurrentHashMap<Integer, Document> tempResults;
     private String[] sentiments;
     private String selectedLanguage;
     private Boolean runButtonDisabled = true;
@@ -63,6 +63,7 @@ public class UmigonBean implements Serializable {
     private Boolean renderSeeResultsButton = false;
     private String sessionId;
     private List<Document> filteredDocuments;
+    private Integer maxCapacity = 10_000;
 
     @Inject
     NotificationService service;
@@ -102,6 +103,14 @@ public class UmigonBean implements Serializable {
         this.progress = progress;
     }
 
+    public Integer getMaxCapacity() {
+        return maxCapacity;
+    }
+
+    public void setMaxCapacity(Integer maxCapacity) {
+        this.maxCapacity = maxCapacity;
+    }
+
     public void onComplete() {
     }
 
@@ -113,30 +122,37 @@ public class UmigonBean implements Serializable {
         if (selectedLanguage == null || selectedLanguage.isEmpty()) {
             selectedLanguage = "en";
         }
+        
+        tempResults = new ConcurrentHashMap(maxCapacity + 1);
         service.create(sessionBean.getLocaleBundle().getString("general.message.starting_analysis"));
         DataFormatConverter dataFormatConverter = new DataFormatConverter();
         Map<Integer, String> mapOfLines = dataFormatConverter.convertToMapOfLines(inputData.getBulkData(), inputData.getDataInSheets(), inputData.getSelectedSheetName(), inputData.getSelectedColumnIndex(), inputData.getHasHeaders());
-        int maxRecords = mapOfLines.size();
+        int maxRecords = Math.min(mapOfLines.size(),maxCapacity);
 
-        results = Arrays.asList(new Document[maxRecords]);
+        results = Arrays.asList(new Document[maxCapacity+1]);
 
         HttpRequest request;
         HttpClient client = HttpClient.newHttpClient();
         Set<CompletableFuture> futures = new HashSet();
+        int i = 1;
         try {
             for (Map.Entry<Integer, String> entry : mapOfLines.entrySet()) {
+                if (i++ > maxCapacity){
+                    break;
+                }
                 Document doc = new Document();
                 String id = String.valueOf(entry.getKey());
                 doc.setText(entry.getValue());
                 doc.setId(id);
 
                 StringBuilder sb = new StringBuilder();
-                    sb.append("http://localhost:7002/api/sentimentForAText");
+                sb.append("http://localhost:7002/api/sentimentForAText");
 //                sb.append("http://test.nocodefunctions.com/api/sentimentForAText");
                 sb.append("?text-lang=").append(selectedLanguage);
                 sb.append("&id=").append(doc.getId());
                 sb.append("&text=").append(URLEncoder.encode(entry.getValue(), StandardCharsets.UTF_8.toString()));
                 sb.append("&explanation=on");
+                sb.append("&shorter=true");
                 sb.append("&owner=").append(singletonBean.getPrivateProperties().getProperty("pwdOwner"));
                 sb.append("&output-format=bytes");
                 sb.append("&explanation-lang=").append(activeLocale.getLanguageTag());
@@ -150,14 +166,20 @@ public class UmigonBean implements Serializable {
 
                 CompletableFuture<Void> future = client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()).thenAccept(resp -> {
                     byte[] body = resp.body();
-                    try (
-                             ByteArrayInputStream bis = new ByteArrayInputStream(body);  ObjectInputStream ois = new ObjectInputStream(bis)) {
-                        Document docReturn = (Document) ois.readObject();
-                        tempResults.put(Integer.valueOf(docReturn.getId()), docReturn);
-                    } catch (Exception ex) {
-                        System.out.println("error in body:");
-                        System.out.println(new String(body, StandardCharsets.UTF_8));
-                        Logger.getLogger(UmigonBean.class.getName()).log(Level.SEVERE, null, ex);
+                    Float situation = (countTreated++ * 100 / (float) maxRecords);
+                    if (situation.intValue() > progress) {
+                        progress = situation.intValue();
+                    }
+                    if (body.length >= 100 && !new String(body, StandardCharsets.UTF_8).toLowerCase().startsWith("internal") && !new String(body, StandardCharsets.UTF_8).toLowerCase().startsWith("not found")) {
+                        try (
+                                ByteArrayInputStream bis = new ByteArrayInputStream(body);  ObjectInputStream ois = new ObjectInputStream(bis)) {
+                            Document docReturn = (Document) ois.readObject();
+                            tempResults.put(Integer.valueOf(docReturn.getId()), docReturn);
+                        } catch (Exception ex) {
+                            System.out.println("error in body:");
+                            System.out.println(new String(body, StandardCharsets.UTF_8));
+                            Logger.getLogger(UmigonBean.class.getName()).log(Level.SEVERE, null, ex);
+                        }
                     }
                 }
                 );

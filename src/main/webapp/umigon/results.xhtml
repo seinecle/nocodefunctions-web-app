@@ -47,6 +47,10 @@
             <p:spacer height="20"/>
             <p:panel>
                 <h:form target="_blank">
+                    
+                    <p:commandLink action="#{twitterImportBean.navigateBackToSearch()}" value="#{text['general.message.go_back_do_search_twitter']}" rendered="#{dataImportBean.isTwitterSearch}"/>
+                    <br/>
+                    <br/>
                     <p:commandButton
                         value="#{text['general.verbs.download_results']}"
                         ajax="false"
@@ -92,10 +96,16 @@
                                                rendered="#{!doc.showExplanation}"
                                                update="resultsTable"
                                                oncomplete="PF('resultsTableWidgetVar').filter()"/>
-                                <p:outputLabel style="font-size: 80%" value="#{doc.explanationSentimentHtml}" rendered ="#{doc.showExplanation}" escape="false"/>
-                                
-                                <p:commandLink style="text-align: center;font-size: 80%"
-                                                value="#{text['general.verbs.hide']} ↩️"
+                                <div style="background-color: #F0F0F0;">
+                                    <p:outputLabel 
+                                        value="#{doc.explanationSentimentHtml}" 
+                                        rendered ="#{doc.showExplanation}" 
+                                        escape="false"
+                                        style="font-size: 80%"
+                                        />
+                                </div>
+                                <p:commandLink style="text-align: center;font-size: 80%;"
+                                               value="#{text['general.verbs.hide']} ↩️"
                                                actionListener="#{umigonBean.hideExplanation(rowId)}"
                                                rendered="#{doc.showExplanation}"
                                                update="resultsTable"

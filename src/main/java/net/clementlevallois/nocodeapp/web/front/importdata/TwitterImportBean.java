@@ -54,6 +54,8 @@ public class TwitterImportBean implements Serializable {
     private String untilString;
     private List<SheetModel> sheets;
     private String searchType; // RECENT or FULL
+    private Boolean searchButtonDisabled = false;
+    private String dummyToResetSearch;
 
     private Integer progress;
 
@@ -73,9 +75,6 @@ public class TwitterImportBean implements Serializable {
 
     }
 
-    public void initTwitter() {
-    }
-
     public void onloadingRedirectPage() {
         try {
 
@@ -83,13 +82,19 @@ public class TwitterImportBean implements Serializable {
             code = code.split("\\?")[0];
             OAuth2AccessToken accessToken = singletonBean.getOAuth2AccessToken(code);
             sessionBean.setTwitterOAuth2AccessToken(accessToken);
+            searchButtonDisabled = false;
             ExternalContext externalContext = FacesContext.getCurrentInstance().getExternalContext();
             externalContext.redirect(RemoteLocal.getDomain() + "import_your_data_twitter.html");
-
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
+    }
 
+    public String navigateBackToSearch() {
+        sheets = new ArrayList();
+        dataInputBean.setDataInSheets(new ArrayList());
+
+        return "/import_your_data_twitter.html?faces-redirect=true";
     }
 
     public String goToConnectURL() throws IOException {
@@ -99,6 +104,11 @@ public class TwitterImportBean implements Serializable {
     }
 
     public String searchTweets() {
+        dataInputBean.setIsExcelFile(false);
+        dataInputBean.setIsGSheet(false);
+        dataInputBean.setIsCsvFile(false);
+        dataInputBean.setIsPdfFile(false);
+        dataInputBean.setIsTwitterSearch(true);
         if (sessionBean.getTwitterOAuth2AccessToken() == null) {
             service.create(sessionBean.getLocaleBundle().getString("back.import.twitter_credentials_not found"));
             return "";
@@ -133,7 +143,7 @@ public class TwitterImportBean implements Serializable {
                     .build();
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
             if (response.statusCode() != 200) {
-                System.out.println("error! "+ response.body());
+                System.out.println("error! " + response.body());
                 if (response.statusCode() == 429) {
                     service.create(sessionBean.getLocaleBundle().getString("back.import.twitter.too_many_requests"));
                     JsonReader jr = Json.createReader(new StringReader(response.body()));
@@ -272,6 +282,25 @@ public class TwitterImportBean implements Serializable {
 
     public void setCode(String code) {
         this.code = code;
+    }
+
+    public Boolean getSearchButtonDisabled() {
+        return searchButtonDisabled;
+    }
+
+    public void setSearchButtonDisabled(Boolean searchButtonDisabled) {
+        this.searchButtonDisabled = searchButtonDisabled;
+    }
+
+    public String getDummyToResetSearch() {
+        return dummyToResetSearch;
+    }
+
+    public void setDummyToResetSearch(String dummyToResetSearch) {
+        if (dummyToResetSearch.equals("true")) {
+            sheets = new ArrayList();
+            dataInputBean.setDataInSheets(new ArrayList());
+        }
     }
 
 }
