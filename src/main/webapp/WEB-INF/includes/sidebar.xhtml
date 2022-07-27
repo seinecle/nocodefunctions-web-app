@@ -61,6 +61,13 @@
             </p:panel>
             <div>
                 <p:spacer height="20"/>
+                <br/>
+                <br/>
+                #{text['general.message.captcha_paris']}:
+                <br/>
+                <p:inputText value="#{feedbackBean.captcha}" style="width: 100%;"/>
+                <br/>
+                <br/>
             </div>
             <p:commandButton
                 value="#{text['general.verbs.send']}"

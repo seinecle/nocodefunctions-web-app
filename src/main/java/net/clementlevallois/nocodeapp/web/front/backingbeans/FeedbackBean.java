@@ -32,6 +32,7 @@ public class FeedbackBean implements Serializable {
     private String freeCommentError;
     private String freeCommentSuggestion;
     private String email;
+    private String captcha;
 
     private Locale current;
 
@@ -55,6 +56,7 @@ public class FeedbackBean implements Serializable {
     }
 
     public void sendFeedback() {
+        if (captcha != null && captcha.toLowerCase().trim().equals("paris")){
         HttpServletRequest request = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
         String url = request.getRequestURL().toString();
         SendReport send = new SendReport();
@@ -63,7 +65,7 @@ public class FeedbackBean implements Serializable {
 
         service.create(sessionBean.getLocaleBundle().getString("general.message.feedback_sent"));
         addMessage(FacesMessage.SEVERITY_INFO, "👍🏼", sessionBean.getLocaleBundle().getString("general.message.feedback_sent"));
-
+        }
     }
 
     public String getSourceLang() {
@@ -106,4 +108,11 @@ public class FeedbackBean implements Serializable {
         this.email = email;
     }
 
+    public String getCaptcha() {
+        return captcha;
+    }
+
+    public void setCaptcha(String captcha) {
+        this.captcha = captcha;
+    }
 }
