@@ -16,6 +16,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -122,8 +123,8 @@ public class UmigonBean implements Serializable {
         if (selectedLanguage == null || selectedLanguage.isEmpty()) {
             selectedLanguage = "en";
         }
-        
         tempResults = new ConcurrentHashMap(maxCapacity + 1);
+        filteredDocuments = new ArrayList(maxCapacity + 1);
         service.create(sessionBean.getLocaleBundle().getString("general.message.starting_analysis"));
         DataFormatConverter dataFormatConverter = new DataFormatConverter();
         Map<Integer, String> mapOfLines = dataFormatConverter.convertToMapOfLines(inputData.getBulkData(), inputData.getDataInSheets(), inputData.getSelectedSheetName(), inputData.getSelectedColumnIndex(), inputData.getHasHeaders());

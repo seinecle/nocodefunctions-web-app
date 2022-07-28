@@ -94,13 +94,27 @@ h2 {
     font-size: 60% !important;
 }
 
-/*@media screen and (min-width: 0px) and (max-width: 800px) {
-  #hide-mobile { display: block !important; }   show it on small screens 
+.column_button {
+  animation: shake-animation 2.5s ease infinite;
+  transform-origin: 50% 50%;
+}
+.element {
+  margin: 0 auto;
+  width: 150px;
+  height: 150px;
+  background: red;
+}
+@keyframes shake-animation {
+   0% { transform:translate(0,0) }
+  5% { transform:translate(5px,0) }
+  10% { transform:translate(0,0) }
+  15% { transform:translate(5px,0) }
+  20% { transform:translate(0,0) }
+  25% { transform:translate(5px,0) }
+  30% { transform:translate(0,0) }
+  100% { transform:translate(0,0) }
 }
 
-@media screen and (min-width: 801px) and (max-width: 1024px) {
-  #hide-mobile { display: none !important; }    hide it elsewhere 
-}*/
 
 @media screen and (max-width:930px){
     #hide-mobile {

@@ -109,6 +109,9 @@ public class TwitterImportBean implements Serializable {
         dataInputBean.setIsCsvFile(false);
         dataInputBean.setIsPdfFile(false);
         dataInputBean.setIsTwitterSearch(true);
+        sheets = new ArrayList();
+        dataInputBean.setDataInSheets(new ArrayList());
+
         if (sessionBean.getTwitterOAuth2AccessToken() == null) {
             service.create(sessionBean.getLocaleBundle().getString("back.import.twitter_credentials_not found"));
             return "";

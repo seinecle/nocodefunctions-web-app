@@ -16,7 +16,7 @@
             <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
             <meta http-equiv="cleartype" content="on"/>
             <meta name="HandheldFriendly" content="true"/>
-            
+
             <link rel="apple-touch-icon" sizes="180x180" href="#{resource['images/favicons/apple-touch-icon.png']}"/>
             <link rel="icon" type="image/png" sizes="32x32" href="#{resource['images/favicons/favicon-32x32.png']}"/>
             <link rel="icon" type="image/png" sizes="16x16" href="#{resource['images/favicons/favicon-16x16.png']}"/>
@@ -117,12 +117,14 @@
                                                     <div align="center">
                                                         <h:graphicImage name="images/round_3_orange.png" width="20" height="20" style="vertical-align: bottom;"/>
                                                         <p:spacer width="5"/>
-                                                        <p:commandLink value="#{text['import_data.structured_data.click_for_this_column']}" action="#{dataImportBean.selectColumn(colIndex, dataInSheet.name)}" styleClass="p-mr-2" rendered="#{sessionBean.function != 'labelling'}" >
-                                                            <p:confirm type="popup" header="#{text['general.verbs.confirm']}" message="#{text['import_data.structured_data.confirm_analysis_on_this_column']}" icon="pi pi-exclamation-triangle"/>
-                                                        </p:commandLink>
-                                                        <p:commandLink value="#{text['import_data.structured_data.click_for_this_column']}" action="#{dataImportBean.goBackToLabellingPage(colIndex, dataInSheet.name)}" styleClass="p-mr-2" rendered="#{sessionBean.function == 'labelling'}">
-                                                            <p:confirm type="popup" header="#{text['general.verbs.confirm']}" message="#{text['import_data.structured_data.confirm_analysis_on_this_column']}" icon="pi pi-exclamation-triangle"/>
-                                                        </p:commandLink>
+                                                        <div class="column_button">
+                                                            <p:commandLink value="#{text['import_data.structured_data.click_for_this_column']}" action="#{dataImportBean.selectColumn(colIndex, dataInSheet.name)}" styleClass="p-mr-2" rendered="#{sessionBean.function != 'labelling'}" >
+                                                                <p:confirm type="popup" header="#{text['general.verbs.confirm']}" message="#{text['import_data.structured_data.confirm_analysis_on_this_column']}" icon="pi pi-exclamation-triangle"/>
+                                                            </p:commandLink>
+                                                            <p:commandLink value="#{text['import_data.structured_data.click_for_this_column']}" action="#{dataImportBean.goBackToLabellingPage(colIndex, dataInSheet.name)}" styleClass="p-mr-2" rendered="#{sessionBean.function == 'labelling'}">
+                                                                <p:confirm type="popup" header="#{text['general.verbs.confirm']}" message="#{text['import_data.structured_data.confirm_analysis_on_this_column']}" icon="pi pi-exclamation-triangle"/>
+                                                            </p:commandLink>
+                                                        </div>
                                                         <p:confirmPopup global="true">
                                                             <p:panel rendered="#{sessionBean.function == 'labelling'}" class="ui-fluid">
                                                                 <div class="p-field">
