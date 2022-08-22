@@ -93,15 +93,7 @@ public class DataImportBean implements Serializable {
     private UploadedFile file;
     private UploadedFiles files;
 
-    private Boolean isExcelFile = false;
-
-    private Boolean isGSheet = false;
     private String gsheeturl;
-
-    private Boolean isTxtFile = false;
-    private Boolean isCsvFile = false;
-    private Boolean isPdfFile = false;
-    private Boolean isTwitterSearch = false;
 
     private Boolean renderHeadersCheckBox = false;
     private Boolean readButtonDisabled = true;
@@ -134,6 +126,7 @@ public class DataImportBean implements Serializable {
         CSV,
         XLSX,
         PDF,
+        TWITTER,
         GS
     }
 
@@ -167,7 +160,7 @@ public class DataImportBean implements Serializable {
         } else if (files != null) {
             for (UploadedFile f : files.getFiles()) {
                 if (f != null && f.getFileName().endsWith("pdf")) {
-                    isPdfFile = true;
+                    source = Source.PDF;
                     service.create(sessionBean.getLocaleBundle().getString("general.message.reading_file") + f.getFileName());
                     dataInSheets.addAll(readPdfFile(f));
                 }
@@ -204,54 +197,60 @@ public class DataImportBean implements Serializable {
             String spreadsheetId = extractFromUrl(gsheeturl);
             dataInSheets = googleBean.readGSheetData(spreadsheetId);
         } else if (file != null) {
-            if (isExcelFile) {
-                service.create(sessionBean.getLocaleBundle().getString("general.message.reading_excel_file"));
-                try {
-                    dataInSheets.addAll(readExcelFile(file));
-                } catch (IOException ex) {
-                    Logger.getLogger(DataImportBean.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            } else if (isTxtFile) {
-                service.create(sessionBean.getLocaleBundle().getString("general.message.reading_text_file"));
-                dataInSheets.addAll(readTextFile(file));
-            } else if (isCsvFile) {
-                service.create(sessionBean.getLocaleBundle().getString("general.message.reading_csv_file"));
-                dataInSheets.addAll(readCsvFile(file));
-            } else if (isPdfFile) {
-                service.create(sessionBean.getLocaleBundle().getString("general.message.reading_pdf_file"));
-                dataInSheets.addAll(readPdfFile(file));
+            switch (source) {
+                case XLSX:
+                    service.create(sessionBean.getLocaleBundle().getString("general.message.reading_excel_file"));
+                    try {
+                        dataInSheets.addAll(readExcelFile(file));
+                    } catch (IOException ex) {
+                        Logger.getLogger(DataImportBean.class.getName()).log(Level.SEVERE, null, ex);
+                    }   break;
+                case TXT:
+                    service.create(sessionBean.getLocaleBundle().getString("general.message.reading_text_file"));
+                    dataInSheets.addAll(readTextFile(file));
+                    break;
+                case CSV:
+                    service.create(sessionBean.getLocaleBundle().getString("general.message.reading_csv_file"));
+                    dataInSheets.addAll(readCsvFile(file));
+                    break;
+                case PDF:
+                    service.create(sessionBean.getLocaleBundle().getString("general.message.reading_pdf_file"));
+                    dataInSheets.addAll(readPdfFile(file));
+                    break;
+                default:
+                    break;
             }
         } else if (files != null) {
             for (UploadedFile f : files.getFiles()) {
-                isExcelFile = false;
-                isTxtFile = false;
-                isCsvFile = false;
-                isPdfFile = false;
-                isGSheet = false;
-                isTwitterSearch = false;
                 if (f != null && f.getFileName().endsWith("xlsx")) {
-                    isExcelFile = true;
+                    source = Source.XLSX;
                 } else if (f != null && f.getFileName().endsWith("txt")) {
-                    isTxtFile = true;
+                    source = Source.TXT;
                 } else if (f != null && f.getFileName().endsWith("csv")) {
-                    isCsvFile = true;
+                    source = Source.CSV;
                 } else if (f != null && f.getFileName().endsWith("pdf")) {
-                    isPdfFile = true;
+                    source = Source.PDF;
                 }
                 service.create(sessionBean.getLocaleBundle().getString("general.message.reading_file") + f.getFileName());
-
-                if (isExcelFile) {
-                    try {
+                switch (source) {
+                    case XLSX:
+                        try {
                         dataInSheets.addAll(readExcelFile(f));
                     } catch (IOException ex) {
                         Logger.getLogger(DataImportBean.class.getName()).log(Level.SEVERE, null, ex);
                     }
-                } else if (isTxtFile) {
-                    dataInSheets.addAll(readTextFile(f));
-                } else if (isCsvFile) {
-                    dataInSheets.addAll(readCsvFile(f));
-                } else if (isPdfFile) {
-                    dataInSheets.addAll(readPdfFile(f));
+                    break;
+                    case TXT:
+                        dataInSheets.addAll(readTextFile(f));
+                        break;
+                    case CSV:
+                        dataInSheets.addAll(readCsvFile(f));
+                        break;
+                    case PDF:
+                        dataInSheets.addAll(readPdfFile(f));
+                        break;
+                    default:
+                        break;
                 }
             }
         }
@@ -270,24 +269,18 @@ public class DataImportBean implements Serializable {
     public String handleFileUpload(FileUploadEvent event) {
         progress = 0;
         file = event.getFile();
+        if (file == null) {
+            return "";
+        }
         service.create(sessionBean.getLocaleBundle().getString("back.import.file_successful_upload.opening") + file.getFileName() + sessionBean.getLocaleBundle().getString("back.import.file_successful_upload.closing"));
-        isExcelFile = false;
-        isTxtFile = false;
-        isCsvFile = false;
-        isPdfFile = false;
-        isGSheet = false;
-        isTwitterSearch = false;
-        if (file != null && file.getFileName().endsWith("xlsx")) {
-            isExcelFile = true;
+
+        if (file.getFileName().endsWith("xlsx")) {
             setSource(Source.XLSX);
-        } else if (file != null && file.getFileName().endsWith("txt")) {
-            isTxtFile = true;
+        } else if (file.getFileName().endsWith("txt")) {
             setSource(Source.TXT);
-        } else if (file != null && file.getFileName().endsWith("csv")) {
-            isCsvFile = true;
+        } else if (file.getFileName().endsWith("csv")) {
             setSource(Source.CSV);
-        } else if (file != null && file.getFileName().endsWith("pdf")) {
-            isPdfFile = true;
+        } else if (file.getFileName().endsWith("pdf")) {
             setSource(Source.PDF);
         }
         readButtonDisabled = false;
@@ -321,11 +314,6 @@ public class DataImportBean implements Serializable {
     }
 
     public void chooseGSheet() {
-        isExcelFile = false;
-        isTxtFile = false;
-        isCsvFile = false;
-        isTwitterSearch = false;
-        isGSheet = true;
         file = null;
         dataInSheets = new ArrayList();
         renderProgressBar = true;
@@ -440,7 +428,6 @@ public class DataImportBean implements Serializable {
                     }
                 }
             }
-            lines = TextCleaningOps.doAllCleaningOps(lines);
             ColumnModel cm;
             cm = new ColumnModel("0", lines.get(0));
             List<ColumnModel> headerNames = new ArrayList();
@@ -620,10 +607,6 @@ public class DataImportBean implements Serializable {
         return file != null && file.getFileName() != null && file.getFileName().endsWith("xlsx");
     }
 
-    public void setIsExcelFile(Boolean isExcelFile) {
-        this.isExcelFile = isExcelFile;
-    }
-
     public String getGsheeturl() {
         return gsheeturl;
     }
@@ -675,49 +658,6 @@ public class DataImportBean implements Serializable {
     public void setRenderCloseOverlay(Boolean renderCloseOverlay) {
         this.renderCloseOverlay = renderCloseOverlay;
     }
-
-    public Boolean getIsGSheet() {
-        System.out.println("is gsheet true?" + isGSheet);
-        return isGSheet;
-    }
-
-    public void setIsGSheet(Boolean isGSheet) {
-        this.isGSheet = isGSheet;
-    }
-
-    public Boolean getIsTxtFile() {
-        return isTxtFile;
-    }
-
-    public void setIsTxtFile(Boolean isTxtFile) {
-        this.isTxtFile = isTxtFile;
-    }
-
-    public Boolean getIsCsvFile() {
-        return isCsvFile;
-    }
-
-    public void setIsCsvFile(Boolean isCsvFile) {
-        this.isCsvFile = isCsvFile;
-    }
-
-    public Boolean getIsPdfFile() {
-        return isPdfFile;
-    }
-
-    public void setIsPdfFile(Boolean isPdfFile) {
-        this.isPdfFile = isPdfFile;
-    }
-
-    public Boolean getIsTwitterSearch() {
-        return isTwitterSearch;
-    }
-
-    public void setIsTwitterSearch(Boolean isTwitterSearch) {
-        this.isTwitterSearch = isTwitterSearch;
-    }
-    
-    
 
     public String selectColumn(String colIndex, String sheetName) {
         System.out.println("column selected: " + colIndex + ", sheet selected: " + sheetName);

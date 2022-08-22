@@ -127,7 +127,7 @@
                                 <p:spacer width="15"/>
                                 <p:commandLink style="text-align: center;font-size: 80%" value="#{text['general.verbs.signal_error']}"
                                                action="#{cardTestBean.signalUmigonEN}"
-                                               update="@this resultEN"
+                                               update="resultEN"
                                                rendered="#{cardTestBean.renderSignalEN}"/>
                                 <p:spacer width="20" rendered ="#{cardTestBean.reportResultENRendered}"/>
                                 <p:outputLabel style="font-size: 80%" value="#{text['general.message.reportsent']}" rendered ="#{cardTestBean.reportResultENRendered}" />
@@ -162,11 +162,11 @@
                                 <p:commandLink value="#{text['general.small_words.why']} 🤔" action="#{cardTestBean.setShowFRExplanation(true)}" rendered="#{cardTestBean.renderSignalFR}" update="umigonFR:explanationFR"/>
                                 <p:spacer width="15"/>
                                 <p:commandLink style="text-align: center;font-size: 80%" value="#{text['general.verbs.signal_error']}"
-                                               action="#{cardTestBean.signalUmigonFR}" update="@this resultFR"
+                                               action="#{cardTestBean.signalUmigonFR}" update="resultFR"
                                                rendered="#{cardTestBean.renderSignalFR}"/>
                                 <p:spacer width="20" rendered ="#{cardTestBean.reportResultFRRendered}"/>
                                 <p:outputLabel style="font-size: 80%" value="#{text['general.message.reportsent']}" rendered ="#{cardTestBean.reportResultFRRendered}" />
-                                <p:graphicImage name="images/check.png" width="24px" rendered ="#{cardTestBean.reportResultFRRendered}"   alt="check mark"/>
+                                <p:graphicImage name="images/check.png" width="24px" rendered ="#{cardTestBean.reportResultFRRendered}" alt="check mark"/>
                                 <p:outputPanel id="explanationFR">
                                     <br/>
                                     <br/>
@@ -210,14 +210,14 @@
                             <p:outputPanel id="resultOrganicEN">   
                                 <h:outputText value="#{cardTestBean.organicResultEN}" style="width:40px;"/>
                                 <p:spacer width="15"/>
-                                <p:commandLink style="text-align: center;font-size: 80%" value="#{text['general.verbs.signal_error']}"
+                                <p:commandLink style="text-align: center;font-size: 80%"
+                                               value="#{text['general.verbs.signal_error']}"
                                                action="#{cardTestBean.signalOrganicEN}"
-                                               update="@this resultOrganicEN"
-                                               rendered="#{cardTestBean.renderSignalOrganicEN}">
-                                </p:commandLink>
+                                               update="resultOrganicEN"
+                                               rendered="#{cardTestBean.renderSignalOrganicEN}"/>
                                 <p:spacer width="20" rendered ="#{cardTestBean.reportResultENRendered}"/>
-                                <p:outputLabel style="font-size: 80%" value="#{text['general.message.reportsent']}" rendered ="#{cardTestBean.reportResultENRendered}" />
-                                <p:graphicImage name="images/check.png" width="24px" rendered ="#{cardTestBean.reportResultENRendered}"   alt="check mark"/>
+                                <p:outputLabel style="font-size: 80%" value="#{text['general.message.reportsent']}" rendered ="#{cardTestBean.reportResultENOrganicRendered}" />
+                                <p:graphicImage name="images/check.png" width="24px" rendered ="#{cardTestBean.reportResultENOrganicRendered}" alt="check mark"/>
                             </p:outputPanel>
                         </h:form>
                     </p:card>
@@ -235,14 +235,14 @@
                             <p:outputPanel id="resultOrganicFR">
                                 <h:outputText value="#{cardTestBean.organicResultFR}" style="width:40px;"/>
                                 <p:spacer width="15"/>
-                                <p:commandLink style="text-align: center;font-size: 80%" value="#{text['general.verbs.signal_error']}"
-                                               action="#{cardTestBean.signalOrganicFR}" update="@this resultOrganicFR"
-                                               rendered="#{cardTestBean.renderSignalOrganicFR}">
-
-                                </p:commandLink>
+                                <p:commandLink style="text-align: center;font-size: 80%"
+                                               value="#{text['general.verbs.signal_error']}"
+                                               action="#{cardTestBean.signalOrganicFR}"
+                                               update="resultOrganicFR"
+                                               rendered="#{cardTestBean.renderSignalOrganicFR}"/>
                                 <p:spacer width="20" rendered ="#{cardTestBean.reportResultFROrganicRendered}"/>
-                                <p:outputLabel style="font-size: 80%" value="reported" rendered ="#{cardTestBean.reportResultFROrganicRendered}" />
-                                <p:graphicImage name="images/check.png" width="24px" rendered ="#{cardTestBean.reportResultFROrganicRendered}"   alt="check mark"/>
+                                <p:outputLabel style="font-size: 80%" value="#{text['general.message.reportsent']}" rendered ="#{cardTestBean.reportResultFROrganicRendered}" />
+                                <p:graphicImage name="images/check.png" width="24px" rendered ="#{cardTestBean.reportResultFROrganicRendered}" alt="check mark"/>
                             </p:outputPanel>
                         </h:form>
                     </p:card>

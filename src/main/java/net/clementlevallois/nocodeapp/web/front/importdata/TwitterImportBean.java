@@ -36,6 +36,7 @@ import javax.json.stream.JsonParser;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SingletonBean;
 import net.clementlevallois.nocodeapp.web.front.http.RemoteLocal;
+import net.clementlevallois.nocodeapp.web.front.importdata.DataImportBean.Source;
 import net.clementlevallois.nocodeapp.web.front.logview.NotificationService;
 import org.openide.util.Exceptions;
 
@@ -104,11 +105,7 @@ public class TwitterImportBean implements Serializable {
     }
 
     public String searchTweets() {
-        dataInputBean.setIsExcelFile(false);
-        dataInputBean.setIsGSheet(false);
-        dataInputBean.setIsCsvFile(false);
-        dataInputBean.setIsPdfFile(false);
-        dataInputBean.setIsTwitterSearch(true);
+        dataInputBean.setSource(Source.TWITTER);
         sheets = new ArrayList();
         dataInputBean.setDataInSheets(new ArrayList());
 

@@ -63,6 +63,7 @@ import net.clementlevallois.nocodeapp.web.front.http.RemoteLocal;
 import net.clementlevallois.nocodeapp.web.front.http.SendReport;
 import net.clementlevallois.nocodeapp.web.front.importdata.DataFormatConverter;
 import net.clementlevallois.nocodeapp.web.front.importdata.DataImportBean;
+import net.clementlevallois.nocodeapp.web.front.importdata.DataImportBean.Source;
 import net.clementlevallois.nocodeapp.web.front.io.GEXFSaver;
 import net.clementlevallois.nocodeapp.web.front.logview.NotificationService;
 import net.clementlevallois.nocodeapp.web.front.textops.TextOps;
@@ -186,7 +187,69 @@ public class CowoBean implements Serializable {
             }
             this.progress = 10;
             service.create(sessionBean.getLocaleBundle().getString("general.message.removing_punctuation_and_cleaning"));
+
+            /* this step addresses the case of text imported from a PDF source.
+            
+            PDF imports can have their last words truncated at the end, like so:
+            
+            "Inbound call centers tend to focus on assistance for customers who need to solve their problems, ques-
+            tions bout a product or service, schedule appointments, dispatch technicians, or need instructions"
+
+            In this case, the last word of the first sentence should be removed,
+            and so should be the first word of the following line.
+            
+            Thx to https://twitter.com/Verukita1 for reporting the issue with a test case.
+            
+             */
+            if (inputData.getSource().equals(Source.PDF)) {
+                boolean cutWordDetected = false;
+                List<String> hyphens = List.of(
+                        Character.toString('\u2010'),
+                        Character.toString('\u2011'),
+                        Character.toString('\u2012'),
+                        Character.toString('\u2013'),
+                        Character.toString('\u002D'),
+                        Character.toString('\u007E'),
+                        Character.toString('\u00AD'),
+                        Character.toString('\u058A'),
+                        Character.toString('\u05BE'),
+                        Character.toString('\u1806'),
+                        Character.toString('\u2014'),
+                        Character.toString('\u2015'),
+                        Character.toString('\u2053'),
+                        Character.toString('\u207B'),
+                        Character.toString('\u208B'),
+                        Character.toString('\u2212'),
+                        Character.toString('\u301C'),
+                        Character.toString('\uFE58'),
+                        Character.toString('\uFE63'),
+                        Character.toString('\uFF0D'));
+
+                for (Map.Entry<Integer, String> entry : mapOfLines.entrySet()) {
+                    String line = entry.getValue().trim();
+                    if (cutWordDetected) {
+                        int indexFirstSpace = line.indexOf(" ");
+                        if (indexFirstSpace > 0) {
+                            line = line.substring(indexFirstSpace + 1);
+                            entry.setValue(line);
+                        }
+                        cutWordDetected = false;
+                    }
+                    for (String hyphen : hyphens) {
+                        if (line.endsWith(hyphen)) {
+                            cutWordDetected = true;
+                            int indexLastSpace = line.lastIndexOf(" ");
+                            if (indexLastSpace > 0) {
+                                line = line.substring(0, indexLastSpace);
+                                entry.setValue(line);
+                            }
+                            break;
+                        }
+                    }
+                }
+            }
             mapOfLines = TextCleaningOps.doAllCleaningOps(mapOfLines);
+            mapOfLines = TextCleaningOps.putInLowerCase(mapOfLines);
 
             this.progress = 15;
             if (selectedLanguage.equals("en") | selectedLanguage.equals("fr")) {
@@ -693,7 +756,8 @@ public class CowoBean implements Serializable {
 
     public void gotoGephisto() throws IOException {
 
-        ExportController ec = Lookup.getDefault().lookup(ExportController.class);
+        ExportController ec = Lookup.getDefault().lookup(ExportController.class
+        );
         Exporter exporterGexf = ec.getExporter("gexf");
         exporterGexf.setWorkspace(workspace);
         StringWriter stringWriter = new StringWriter();

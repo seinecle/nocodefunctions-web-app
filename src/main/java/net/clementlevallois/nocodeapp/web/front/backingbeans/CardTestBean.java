@@ -315,8 +315,8 @@ public class CardTestBean implements Serializable {
         SendReport sender = new SendReport();
         sender.initErrorReport(organicTestInputEN + " - should not be " + organicResultEN);
         sender.start();
-        reportResultENRendered = true;
-        renderSignalEN = false;
+        reportResultENOrganicRendered = true;
+        renderSignalOrganicEN = false;
         return "";
     }
 
@@ -324,8 +324,8 @@ public class CardTestBean implements Serializable {
         SendReport sender = new SendReport();
         sender.initErrorReport(organicTestInputFR + " - should not be " + organicResultFR);
         sender.start();
-        reportResultFRRendered = true;
-        renderSignalFR = false;
+        reportResultFROrganicRendered = true;
+        renderSignalOrganicFR = false;
         return "";
     }
 
