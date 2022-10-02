@@ -7,7 +7,7 @@
         <groupId>net.clementlevallois.nocodeapp.webfront</groupId>
         <artifactId>parentbuild</artifactId>
         <version>1.0</version>
-        <relativePath>../pom.xml</relativePath>
+        <relativePath>../../pom.xml</relativePath>
     </parent>
     <artifactId>jsf-app</artifactId>
     <version>1.0-SNAPSHOT</version>
@@ -83,13 +83,13 @@
             <type>jar</type>
         </dependency>
         <dependency>
-            <groupId>net.clementlevallois</groupId>
-            <artifactId>LemmatizerLightweight</artifactId>
+            <groupId>net.clementlevallois.umigonfamily</groupId>
+            <artifactId>umigon-lemmatizer-lightweight</artifactId>
             <version>1.0</version>
         </dependency>
         <dependency>
-            <groupId>net.clementlevallois.stopwords</groupId>
-            <artifactId>stopwords-core</artifactId>
+            <groupId>net.clementlevallois.umigonfamily</groupId>
+            <artifactId>umigon-stopwords</artifactId>
             <version>1.0</version>
         </dependency>
         <dependency>
@@ -132,19 +132,6 @@
             <groupId>net.clementlevallois.umigonfamily</groupId>
             <artifactId>umigon-ngram-ops</artifactId>
             <version>1.0</version>
-            <type>jar</type>
-        </dependency>
-        <dependency>
-            <groupId>it.uniroma1.dis.wsngroup.gexf4j</groupId>
-            <artifactId>gexf4j</artifactId>
-            <version>1.2.0</version>
-            <type>jar</type>
-            <exclusions>
-                <exclusion>
-                    <groupId>jakarta.xml.bind</groupId>
-                    <artifactId>jakarta.xml.bind-api</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <!-- https://mvnrepository.com/artifact/com.univocity/univocity-parsers -->
         <dependency>
@@ -243,9 +230,9 @@
             <type>jar</type>
         </dependency>
         <dependency>
-            <groupId>net.clementlevallois.pdfmatcher.controller</groupId>
+            <groupId>net.clementlevallois.pdfmatcher</groupId>
             <artifactId>PdfMatcher</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <version>1.0</version>
             <type>jar</type>
         </dependency>
     </dependencies>

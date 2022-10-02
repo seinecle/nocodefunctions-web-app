@@ -9,6 +9,8 @@ import cern.colt.list.DoubleArrayList;
 import cern.colt.list.IntArrayList;
 import cern.colt.matrix.impl.SparseDoubleMatrix1D;
 import cern.colt.matrix.impl.SparseDoubleMatrix2D;
+import jakarta.faces.context.ExternalContext;
+import jakarta.faces.context.FacesContext;
 import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -33,8 +35,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import javax.enterprise.context.SessionScoped;
-import javax.faces.context.ExternalContext;
-import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.json.Json;
@@ -202,7 +202,7 @@ public class GazeBean implements Serializable {
             Map<String, Set<String>> sourcesAndTargets = new HashMap();
             Set<String> setTargets;
             String source = "";
-            int sourceIndexInt = Integer.valueOf(sourceColIndex);
+            int sourceIndexInt = Integer.parseInt(sourceColIndex);
             while (iterator.hasNext()) {
                 Map.Entry<Integer, List<CellRecord>> entryCellRecordsInRow = iterator.next();
                 setTargets = new HashSet();

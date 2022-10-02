@@ -48,7 +48,7 @@
             <p:panel>
                 <h:form target="_blank">
                     
-                    <p:commandLink action="#{twitterImportBean.navigateBackToSearch()}" value="#{text['general.message.go_back_do_search_twitter']}" rendered="#{dataImportBean.isTwitterSearch}"/>
+                    <p:commandLink action="#{twitterImportBean.navigateBackToSearch()}" value="#{text['general.message.go_back_do_search_twitter']}" rendered="#{dataImportBean.source == 'TWITTER'}"/>
                     <br/>
                     <br/>
                     <p:commandButton

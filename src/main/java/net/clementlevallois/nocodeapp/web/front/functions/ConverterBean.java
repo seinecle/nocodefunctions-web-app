@@ -5,8 +5,6 @@
  */
 package net.clementlevallois.nocodeapp.web.front.functions;
 
-import it.uniroma1.dis.wsngroup.gexf4j.core.Gexf;
-import it.uniroma1.dis.wsngroup.gexf4j.core.impl.StaxGraphWriter;
 import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -38,7 +36,6 @@ import net.clementlevallois.gexfvosviewerjson.VOSViewerJsonToGexf;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.http.RemoteLocal;
 import net.clementlevallois.nocodeapp.web.front.io.GEXFSaver;
-import net.clementlevallois.nocodeapp.web.front.logview.NotificationService;
 import org.omnifaces.util.Faces;
 import org.openide.util.Exceptions;
 import org.primefaces.event.FileUploadEvent;
@@ -67,9 +64,6 @@ public class ConverterBean implements Serializable {
     private boolean shareVVPublicly;
 
     private StreamedContent fileToSave;
-
-    @Inject
-    NotificationService service;
 
     @Inject
     SessionBean sessionBean;
@@ -241,43 +235,16 @@ public class ConverterBean implements Serializable {
         }
 
         VOSViewerJsonToGexf converter = new VOSViewerJsonToGexf(is);
-        Gexf gexf = converter.convertToGexf();
+        String gexfAsString = converter.convertToGexf();
 
-        String uniqueId = UUID.randomUUID().toString().substring(0, 5);
-        String graphFileName = "graph_" + uniqueId + ".gexf";
-        File tempFileForDownload = new File(graphFileName);
+        byte[] readAllBytes = gexfAsString.getBytes(StandardCharsets.UTF_8);
+        InputStream inputStreamToSave = new ByteArrayInputStream(readAllBytes);
+        StreamedContent fileStream = DefaultStreamedContent.builder()
+                .name("results.gexf")
+                .contentType("application/gexf+xml")
+                .stream(() -> inputStreamToSave)
+                .build();
 
-        StaxGraphWriter graphWriter = new StaxGraphWriter();
-
-        Writer out;
-        try {
-            out = new OutputStreamWriter(new FileOutputStream(graphFileName), StandardCharsets.UTF_8.name());
-            graphWriter.writeToStream(gexf, out, tempFileForDownload.getAbsolutePath(), StandardCharsets.UTF_8.name());
-//            System.out.println(tempFileForDownload.getAbsolutePath());
-        } catch (IOException e) {
-            System.out.println(e.getMessage());
-            e.printStackTrace();
-        }
-        StreamedContent fileStream = null;
-        try {
-            byte[] readAllBytes = Files.readAllBytes(tempFileForDownload.toPath());
-            InputStream inputStreamToSave = new ByteArrayInputStream(readAllBytes);
-            fileStream = DefaultStreamedContent.builder()
-                    .name("results.gexf")
-                    .contentType("application/gexf+xml")
-                    .stream(() -> inputStreamToSave)
-                    .build();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        try {
-            // clean the temp file created
-            Files.delete(tempFileForDownload.toPath());
-        } catch (IOException ex) {
-            System.out.println("could not delete temp graph file");
-            Logger.getLogger(GEXFSaver.class.getName()).log(Level.SEVERE, null, ex);
-        }
 
         return fileStream;
     }

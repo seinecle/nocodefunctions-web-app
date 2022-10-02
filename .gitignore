@@ -4,6 +4,7 @@
 private/
 faces-config.NavData
 list-process.sh
+nb-configuration.xml
 options.txt
 start.sh
 sys.properties

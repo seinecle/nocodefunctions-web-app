@@ -84,7 +84,7 @@
                         <div class="flex justify-content-center flex-wrap">
                             <div class="p-3 border-solid border-1 flex align-items-center justify-content-center">
                                 <p:orderList id="block" value="#{labellingBean.blockToEvaluate.items}" var="item" controlsLocation="none" itemLabel="#{item}" itemValue="#{item}">
-                                    <p:ajax event="reorder" update="msgs"/>
+                                    <p:ajax event="reorder" update="@form"/>
                                     <f:facet name="caption">#{labellingBean.metadataOfCurrentTask.description}</f:facet>
                                     <p:column>
                                         <p:outputLabel escape="false" value="#{item}"/>
