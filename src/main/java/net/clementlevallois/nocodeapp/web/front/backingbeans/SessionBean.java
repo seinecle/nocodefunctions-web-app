@@ -50,7 +50,7 @@ public class SessionBean implements Serializable {
         } else {
             userAgent = "unknown-user-agent";
         }
-        localeBundle = ResourceBundle.getBundle(singletonBean.getPATHLOCALE(), FacesContext.getCurrentInstance().getViewRoot().getLocale());
+        localeBundle = ResourceBundle.getBundle(SingletonBean.getPATHLOCALE(), FacesContext.getCurrentInstance().getViewRoot().getLocale());
     }
 
     ;
@@ -116,7 +116,7 @@ public class SessionBean implements Serializable {
     }
 
     public void refreshLocaleBundle() {
-        localeBundle = ResourceBundle.getBundle(singletonBean.getPATHLOCALE(), FacesContext.getCurrentInstance().getViewRoot().getLocale());
+        localeBundle = ResourceBundle.getBundle(SingletonBean.getPATHLOCALE(), FacesContext.getCurrentInstance().getViewRoot().getLocale());
     }
 
     public ResourceBundle getLocaleBundle() {

@@ -36,11 +36,11 @@ public class SingletonBean {
 
     static ObjectMapper mapper;
     static JedisPool jedisPool;
-    private final String PATHLOCALE = "net.clementlevallois.nocodeapp.web.front.resources.i18n.text";
-    private Properties privateProperties;
-    private final String PATHLOCALDEV = "C:\\Users\\levallois\\Google Drive\\open\\no code app\\webapp\\jsf-app\\";
-    private final String PATHREMOTEDEV = "/home/waouh/nocodeapp-web/";
-    private String rootProps;
+    private final static String PATHLOCALE = "net.clementlevallois.nocodeapp.web.front.resources.i18n.text";
+    private static Properties privateProperties;
+    private final static String PATHLOCALDEV = "C:\\Users\\levallois\\open\\no code app\\webapp\\jsf-app\\";
+    private final static String PATHREMOTEDEV = "/home/waouh/nocodeapp-web/";
+    private static String rootProps;
     private TwitterOAuth20Service twitterOAuthService;
     private String twitterAuthorizationUrl;
 
@@ -105,24 +105,28 @@ public class SingletonBean {
         //jedis
         JedisPoolConfig poolConfig = new JedisPoolConfig();
         poolConfig.setMaxTotal(128);
-        jedisPool = new JedisPool(poolConfig, "localhost", Integer.valueOf(redisPort), 2000);
+        jedisPool = new JedisPool(poolConfig, "localhost", Integer.parseInt(redisPort), 2000);
     }
 
     public static JedisPool getJedisPool() {
         return jedisPool;
     }
 
-    public Properties getPrivateProperties() {
+    public static Properties getPrivateProperties() {
         return privateProperties;
     }
 
-    public String getPATHLOCALE() {
+    public static String getPATHLOCALE() {
         return PATHLOCALE;
     }
-
-    public String getRootProps() {
-        return rootProps;
-    }
+//
+//    public static String getPATHREMOTEDEV() {
+//        return PATHREMOTEDEV;
+//    }
+//
+//    public static String getRootProps() {
+//        return rootProps;
+//    }
 
     public TwitterOAuth20Service getTwitterOAuthService() {
         return twitterOAuthService;

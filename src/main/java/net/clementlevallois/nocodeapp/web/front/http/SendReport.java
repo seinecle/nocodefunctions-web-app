@@ -15,20 +15,21 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import javax.enterprise.context.SessionScoped;
+import javax.inject.Named;
+import net.clementlevallois.nocodeapp.web.front.backingbeans.SingletonBean;
 import org.openide.util.Exceptions;
 
 /**
  *
  * @author LEVALLOIS
  */
-
 public class SendReport extends Thread {
 
     String event = "";
     String errorReport = "";
     String userAgent = "";
     String stopwords = "";
-    Integer responseCodeLocal;
     String TYPE;
     String email = "";
     String emailDesigner = "";
@@ -43,36 +44,8 @@ public class SendReport extends Thread {
     String url = "";
     String locale = "";
     boolean testLocalOnWindows = true;
-    Properties privateProperties;
-    private String rootProps = "";
-
-    private final String PATHLOCALDEV = "C:\\Users\\levallois\\Google Drive\\open\\no code app\\webapp\\jsf-app\\";
-    private final String PATHREMOTEDEV = "/home/waouh/nocodeapp-web/";
 
     public SendReport() {
-        InputStream is = null;
-
-        try {
-            if (System.getProperty("os.name").toLowerCase().contains("win")) {
-                rootProps = PATHLOCALDEV;
-            } else {
-                rootProps = PATHREMOTEDEV;
-            }
-            is = new FileInputStream(rootProps + "private/private.properties");
-            privateProperties = new Properties();
-            privateProperties.load(is);
-        } catch (FileNotFoundException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        } finally {
-            try {
-                is.close();
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
-
     }
 
     public void initAnalytics(String event, String userAgent) {
@@ -130,12 +103,11 @@ public class SendReport extends Thread {
     public void run() {
         String baseURL;
         String endPoint = null;
-        String property = System.getProperty("os.name");
         Map<String, String> params = new HashMap();
         if (testLocalOnWindows && System.getProperty("os.name").toLowerCase().contains("wind")) {
-            baseURL = privateProperties.getProperty("middleware_local_baseurl");
+            baseURL = SingletonBean.getPrivateProperties().getProperty("middleware_local_baseurl");
         } else {
-            baseURL = privateProperties.getProperty("middleware_remote_baseurl");
+            baseURL = SingletonBean.getPrivateProperties().getProperty("middleware_remote_baseurl");
         }
         if (TYPE.equals("error")) {
             endPoint = "sendUmigonReport";

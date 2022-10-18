@@ -148,7 +148,6 @@ public class UmigonBean implements Serializable {
 
                 StringBuilder sb = new StringBuilder();
                 sb.append("http://localhost:7002/api/sentimentForAText");
-//                sb.append("http://test.nocodefunctions.com/api/sentimentForAText");
                 sb.append("?text-lang=").append(selectedLanguage);
                 sb.append("&id=").append(doc.getId());
                 sb.append("&text=").append(URLEncoder.encode(entry.getValue(), StandardCharsets.UTF_8.toString()));

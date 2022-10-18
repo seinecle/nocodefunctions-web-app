@@ -9,8 +9,6 @@ import cern.colt.list.DoubleArrayList;
 import cern.colt.list.IntArrayList;
 import cern.colt.matrix.impl.SparseDoubleMatrix1D;
 import cern.colt.matrix.impl.SparseDoubleMatrix2D;
-import jakarta.faces.context.ExternalContext;
-import jakarta.faces.context.FacesContext;
 import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -35,6 +33,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import javax.enterprise.context.SessionScoped;
+import javax.faces.context.ExternalContext;
+import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.json.Json;
@@ -60,7 +60,6 @@ import org.gephi.graph.api.GraphController;
 import org.gephi.graph.api.GraphFactory;
 import org.gephi.graph.api.GraphModel;
 import org.gephi.graph.api.Node;
-import org.gephi.graph.impl.GraphModelImpl;
 import org.gephi.io.exporter.api.ExportController;
 import org.gephi.io.exporter.spi.CharacterExporter;
 import org.gephi.io.exporter.spi.Exporter;
@@ -264,13 +263,20 @@ public class GazeBean implements Serializable {
         service.create(sessionBean.getLocaleBundle().getString("general.message.last_ops_creating_network"));
         progress = 95;
 
-        gm = new GraphModelImpl();
+        ProjectController pc = Lookup.getDefault().lookup(ProjectController.class);
+        pc.newProject();
+        workspace = pc.getCurrentWorkspace();
+
+        //Get a graph model - it exists because we have a workspace
+        gm = Lookup.getDefault().lookup(GraphController.class).getGraphModel(workspace);
+
+        GraphFactory factory = gm.factory();
+        graphResult = gm.getGraph();
+
         gm.getNodeTable().addColumn("countTerms", Integer.TYPE);
         if (applyPMI) {
             gm.getEdgeTable().addColumn("countEdge", Integer.TYPE);
         }
-        GraphFactory factory = gm.factory();
-        graphResult = gm.getGraph();
 
         Set<Node> nodes = new HashSet();
         Node node;
@@ -496,15 +502,21 @@ public class GazeBean implements Serializable {
         path = path + subfolder;
 
         if (RemoteLocal.isLocal()) {
-            path = "C:\\Users\\levallois\\Google Drive\\open\\no code app\\webapp\\jsf-app\\private\\";
+            path = "C:\\Users\\levallois\\open\\no code app\\webapp\\jsf-app\\private";
         }
 
-        try (BufferedWriter bw = Files.newBufferedWriter(Path.of(path + vosviewerJsonFileName), StandardCharsets.UTF_8)) {
+        try ( BufferedWriter bw = Files.newBufferedWriter(Path.of(path + vosviewerJsonFileName), StandardCharsets.UTF_8)) {
             bw.write(convertToJson);
         }
 
         ExternalContext externalContext = FacesContext.getCurrentInstance().getExternalContext();
-        String urlVV = "https://test.nocodefunctions.com/html/vosviewer/index.html?json=data/" + subfolder + vosviewerJsonFileName;
+        String domain;
+        if (RemoteLocal.isTest()) {
+            domain = "https://test.nocodefunctions.com";
+        } else {
+            domain = "https://nocodefunctions.com";
+        }
+        String urlVV = domain + "/html/vosviewer/index.html?json=data/" + subfolder + vosviewerJsonFileName;
         externalContext.redirect(urlVV);
     }
 
@@ -530,11 +542,11 @@ public class GazeBean implements Serializable {
         path = path + subfolder;
 
         if (RemoteLocal.isLocal()) {
-            path = "C:\\Users\\levallois\\Google Drive\\open\\no code app\\webapp\\jsf-app\\private\\";
+            path = "C:\\Users\\levallois\\open\\no code app\\webapp\\jsf-app\\private\\";
         }
 
         File file = new File(path + gephistoGexfFileName);
-        try (OutputStream output = new FileOutputStream(file, false)) {
+        try ( OutputStream output = new FileOutputStream(file, false)) {
             inputStreamToSave.transferTo(output);
         }
 

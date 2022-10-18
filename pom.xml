@@ -139,7 +139,6 @@
             <artifactId>univocity-parsers</artifactId>
             <version>2.9.1</version>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/org.apache.tika/tika-parsers -->
 
         <dependency>
             <groupId>com.google.oauth-client</groupId>
@@ -159,13 +158,6 @@
             <artifactId>google-api-client-appengine</artifactId>
             <version>1.31.4</version>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/com.google.oauth-client/google-oauth-client-jetty -->
-        <!--        <dependency>
-            <groupId>com.google.oauth-client</groupId>
-            <artifactId>google-oauth-client-jetty</artifactId>
-            <version>1.31.5</version>
-                        <version>1.30.6</version>
-        </dependency>-->
         <dependency>
             <groupId>com.google.apis</groupId>
             <artifactId>google-api-services-sheets</artifactId>
@@ -207,17 +199,6 @@
             <artifactId>xlsx-streamer</artifactId>
             <version>2.2.0</version>
         </dependency>
-        <!--        <dependency>
-            <groupId>org.apache.poi</groupId>
-            <artifactId>poi</artifactId>
-            <version>5.0.0</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.poi</groupId>
-            <artifactId>poi-ooxml</artifactId>
-            <version>5.0.0</version>
-        </dependency>-->
-
         <dependency>
             <groupId>com.ibm.icu</groupId>
             <artifactId>icu4j</artifactId>

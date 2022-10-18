@@ -5,15 +5,6 @@
  */
 package net.clementlevallois.nocodeapp.web.front.http;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.faces.context.FacesContext;
-import javax.servlet.http.HttpServletRequest;
-import net.clementlevallois.nocodeapp.web.front.importdata.GoogleSheetsImportBean;
-import org.openide.util.Exceptions;
-
 /**
  *
  * @author LEVALLOIS
