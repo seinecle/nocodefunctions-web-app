@@ -85,7 +85,7 @@ public class UmigonBean implements Serializable {
     }
 
     @PostConstruct
-    void init() {
+    private void init() {
         sessionId = Faces.getSessionId();
         sessionBean.setFunction("umigon");
         sessionBean.sendFunctionPageReport();

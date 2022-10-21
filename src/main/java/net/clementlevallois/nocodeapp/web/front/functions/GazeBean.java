@@ -61,6 +61,7 @@ import org.gephi.graph.api.GraphFactory;
 import org.gephi.graph.api.GraphModel;
 import org.gephi.graph.api.Node;
 import org.gephi.io.exporter.api.ExportController;
+import org.gephi.io.exporter.plugin.ExporterGEXF;
 import org.gephi.io.exporter.spi.CharacterExporter;
 import org.gephi.io.exporter.spi.Exporter;
 import org.gephi.project.api.ProjectController;
@@ -522,11 +523,15 @@ public class GazeBean implements Serializable {
 
     public void gotoGephisto() throws IOException {
 
-        ExportController ec = Lookup.getDefault().lookup(ExportController.class);
-        Exporter exporterGexf = ec.getExporter("gexf");
+ExportController ec = Lookup.getDefault().lookup(ExportController.class);
+
+        ExporterGEXF exporterGexf = (ExporterGEXF) ec.getExporter("gexf");
         exporterGexf.setWorkspace(workspace);
+        exporterGexf.setExportDynamic(false);
+
         StringWriter stringWriter = new StringWriter();
-        ec.exportWriter(stringWriter, (CharacterExporter) exporterGexf);
+        ec.exportWriter(stringWriter, exporterGexf);
+        stringWriter.close();
         byte[] readAllBytes = stringWriter.toString().getBytes();
         InputStream inputStreamToSave = new ByteArrayInputStream(readAllBytes);
 

@@ -36,12 +36,12 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-import static java.util.stream.Collectors.toSet;
-import javax.annotation.PostConstruct;
+import static java.util.stream.Collectors.toList;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.application.FacesMessage;
 import javax.faces.context.ExternalContext;
@@ -52,36 +52,34 @@ import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonReader;
+import javax.json.JsonWriter;
 import javax.servlet.annotation.MultipartConfig;
 import net.clementlevallois.gexfvosviewerjson.GexfToVOSViewerJson;
 import net.clementlevallois.gexfvosviewerjson.Metadata;
 import net.clementlevallois.gexfvosviewerjson.Terminology;
 import net.clementlevallois.lemmatizerlightweight.Lemmatizer;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
-import net.clementlevallois.nocodeapp.web.front.backingbeans.SingletonGoogle;
 import net.clementlevallois.nocodeapp.web.front.http.RemoteLocal;
-import net.clementlevallois.nocodeapp.web.front.http.SendReport;
 import net.clementlevallois.nocodeapp.web.front.importdata.DataFormatConverter;
 import net.clementlevallois.nocodeapp.web.front.importdata.DataImportBean;
 import net.clementlevallois.nocodeapp.web.front.importdata.DataImportBean.Source;
 import net.clementlevallois.nocodeapp.web.front.io.GEXFSaver;
 import net.clementlevallois.nocodeapp.web.front.logview.NotificationService;
-import net.clementlevallois.nocodeapp.web.front.textops.TextOps;
-import net.clementlevallois.stopwords.StopWordsRemover;
-import net.clementlevallois.stopwords.Stopwords;
-import net.clementlevallois.umigon.ngram.ops.NGramDuplicatesCleaner;
-import net.clementlevallois.utils.Multiset;
-import net.clementlevallois.utils.PerformCombinations;
 import net.clementlevallois.utils.TextCleaningOps;
 import org.gephi.graph.api.Edge;
 import org.gephi.graph.api.Graph;
 import org.gephi.graph.api.GraphController;
-import org.gephi.graph.api.GraphFactory;
 import org.gephi.graph.api.GraphModel;
 import org.gephi.graph.api.Node;
 import org.gephi.io.exporter.api.ExportController;
 import org.gephi.io.exporter.spi.CharacterExporter;
 import org.gephi.io.exporter.spi.Exporter;
+import org.gephi.io.importer.api.Container;
+import org.gephi.io.importer.api.ContainerUnloader;
+import org.gephi.io.importer.api.ImportController;
+import org.gephi.io.importer.plugin.file.ImporterGEXF;
+import org.gephi.io.importer.spi.FileImporter;
+import org.gephi.io.processor.plugin.DefaultProcessor;
 import org.gephi.project.api.ProjectController;
 import org.gephi.project.api.Workspace;
 import org.omnifaces.util.Faces;
@@ -105,19 +103,21 @@ public class CowoBean implements Serializable {
     private Boolean runButtonDisabled = true;
     private StreamedContent fileToSave;
     private Boolean renderSeeResultsButton = false;
-    private String sessionId;
     private String selectedLanguage;
     private String nodesAsJson;
     private String edgesAsJson;
     private int minFreqNode = 1000_000;
     private int maxFreqNode = 0;
+    private int minTermFreq = 2;
     private int minCoocFreqInt = 2;
+    private String typeCorrection = "none";
     private boolean scientificCorpus;
     private boolean okToShareStopwords = false;
     private boolean replaceStopwords = false;
     private UploadedFile fileUserStopwords;
     private String vosviewerJsonFileName;
     private GraphModel gm;
+    private String gexf;
     private Workspace workspace;
     private Boolean shareVVPublicly;
     private String gephistoGexfFileName;
@@ -131,9 +131,6 @@ public class CowoBean implements Serializable {
 
     @Inject
     DataImportBean inputData;
-
-    @Inject
-    SingletonGoogle gDrive;
 
     @Inject
     SessionBean sessionBean;
@@ -160,11 +157,6 @@ public class CowoBean implements Serializable {
 
     public void cancel() {
         progress = null;
-    }
-
-    @PostConstruct
-    public void init() {
-        sessionId = Faces.getSessionId();
     }
 
     public String getReport() {
@@ -309,202 +301,97 @@ public class CowoBean implements Serializable {
             service.create(sessionBean.getLocaleBundle().getString("general.message.finding_key_terms"));
             progress = 20;
 
-            TextOps textOps = new TextOps();
-            Multiset<String> freqNGramsGlobal = textOps.extractNGramsFromMapOfLines(mapOfLines);
+            HttpRequest request;
+            HttpClient client = HttpClient.newHttpClient();
+            Set<CompletableFuture> futures = new HashSet();
+            JsonObjectBuilder overallObject = Json.createObjectBuilder();
 
-            service.create(sessionBean.getLocaleBundle().getString("general.message.cleaning_key_terms"));
-            progress = 30;
-            Set<String> stopwords = Stopwords.getStopWords(selectedLanguage).get("long");
-            NGramDuplicatesCleaner cleaner = new NGramDuplicatesCleaner(stopwords);
-            cleaner.removeDuplicates(freqNGramsGlobal.getInternalMap(), 4, true);
+            JsonObjectBuilder linesBuilder = Json.createObjectBuilder();
+            for (Map.Entry<Integer, String> entryLines : mapOfLines.entrySet()) {
+                linesBuilder.add(String.valueOf(entryLines.getKey()), entryLines.getValue());
+            }
 
-            service.create(sessionBean.getLocaleBundle().getString("general.message.cleaning_key_terms"));
-            progress = 35;
-
-            service.create(sessionBean.getLocaleBundle().getString("general.message.remove_stopwords_small_words"));
-            Set<String> userSuppliedStopwords = null;
+            JsonObjectBuilder userSuppliedStopwordsBuilder = Json.createObjectBuilder();
             if (fileUserStopwords != null && fileUserStopwords.getFileName() != null) {
-                service.create(sessionBean.getLocaleBundle().getString("general.message.opening_user_supplied_stopwords"));
+                List<String> userSuppliedStopwords;
                 try ( BufferedReader br = new BufferedReader(new InputStreamReader(fileUserStopwords.getInputStream(), StandardCharsets.UTF_8))) {
-                    userSuppliedStopwords = br.lines().collect(toSet());
+                    userSuppliedStopwords = br.lines().collect(toList());
+                }
+                int index = 0;
+                for (String stopword : userSuppliedStopwords) {
+                    userSuppliedStopwordsBuilder.add(String.valueOf(index++), stopword);
                 }
             }
 
-            if (userSuppliedStopwords != null && !userSuppliedStopwords.isEmpty() && okToShareStopwords) {
-                service.create(sessionBean.getLocaleBundle().getString("general.message.sending_user_stopwords_to_dev"));
-                SendReport sendReport = new SendReport();
-                sendReport.initShareStopwords("stopwords shared", userSuppliedStopwords.toString());
-                sendReport.start();
-            }
-            StopWordsRemover stopWordsRemover;
-            stopWordsRemover = new StopWordsRemover(minCharNumber, selectedLanguage);
-            if (userSuppliedStopwords != null && !userSuppliedStopwords.isEmpty()) {
-                stopWordsRemover.useUSerSuppliedStopwords(userSuppliedStopwords, replaceStopwords);
-            }
-            if (scientificCorpus) {
-                service.create(sessionBean.getLocaleBundle().getString("general.message.opening_academic_stopwords"));
-                if (selectedLanguage.equals("en")) {
-                    Set<String> scientificStopwordsInEnglish = Stopwords.getScientificStopwordsInEnglish();
-                    stopWordsRemover.addFieldSpecificStopWords(scientificStopwordsInEnglish);
-                }
-                if (selectedLanguage.equals("fr")) {
-                    Set<String> scientificStopwordsInFrench = Stopwords.getScientificStopwordsInFrench();
-                    stopWordsRemover.addFieldSpecificStopWords(scientificStopwordsInFrench);
-                }
+            for (Map.Entry<Integer, String> entryLines : mapOfLines.entrySet()) {
+                linesBuilder.add(String.valueOf(entryLines.getKey()), entryLines.getValue());
             }
 
-            stopWordsRemover.addWordsToRemove(new HashSet());
-            stopWordsRemover.addStopWordsToKeep(new HashSet());
+            overallObject.add("lines", linesBuilder);
+            overallObject.add("lang", selectedLanguage);
+            overallObject.add("userSuppliedStopwords", userSuppliedStopwordsBuilder);
+            overallObject.add("minCharNumber", minCharNumber);
+            overallObject.add("replaceStopwords", replaceStopwords);
+            overallObject.add("isScientificCorpus", scientificCorpus);
+            overallObject.add("minCoocFreq", minCoocFreqInt);
+            overallObject.add("minTermFreq", minTermFreq);
+            overallObject.add("typeCorrection", typeCorrection);
 
-            Iterator<Map.Entry<String, Integer>> it = freqNGramsGlobal.getInternalMap().entrySet().iterator();
-            while (it.hasNext()) {
-                Map.Entry<String, Integer> next = it.next();
-                if (stopWordsRemover.shouldItBeRemoved(next.getKey())) {
-                    it.remove();
-                }
+            JsonObject build = overallObject.build();
+            StringWriter sw = new StringWriter(128);
+            try ( JsonWriter jw = Json.createWriter(sw)) {
+                jw.write(build);
             }
-            Iterator<String> itNGrams = freqNGramsGlobal.getElementSet().iterator();
-            while (itNGrams.hasNext()) {
-                String string = itNGrams.next();
-                if (string.length() < minCharNumber | string.matches(".*\\d.*")) {
-                    itNGrams.remove();
-                }
+            String jsonString = sw.toString();
+
+            HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(jsonString.getBytes(StandardCharsets.UTF_8));
+
+            URI uri = new URI("http://localhost:7002/api/cowo/");
+
+            request = HttpRequest.newBuilder()
+                    .POST(bodyPublisher)
+                    .uri(uri)
+                    .build();
+
+            CompletableFuture<Void> future = client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()).thenAccept(resp -> {
+                byte[] body = resp.body();
+                gexf = new String (body, StandardCharsets.UTF_8);
             }
+            );
+            futures.add(future);
 
-            this.progress = 36;
+            CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(futures.toArray((new CompletableFuture[0])));
+            combinedFuture.join();
 
-            service.create(sessionBean.getLocaleBundle().getString("general_message.retaining_freq_terms"));
-            progress = 40;
-            freqNGramsGlobal = freqNGramsGlobal.keepMostfrequent(freqNGramsGlobal, 2_000);
-
-            service.create(sessionBean.getLocaleBundle().getString("general_message.counting_pairs_terms"));
-            progress = 50;
-
-//        // #### COUNTING CO-OCCURRENCES PER LINE
-            Set<String> ngramsInLine;
-            Set<String> setOccForOneLine;
-            Set<String> setOccForOneLineCleaned;
-            Multiset<String> setCombinationsTotal = new Multiset();
-            for (Integer lineNumber : mapOfLines.keySet()) {
-
-                String line = mapOfLines.get(lineNumber);
-                int countTermsInThisLine = 0;
-
-                for (String term : freqNGramsGlobal.getElementSet()) {
-                    if (line.contains(term)) {
-                        countTermsInThisLine++;
-                    }
-                }
-
-                if (countTermsInThisLine < 2) {
-                    continue;
-                }
-                ngramsInLine = new HashSet();
-
-                for (String currFreqTerm : freqNGramsGlobal.getElementSet()) {
-                    if (line.contains(currFreqTerm)) {
-                        ngramsInLine.add(currFreqTerm);
-                    }
-                }
-
-                String arrayWords[] = new String[ngramsInLine.size()];
-                if (arrayWords.length >= 2) {
-                    setOccForOneLine = new HashSet();
-                    setOccForOneLineCleaned = new HashSet();
-                    setOccForOneLine.addAll(new PerformCombinations(ngramsInLine.toArray(arrayWords)).call());
-                    for (String pairOcc : setOccForOneLine) {
-                        //                        System.out.println("current pair is:"+ pairOcc);
-                        String[] pair = pairOcc.split(",");
-
-                        if (pair.length == 2
-                                & !pair[0].trim().equals(pair[1].trim()) & !pair[0].contains(pair[1]) & !pair[1].contains(pair[0])) {
-                            setOccForOneLineCleaned.add(pairOcc);
-                        }
-                    }
-                    setCombinationsTotal.addAllFromListOrSet(setOccForOneLineCleaned);
-                }
-
+            if (gexf == null) {
+                service.create(sessionBean.getLocaleBundle().getString("general.message.internal_server_error"));
+                renderSeeResultsButton = true;
+                runButtonDisabled = true;
+                return "";
             }
 
-            service.create(sessionBean.getLocaleBundle().getString("general_message.finished_pairs_removing_less_frequent"));
-            progress = 85;
-            List<Map.Entry<String, Integer>> sortDesckeepAboveMinFreq = setCombinationsTotal.sortDesckeepAboveMinFreq(setCombinationsTotal, minCoocFreqInt);
-            Multiset<String> temp = new Multiset();
-            for (Map.Entry entry : sortDesckeepAboveMinFreq) {
-                temp.addSeveral((String) entry.getKey(), (Integer) entry.getValue());
-            }
-            setCombinationsTotal = new Multiset();
-            setCombinationsTotal.addAllFromMultiset(temp);
-
+            /* TURN THE GEXF RETURNED FROM THE COWO API INTRO A GRAPH MODEL  */
             ProjectController pc = Lookup.getDefault().lookup(ProjectController.class);
             pc.newProject();
             workspace = pc.getCurrentWorkspace();
 
-            //Get a graph model - it exists because we have a workspace
-            gm = Lookup.getDefault().lookup(GraphController.class).getGraphModel(workspace);
+            //Get controllers and models
+            ImportController importController = Lookup.getDefault().lookup(ImportController.class);
+            //Import file
+            Container container;
+            FileImporter fi = new ImporterGEXF();
+            InputStream is = new ByteArrayInputStream(gexf.getBytes());
+            container = importController.importFile(is, fi);
+            container.closeLoader();
+            DefaultProcessor processor = new DefaultProcessor();
 
-            gm.getNodeTable().addColumn("countTerms", Integer.TYPE);
-            gm.getEdgeTable().addColumn("countPairs", Integer.TYPE);
-            gm.getEdgeTable().addColumn("countPairsWithPMI", Float.TYPE);
-            GraphFactory factory = gm.factory();
+            processor.setWorkspace(pc.getCurrentWorkspace());
+            processor.setContainers(new ContainerUnloader[]{container.getUnloader()});
+            processor.process();
+
+            GraphController graphController = Lookup.getDefault().lookup(GraphController.class);
+            gm = graphController.getGraphModel();
             graphResult = gm.getGraph();
-
-            Set<Node> nodes = new HashSet();
-            Node node;
-            for (Map.Entry<String, Integer> entry : freqNGramsGlobal.getInternalMap().entrySet()) {
-                node = factory.newNode(entry.getKey());
-                node.setLabel(entry.getKey());
-                node.setAttribute("countTerms", entry.getValue());
-                nodes.add(node);
-            }
-
-            graphResult.addAllNodes(nodes);
-
-//this is to rescale weights from 0 to 10 and apply PMI
-            List<Map.Entry<String, Integer>> sortDesc = setCombinationsTotal.sortDesc(setCombinationsTotal);
-            if (sortDesc.isEmpty()) {
-                return "";
-            }
-            String[] pairEdgeMostOccurrences = sortDesc.get(0).getKey().split(",");
-            Integer countEdgeMax = sortDesc.get(0).getValue();
-            Integer weightSourceOfEdgeMaxCooc = freqNGramsGlobal.getCount(pairEdgeMostOccurrences[0]);
-            Integer weightTargetOfEdgeMaxCooc = freqNGramsGlobal.getCount(pairEdgeMostOccurrences[1]);
-            double maxValue = (double) countEdgeMax / (weightSourceOfEdgeMaxCooc * weightTargetOfEdgeMaxCooc);
-
-            Set<Edge> edgesForGraph = new HashSet();
-            Edge edge;
-            for (String edgeToCreate : setCombinationsTotal.getElementSet()) {
-                String[] pair = edgeToCreate.split(",");
-                Integer countEdge = setCombinationsTotal.getCount(edgeToCreate);
-                Integer freqSource = freqNGramsGlobal.getCount(pair[0]);
-                Integer freqTarget = freqNGramsGlobal.getCount(pair[1]);
-                // THIS IS THE PMI STEP
-                double edgeWeight = (double) countEdge / (freqSource * freqTarget);
-                double edgeWeightRescaledToTen = (double) edgeWeight * 10 / maxValue;
-                Node nodeSource = graphResult.getNode(pair[0]);
-                Node nodeTarget = graphResult.getNode(pair[1]);
-                edge = factory.newEdge(nodeSource, nodeTarget, 0, edgeWeightRescaledToTen, false);
-                edge.setAttribute("countPairs", countEdge);
-
-                edgesForGraph.add(edge);
-            }
-
-            graphResult.addAllEdges(edgesForGraph);
-
-//        System.out.println("graph contains " + graphResult.getNodeCount() + " nodes");
-//        System.out.println("graph contains " + graphResult.getEdgeCount() + " edges");
-//removing nodes (terms) that have zero connection
-            Iterator<Node> iterator = graphResult.getNodes().toCollection().iterator();
-            Set<Node> nodesToRemove = new HashSet();
-
-            while (iterator.hasNext()) {
-                Node next = iterator.next();
-                if (graphResult.getNeighbors(next).toCollection().isEmpty()) {
-                    nodesToRemove.add(next);
-                }
-            }
-
-            graphResult.removeAllNodes(nodesToRemove);
 
             Iterator<Node> iteratorNodes = graphResult.getNodes().iterator();
             Iterator<Edge> iteratorEdges = graphResult.getEdges().iterator();
@@ -563,7 +450,7 @@ public class CowoBean implements Serializable {
                 return "";
             }
 
-        } catch (Exception ex) {
+        } catch (IOException | NumberFormatException | URISyntaxException ex) {
             Exceptions.printStackTrace(ex);
         }
 
