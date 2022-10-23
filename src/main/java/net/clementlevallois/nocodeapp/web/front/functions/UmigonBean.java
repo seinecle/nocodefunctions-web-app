@@ -38,9 +38,7 @@ import net.clementlevallois.nocodeapp.web.front.http.SendReport;
 import net.clementlevallois.nocodeapp.web.front.importdata.DataFormatConverter;
 import net.clementlevallois.nocodeapp.web.front.io.ExcelSaver;
 import net.clementlevallois.nocodeapp.web.front.logview.NotificationService;
-import net.clementlevallois.umigon.explain.controller.UmigonExplain;
 import net.clementlevallois.umigon.model.Document;
-import org.omnifaces.util.Faces;
 import org.openide.util.Exceptions;
 import org.primefaces.model.StreamedContent;
 
@@ -62,7 +60,6 @@ public class UmigonBean implements Serializable {
     private Boolean runButtonDisabled = true;
     private StreamedContent fileToSave;
     private Boolean renderSeeResultsButton = false;
-    private String sessionId;
     private List<Document> filteredDocuments;
     private Integer maxCapacity = 10_000;
 
@@ -86,12 +83,11 @@ public class UmigonBean implements Serializable {
 
     @PostConstruct
     private void init() {
-        sessionId = Faces.getSessionId();
         sessionBean.setFunction("umigon");
         sessionBean.sendFunctionPageReport();
-        String positive_tone = UmigonExplain.getLocaleBundle(activeLocale.getLanguageTag()).getString("sentiment.ispositive");
-        String negative_tone = UmigonExplain.getLocaleBundle(activeLocale.getLanguageTag()).getString("sentiment.isnegative");
-        String neutral_tone = UmigonExplain.getLocaleBundle(activeLocale.getLanguageTag()).getString("sentiment.isneutral");
+        String positive_tone = sessionBean.getLocaleBundle().getString("general.nouns.sentiment_positive");
+        String negative_tone = sessionBean.getLocaleBundle().getString("general.nouns.sentiment_negative");
+        String neutral_tone = sessionBean.getLocaleBundle().getString("general.nouns.sentiment_neutral");
 
         sentiments = new String[]{positive_tone, negative_tone, neutral_tone};
     }

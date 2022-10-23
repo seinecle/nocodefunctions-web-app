@@ -76,8 +76,8 @@ public class DataImportBean implements Serializable {
     @Inject
     NotificationService service;
 
-    @Inject
-    GoogleSheetsImportBean googleBean;
+//    @Inject
+//    GoogleSheetsImportBean googleBean;
 
     @Inject
     GazeBean gazeBean;
@@ -195,7 +195,7 @@ public class DataImportBean implements Serializable {
         if (gsheeturl != null && !gsheeturl.isBlank()) {
             service.create(sessionBean.getLocaleBundle().getString("general.message.reading_google_spreadsheet"));
             String spreadsheetId = extractFromUrl(gsheeturl);
-            dataInSheets = googleBean.readGSheetData(spreadsheetId);
+//            dataInSheets = googleBean.readGSheetData(spreadsheetId);
         } else if (file != null) {
             switch (source) {
                 case XLSX:

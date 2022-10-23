@@ -9,16 +9,29 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
+import java.io.StringReader;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
 import javax.servlet.annotation.MultipartConfig;
-import net.clementlevallois.linkprediction.controller.LinkPredictionController;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.io.GEXFSaver;
 import net.clementlevallois.nocodeapp.web.front.logview.NotificationService;
@@ -26,7 +39,7 @@ import org.openide.util.Exceptions;
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.StreamedContent;
 import org.primefaces.model.file.UploadedFile;
-
+import net.clementlevallois.nocodeapp.web.front.model.Prediction;
 /**
  *
  * @author LEVALLOIS
@@ -41,9 +54,11 @@ public class LinkPredictionBean implements Serializable {
     private String uploadButtonMessage;
     private boolean renderGephiWarning = true;
     private int nbPredictions = 1;
-    LinkPredictionController predictor;
-    List<LinkPredictionController.LinkPredictionProbability> topPredictions;
-    private LinkPredictionController.LinkPredictionProbability selectedLink;
+    private JsonObject jsonObjectReturned;
+    private String augmentedGexf;
+//    LinkPredictionController predictor;
+    private List<Prediction> topPredictions;
+    private Prediction selectedLink;
 
     private StreamedContent fileToSave;
 
@@ -83,14 +98,14 @@ public class LinkPredictionBean implements Serializable {
 
     public void upload() {
         if (uploadedFile != null) {
-            String success = sessionBean.getLocaleBundle().getString("general.nouns.success");
+            String successMsg = sessionBean.getLocaleBundle().getString("general.nouns.success");
             String is_uploaded = sessionBean.getLocaleBundle().getString("general.verb.is_uploaded");
-            FacesMessage message = new FacesMessage(success, uploadedFile.getFileName() + " " + is_uploaded + ".");
+            FacesMessage message = new FacesMessage(successMsg, uploadedFile.getFileName() + " " + is_uploaded + ".");
             FacesContext.getCurrentInstance().addMessage(null, message);
         }
     }
 
-    public String handleFileUpload(FileUploadEvent event) throws IOException {
+    public String handleFileUpload(FileUploadEvent event) throws IOException, URISyntaxException {
         success = false;
         System.out.println("we are in handleFileUpload");
         String successMsg = sessionBean.getLocaleBundle().getString("general.nouns.success");
@@ -108,7 +123,7 @@ public class LinkPredictionBean implements Serializable {
         return "";
     }
 
-    public void showPredictions() throws IOException {
+    public void showPredictions() throws IOException, URISyntaxException {
         if (uploadedFile == null) {
             System.out.println("no file found for link prediction");
             return;
@@ -116,9 +131,55 @@ public class LinkPredictionBean implements Serializable {
         String uniqueId = UUID.randomUUID().toString().substring(0, 5);
 
         System.out.println("file: " + uploadedFile.getFileName());
-        predictor = new LinkPredictionController();
-        predictor.runPrediction(is, nbPredictions, uniqueId);
-        topPredictions = predictor.getTopPredictions();
+        HttpRequest request;
+        HttpClient client = HttpClient.newHttpClient();
+        Set<CompletableFuture> futures = new HashSet();
+        HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(is.readAllBytes());
+
+        URI uri = new URI("http://localhost:7002/api/linkprediction/");
+
+        request = HttpRequest.newBuilder()
+                .POST(bodyPublisher)
+                .uri(uri)
+                .build();
+
+        CompletableFuture<Void> future = client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()).thenAccept(resp -> {
+            byte[] body = resp.body();
+            String jsonResultsAsString = new String(body, StandardCharsets.UTF_8);
+            try ( JsonReader reader = Json.createReader(new StringReader(jsonResultsAsString))) {
+                jsonObjectReturned = reader.readObject();
+            }
+
+        }
+        );
+        futures.add(future);
+
+        CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(futures.toArray((new CompletableFuture[0])));
+        combinedFuture.join();
+        
+        JsonObject predictions = jsonObjectReturned.getJsonObject("predictions");
+        augmentedGexf = jsonObjectReturned.getString("gexf augmented");
+        
+        List<String> orderedListOfPredictions = predictions.keySet().stream().sorted().collect(Collectors.toList());
+        
+        for (String predictionKey: orderedListOfPredictions){
+            JsonObject predictionJson = predictions.getJsonObject(predictionKey);
+            Prediction prediction = new Prediction(
+                    predictionJson.getString("source node id"),
+                    predictionJson.getString("source node label"),
+                    predictionJson.getInt("source node degree"),
+                    predictionJson.getString("target node id"),
+                    predictionJson.getString("target node label"),
+                    predictionJson.getInt("target node degree"),
+                    predictionJson.getInt("prediction value")
+            );
+            topPredictions.add(prediction);
+            
+        }
+        
+//        predictor = new LinkPredictionController();
+//        predictor.runPrediction(is, nbPredictions, uniqueId);
+//        topPredictions = predictor.getTopPredictions();
     }
 
     public int getNbPredictions() {
@@ -151,20 +212,21 @@ public class LinkPredictionBean implements Serializable {
             System.out.println("no file found for link prediction");
             return null;
         }
-        return GEXFSaver.exportGexfAsStreamedFile(predictor.getWorkspace(), "initial_graph_augmented_with_predicted_links");
+        return GEXFSaver.exportGexfAsStreamedFile(augmentedGexf, "initial_graph_augmented_with_predicted_links");
     }
 
     public void setFileToSave(StreamedContent fileToSave) {
         this.fileToSave = fileToSave;
     }
 
-    public List<LinkPredictionController.LinkPredictionProbability> getTopPredictions() {
+    public List<Prediction> getTopPredictions() {
         return topPredictions;
     }
 
-    public void setTopPredictions(List<LinkPredictionController.LinkPredictionProbability> topPredictions) {
+    public void setTopPredictions(List<Prediction> topPredictions) {
         this.topPredictions = topPredictions;
     }
+
 
     public boolean isSuccess() {
         return success;
@@ -174,11 +236,11 @@ public class LinkPredictionBean implements Serializable {
         this.success = success;
     }
 
-    public LinkPredictionController.LinkPredictionProbability getSelectedLink() {
+    public Prediction getSelectedLink() {
         return selectedLink;
     }
 
-    public void setSelectedLink(LinkPredictionController.LinkPredictionProbability selectedLink) {
+    public void setSelectedLink(Prediction selectedLink) {
         this.selectedLink = selectedLink;
     }
 

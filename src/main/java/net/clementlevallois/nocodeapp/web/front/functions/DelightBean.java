@@ -32,7 +32,6 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.importdata.DataImportBean;
-import net.clementlevallois.nocodeapp.web.front.backingbeans.SingletonGoogle;
 import net.clementlevallois.nocodeapp.web.front.http.SendReport;
 import net.clementlevallois.nocodeapp.web.front.importdata.DataFormatConverter;
 import net.clementlevallois.nocodeapp.web.front.io.ExcelSaver;
@@ -72,9 +71,6 @@ public class DelightBean implements Serializable {
 
     @Inject
     DataImportBean inputData;
-
-    @Inject
-    SingletonGoogle gDrive;
 
     public DelightBean() {
         if (sessionBean == null) {

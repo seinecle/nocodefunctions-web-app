@@ -20,11 +20,31 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <failOnMissingWebXml>false</failOnMissingWebXml>
         <jakartaee>9.1.0</jakartaee>
-        <maven.compiler.release>11</maven.compiler.release>
-        <java.version>11</java.version>
+        <maven.compiler.release>19</maven.compiler.release>
+        <java.version>19</java.version>
+        <maven.compiler.source>19</maven.compiler.source>
+        <maven.compiler.target>19</maven.compiler.target>
     </properties>
     
     <dependencies>
+        <!--1.9 Mb-->
+        <dependency>
+            <groupId>org.gephi</groupId>
+            <artifactId>io-exporter-api</artifactId>
+            <version>0.9.7</version>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>org.gephi</groupId>
+            <artifactId>io-exporter-plugin</artifactId>
+            <version>0.9.7</version>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>javax</groupId>
+            <artifactId>javaee-api</artifactId>
+            <version>8.0.1</version>
+        </dependency>
         <!--         JSON-B API 
                  https://mvnrepository.com/artifact/jakarta.json.bind/jakarta.json.bind-api 
         -->        
@@ -76,33 +96,25 @@
             <version>1.0</version>
             <type>jar</type>
         </dependency>
-        <dependency>
-            <groupId>net.clementlevallois</groupId>
-            <artifactId>Linkprediction</artifactId>
-            <version>1.0</version>
-            <type>jar</type>
-        </dependency>
+        <!--7kb-->
         <dependency>
             <groupId>net.clementlevallois.umigonfamily</groupId>
             <artifactId>umigon-lemmatizer-lightweight</artifactId>
             <version>1.0</version>
         </dependency>
-        <dependency>
-            <groupId>jakarta.platform</groupId>
-            <artifactId>jakarta.jakartaee-api</artifactId>
-            <version>${jakartaee}</version>
-            <scope>provided</scope>
-        </dependency>
+        <!--5Mb-->
         <dependency>
             <groupId>org.primefaces</groupId>
             <artifactId>primefaces</artifactId>
             <version>10.0.0</version>
         </dependency>
+        <!--809kb-->
         <dependency>
             <groupId>org.omnifaces</groupId>
             <artifactId>omnifaces</artifactId>
-            <version>3.11</version>
+            <version>3.14</version>
         </dependency>
+        <!--8kb-->
         <dependency>
             <groupId>au.com.flyingkite</groupId>
             <artifactId>mobiledetect</artifactId>
@@ -111,11 +123,6 @@
         <dependency>
             <groupId>net.clementlevallois.umigonfamily</groupId>
             <artifactId>umigon-model</artifactId>
-            <version>1.0</version>
-        </dependency>
-        <dependency>
-            <groupId>net.clementlevallois.umigonfamily</groupId>
-            <artifactId>umigon-explain</artifactId>
             <version>1.0</version>
         </dependency>
         <dependency>
@@ -130,20 +137,20 @@
             <version>2.9.1</version>
         </dependency>
 
-        <dependency>
+        <!--        <dependency>
             <groupId>com.google.oauth-client</groupId>
             <artifactId>google-oauth-client-servlet</artifactId>
             <version>1.31.4</version>
             <type>jar</type>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/com.google.oauth-client/google-oauth-client-jetty -->
+         https://mvnrepository.com/artifact/com.google.oauth-client/google-oauth-client-jetty 
         <dependency>
             <groupId>com.google.oauth-client</groupId>
             <artifactId>google-oauth-client-jetty</artifactId>
             <version>1.31.4</version>
-            <!--            <version>1.30.6</version>-->
-        </dependency>
-        <dependency>
+                        <version>1.30.6</version>
+        </dependency>-->
+        <!--        <dependency>
             <groupId>com.google.api-client</groupId>
             <artifactId>google-api-client-appengine</artifactId>
             <version>1.31.4</version>
@@ -157,25 +164,20 @@
             <groupId>com.google.apis</groupId>
             <artifactId>google-api-services-slides</artifactId>
             <version>v1-rev20200803-1.30.10</version>
-            <!--<version>v1-rev346-1.25.0</version>-->
+            <version>v1-rev346-1.25.0</version>
             <type>jar</type>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/com.google.apis/google-api-services-drive -->
+         https://mvnrepository.com/artifact/com.google.apis/google-api-services-drive 
         <dependency>
             <groupId>com.google.apis</groupId>
             <artifactId>google-api-services-drive</artifactId>
             <version>v3-rev152-1.25.0</version>
-            <!--<version>v3-rev152-1.25.0</version>-->
-        </dependency>
+            <version>v3-rev152-1.25.0</version>
+        </dependency>-->
         <dependency>
             <groupId>com.monitorjbl</groupId>
             <artifactId>xlsx-streamer</artifactId>
             <version>2.2.0</version>
-        </dependency>
-        <dependency>
-            <groupId>com.ibm.icu</groupId>
-            <artifactId>icu4j</artifactId>
-            <version>69.1</version>
         </dependency>
         <dependency>
             <groupId>redis.clients</groupId>

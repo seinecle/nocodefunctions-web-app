@@ -40,4 +40,16 @@ public class GEXFSaver {
 
         return file;
     }
+    public static StreamedContent exportGexfAsStreamedFile(String gexf, String resultFileNameWithoutExtension) {
+
+        byte[] readAllBytes = gexf.getBytes();
+        InputStream is = new ByteArrayInputStream(readAllBytes);
+        StreamedContent file = DefaultStreamedContent.builder()
+                .name(resultFileNameWithoutExtension + ".gexf")
+                .contentType("application/gexf+xml")
+                .stream(() -> is)
+                .build();
+
+        return file;
+    }
 }

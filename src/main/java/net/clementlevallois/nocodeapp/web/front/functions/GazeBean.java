@@ -62,8 +62,6 @@ import org.gephi.graph.api.GraphModel;
 import org.gephi.graph.api.Node;
 import org.gephi.io.exporter.api.ExportController;
 import org.gephi.io.exporter.plugin.ExporterGEXF;
-import org.gephi.io.exporter.spi.CharacterExporter;
-import org.gephi.io.exporter.spi.Exporter;
 import org.gephi.project.api.ProjectController;
 import org.gephi.project.api.Workspace;
 import org.omnifaces.util.Faces;

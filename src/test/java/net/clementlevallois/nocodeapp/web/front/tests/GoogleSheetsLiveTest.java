@@ -6,11 +6,11 @@
 package net.clementlevallois.nocodeapp.web.front.tests;
 
 
-import com.google.api.services.sheets.v4.Sheets;
+//import com.google.api.services.sheets.v4.Sheets;
 
 public class GoogleSheetsLiveTest {
 
-    private static Sheets sheetsService;
+//    private static Sheets sheetsService;
 
     // this id can be replaced with your spreadsheet id
     // otherwise be advised that multiple people may run this test and update the public spreadsheet

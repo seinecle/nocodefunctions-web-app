@@ -138,10 +138,10 @@
                     <h3>#{text['link_prediction.list_predicted_links']}"</h3>
                     <p:dataTable id ="resultsTable" var="item" value="#{linkPredictionBean.topPredictions}" widgetVar="resultsTable" paginator="true" rows ="50">
                         <p:column headerText="#{text['general.nouns.node_source']}" >
-                            <h:outputText value="id: #{item.nodeSource.id} - #{text['general.nouns.label']}: #{item.nodeSource.label}" />
+                            <h:outputText value="id: #{item.sourceId} - #{text['general.nouns.label']}: #{item.sourceLabel}" />
                         </p:column>
                         <p:column headerText="#{text['general.nouns.node_target']}" >
-                            <h:outputText value="id: #{item.nodeTarget.id} - #{text['general.nouns.label']}: #{item.nodeTarget.label}" />
+                            <h:outputText value="id: #{item.targetId} - #{text['general.nouns.label']}: #{item.targetLabel}" />
                         </p:column>
                         <p:column headerText="#{text['link_prediction.node_prediction_value']}" >
                             <p:commandButton value="#{item.predictionValue}" action="#{linkPredictionBean.setSelectedLink(item)}" icon="pi pi-question-circle"  update="formInfo:info" oncomplete="PF('detailsWidget').show()"/>
@@ -151,12 +151,12 @@
             </h:form>
             <h:form id="formInfo">
                 <p:dialog id="info" header="#{text['link_prediction.how_to_interpret.question']}" widgetVar="detailsWidget" minHeight="40" width="350" showEffect="fade">
-                    <p>#{linkPredictionBean.selectedLink.nodeSource.label} #{text['general.small_words.and']} #{linkPredictionBean.selectedLink.nodeTarget.label} #{text['general.message.are_not_connected']}.</p>
+                    <p>#{linkPredictionBean.selectedLink.sourceLabel} #{text['general.small_words.and']} #{linkPredictionBean.selectedLink.targetLabel} #{text['general.message.are_not_connected']}.</p>
                     <br/>
-                    <p>#{linkPredictionBean.selectedLink.nodeSource.label} #{text['general.small_words.has']} #{linkPredictionBean.selectedLink.nodeSourceDegree} #{text['general.nouns.connections']}. #{linkPredictionBean.selectedLink.nodeTarget.label} #{text['general.small_words.has']} #{linkPredictionBean.selectedLink.nodeTargetDegree} #{text['general.nouns.connections']}.
+                    <p>#{linkPredictionBean.selectedLink.sourceLabel} #{text['general.small_words.has']} #{linkPredictionBean.selectedLink.sourceDegree} #{text['general.nouns.connections']}. #{linkPredictionBean.selectedLink.targetLabel} #{text['general.small_words.has']} #{linkPredictionBean.selectedLink.targetDegree} #{text['general.nouns.connections']}.
                     </p>
                     <br/>
-                    <p>#{text['general.message.the_product_of']} #{linkPredictionBean.selectedLink.nodeSourceDegree} x #{linkPredictionBean.selectedLink.nodeTargetDegree} #{text['general.small_words.is']} #{linkPredictionBean.selectedLink.predictionValue}.</p>
+                    <p>#{text['general.message.the_product_of']} #{linkPredictionBean.selectedLink.sourceDegree} x #{linkPredictionBean.selectedLink.targetDegree} #{text['general.small_words.is']} #{linkPredictionBean.selectedLink.predictionValue}.</p>
                     <br/>
                     <p>
                         <p:outputLabel escape="false" value="#{text['link_prediction.short_explanation']}"/>   
