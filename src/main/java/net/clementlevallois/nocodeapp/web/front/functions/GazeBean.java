@@ -9,15 +9,21 @@ import cern.colt.list.DoubleArrayList;
 import cern.colt.list.IntArrayList;
 import cern.colt.matrix.impl.SparseDoubleMatrix1D;
 import cern.colt.matrix.impl.SparseDoubleMatrix2D;
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.io.StringWriter;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -29,16 +35,21 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import static java.util.stream.Collectors.toList;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.json.Json;
+import javax.json.JsonArrayBuilder;
+import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
+import javax.json.JsonWriter;
 import net.clementlevallois.gaze.controller.CosineCalculation;
 import net.clementlevallois.gaze.controller.MatrixBuilder;
 import net.clementlevallois.gexfvosviewerjson.GexfToVOSViewerJson;
@@ -94,6 +105,8 @@ public class GazeBean implements Serializable {
     private GraphModel gm;
     private Workspace workspace;
     private boolean applyPMI = false;
+
+    String gexf;
 
     @Inject
     NotificationService service;
@@ -354,83 +367,55 @@ public class GazeBean implements Serializable {
 
     public void callSim(Map<String, Set<String>> sourcesAndTargets) throws Exception {
 
-        progress = 5;
-        double cosineThreshold = 0.05;
-        int maxNbTargetsPerSourceConsidered4CosineCalc = 1000;
+        HttpRequest request;
+        HttpClient client = HttpClient.newHttpClient();
+        Set<CompletableFuture> futures = new HashSet();
+        JsonObjectBuilder overallObject = Json.createObjectBuilder();
 
-        SparseDoubleMatrix2D similarityMatrixColt;
-
-        MatrixBuilder matrixBuilder = new MatrixBuilder(sourcesAndTargets, maxNbTargetsPerSourceConsidered4CosineCalc);
-
-        SparseDoubleMatrix1D[] listVectors = matrixBuilder.createListOfSparseVectorsFromEdgeList();
-
-        similarityMatrixColt = new SparseDoubleMatrix2D(listVectors.length, listVectors.length);
-
-        Thread t = new Thread(new CosineCalculation(listVectors, similarityMatrixColt));
-        t.start();
-        t.join();
-
-        IntArrayList rowList = new IntArrayList();
-        IntArrayList columnList = new IntArrayList();
-        DoubleArrayList valueList = new DoubleArrayList();
-        similarityMatrixColt.getNonZeros(rowList, columnList, valueList);
-
-        int nonZeroCell = 0;
-        int nbOfNonZeroCells = rowList.size();
-        Set<String> nodesString = new HashSet();
-        Map<UnDirectedPair, Double> mapUnDirectedPairsToTheirWeight = new HashMap();
-        for (nonZeroCell = 0; nonZeroCell < nbOfNonZeroCells; nonZeroCell++) {
-            int rowIndex = rowList.get(nonZeroCell);
-            int colIndex = columnList.get(nonZeroCell);
-            double cellValue = valueList.get(nonZeroCell);
-
-            String sourceLabel = matrixBuilder.getMapSourcesIndexToLabel().get(rowIndex);
-            String targetLabel = matrixBuilder.getMapSourcesIndexToLabel().get(colIndex);
-
-            nodesString.add(sourceLabel);
-            nodesString.add(targetLabel);
-
-            UnDirectedPair newPair = new UnDirectedPair(sourceLabel, targetLabel);
-            mapUnDirectedPairsToTheirWeight.put(newPair, cellValue);
+        JsonObjectBuilder linesBuilder = Json.createObjectBuilder();
+        for (Map.Entry<String, Set<String>> entryLines : sourcesAndTargets.entrySet()) {
+            JsonArrayBuilder createArrayBuilder = Json.createArrayBuilder();
+            Set<String> targets = entryLines.getValue();
+            for (String target : targets) {
+                createArrayBuilder.add(target);
+            }
+            linesBuilder.add(entryLines.getKey(), createArrayBuilder);
         }
 
-        service.create(sessionBean.getLocaleBundle().getString("general.message.last_ops_creating_network"));
-        progress = 90;
+        overallObject.add("lines", linesBuilder);
 
-        ProjectController pc = Lookup.getDefault().lookup(ProjectController.class);
-        pc.newProject();
-        workspace = pc.getCurrentWorkspace();
-
-        //Get a graph model - it exists because we have a workspace
-        gm = Lookup.getDefault().lookup(GraphController.class).getGraphModel(workspace);
-
-        GraphFactory factory = gm.factory();
-        graphResult = gm.getGraph();
-
-        Set<Node> nodes = new HashSet();
-        Node node;
-        for (String nodeString : nodesString) {
-            node = factory.newNode(nodeString);
-            node.setLabel(nodeString);
-            nodes.add(node);
+        JsonObject build = overallObject.build();
+        StringWriter sw = new StringWriter(128);
+        try ( JsonWriter jw = Json.createWriter(sw)) {
+            jw.write(build);
         }
-        graphResult.addAllNodes(nodes);
+        String jsonString = sw.toString();
 
-        Map<Edge, Double> mapEdgesToTheirWeight = new HashMap();
+        HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(jsonString.getBytes(StandardCharsets.UTF_8));
 
-        Set<Edge> edgesForGraph = new HashSet();
-        Edge edge;
-        Iterator<Map.Entry<UnDirectedPair, Double>> iteratorEdgesToCreate = mapUnDirectedPairsToTheirWeight.entrySet().iterator();
-        while (iteratorEdgesToCreate.hasNext()) {
-            Map.Entry<UnDirectedPair, Double> entry = iteratorEdgesToCreate.next();
-            Node nodeSource = graphResult.getNode(entry.getKey().getLeft());
-            Node nodeTarget = graphResult.getNode(entry.getKey().getRight());
-            edge = factory.newEdge(nodeSource, nodeTarget, 0, entry.getValue(), false);
-            edgesForGraph.add(edge);
-            mapEdgesToTheirWeight.put(edge, entry.getValue());
+        URI uri = new URI("http://localhost:7002/api/gaze/sim");
+
+        request = HttpRequest.newBuilder()
+                .POST(bodyPublisher)
+                .uri(uri)
+                .build();
+
+        CompletableFuture<Void> future = client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()).thenAccept(resp -> {
+            byte[] body = resp.body();
+            gexf = new String(body, StandardCharsets.UTF_8);
         }
+        );
+        futures.add(future);
 
-        graphResult.addAllEdges(edgesForGraph);
+        CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(futures.toArray((new CompletableFuture[0])));
+        combinedFuture.join();
+
+        if (gexf == null) {
+            service.create(sessionBean.getLocaleBundle().getString("general.message.internal_server_error"));
+            renderSeeResultsButton = true;
+            runButtonDisabled = true;
+            return;
+        }
 
         JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
 
@@ -471,11 +456,12 @@ public class GazeBean implements Serializable {
     }
 
     public void gotoVV() throws IOException {
-        if (gm == null) {
+        if (gexf == null) {
             System.out.println("gm object was null so gotoVV method exited");
             return;
         }
-        GexfToVOSViewerJson converter = new GexfToVOSViewerJson(gm);
+        InputStream stream = new ByteArrayInputStream(gexf.getBytes(StandardCharsets.UTF_8));
+        GexfToVOSViewerJson converter = new GexfToVOSViewerJson(gexf);
 
         converter.setMaxNumberNodes(500);
         converter.setTerminologyData(new Terminology());
@@ -521,7 +507,7 @@ public class GazeBean implements Serializable {
 
     public void gotoGephisto() throws IOException {
 
-ExportController ec = Lookup.getDefault().lookup(ExportController.class);
+        ExportController ec = Lookup.getDefault().lookup(ExportController.class);
 
         ExporterGEXF exporterGexf = (ExporterGEXF) ec.getExporter("gexf");
         exporterGexf.setWorkspace(workspace);

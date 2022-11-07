@@ -41,7 +41,7 @@ public class DataFormatConverter {
             }
             List<CellRecord> cellRecords = sheetWithData.getCellRecords();
             int i = 0;
-            int selectedColAsInt = Integer.valueOf(selectedColumnIndex);
+            int selectedColAsInt = Integer.parseInt(selectedColumnIndex);
             for (CellRecord cr : cellRecords) {
                 if (cr.getColIndex() == selectedColAsInt) {
                     lines.put(i++, cr.getRawValue());

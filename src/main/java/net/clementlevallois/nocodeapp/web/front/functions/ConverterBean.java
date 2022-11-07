@@ -5,15 +5,23 @@
  */
 package net.clementlevallois.nocodeapp.web.front.functions;
 
+import io.mikael.urlbuilder.UrlBuilder;
 import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.application.FacesMessage;
@@ -22,10 +30,6 @@ import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.servlet.annotation.MultipartConfig;
-import net.clementlevallois.gexfvosviewerjson.GexfToVOSViewerJson;
-import net.clementlevallois.gexfvosviewerjson.Metadata;
-import net.clementlevallois.gexfvosviewerjson.Terminology;
-import net.clementlevallois.gexfvosviewerjson.VOSViewerJsonToGexf;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.http.RemoteLocal;
 import org.omnifaces.util.Faces;
@@ -53,6 +57,8 @@ public class ConverterBean implements Serializable {
     private String uploadButtonMessage;
     private boolean renderGephiWarning = true;
 
+    private String graphAsJsonVosViewer;
+    private byte[] gexfAsByteArray;
     private boolean shareVVPublicly;
 
     private StreamedContent fileToSave;
@@ -67,9 +73,9 @@ public class ConverterBean implements Serializable {
         sessionBean.setFunction("networkconverter");
         sessionBean.sendFunctionPageReport();
     }
-    
+
     @PostConstruct
-        void init(){
+    void init() {
         uploadButtonMessage = sessionBean.getLocaleBundle().getString("general.message.choose_gexf_file");
     }
 
@@ -116,22 +122,42 @@ public class ConverterBean implements Serializable {
             System.out.println("no file found for conversion to vv");
             return;
         }
-//        System.out.println("file: " + uploadedFile.getFileName());
-        GexfToVOSViewerJson converter = new GexfToVOSViewerJson(is);
-        converter.setMaxNumberNodes(500);
-        converter.setTerminologyData(new Terminology());
-        converter.getTerminologyData().setItem(item);
-        converter.getTerminologyData().setItems("");
-        converter.getTerminologyData().setLink(link);
-        converter.getTerminologyData().setLinks("");
-        converter.getTerminologyData().setLink_strength(linkStrength);
-        converter.getTerminologyData().setTotal_link_strength("");
-        converter.setMetadataData(new Metadata());
-        converter.getMetadataData().setAuthorCanBePlural("");
-        converter.getMetadataData().setDescriptionOfData("Made with nocodefunctions.com");
 
-        String convertToJson = converter.convertToJson();
-        String path = RemoteLocal.isLocal() ? "C:\\Users\\levallois\\Google Drive\\open\\GexfVosViewerJson\\testswebapp\\" : "html/vosviewer/data/";
+        HttpRequest request;
+        HttpClient client = HttpClient.newHttpClient();
+        Set<CompletableFuture> futures = new HashSet();
+
+        HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(is.readAllBytes());
+
+        URI uri = UrlBuilder
+                .empty()
+                .withScheme("http")
+                .withPort(7002)
+                .withHost("localhost")
+                .withPath("api/convert2vv")
+                .addParameter("item", item)
+                .addParameter("link", link)
+                .addParameter("linkStrength", linkStrength)
+                .toUri();
+
+        request = HttpRequest.newBuilder()
+                .POST(bodyPublisher)
+                .uri(uri)
+                .build();
+
+        CompletableFuture<Void> future = client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()).thenAccept(
+                resp -> {
+                    byte[] body = resp.body();
+                    graphAsJsonVosViewer = new String(body, StandardCharsets.UTF_8);
+                }
+        );
+
+        futures.add(future);
+
+        CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(futures.toArray((new CompletableFuture[0])));
+        combinedFuture.join();
+
+        String path = RemoteLocal.isLocal() ? "C:\\Users\\levallois\\open\\nocode-app-functions\\gexf-vosviewer-converter\\testswebapp\\" : "html/vosviewer/data/";
         String subfolder;
         String vosviewerJsonFileName = "vosviewer_" + Faces.getSessionId().substring(0, 20) + ".json";
         if (shareVVPublicly) {
@@ -143,7 +169,7 @@ public class ConverterBean implements Serializable {
         path = path + subfolder;
 
         BufferedWriter bw = Files.newBufferedWriter(Path.of(path + vosviewerJsonFileName), StandardCharsets.UTF_8);
-        bw.write(convertToJson);
+        bw.write(graphAsJsonVosViewer);
         bw.close();
 
         ExternalContext externalContext = FacesContext.getCurrentInstance().getExternalContext();
@@ -221,23 +247,53 @@ public class ConverterBean implements Serializable {
     }
 
     public StreamedContent getFileToSave() throws FileNotFoundException {
-        if (is == null) {
-            System.out.println("no file found for conversion to gephi");
-            return null;
+        StreamedContent fileStream = null;
+        try {
+            if (is == null) {
+                System.out.println("no file found for conversion to gephi");
+                return null;
+            }
+
+            HttpRequest request;
+            HttpClient client = HttpClient.newHttpClient();
+            Set<CompletableFuture> futures = new HashSet();
+
+            HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(is.readAllBytes());
+
+            URI uri = UrlBuilder
+                    .empty()
+                    .withScheme("http")
+                    .withPort(7002)
+                    .withHost("localhost")
+                    .withPath("api/convert2gexf")
+                    .toUri();
+
+            request = HttpRequest.newBuilder()
+                    .POST(bodyPublisher)
+                    .uri(uri)
+                    .build();
+
+            CompletableFuture<Void> future = client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()).thenAccept(
+                    resp -> {
+                        gexfAsByteArray = resp.body();
+                    }
+            );
+
+            futures.add(future);
+
+            CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(futures.toArray((new CompletableFuture[0])));
+            combinedFuture.join();
+
+            InputStream inputStreamToSave = new ByteArrayInputStream(gexfAsByteArray);
+            fileStream = DefaultStreamedContent.builder()
+                    .name("results.gexf")
+                    .contentType("application/gexf+xml")
+                    .stream(() -> inputStreamToSave)
+                    .build();
+
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
         }
-
-        VOSViewerJsonToGexf converter = new VOSViewerJsonToGexf(is);
-        String gexfAsString = converter.convertToGexf();
-
-        byte[] readAllBytes = gexfAsString.getBytes(StandardCharsets.UTF_8);
-        InputStream inputStreamToSave = new ByteArrayInputStream(readAllBytes);
-        StreamedContent fileStream = DefaultStreamedContent.builder()
-                .name("results.gexf")
-                .contentType("application/gexf+xml")
-                .stream(() -> inputStreamToSave)
-                .build();
-
-
         return fileStream;
     }
 

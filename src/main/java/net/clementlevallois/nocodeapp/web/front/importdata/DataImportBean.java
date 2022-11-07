@@ -5,34 +5,33 @@
  */
 package net.clementlevallois.nocodeapp.web.front.importdata;
 
-import com.itextpdf.kernel.pdf.PdfDocument;
-import com.itextpdf.kernel.pdf.PdfReader;
-import com.itextpdf.kernel.pdf.canvas.parser.PdfTextExtractor;
-import com.itextpdf.kernel.pdf.canvas.parser.listener.SimpleTextExtractionStrategy;
 import com.monitorjbl.xlsx.StreamingReader;
-import com.univocity.parsers.csv.CsvParser;
-import com.univocity.parsers.csv.CsvParserSettings;
-import java.io.BufferedReader;
+import io.mikael.urlbuilder.UrlBuilder;
+import java.io.ByteArrayInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
 import javax.inject.Named;
 import java.io.Serializable;
 import java.io.StringReader;
-import java.nio.charset.StandardCharsets;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import static java.util.stream.Collectors.toList;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
@@ -49,13 +48,13 @@ import net.clementlevallois.nocodeapp.web.front.functions.GazeBean;
 import net.clementlevallois.nocodeapp.web.front.functions.LabellingBean;
 import net.clementlevallois.nocodeapp.web.front.io.ExcelReader;
 import net.clementlevallois.nocodeapp.web.front.logview.NotificationService;
-import net.clementlevallois.utils.TextCleaningOps;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.jsoup.Jsoup;
 import org.jsoup.safety.Safelist;
+import org.openide.util.Exceptions;
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.event.FilesUploadEvent;
 import org.primefaces.model.file.UploadedFile;
@@ -75,9 +74,6 @@ public class DataImportBean implements Serializable {
 
     @Inject
     NotificationService service;
-
-//    @Inject
-//    GoogleSheetsImportBean googleBean;
 
     @Inject
     GazeBean gazeBean;
@@ -155,14 +151,22 @@ public class DataImportBean implements Serializable {
 
         if (file != null) {
 
-            service.create(sessionBean.getLocaleBundle().getString("general.message.reading_pdf_file"));
-            dataInSheets.addAll(readPdfFile(file));
+            try {
+                service.create(sessionBean.getLocaleBundle().getString("general.message.reading_pdf_file"));
+                readPdfFile(file.getInputStream(), file.getFileName());
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
         } else if (files != null) {
             for (UploadedFile f : files.getFiles()) {
                 if (f != null && f.getFileName().endsWith("pdf")) {
-                    source = Source.PDF;
-                    service.create(sessionBean.getLocaleBundle().getString("general.message.reading_file") + f.getFileName());
-                    dataInSheets.addAll(readPdfFile(f));
+                    try {
+                        source = Source.PDF;
+                        service.create(sessionBean.getLocaleBundle().getString("general.message.reading_file") + f.getFileName());
+                        readPdfFile(f.getInputStream(), f.getFileName());
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
                 }
             }
         }
@@ -178,13 +182,16 @@ public class DataImportBean implements Serializable {
         return "";
     }
 
-    public String readData() {
+    public String readData() throws IOException, URISyntaxException {
         dataInSheets = new ArrayList();
         if (file == null && gsheeturl == null && files == null) {
             service.create(sessionBean.getLocaleBundle().getString("general.message.no_file_upload_again"));
             addMessage(FacesMessage.SEVERITY_WARN, "💔", sessionBean.getLocaleBundle().getString("general.message.no_file_upload_again"));
             return "";
         }
+        InputStream is = file.getInputStream();
+        String fileName = file.getFileName();
+        String gazeOption = gazeBean == null ? "1" : gazeBean.getOption();
         this.progress = 3;
         Runnable incrementProgress = () -> {
             progress = progress + 1;
@@ -192,65 +199,74 @@ public class DataImportBean implements Serializable {
         ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
         executor.scheduleAtFixedRate(incrementProgress, 0, 250, TimeUnit.MILLISECONDS);
 
-        if (gsheeturl != null && !gsheeturl.isBlank()) {
-            service.create(sessionBean.getLocaleBundle().getString("general.message.reading_google_spreadsheet"));
-            String spreadsheetId = extractFromUrl(gsheeturl);
-//            dataInSheets = googleBean.readGSheetData(spreadsheetId);
-        } else if (file != null) {
+//        if (gsheeturl != null && !gsheeturl.isBlank()) {
+////            service.create(sessionBean.getLocaleBundle().getString("general.message.reading_google_spreadsheet"));
+////            String spreadsheetId = extractFromUrl(gsheeturl);
+////            dataInSheets = googleBean.readGSheetData(spreadsheetId);
+//        } else
+        if (file != null) {
             switch (source) {
-                case XLSX:
+                case XLSX -> {
                     service.create(sessionBean.getLocaleBundle().getString("general.message.reading_excel_file"));
                     try {
                         dataInSheets.addAll(readExcelFile(file));
                     } catch (IOException ex) {
                         Logger.getLogger(DataImportBean.class.getName()).log(Level.SEVERE, null, ex);
-                    }   break;
-                case TXT:
+                    }
+                }
+                case TXT -> {
                     service.create(sessionBean.getLocaleBundle().getString("general.message.reading_text_file"));
-                    dataInSheets.addAll(readTextFile(file));
-                    break;
-                case CSV:
+                    readTextFile(is, fileName, sessionBean.getFunction(), gazeOption);
+                }
+                case CSV -> {
                     service.create(sessionBean.getLocaleBundle().getString("general.message.reading_csv_file"));
-                    dataInSheets.addAll(readCsvFile(file));
-                    break;
-                case PDF:
+                    readCsvFile(is, fileName, sessionBean.getFunction(), gazeOption);
+                }
+                case PDF -> {
                     service.create(sessionBean.getLocaleBundle().getString("general.message.reading_pdf_file"));
-                    dataInSheets.addAll(readPdfFile(file));
-                    break;
-                default:
-                    break;
+                    readPdfFile(is, fileName);
+                }
+                default -> {
+                }
             }
         } else if (files != null) {
             for (UploadedFile f : files.getFiles()) {
-                if (f != null && f.getFileName().endsWith("xlsx")) {
-                    source = Source.XLSX;
-                } else if (f != null && f.getFileName().endsWith("txt")) {
-                    source = Source.TXT;
-                } else if (f != null && f.getFileName().endsWith("csv")) {
-                    source = Source.CSV;
-                } else if (f != null && f.getFileName().endsWith("pdf")) {
-                    source = Source.PDF;
+                if (f == null) {
+                    return "";
                 }
-                service.create(sessionBean.getLocaleBundle().getString("general.message.reading_file") + f.getFileName());
-                switch (source) {
-                    case XLSX:
-                        try {
-                        dataInSheets.addAll(readExcelFile(f));
-                    } catch (IOException ex) {
-                        Logger.getLogger(DataImportBean.class.getName()).log(Level.SEVERE, null, ex);
+                try {
+                    if (f.getFileName().endsWith("xlsx")) {
+                        source = Source.XLSX;
+                    } else if (f.getFileName().endsWith("txt")) {
+                        source = Source.TXT;
+                    } else if (f.getFileName().endsWith("csv")) {
+                        source = Source.CSV;
+                    } else if (f.getFileName().endsWith("pdf")) {
+                        source = Source.PDF;
                     }
-                    break;
-                    case TXT:
-                        dataInSheets.addAll(readTextFile(f));
-                        break;
-                    case CSV:
-                        dataInSheets.addAll(readCsvFile(f));
-                        break;
-                    case PDF:
-                        dataInSheets.addAll(readPdfFile(f));
-                        break;
-                    default:
-                        break;
+                    is = f.getInputStream();
+                    fileName = f.getFileName();
+                    service.create(sessionBean.getLocaleBundle().getString("general.message.reading_file") + f.getFileName());
+                    switch (source) {
+                        case XLSX -> {
+                            try {
+                                dataInSheets.addAll(readExcelFile(f));
+                            } catch (IOException ex) {
+                                Logger.getLogger(DataImportBean.class.getName()).log(Level.SEVERE, null, ex);
+                            }
+                        }
+                        case TXT -> {
+                            readTextFile(is, fileName, sessionBean.getFunction(), gazeOption);
+                        }
+                        case CSV ->
+                            readCsvFile(is, fileName, sessionBean.getFunction(), gazeOption);
+                        case PDF ->
+                            readPdfFile(is, fileName);
+                        default -> {
+                        }
+                    }
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
                 }
             }
         }
@@ -320,190 +336,161 @@ public class DataImportBean implements Serializable {
         setSource(Source.GS);
     }
 
-    private List<SheetModel> readTextFile(UploadedFile file) {
-        Map<Integer, String> lines = new TreeMap();
-        List<SheetModel> sheets = new ArrayList();
+    private void readTextFile(InputStream is, String fileName, String functionName, String gazeOption) {
+
         try {
-            Runnable incrementProgress = () -> {
-                progress = progress + 1;
-            };
-            ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
-            executor.scheduleAtFixedRate(incrementProgress, 0, 250, TimeUnit.MILLISECONDS);
-
-            // if we are computing cooccurrences, we need the lines of text to be decomposed as a csv file.
-            if (sessionBean.getFunction().equals("gaze") && gazeBean != null && gazeBean.getOption().equals("1")) {
-                CsvParserSettings settings = new CsvParserSettings();
-                settings.detectFormatAutomatically();
-                settings.setMaxCharsPerColumn(-1);
-                CsvParser parser = new CsvParser(settings);
-                InputStreamReader reader;
-                reader = new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8);
-                List<String[]> rows = parser.parseAll(reader);
-                SheetModel sheetModel = new SheetModel();
-                sheetModel.setName(file.getFileName());
-                ColumnModel cm;
-                List<ColumnModel> headerNames = new ArrayList();
-                String[] firstLine = rows.get(0);
-                int h = 0;
-                for (String header : firstLine) {
-                    header = Jsoup.clean(header, Safelist.basicWithImages().addAttributes("span", "style"));
-                    cm = new ColumnModel(String.valueOf(h++), header.trim());
-                    headerNames.add(cm);
-                }
-
-                sheetModel.setTableHeaderNames(headerNames);
-                int j = 0;
-                for (String[] row : rows) {
-                    int i = 0;
-                    for (String field : row) {
-                        field = Jsoup.clean(field, Safelist.basicWithImages().addAttributes("span", "style"));
-                        CellRecord cellRecord = new CellRecord(j, i++, field.trim());
-                        sheetModel.addCellRecord(cellRecord);
-                    }
-                    j++;
-                }
-                sheets.add(sheetModel);
+            if (functionName.equals("gaze") && gazeOption.equals("1")) {
                 setSelectedColumnIndex("0");
-                setSelectedSheetName(file.getFileName());
-
-            } // normal case of importing text as flat lines without caring for cooccurrences
-            else {
-                List<String> txtLines;
-                BufferedReader br = new BufferedReader(new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8));
-                txtLines = br.lines().collect(toList());
-                br.close();
-                int i = 0;
-                for (String line : txtLines) {
-                    line = Jsoup.clean(line, Safelist.basicWithImages().addAttributes("span", "style"));
-                    lines.put(i++, line);
-                }
-                SheetModel sheetModel = new SheetModel();
-                sheetModel.setName(file.getFileName());
-                ColumnModel cm;
-                cm = new ColumnModel("0", lines.get(0));
-                List<ColumnModel> headerNames = new ArrayList();
-                headerNames.add(cm);
-                sheetModel.setTableHeaderNames(headerNames);
-                for (Map.Entry<Integer, String> line : lines.entrySet()) {
-                    CellRecord cellRecord = new CellRecord(line.getKey(), 0, line.getValue());
-                    sheetModel.addCellRecord(cellRecord);
-                }
-                sheets.add(sheetModel);
+                setSelectedSheetName(fileName);
             }
-            executor.shutdown();
-            this.progress = 100;
-        } catch (IOException ex) {
-            Logger.getLogger(DataImportBean.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return sheets;
-    }
 
-    private List<SheetModel> readPdfFile(UploadedFile file) {
-        Map<Integer, String> lines = new TreeMap();
-        List<SheetModel> sheets = new ArrayList();
-        try {
-            Runnable incrementProgress = () -> {
-                progress = progress + 1;
-            };
-            ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
-            executor.scheduleAtFixedRate(incrementProgress, 0, 250, TimeUnit.MILLISECONDS);
+            HttpRequest request;
+            HttpClient client = HttpClient.newHttpClient();
+            Set<CompletableFuture> futures = new HashSet();
 
-            SheetModel sheetModel = new SheetModel();
-            sheetModel.setName(file.getFileName());
+            HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(is.readAllBytes());
 
-            PdfDocument myDocument = new PdfDocument(new PdfReader(file.getInputStream()));
-            int numberOfPages = myDocument.getNumberOfPages();
-            int pageNumber;
-            int i = 0;
-            for (pageNumber = 1; pageNumber <= numberOfPages; pageNumber++) {
-                sheetModel.getPageAndStartingLine().put(pageNumber, i);
-                String textInDoc = PdfTextExtractor.getTextFromPage(myDocument.getPage(pageNumber), new SimpleTextExtractionStrategy());
-                String linesArray[] = textInDoc.split("\\r?\\n");
-                for (String line : linesArray) {
-                    line = Jsoup.clean(line, Safelist.basicWithImages().addAttributes("span", "style"));
-                    if (!line.isBlank()) {
-                        lines.put(i++, line);
-                    } else {
-                        lines.put(i++, sessionBean.getLocaleBundle().getString("general.message.empty_line"));
+            URI uri = UrlBuilder
+                    .empty()
+                    .withScheme("http")
+                    .withPort(7003)
+                    .withHost("localhost")
+                    .withPath("api/import/txt")
+                    .addParameter("fileName", fileName)
+                    .addParameter("functionName", functionName)
+                    .addParameter("gazeOption", gazeOption)
+                    .toUri();
+
+            request = HttpRequest.newBuilder()
+                    .POST(bodyPublisher)
+                    .uri(uri)
+                    .build();
+
+            CompletableFuture<Void> future = client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()).thenAccept(
+                    resp -> {
+                        byte[] body = resp.body();
+                        try (
+                         ByteArrayInputStream bis = new ByteArrayInputStream(body);  ObjectInputStream ois = new ObjectInputStream(bis)) {
+                            List<SheetModel> tempResult = (List<SheetModel>) ois.readObject();
+                            dataInSheets.addAll(tempResult);
+                        } catch (IOException | ClassNotFoundException ex) {
+                            Logger.getLogger(DataImportBean.class.getName()).log(Level.SEVERE, null, ex);
+                        }
                     }
-                }
-            }
-            ColumnModel cm;
-            cm = new ColumnModel("0", lines.get(0));
-            List<ColumnModel> headerNames = new ArrayList();
-            headerNames.add(cm);
-            sheetModel.setTableHeaderNames(headerNames);
-            for (Map.Entry<Integer, String> line : lines.entrySet()) {
-                CellRecord cellRecord = new CellRecord(line.getKey(), 0, line.getValue());
-                sheetModel.addCellRecord(cellRecord);
-            }
-            sheets.add(sheetModel);
+            );
 
-            executor.shutdown();
-            this.progress = 100;
+            futures.add(future);
+
+            CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(futures.toArray((new CompletableFuture[0])));
+            combinedFuture.join();
         } catch (IOException ex) {
-            Logger.getLogger(DataImportBean.class.getName()).log(Level.SEVERE, null, ex);
+            Exceptions.printStackTrace(ex);
         }
-        return sheets;
     }
 
-    private List<SheetModel> readCsvFile(UploadedFile file) {
-        InputStreamReader reader;
-        List<SheetModel> sheets = new ArrayList();
+    private void readPdfFile(InputStream is, String fileName) {
         try {
-            Runnable incrementProgress = () -> {
-                progress = progress + 1;
-            };
-            ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
-            executor.scheduleAtFixedRate(incrementProgress, 0, 250, TimeUnit.MILLISECONDS);
-            CsvParserSettings settings = new CsvParserSettings();
-            settings.detectFormatAutomatically();
-            settings.setMaxCharsPerColumn(-1);
-            CsvParser parser = new CsvParser(settings);
-            reader = new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8);
-            List<String[]> rows = parser.parseAll(reader);
-            // if you want to see what delimiter it detected
-//            CsvFormat format = parser.getDetectedFormat();
-            SheetModel sheetModel = new SheetModel();
-            sheetModel.setName(file.getFileName());
-            ColumnModel cm;
-            List<ColumnModel> headerNames = new ArrayList();
-            String[] firstLine = rows.get(0);
-            int h = 0;
-            for (String header : firstLine) {
-                header = Jsoup.clean(header, Safelist.basicWithImages().addAttributes("span", "style"));
-                cm = new ColumnModel(String.valueOf(h++), header);
-                headerNames.add(cm);
-            }
+            String localizedEmptyLineMessage = sessionBean.getLocaleBundle().getString("general.message.empty_line");
+            
+            HttpRequest request;
+            HttpClient client = HttpClient.newHttpClient();
+            Set<CompletableFuture> futures = new HashSet();
+            
+            HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(is.readAllBytes());
+            
+            URI uri = UrlBuilder
+                    .empty()
+                    .withScheme("http")
+                    .withPort(7003)
+                    .withHost("localhost")
+                    .withPath("api/import/pdf")
+                    .addParameter("fileName", fileName)
+                    .addParameter("localizedEmptyLineMessage", localizedEmptyLineMessage)
+                    .toUri();
+            
+            request = HttpRequest.newBuilder()
+                    .POST(bodyPublisher)
+                    .uri(uri)
+                    .build();
+            
+            CompletableFuture<Void> future = client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()).thenAccept(
+                    resp -> {
+                        byte[] body = resp.body();
+                        try (
+                                ByteArrayInputStream bis = new ByteArrayInputStream(body);  ObjectInputStream ois = new ObjectInputStream(bis)) {
+                            List<SheetModel> tempResult = (List<SheetModel>) ois.readObject();
+                            dataInSheets.addAll(tempResult);
+                        } catch (IOException | ClassNotFoundException ex) {
+                            Logger.getLogger(DataImportBean.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+                    }
+            );
+            
+            futures.add(future);
+            
+            CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(futures.toArray((new CompletableFuture[0])));
+            combinedFuture.join();
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
 
-            // since we DONT do a bulk import in a CSV import,
-            // we have no concept of "selected sheet" among several sheets.
-            // we need to set the file name of the unique file for a sheet name
+    private void readCsvFile(InputStream is, String fileName, String functionName, String gazeOption) {
+        try {
+
+            /* since we DONT do a bulk import in a CSV import,
+            we have no concept of "selected sheet" among several sheets.
+            we need to set the file name of the unique file for a sheet name
+             */
             setSelectedSheetName(file.getFileName());
 
             // for co-occurrences, we consider all columns, starting from column zero.
-            if (sessionBean.getFunction().equals("gaze") && gazeBean != null && gazeBean.getOption().equals("1")) {
+            if (functionName.equals("gaze") && gazeOption.equals("1")) {
                 setSelectedColumnIndex("0");
             }
-            sheetModel.setTableHeaderNames(headerNames);
-            int j = 0;
-            for (String[] row : rows) {
-                int i = 0;
-                for (String field : row) {
-                    field = Jsoup.clean(field, Safelist.basicWithImages().addAttributes("span", "style"));
-                    CellRecord cellRecord = new CellRecord(j, i++, field);
-                    sheetModel.addCellRecord(cellRecord);
-                }
-                j++;
-            }
-            sheets.add(sheetModel);
-            executor.shutdown();
-            this.progress = 100;
-            parser.stopParsing();
+
+            HttpRequest request;
+            HttpClient client = HttpClient.newHttpClient();
+            Set<CompletableFuture> futures = new HashSet();
+
+            HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(is.readAllBytes());
+
+            URI uri = UrlBuilder
+                    .empty()
+                    .withScheme("http")
+                    .withPort(7003)
+                    .withHost("localhost")
+                    .withPath("api/import/csv")
+                    .addParameter("fileName", fileName)
+                    .addParameter("functionName", functionName)
+                    .addParameter("gazeOption", gazeOption)
+                    .toUri();
+
+            request = HttpRequest.newBuilder()
+                    .POST(bodyPublisher)
+                    .uri(uri)
+                    .build();
+
+            CompletableFuture<Void> future = client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()).thenAccept(
+                    resp -> {
+                        byte[] body = resp.body();
+                        try (
+                         ByteArrayInputStream bis = new ByteArrayInputStream(body);  ObjectInputStream ois = new ObjectInputStream(bis)) {
+                            List<SheetModel> tempResult = (List<SheetModel>) ois.readObject();
+                            dataInSheets.addAll(tempResult);
+                        } catch (IOException | ClassNotFoundException ex) {
+                            Logger.getLogger(DataImportBean.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+                    }
+            );
+
+            futures.add(future);
+
+            CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(futures.toArray((new CompletableFuture[0])));
+            combinedFuture.join();
         } catch (IOException ex) {
-            Logger.getLogger(DataImportBean.class.getName()).log(Level.SEVERE, null, ex);
+            Exceptions.printStackTrace(ex);
         }
-        return sheets;
     }
 
     private List<SheetModel> readExcelFile(UploadedFile file) throws FileNotFoundException, IOException {

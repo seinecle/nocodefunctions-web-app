@@ -13,7 +13,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
-import net.clementlevallois.pdfmatcher.controller.Occurrence;
+import net.clementlevallois.functions.model.Occurrence;
 import net.clementlevallois.umigon.model.Document;
 import net.clementlevallois.utils.Multiset;
 import org.apache.poi.ss.usermodel.Cell;

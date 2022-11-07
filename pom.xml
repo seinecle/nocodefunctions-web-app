@@ -41,6 +41,12 @@
             <type>jar</type>
         </dependency>
         <dependency>
+            <groupId>org.gephi</groupId>
+            <artifactId>io-importer-plugin</artifactId>
+            <version>0.9.7</version>
+            <type>jar</type>
+        </dependency>
+        <dependency>
             <groupId>javax</groupId>
             <artifactId>javaee-api</artifactId>
             <version>8.0.1</version>
@@ -62,10 +68,10 @@
             <scope>runtime</scope>
         </dependency>-->
         <dependency>
-            <!-- jsoup HTML parser library @ https://jsoup.org/ -->
+             <!--jsoup HTML parser library @ https://jsoup.org/--> 
             <groupId>org.jsoup</groupId>
             <artifactId>jsoup</artifactId>
-            <version>1.14.3</version>
+            <version>1.15.3</version>
         </dependency>
         <dependency>
             <groupId>io.mikael</groupId>
@@ -74,32 +80,46 @@
             <type>jar</type>
         </dependency>
         <dependency>
-            <groupId>com.itextpdf</groupId>
-            <artifactId>itext7-core</artifactId>
-            <version>7.1.16</version>
-            <type>pom</type>
-        </dependency>
-        <dependency>
             <groupId>com.twitter</groupId>
             <artifactId>twitter-api-java-sdk</artifactId>
             <version>1.2.4</version>
         </dependency>
         <dependency>
-            <groupId>net.clementlevallois</groupId>
+            <groupId>net.clementlevallois.functions</groupId>
             <artifactId>GexfVosViewerJson</artifactId>
-            <version>1.0.0-SNAPSHOT</version>
+            <version>1.0</version>
             <type>jar</type>
         </dependency>
         <dependency>
-            <groupId>net.clementlevallois</groupId>
+            <groupId>net.clementlevallois.functions</groupId>
             <artifactId>BIBD</artifactId>
             <version>1.0</version>
             <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>net.clementlevallois.functions</groupId>
+            <artifactId>gaze</artifactId>
+            <version>1.0</version>
+        </dependency>
+        <dependency>
+            <groupId>net.clementlevallois.functions</groupId>
+            <artifactId>model</artifactId>
+            <version>1.0</version>
         </dependency>
         <!--7kb-->
         <dependency>
             <groupId>net.clementlevallois.umigonfamily</groupId>
             <artifactId>umigon-lemmatizer-lightweight</artifactId>
+            <version>1.0</version>
+        </dependency>
+        <dependency>
+            <groupId>net.clementlevallois.umigonfamily</groupId>
+            <artifactId>umigon-model</artifactId>
+            <version>1.0</version>
+        </dependency>
+        <dependency>
+            <groupId>net.clementlevallois.importers</groupId>
+            <artifactId>model</artifactId>
             <version>1.0</version>
         </dependency>
         <!--5Mb-->
@@ -120,22 +140,7 @@
             <artifactId>mobiledetect</artifactId>
             <version>1.1.1</version>
         </dependency>
-        <dependency>
-            <groupId>net.clementlevallois.umigonfamily</groupId>
-            <artifactId>umigon-model</artifactId>
-            <version>1.0</version>
-        </dependency>
-        <dependency>
-            <groupId>net.clementlevallois</groupId>
-            <artifactId>gaze</artifactId>
-            <version>1.0</version>
-        </dependency>
-        <!-- https://mvnrepository.com/artifact/com.univocity/univocity-parsers -->
-        <dependency>
-            <groupId>com.univocity</groupId>
-            <artifactId>univocity-parsers</artifactId>
-            <version>2.9.1</version>
-        </dependency>
+
 
         <!--        <dependency>
             <groupId>com.google.oauth-client</groupId>
@@ -183,12 +188,6 @@
             <groupId>redis.clients</groupId>
             <artifactId>jedis</artifactId>
             <version>3.8.0</version>
-            <type>jar</type>
-        </dependency>
-        <dependency>
-            <groupId>net.clementlevallois.pdfmatcher</groupId>
-            <artifactId>PdfMatcher</artifactId>
-            <version>1.0</version>
             <type>jar</type>
         </dependency>
     </dependencies>

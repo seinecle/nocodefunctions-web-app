@@ -40,7 +40,7 @@ import net.clementlevallois.nocodeapp.web.front.importdata.CellRecord;
 import net.clementlevallois.nocodeapp.web.front.importdata.SheetModel;
 import net.clementlevallois.nocodeapp.web.front.io.ExcelSaver;
 import net.clementlevallois.nocodeapp.web.front.logview.NotificationService;
-import net.clementlevallois.pdfmatcher.controller.Occurrence;
+import net.clementlevallois.functions.model.Occurrence;
 import net.clementlevallois.utils.TextCleaningOps;
 import org.omnifaces.util.Faces;
 import org.primefaces.model.StreamedContent;
@@ -155,7 +155,8 @@ public class PdfMatcherBean implements Serializable {
             CompletableFuture<Void> future = client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()).thenAccept(resp -> {
                 byte[] body = resp.body();
                 try (
-                         ByteArrayInputStream bis = new ByteArrayInputStream(body);  ObjectInputStream ois = new ObjectInputStream(bis)) {
+                        ByteArrayInputStream bis = new ByteArrayInputStream(body);
+                        ObjectInputStream ois = new ObjectInputStream(bis)) {
                     List<Occurrence> occurrencesFound = (List<Occurrence>) ois.readObject();
                     results.put(oneDoc.getName(), occurrencesFound);
                 } catch (IOException | ClassNotFoundException ex) {

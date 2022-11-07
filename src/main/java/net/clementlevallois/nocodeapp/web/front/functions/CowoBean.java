@@ -323,10 +323,6 @@ public class CowoBean implements Serializable {
                 }
             }
 
-            for (Map.Entry<Integer, String> entryLines : mapOfLines.entrySet()) {
-                linesBuilder.add(String.valueOf(entryLines.getKey()), entryLines.getValue());
-            }
-
             overallObject.add("lines", linesBuilder);
             overallObject.add("lang", selectedLanguage);
             overallObject.add("userSuppliedStopwords", userSuppliedStopwordsBuilder);

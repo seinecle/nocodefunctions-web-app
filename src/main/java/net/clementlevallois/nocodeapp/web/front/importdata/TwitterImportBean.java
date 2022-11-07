@@ -127,7 +127,7 @@ public class TwitterImportBean implements Serializable {
             URI uri = UrlBuilder
                     .empty()
                     .withScheme("http")
-                    .withPort(7002)
+                    .withPort(7003)
                     .withHost("localhost")
                     .withPath("api/tweets/json")
                     .addParameter("accessToken", sessionBean.getTwitterOAuth2AccessToken().getAccessToken())
