@@ -22,24 +22,23 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
-import javax.annotation.PostConstruct;
-import javax.enterprise.context.SessionScoped;
-import javax.faces.application.FacesMessage;
-import javax.faces.context.FacesContext;
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.json.JsonReader;
-import javax.servlet.annotation.MultipartConfig;
+import jakarta.annotation.PostConstruct;
+import jakarta.enterprise.context.SessionScoped;
+import jakarta.faces.application.FacesMessage;
+import jakarta.faces.context.FacesContext;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
+import jakarta.json.Json;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonReader;
+import jakarta.servlet.annotation.MultipartConfig;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
-import net.clementlevallois.nocodeapp.web.front.io.GEXFSaver;
-import net.clementlevallois.nocodeapp.web.front.logview.NotificationService;
-import org.openide.util.Exceptions;
+import net.clementlevallois.nocodeapp.web.front.utils.GEXFSaver;
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.StreamedContent;
 import org.primefaces.model.file.UploadedFile;
-import net.clementlevallois.nocodeapp.web.front.model.Prediction;
+import net.clementlevallois.functions.model.Prediction;
+
 /**
  *
  * @author LEVALLOIS
@@ -56,16 +55,12 @@ public class LinkPredictionBean implements Serializable {
     private int nbPredictions = 1;
     private JsonObject jsonObjectReturned;
     private String augmentedGexf;
-//    LinkPredictionController predictor;
     private List<Prediction> topPredictions;
     private Prediction selectedLink;
 
     private StreamedContent fileToSave;
 
     private boolean success = false;
-
-    @Inject
-    NotificationService service;
 
     @Inject
     SessionBean sessionBean;
@@ -117,7 +112,7 @@ public class LinkPredictionBean implements Serializable {
         try {
             is = uploadedFile.getInputStream();
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            System.out.println("ex:" + ex.getMessage());
         }
         showPredictions();
         return "";
@@ -156,13 +151,13 @@ public class LinkPredictionBean implements Serializable {
 
         CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(futures.toArray((new CompletableFuture[0])));
         combinedFuture.join();
-        
+
         JsonObject predictions = jsonObjectReturned.getJsonObject("predictions");
         augmentedGexf = jsonObjectReturned.getString("gexf augmented");
-        
+
         List<String> orderedListOfPredictions = predictions.keySet().stream().sorted().collect(Collectors.toList());
-        
-        for (String predictionKey: orderedListOfPredictions){
+
+        for (String predictionKey : orderedListOfPredictions) {
             JsonObject predictionJson = predictions.getJsonObject(predictionKey);
             Prediction prediction = new Prediction(
                     predictionJson.getString("source node id"),
@@ -174,9 +169,9 @@ public class LinkPredictionBean implements Serializable {
                     predictionJson.getInt("prediction value")
             );
             topPredictions.add(prediction);
-            
+
         }
-        
+
 //        predictor = new LinkPredictionController();
 //        predictor.runPrediction(is, nbPredictions, uniqueId);
 //        topPredictions = predictor.getTopPredictions();
@@ -226,7 +221,6 @@ public class LinkPredictionBean implements Serializable {
     public void setTopPredictions(List<Prediction> topPredictions) {
         this.topPredictions = topPredictions;
     }
-
 
     public boolean isSuccess() {
         return success;

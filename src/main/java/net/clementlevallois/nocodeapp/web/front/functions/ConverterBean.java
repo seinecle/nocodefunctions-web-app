@@ -22,18 +22,17 @@ import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import javax.annotation.PostConstruct;
-import javax.enterprise.context.SessionScoped;
-import javax.faces.application.FacesMessage;
-import javax.faces.context.ExternalContext;
-import javax.faces.context.FacesContext;
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.servlet.annotation.MultipartConfig;
+import jakarta.annotation.PostConstruct;
+import jakarta.enterprise.context.SessionScoped;
+import jakarta.faces.application.FacesMessage;
+import jakarta.faces.context.ExternalContext;
+import jakarta.faces.context.FacesContext;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
+import jakarta.servlet.annotation.MultipartConfig;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.http.RemoteLocal;
 import org.omnifaces.util.Faces;
-import org.openide.util.Exceptions;
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
@@ -112,7 +111,7 @@ public class ConverterBean implements Serializable {
         try {
             is = uploadedFile.getInputStream();
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            System.out.println("ex:" + ex.getMessage());
         }
         return "";
     }
@@ -292,7 +291,7 @@ public class ConverterBean implements Serializable {
                     .build();
 
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+                    System.out.println("ex:"+ ex.getMessage());
         }
         return fileStream;
     }

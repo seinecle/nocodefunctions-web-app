@@ -32,11 +32,11 @@
 //import java.util.UUID;
 //import java.util.logging.Level;
 //import java.util.logging.Logger;
-//import javax.enterprise.context.SessionScoped;
-//import javax.faces.context.ExternalContext;
-//import javax.faces.context.FacesContext;
-//import javax.inject.Inject;
-//import javax.inject.Named;
+//import jakarta.enterprise.context.SessionScoped;
+//import jakarta.faces.context.ExternalContext;
+//import jakarta.faces.context.FacesContext;
+//import jakarta.inject.Inject;
+//import jakarta.inject.Named;
 //import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 //import net.clementlevallois.nocodeapp.web.front.functions.GazeBean;
 //import net.clementlevallois.nocodeapp.web.front.http.RemoteLocal;

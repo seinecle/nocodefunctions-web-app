@@ -64,17 +64,11 @@ public class ExcelSaver {
                 System.out.println("no category code for this doc");
                 continue;
             }
-            switch (doc.getCategoryCode()) {
-                case "_12":
-                    sentiment = "😔 " + doc.getCategoryLocalizedPlainText();
-                    break;
-                case "_11":
-                    sentiment = "🤗 " + doc.getCategoryLocalizedPlainText();
-                    break;
-                default:
-                    sentiment = "😐 " + doc.getCategoryLocalizedPlainText();
-                    break;
-            }
+            sentiment = switch (doc.getCategoryCode()) {
+                case "_12" -> "😔 " + doc.getCategoryLocalizedPlainText();
+                case "_11" -> "🤗 " + doc.getCategoryLocalizedPlainText();
+                default -> "😐 " + doc.getCategoryLocalizedPlainText();
+            };
 
             cell2.setCellValue(sentiment);
             Cell cell3 = row.createCell(3, CellType.STRING);

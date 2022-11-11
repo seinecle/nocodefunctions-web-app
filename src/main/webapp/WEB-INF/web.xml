@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <web-app version="4.0" xmlns="http://xmlns.jcp.org/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_4_0.xsd">
     <context-param>
-        <param-name>javax.faces.PROJECT_STAGE</param-name>
+        <param-name>jakarta.faces.PROJECT_STAGE</param-name>
         <param-value>Production</param-value>
     </context-param>
     <context-param>
-        <param-name>javax.faces.STATE_SAVING_METHOD</param-name>
-        <param-value>server</param-value>
+        <param-name>jakarta.faces.STATE_SAVING_METHOD</param-name>
+        <param-value>client</param-value>
     </context-param>
     <context-param>
         <param-name>org.omnifaces.SOCKET_ENDPOINT_ENABLED</param-name>
         <param-value>true</param-value>
     </context-param>
     <context-param>
-        <param-name>javax.faces.DEFAULT_SUFFIX</param-name>
+        <param-name>jakarta.faces.DEFAULT_SUFFIX</param-name>
         <param-value>.xhtml</param-value>
     </context-param>
     <context-param>	
@@ -38,7 +38,7 @@
     </mime-mapping>
     <servlet>
         <servlet-name>Faces Servlet</servlet-name>
-        <servlet-class>javax.faces.webapp.FacesServlet</servlet-class>
+        <servlet-class>jakarta.faces.webapp.FacesServlet</servlet-class>
         <load-on-startup>1</load-on-startup>
     </servlet>
     <servlet-mapping>
@@ -91,7 +91,7 @@
         <dispatcher>ERROR</dispatcher>
     </filter-mapping>
     <error-page>
-        <exception-type>javax.faces.application.ViewExpiredException</exception-type>
+        <exception-type>jakarta.faces.application.ViewExpiredException</exception-type>
         <location>/WEB-INF/error-pages/expired.xhtml</location>
     </error-page>   
     <error-page>

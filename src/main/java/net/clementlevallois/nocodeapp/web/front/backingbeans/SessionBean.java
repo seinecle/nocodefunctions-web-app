@@ -7,17 +7,17 @@ package net.clementlevallois.nocodeapp.web.front.backingbeans;
 
 import au.com.flyingkite.mobiledetect.UAgentInfo;
 import com.github.scribejava.core.model.OAuth2AccessToken;
-import javax.inject.Named;
+import jakarta.inject.Named;
 import java.io.Serializable;
 import java.util.Locale;
 import java.util.ResourceBundle;
-import javax.enterprise.context.SessionScoped;
-import javax.faces.context.FacesContext;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.enterprise.context.SessionScoped;
+import jakarta.faces.context.FacesContext;
+import jakarta.servlet.http.HttpServletRequest;
 import net.clementlevallois.nocodeapp.web.front.http.RemoteLocal;
 import net.clementlevallois.nocodeapp.web.front.http.SendReport;
-import javax.annotation.PostConstruct;
-import javax.inject.Inject;
+import jakarta.annotation.PostConstruct;
+import jakarta.inject.Inject;
 
 /**
  *

@@ -32,17 +32,17 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import static java.util.stream.Collectors.toList;
-import javax.enterprise.context.SessionScoped;
-import javax.faces.application.FacesMessage;
-import javax.faces.context.FacesContext;
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import javax.json.JsonReader;
-import javax.json.JsonWriter;
-import javax.servlet.annotation.MultipartConfig;
+import jakarta.enterprise.context.SessionScoped;
+import jakarta.faces.application.FacesMessage;
+import jakarta.faces.context.FacesContext;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
+import jakarta.json.Json;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.json.JsonReader;
+import jakarta.json.JsonWriter;
+import jakarta.servlet.annotation.MultipartConfig;
 import net.clementlevallois.lemmatizerlightweight.Lemmatizer;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.importdata.DataImportBean;
@@ -51,7 +51,6 @@ import net.clementlevallois.nocodeapp.web.front.io.ExcelSaver;
 import net.clementlevallois.nocodeapp.web.front.logview.NotificationService;
 import net.clementlevallois.utils.Multiset;
 import net.clementlevallois.utils.TextCleaningOps;
-import org.openide.util.Exceptions;
 import org.primefaces.event.SlideEndEvent;
 import org.primefaces.model.StreamedContent;
 import org.primefaces.model.file.UploadedFile;
@@ -208,7 +207,7 @@ public class TopicsBean implements Serializable {
                                 mapOfLines.put(key, lemmatizer.sentenceLemmatizer(mapOfLines.get(key)));
                             });
                 } catch (Exception ex) {
-                    Exceptions.printStackTrace(ex);
+                    System.out.println("ex:" + ex.getMessage());
                 }
             } else {
                 String lemmatization = sessionBean.getLocaleBundle().getString("general.message.heavy_duty_lemmatization");
@@ -249,7 +248,7 @@ public class TopicsBean implements Serializable {
                         }
                     }
                 } catch (URISyntaxException | IOException | InterruptedException ex) {
-                    Exceptions.printStackTrace(ex);
+                    System.out.println("ex:" + ex.getMessage());
                 }
                 executor.shutdown();
             }
@@ -343,7 +342,7 @@ public class TopicsBean implements Serializable {
             runButtonDisabled = true;
 
         } catch (IOException | NumberFormatException | URISyntaxException ex) {
-            Exceptions.printStackTrace(ex);
+            System.out.println("ex:" + ex.getMessage());
         }
         return "/" + sessionBean.getFunction() + "/results.xhtml?faces-redirect=true";
     }

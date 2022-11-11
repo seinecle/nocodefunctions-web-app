@@ -5,6 +5,7 @@
  */
 package net.clementlevallois.nocodeapp.web.front.functions;
 
+import io.mikael.urlbuilder.UrlBuilder;
 import java.io.Serializable;
 import java.io.StringReader;
 import java.util.ArrayList;
@@ -12,28 +13,44 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import javax.enterprise.context.SessionScoped;
-import javax.faces.application.FacesMessage;
-import javax.faces.context.FacesContext;
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.json.Json;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import javax.json.JsonReader;
-import javax.json.bind.Jsonb;
-import javax.json.bind.JsonbBuilder;
-import javax.json.bind.JsonbConfig;
+import jakarta.enterprise.context.SessionScoped;
+import jakarta.faces.application.FacesMessage;
+import jakarta.faces.context.FacesContext;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
+import jakarta.json.Json;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.json.JsonReader;
+import jakarta.json.JsonWriter;
+import jakarta.json.bind.Jsonb;
+import jakarta.json.bind.JsonbBuilder;
+import jakarta.json.bind.JsonbConfig;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.StringWriter;
+import java.math.BigDecimal;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import net.clementlevallois.functions.model.Occurrence;
+import net.clementlevallois.functions.model.bibd.BIBDResults;
+import net.clementlevallois.functions.model.bibd.Block;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SingletonBean;
-import net.clementlevallois.nocodeapp.web.front.labelling.Annotator;
-import net.clementlevallois.nocodeapp.web.front.labelling.DataBlocks;
-import net.clementlevallois.nocodeapp.web.front.labelling.TaskMetadata;
+import net.clementlevallois.nocodeapp.web.front.redisops.Annotator;
+import net.clementlevallois.functions.model.bibd.DataBlocks;
+import net.clementlevallois.nocodeapp.web.front.redisops.TaskMetadata;
 import net.clementlevallois.nocodeapp.web.front.logview.NotificationService;
-import net.clementlevallois.testbibd.BIBDCustom;
-import net.clementlevallois.testbibd.Block;
-import net.clementlevallois.testbibd.Results;
+//import net.clementlevallois.testbibd.BIBDCustom;
 import redis.clients.jedis.Jedis;
 
 /**
@@ -63,7 +80,7 @@ public class BwsBean implements Serializable {
     private Integer nbOfAnnotators = 1;
     private Map<Integer, String> items;
     private Map<Integer, List<Block>> blocksPerAnnotator;
-    private Results results;
+    private BIBDResults results;
 
     public BwsBean() {
     }
@@ -78,19 +95,67 @@ public class BwsBean implements Serializable {
     }
 
     public void createBlocks() {
+        JsonObjectBuilder itemsAsJsonObjectBuilder = Json.createObjectBuilder();
 
-        BIBDCustom BIBDMaker = new BIBDCustom();
-        List<String> itemsAsList = new ArrayList();
         Iterator<Map.Entry<Integer, String>> iterator = items.entrySet().iterator();
+        int counter = 0;
         while (iterator.hasNext()) {
             Map.Entry<Integer, String> next = iterator.next();
-            itemsAsList.add(next.getValue());
+            itemsAsJsonObjectBuilder.add(String.valueOf(counter), next.getValue());
         }
 
         if (labellingBean.getPublicTask()) {
             nbOfAnnotators = 1;
         }
-        results = BIBDMaker.run(itemsAsList, numberOfItems_v, nbOfBlocks_b, nbOfAnnotators, itemTotal_Appearances_r, blockSize_k, itemTotal_Appearances_r);
+
+        HttpRequest request;
+        HttpClient client = HttpClient.newHttpClient();
+        Set<CompletableFuture> futures = new HashSet();
+
+        StringWriter sw = new StringWriter(128);
+        try ( JsonWriter jw = Json.createWriter(sw)) {
+            jw.write(itemsAsJsonObjectBuilder.build());
+        }
+        String jsonString = sw.toString();
+
+        HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofString(jsonString);
+
+        URI uri = UrlBuilder
+                .empty()
+                .withScheme("http")
+                .withPort(7002)
+                .withHost("localhost")
+                .withPath("api/bibd/getblocks")
+                .addParameter("nbItems", String.valueOf(numberOfItems_v))
+                .addParameter("nbBlocks", String.valueOf(nbOfBlocks_b))
+                .addParameter("nbAnnotators", String.valueOf(nbOfAnnotators))
+                .addParameter("nbAppearances", String.valueOf(itemTotal_Appearances_r))
+                .addParameter("blockSize", String.valueOf(blockSize_k))
+                .addParameter("maxSamePairs", String.valueOf(itemTotal_Appearances_r))
+                .toUri();
+
+        request = HttpRequest.newBuilder()
+                .POST(bodyPublisher)
+                .uri(uri)
+                .build();
+
+        CompletableFuture<Void> future = client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()).thenAccept(
+                resp -> {
+                    byte[] body = resp.body();
+                    try (
+                     ByteArrayInputStream bis = new ByteArrayInputStream(body);  ObjectInputStream ois = new ObjectInputStream(bis)) {
+                        results = (BIBDResults) ois.readObject();
+                    } catch (IOException | ClassNotFoundException ex) {
+                        Logger.getLogger(PdfMatcherBean.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+        );
+
+        futures.add(future);
+
+        CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(futures.toArray((new CompletableFuture[0])));
+        combinedFuture.join();
+
         blocksPerAnnotator = spreadBlocksAmongAnnotators(results.getSeriesOfBlocks(), nbOfAnnotators);
 
         if (labellingBean.getPublicTask()) {
@@ -114,27 +179,27 @@ public class BwsBean implements Serializable {
     }
 
     public String saveBlocks() {
-
-        TaskMetadata metadata = new TaskMetadata(taskId, typeOfTask);
-        metadata.setR(results.getNumberOfAppearances_r());
-        metadata.setV(results.getNbItems_v());
-        metadata.setB(results.getActualNbOfBlocks());
-        metadata.setLambda(results.getActualNbOfDuplicatePairs());
-        metadata.setLambdaAverage(results.getAverageNbOfDistinctPairs());
-        metadata.setK(results.getNbItemsPerBlock_k());
-        metadata.setAnnotators(results.getNbAnnotators());
-        JsonbConfig config = new JsonbConfig().withNullValues(true);
-        Jsonb jsonb = JsonbBuilder.create(config);
-        String metadataAsJSon = jsonb.toJson(metadata);
-
-        DataBlocks data = new DataBlocks();
-        data.setData(results.getSeriesOfBlocks());
-
-        String keyTaskData = "task:" + taskId + ":data";
-        String keyTaskMetadata = "task:" + taskId;
-        String keyTaskAnnotators = "task:" + taskId + ":annotators";
-        String keyTaskAnnotatorCounterNoEmailButPublic = "task:" + taskId + ":annotations:indices:last_index:annotator:public";
         try ( Jedis jedis = SingletonBean.getJedisPool().getResource()) {
+
+            TaskMetadata metadata = new TaskMetadata(taskId, typeOfTask, jedis);
+            metadata.setR(results.getNumberOfAppearances_r());
+            metadata.setV(results.getNbItems_v());
+            metadata.setB(results.getActualNbOfBlocks());
+            metadata.setLambda(results.getActualNbOfDuplicatePairs());
+            metadata.setLambdaAverage(results.getAverageNbOfDistinctPairs());
+            metadata.setK(results.getNbItemsPerBlock_k());
+            metadata.setAnnotators(results.getNbAnnotators());
+            JsonbConfig config = new JsonbConfig().withNullValues(true);
+            Jsonb jsonb = JsonbBuilder.create(config);
+            String metadataAsJSon = jsonb.toJson(metadata);
+
+            DataBlocks data = new DataBlocks();
+            data.setData(results.getSeriesOfBlocks());
+
+            String keyTaskData = "task:" + taskId + ":data";
+            String keyTaskMetadata = "task:" + taskId;
+            String keyTaskAnnotators = "task:" + taskId + ":annotators";
+            String keyTaskAnnotatorCounterNoEmailButPublic = "task:" + taskId + ":annotations:indices:last_index:annotator:public";
 
             if (jedis.exists(keyTaskData)) {
                 String warningTitle = sessionBean.getLocaleBundle().getString("back.bwsbean.warning.task_exists_title");
@@ -265,11 +330,11 @@ public class BwsBean implements Serializable {
         this.blocksPerAnnotator = blocksPerAnnotator;
     }
 
-    public Results getResults() {
+    public BIBDResults getResults() {
         return results;
     }
 
-    public void setResults(Results results) {
+    public void setResults(BIBDResults results) {
         this.results = results;
     }
 

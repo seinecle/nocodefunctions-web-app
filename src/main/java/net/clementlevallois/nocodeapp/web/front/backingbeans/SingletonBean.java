@@ -19,10 +19,9 @@ import java.io.InputStream;
 import java.net.UnknownHostException;
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
-import javax.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.context.ApplicationScoped;
 import net.clementlevallois.nocodeapp.web.front.http.RemoteLocal;
 import org.omnifaces.cdi.Startup;
-import org.openide.util.Exceptions;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 
@@ -54,7 +53,6 @@ public class SingletonBean {
             InputStream is = new FileInputStream(rootProps + "private/private.properties");
             privateProperties = new Properties();
             privateProperties.load(is);
-            
 
             // This is the new Twitter client for java by Twitter.
             String twitterClientId = privateProperties.getProperty("twitter_client_id");
@@ -88,11 +86,11 @@ public class SingletonBean {
 
             initRedis(redisPort);
         } catch (UnknownHostException ex) {
-            Exceptions.printStackTrace(ex);
+            System.out.println("ex:" + ex.getMessage());
         } catch (FileNotFoundException ex) {
-            Exceptions.printStackTrace(ex);
+            System.out.println("ex:" + ex.getMessage());
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            System.out.println("ex:" + ex.getMessage());
         }
 
     }
@@ -144,10 +142,10 @@ public class SingletonBean {
             pkce.setCodeVerifier("challenge");
             return twitterOAuthService.getAccessToken(pkce, code);
         } catch (IOException | ExecutionException | InterruptedException ex) {
-            Exceptions.printStackTrace(ex);
+            System.out.println("ex:" + ex.getMessage());
             return null;
         }
-        
+
     }
 
 }

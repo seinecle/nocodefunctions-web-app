@@ -5,6 +5,7 @@
  */
 package net.clementlevallois.nocodeapp.web.front.functions;
 
+import io.mikael.urlbuilder.UrlBuilder;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
@@ -28,10 +29,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -40,51 +38,30 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 import static java.util.stream.Collectors.toList;
-import javax.enterprise.context.SessionScoped;
-import javax.faces.application.FacesMessage;
-import javax.faces.context.ExternalContext;
-import javax.faces.context.FacesContext;
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import javax.json.JsonReader;
-import javax.json.JsonWriter;
-import javax.servlet.annotation.MultipartConfig;
-import net.clementlevallois.gexfvosviewerjson.GexfToVOSViewerJson;
-import net.clementlevallois.gexfvosviewerjson.Metadata;
-import net.clementlevallois.gexfvosviewerjson.Terminology;
+import jakarta.enterprise.context.SessionScoped;
+import jakarta.faces.application.FacesMessage;
+import jakarta.faces.context.ExternalContext;
+import jakarta.faces.context.FacesContext;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
+import jakarta.json.Json;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.json.JsonReader;
+import jakarta.json.JsonWriter;
+import jakarta.servlet.annotation.MultipartConfig;
 import net.clementlevallois.lemmatizerlightweight.Lemmatizer;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.http.RemoteLocal;
 import net.clementlevallois.nocodeapp.web.front.importdata.DataFormatConverter;
 import net.clementlevallois.nocodeapp.web.front.importdata.DataImportBean;
 import net.clementlevallois.nocodeapp.web.front.importdata.DataImportBean.Source;
-import net.clementlevallois.nocodeapp.web.front.io.GEXFSaver;
+import net.clementlevallois.nocodeapp.web.front.utils.GEXFSaver;
 import net.clementlevallois.nocodeapp.web.front.logview.NotificationService;
+import net.clementlevallois.nocodeapp.web.front.utils.Utils;
 import net.clementlevallois.utils.TextCleaningOps;
-import org.gephi.graph.api.Edge;
-import org.gephi.graph.api.Graph;
-import org.gephi.graph.api.GraphController;
-import org.gephi.graph.api.GraphModel;
-import org.gephi.graph.api.Node;
-import org.gephi.io.exporter.api.ExportController;
-import org.gephi.io.exporter.spi.CharacterExporter;
-import org.gephi.io.exporter.spi.Exporter;
-import org.gephi.io.importer.api.Container;
-import org.gephi.io.importer.api.ContainerUnloader;
-import org.gephi.io.importer.api.ImportController;
-import org.gephi.io.importer.plugin.file.ImporterGEXF;
-import org.gephi.io.importer.spi.FileImporter;
-import org.gephi.io.processor.plugin.DefaultProcessor;
-import org.gephi.project.api.ProjectController;
-import org.gephi.project.api.Workspace;
 import org.omnifaces.util.Faces;
-import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
 import org.primefaces.model.StreamedContent;
 import org.primefaces.model.file.UploadedFile;
 
@@ -99,7 +76,6 @@ import org.primefaces.model.file.UploadedFile;
 public class CowoBean implements Serializable {
 
     private Integer progress;
-    private Graph graphResult;
     private Boolean runButtonDisabled = true;
     private StreamedContent fileToSave;
     private Boolean renderSeeResultsButton = false;
@@ -116,9 +92,8 @@ public class CowoBean implements Serializable {
     private boolean replaceStopwords = false;
     private UploadedFile fileUserStopwords;
     private String vosviewerJsonFileName;
-    private GraphModel gm;
+    private String graphAsJsonVosViewer;
     private String gexf;
-    private Workspace workspace;
     private Boolean shareVVPublicly;
     private String gephistoGexfFileName;
     private Boolean shareGephistoPublicly;
@@ -252,7 +227,7 @@ public class CowoBean implements Serializable {
                                 mapOfLines.put(key, lemmatizer.sentenceLemmatizer(mapOfLines.get(key)));
                             });
                 } catch (Exception ex) {
-                    Exceptions.printStackTrace(ex);
+                    System.out.println("ex:" + ex.getMessage());
                 }
             } else {
                 String lemmatization = sessionBean.getLocaleBundle().getString("general.message.heavy_duty_lemmatization");
@@ -293,7 +268,7 @@ public class CowoBean implements Serializable {
                         }
                     }
                 } catch (URISyntaxException | IOException | InterruptedException ex) {
-                    Exceptions.printStackTrace(ex);
+                    System.out.println("ex:" + ex.getMessage());
                 }
                 executor.shutdown();
             }
@@ -351,7 +326,7 @@ public class CowoBean implements Serializable {
 
             CompletableFuture<Void> future = client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()).thenAccept(resp -> {
                 byte[] body = resp.body();
-                gexf = new String (body, StandardCharsets.UTF_8);
+                gexf = new String(body, StandardCharsets.UTF_8);
             }
             );
             futures.add(future);
@@ -366,88 +341,37 @@ public class CowoBean implements Serializable {
                 return "";
             }
 
-            /* TURN THE GEXF RETURNED FROM THE COWO API INTRO A GRAPH MODEL  */
-            ProjectController pc = Lookup.getDefault().lookup(ProjectController.class);
-            pc.newProject();
-            workspace = pc.getCurrentWorkspace();
+            bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(jsonString.getBytes(StandardCharsets.UTF_8));
 
-            //Get controllers and models
-            ImportController importController = Lookup.getDefault().lookup(ImportController.class);
-            //Import file
-            Container container;
-            FileImporter fi = new ImporterGEXF();
-            InputStream is = new ByteArrayInputStream(gexf.getBytes());
-            container = importController.importFile(is, fi);
-            container.closeLoader();
-            DefaultProcessor processor = new DefaultProcessor();
+            uri = UrlBuilder
+                    .empty()
+                    .withScheme("http")
+                    .withPort(7002)
+                    .withHost("localhost")
+                    .withPath("api/graphops/topnodes")
+                    .addParameter("nbNodes", "30")
+                    .toUri();
 
-            processor.setWorkspace(pc.getCurrentWorkspace());
-            processor.setContainers(new ContainerUnloader[]{container.getUnloader()});
-            processor.process();
+            request = HttpRequest.newBuilder()
+                    .POST(bodyPublisher)
+                    .uri(uri)
+                    .build();
 
-            GraphController graphController = Lookup.getDefault().lookup(GraphController.class);
-            gm = graphController.getGraphModel();
-            graphResult = gm.getGraph();
-
-            Iterator<Node> iteratorNodes = graphResult.getNodes().iterator();
-            Iterator<Edge> iteratorEdges = graphResult.getEdges().iterator();
-            JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
-            Map<Node, Integer> nodesToFreq = new HashMap();
-
-            while (iteratorNodes.hasNext()) {
-                Node nodeGraph = iteratorNodes.next();
-                int freqNode = (int) nodeGraph.getAttribute("countTerms");
-                nodesToFreq.put(nodeGraph, freqNode);
-                if (minFreqNode > freqNode) {
-                    minFreqNode = freqNode;
-                }
-                if (maxFreqNode < freqNode) {
-                    maxFreqNode = freqNode;
-                }
+            future = client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()).thenAccept(resp -> {
+                byte[] body = resp.body();
+                String jsonResult = new String(body, StandardCharsets.UTF_8);
+                JsonObject jsonObject = Json.createReader(new StringReader(jsonResult)).readObject();
+                nodesAsJson = Utils.turnJsonObjectToString(jsonObject.getJsonObject("nodes"));
+                edgesAsJson = Utils.turnJsonObjectToString(jsonObject.getJsonObject("edges"));
             }
+            );
+            futures.add(future);
 
-// we keep only the 30 most freq nodes for the graph viz
-            Map<Node, Integer> topFreq
-                    = nodesToFreq.entrySet().stream()
-                            .sorted(Collections.reverseOrder(Map.Entry.comparingByValue()))
-                            .limit(30)
-                            .collect(Collectors.toMap(
-                                    Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
-
-            Iterator<Map.Entry<Node, Integer>> iteratorNodes2 = topFreq.entrySet().iterator();
-
-            Set<String> nodesInGraph = new HashSet();
-
-            while (iteratorNodes2.hasNext()) {
-                Map.Entry<Node, Integer> next = iteratorNodes2.next();
-                nodesInGraph.add((String) next.getKey().getId());
-                objectBuilder.add((String) next.getKey().getId(), String.valueOf(next.getKey().getAttribute("countTerms")));
-            }
-            nodesAsJson = objectBuilder.build().toString();
-
-            objectBuilder = Json.createObjectBuilder();
-
-            while (iteratorEdges.hasNext()) {
-                Edge edgeGraph = iteratorEdges.next();
-                if (nodesInGraph.contains((String) edgeGraph.getSource().getId()) && nodesInGraph.contains((String) edgeGraph.getTarget().getId())) {
-                    objectBuilder.add((String) edgeGraph.getId(), Json.createObjectBuilder()
-                            .add("source", (String) edgeGraph.getSource().getId())
-                            .add("target", ((String) edgeGraph.getTarget().getId())));
-                }
-            }
-            edgesAsJson = objectBuilder.build().toString();
-
-            service.create(sessionBean.getLocaleBundle().getString("general.message.analysis_complete"));
-            renderSeeResultsButton = true;
-            runButtonDisabled = true;
-
-            if (graphResult.getEdges().toCollection().isEmpty()) {
-                service.create(sessionBean.getLocaleBundle().getString("general_message.empty_network_no_connection"));
-                return "";
-            }
+            combinedFuture = CompletableFuture.allOf(futures.toArray((new CompletableFuture[0])));
+            combinedFuture.join();
 
         } catch (IOException | NumberFormatException | URISyntaxException ex) {
-            Exceptions.printStackTrace(ex);
+            System.out.println("ex:" + ex.getMessage());
         }
 
         return "/" + sessionBean.getFunction()
@@ -483,7 +407,7 @@ public class CowoBean implements Serializable {
     }
 
     public StreamedContent getFileToSave() {
-        return GEXFSaver.exportGexfAsStreamedFile(workspace, "results");
+        return GEXFSaver.exportGexfAsStreamedFile(gexf, "results");
     }
 
     public void setFileToSave(StreamedContent fileToSave) {
@@ -594,20 +518,48 @@ public class CowoBean implements Serializable {
     }
 
     public void gotoVV() throws IOException {
-        GexfToVOSViewerJson converter = new GexfToVOSViewerJson(gm);
-        converter.setMaxNumberNodes(250);
-        converter.setTerminologyData(new Terminology());
-        converter.getTerminologyData().setItem("Term");
-        converter.getTerminologyData().setItems("Terms");
-        converter.getTerminologyData().setLink("Co-occurrence link");
-        converter.getTerminologyData().setLinks("Co-occurrence links");
-        converter.getTerminologyData().setLink_strength("Number of co-occurrences");
-        converter.getTerminologyData().setTotal_link_strength("Total number of co-occurrences");
-        converter.setMetadataData(new Metadata());
-        converter.getMetadataData().setAuthorCanBePlural("");
-        converter.getMetadataData().setDescriptionOfData("Made with nocodefunctions.com");
+        if (gexf == null) {
+            System.out.println("gm object was null so gotoVV method exited");
+            return;
+        }
 
-        String convertToJson = converter.convertToJson();
+        HttpRequest request;
+        HttpClient client = HttpClient.newHttpClient();
+        Set<CompletableFuture> futures = new HashSet();
+
+        HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(gexf.getBytes(StandardCharsets.UTF_8));
+
+        URI uri = UrlBuilder
+                .empty()
+                .withScheme("http")
+                .withPort(7002)
+                .withHost("localhost")
+                .withPath("api/convert2vv")
+                .addParameter("item", "Term")
+                .addParameter("items", "Terms")
+                .addParameter("link", "Co-occurrence link")
+                .addParameter("links", "Co-occurrence links")
+                .addParameter("linkStrength", "Number of co-occurrences")
+                .addParameter("totalLinkStrength", "Total number of co-occurrences")
+                .addParameter("descriptionData", "Made with nocodefunctions.com")
+                .toUri();
+
+        request = HttpRequest.newBuilder()
+                .POST(bodyPublisher)
+                .uri(uri)
+                .build();
+
+        CompletableFuture<Void> future = client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()).thenAccept(
+                resp -> {
+                    byte[] body = resp.body();
+                    graphAsJsonVosViewer = new String(body, StandardCharsets.UTF_8);
+                }
+        );
+
+        futures.add(future);
+
+        CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(futures.toArray((new CompletableFuture[0])));
+        combinedFuture.join();
         String path = RemoteLocal.isLocal() ? "" : "html/vosviewer/data/";
         String subfolder;
         vosviewerJsonFileName = "vosviewer_" + Faces.getSessionId().substring(0, 20) + ".json";
@@ -623,7 +575,7 @@ public class CowoBean implements Serializable {
         }
 
         BufferedWriter bw = Files.newBufferedWriter(Path.of(path + vosviewerJsonFileName), StandardCharsets.UTF_8);
-        bw.write(convertToJson);
+        bw.write(graphAsJsonVosViewer);
         bw.close();
 
         ExternalContext externalContext = FacesContext.getCurrentInstance().getExternalContext();
@@ -639,13 +591,7 @@ public class CowoBean implements Serializable {
 
     public void gotoGephisto() throws IOException {
 
-        ExportController ec = Lookup.getDefault().lookup(ExportController.class
-        );
-        Exporter exporterGexf = ec.getExporter("gexf");
-        exporterGexf.setWorkspace(workspace);
-        StringWriter stringWriter = new StringWriter();
-        ec.exportWriter(stringWriter, (CharacterExporter) exporterGexf);
-        byte[] readAllBytes = stringWriter.toString().getBytes();
+        byte[] readAllBytes = gexf.getBytes();
         InputStream inputStreamToSave = new ByteArrayInputStream(readAllBytes);
 
         String path = RemoteLocal.isLocal() ? "" : "gephisto/data/";

@@ -7,10 +7,10 @@ package net.clementlevallois.nocodeapp.web.front.backingbeans;
 
 import java.io.IOException;
 import java.io.Serializable;
-import javax.faces.context.ExternalContext;
-import javax.faces.context.FacesContext;
-import javax.inject.Named;
-import javax.faces.view.ViewScoped;
+import jakarta.faces.context.ExternalContext;
+import jakarta.faces.context.FacesContext;
+import jakarta.inject.Named;
+import jakarta.faces.view.ViewScoped;
 import net.clementlevallois.nocodeapp.web.front.http.RemoteLocal;
 
 /**

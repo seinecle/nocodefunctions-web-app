@@ -8,10 +8,10 @@ package net.clementlevallois.nocodeapp.web.front;
 // see https://stackoverflow.com/questions/9905946/url-rewriting-solution-needed-for-jsf
 import java.util.List;
 import java.util.Map;
-import javax.faces.application.ViewHandler;
-import javax.faces.application.ViewHandlerWrapper;
-import javax.faces.context.FacesContext;
-import javax.servlet.ServletContext;
+import jakarta.faces.application.ViewHandler;
+import jakarta.faces.application.ViewHandlerWrapper;
+import jakarta.faces.context.FacesContext;
+import jakarta.servlet.ServletContext;
 
 public class CustomViewHandler extends ViewHandlerWrapper {
 

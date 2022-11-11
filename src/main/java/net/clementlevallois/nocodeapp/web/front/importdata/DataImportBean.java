@@ -12,7 +12,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
-import javax.inject.Named;
+import jakarta.inject.Named;
 import java.io.Serializable;
 import java.io.StringReader;
 import java.net.URI;
@@ -32,18 +32,18 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.enterprise.context.SessionScoped;
-import javax.faces.application.FacesMessage;
-import javax.faces.context.FacesContext;
-import javax.inject.Inject;
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import javax.json.JsonReader;
-import javax.servlet.annotation.MultipartConfig;
+import jakarta.enterprise.context.SessionScoped;
+import jakarta.faces.application.FacesMessage;
+import jakarta.faces.context.FacesContext;
+import jakarta.inject.Inject;
+import jakarta.json.Json;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.json.JsonReader;
+import jakarta.servlet.annotation.MultipartConfig;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SingletonBean;
-import net.clementlevallois.nocodeapp.web.front.labelling.TaskMetadata;
+import net.clementlevallois.nocodeapp.web.front.redisops.TaskMetadata;
 import net.clementlevallois.nocodeapp.web.front.functions.GazeBean;
 import net.clementlevallois.nocodeapp.web.front.functions.LabellingBean;
 import net.clementlevallois.nocodeapp.web.front.io.ExcelReader;
@@ -54,7 +54,6 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.jsoup.Jsoup;
 import org.jsoup.safety.Safelist;
-import org.openide.util.Exceptions;
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.event.FilesUploadEvent;
 import org.primefaces.model.file.UploadedFile;
@@ -155,7 +154,7 @@ public class DataImportBean implements Serializable {
                 service.create(sessionBean.getLocaleBundle().getString("general.message.reading_pdf_file"));
                 readPdfFile(file.getInputStream(), file.getFileName());
             } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+                System.out.println("ex:" + ex.getMessage());
             }
         } else if (files != null) {
             for (UploadedFile f : files.getFiles()) {
@@ -165,7 +164,7 @@ public class DataImportBean implements Serializable {
                         service.create(sessionBean.getLocaleBundle().getString("general.message.reading_file") + f.getFileName());
                         readPdfFile(f.getInputStream(), f.getFileName());
                     } catch (IOException ex) {
-                        Exceptions.printStackTrace(ex);
+                        System.out.println("ex:" + ex.getMessage());
                     }
                 }
             }
@@ -266,7 +265,7 @@ public class DataImportBean implements Serializable {
                         }
                     }
                 } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
+                    System.out.println("ex:" + ex.getMessage());
                 }
             }
         }
@@ -384,20 +383,20 @@ public class DataImportBean implements Serializable {
             CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(futures.toArray((new CompletableFuture[0])));
             combinedFuture.join();
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            System.out.println("ex:" + ex.getMessage());
         }
     }
 
     private void readPdfFile(InputStream is, String fileName) {
         try {
             String localizedEmptyLineMessage = sessionBean.getLocaleBundle().getString("general.message.empty_line");
-            
+
             HttpRequest request;
             HttpClient client = HttpClient.newHttpClient();
             Set<CompletableFuture> futures = new HashSet();
-            
+
             HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(is.readAllBytes());
-            
+
             URI uri = UrlBuilder
                     .empty()
                     .withScheme("http")
@@ -407,17 +406,17 @@ public class DataImportBean implements Serializable {
                     .addParameter("fileName", fileName)
                     .addParameter("localizedEmptyLineMessage", localizedEmptyLineMessage)
                     .toUri();
-            
+
             request = HttpRequest.newBuilder()
                     .POST(bodyPublisher)
                     .uri(uri)
                     .build();
-            
+
             CompletableFuture<Void> future = client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()).thenAccept(
                     resp -> {
                         byte[] body = resp.body();
                         try (
-                                ByteArrayInputStream bis = new ByteArrayInputStream(body);  ObjectInputStream ois = new ObjectInputStream(bis)) {
+                         ByteArrayInputStream bis = new ByteArrayInputStream(body);  ObjectInputStream ois = new ObjectInputStream(bis)) {
                             List<SheetModel> tempResult = (List<SheetModel>) ois.readObject();
                             dataInSheets.addAll(tempResult);
                         } catch (IOException | ClassNotFoundException ex) {
@@ -425,13 +424,13 @@ public class DataImportBean implements Serializable {
                         }
                     }
             );
-            
+
             futures.add(future);
-            
+
             CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(futures.toArray((new CompletableFuture[0])));
             combinedFuture.join();
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            System.out.println("ex:" + ex.getMessage());
         }
     }
 
@@ -489,7 +488,7 @@ public class DataImportBean implements Serializable {
             CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(futures.toArray((new CompletableFuture[0])));
             combinedFuture.join();
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            System.out.println("ex:" + ex.getMessage());
         }
     }
 
@@ -752,7 +751,7 @@ public class DataImportBean implements Serializable {
 
         try ( Jedis jedis = SingletonBean.getJedisPool().getResource()) {
             // saving the metadata of the dataset just created
-            TaskMetadata tmd = new TaskMetadata(taskId, typeOfTask);
+            TaskMetadata tmd = new TaskMetadata(taskId, typeOfTask, jedis);
             tmd.setDescription(datasetDescription);
             tmd.setName(datasetName);
             tmd.setEmailDesigner(emailTaskDesigner);

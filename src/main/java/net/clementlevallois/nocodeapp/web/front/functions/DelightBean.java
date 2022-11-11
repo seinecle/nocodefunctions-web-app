@@ -26,10 +26,10 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.PostConstruct;
-import javax.enterprise.context.SessionScoped;
-import javax.inject.Inject;
-import javax.inject.Named;
+import jakarta.annotation.PostConstruct;
+import jakarta.enterprise.context.SessionScoped;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.importdata.DataImportBean;
 import net.clementlevallois.nocodeapp.web.front.http.SendReport;
@@ -39,7 +39,6 @@ import net.clementlevallois.nocodeapp.web.front.logview.NotificationService;
 import net.clementlevallois.umigon.model.Document;
 import net.clementlevallois.utils.Clock;
 import org.omnifaces.util.Faces;
-import org.openide.util.Exceptions;
 import org.primefaces.model.StreamedContent;
 
 /**
@@ -172,7 +171,7 @@ public class DelightBean implements Serializable {
             runButtonDisabled = true;
 
         } catch (Exception ex) {
-            Exceptions.printStackTrace(ex);
+                    System.out.println("ex:"+ ex.getMessage());
         }
         return "/" + sessionBean.getFunction() + "/results.xhtml?faces-redirect=true";
     }

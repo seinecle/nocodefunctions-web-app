@@ -26,36 +26,35 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
-import javax.enterprise.context.SessionScoped;
-import javax.enterprise.inject.spi.Bean;
-import javax.enterprise.inject.spi.BeanManager;
-import javax.faces.application.FacesMessage;
-import javax.faces.context.FacesContext;
-import javax.faces.model.SelectItem;
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import javax.json.JsonReader;
-import javax.json.JsonValue;
-import javax.json.bind.Jsonb;
-import javax.json.bind.JsonbBuilder;
-import javax.json.bind.JsonbConfig;
+import jakarta.enterprise.context.SessionScoped;
+import jakarta.enterprise.inject.spi.Bean;
+import jakarta.enterprise.inject.spi.BeanManager;
+import jakarta.faces.application.FacesMessage;
+import jakarta.faces.context.FacesContext;
+import jakarta.faces.model.SelectItem;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
+import jakarta.json.Json;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.json.JsonReader;
+import jakarta.json.JsonValue;
+import jakarta.json.bind.Jsonb;
+import jakarta.json.bind.JsonbBuilder;
+import jakarta.json.bind.JsonbConfig;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SingletonBean;
-import net.clementlevallois.nocodeapp.web.front.labelling.Annotator;
-import net.clementlevallois.nocodeapp.web.front.labelling.BlockToEvaluate;
-import net.clementlevallois.nocodeapp.web.front.labelling.TaskMetadata;
-import net.clementlevallois.nocodeapp.web.front.labelling.Task;
+import net.clementlevallois.nocodeapp.web.front.redisops.Annotator;
+import net.clementlevallois.functions.model.bibd.BlockToEvaluate;
+import net.clementlevallois.nocodeapp.web.front.redisops.TaskMetadata;
+import net.clementlevallois.nocodeapp.web.front.redisops.Task;
 import net.clementlevallois.nocodeapp.web.front.http.RemoteLocal;
 import net.clementlevallois.nocodeapp.web.front.http.SendReport;
 import net.clementlevallois.nocodeapp.web.front.importdata.DataImportBean;
 import net.clementlevallois.nocodeapp.web.front.logview.NotificationService;
 import net.clementlevallois.nocodeapp.web.front.resources.PlaceHolder;
-import org.openide.util.Exceptions;
 import org.primefaces.model.chart.Axis;
 import org.primefaces.model.chart.AxisType;
 import org.primefaces.model.chart.BarChartModel;
@@ -404,7 +403,7 @@ public class LabellingBean implements Serializable {
                 if (value != null && !value.isEmpty()) {
                     for (int i = 0; i < value.size(); i++) {
                         String element = value.getString(i);
-                        Annotator ann = new Annotator(taskId, element);
+                        Annotator ann = new Annotator(taskId, element, jedis);
                         annotators.add(new SelectItem(ann.getEmail(), ann.getEmail()));
                     }
                 }
@@ -564,7 +563,7 @@ public class LabellingBean implements Serializable {
             if (nbEvaluatedTotal == null) {
                 nbEvaluatedTotal = "0";
             }
-            elementsEvaluatedSoFar = Integer.valueOf(nbEvaluatedTotal);
+            elementsEvaluatedSoFar = Integer.parseInt(nbEvaluatedTotal);
 
             // feching the items of the task
             String tasksWithItems = "task:" + taskId + ":data";
@@ -734,8 +733,10 @@ public class LabellingBean implements Serializable {
     }
 
     public TaskMetadata getMetadataOfCurrentTask() {
-        metadataOfCurrentTask = new TaskMetadata(taskId, typeOfTask);
-        return metadataOfCurrentTask;
+        try ( Jedis jedis = SingletonBean.getJedisPool().getResource()) {
+            metadataOfCurrentTask = new TaskMetadata(taskId, typeOfTask, jedis);
+            return metadataOfCurrentTask;
+        }
     }
 
     public int getIndexNextBlock() {
@@ -1201,7 +1202,7 @@ public class LabellingBean implements Serializable {
                     String noun2 = nouns.get(1);
                     password = noun1 + " of " + noun2;
                 } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
+                    System.out.println("ex:" + ex.getMessage());
                 }
             }
             Annotator annotatorToAdd = new Annotator(taskId, newAnnotatorEmail, password);
@@ -1236,7 +1237,7 @@ public class LabellingBean implements Serializable {
             jedis.set(annotatorKey, updatedJson.toString());
 
             FacesContext.getCurrentInstance().
-                    addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, sessionBean.getLocaleBundle().getString("back.labelling.annotator_created"), sessionBean.getLocaleBundle().getString("back.labelling.annotator_created") + newAnnotatorName + " - "+ sessionBean.getLocaleBundle().getString("general.message.check_spam")));
+                    addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, sessionBean.getLocaleBundle().getString("back.labelling.annotator_created"), sessionBean.getLocaleBundle().getString("back.labelling.annotator_created") + newAnnotatorName + " - " + sessionBean.getLocaleBundle().getString("general.message.check_spam")));
             service.create(sessionBean.getLocaleBundle().getString("general.message.email_sent"));
 
             boolean foundEmptyAnnotatorSpotLeft = true;
@@ -1313,7 +1314,7 @@ public class LabellingBean implements Serializable {
             return;
         }
         try ( Jedis jedis = SingletonBean.getJedisPool().getResource()) {
-            Annotator annotatorToDelete = new Annotator(taskId, emailAnnotatorToDelete);
+            Annotator annotatorToDelete = new Annotator(taskId, emailAnnotatorToDelete, jedis);
 
             String annotatorKeyToDelete = annotatorToDelete.produceAnnotatorKey();
             if (jedis.exists(annotatorKeyToDelete)) {

@@ -9,7 +9,7 @@ package net.clementlevallois.nocodeapp.web.front.backingbeans;
  *
  * @author LEVALLOIS
  */
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -18,10 +18,10 @@ import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
 
-import javax.annotation.PostConstruct;
-import javax.enterprise.context.SessionScoped;
-import javax.faces.context.FacesContext;
-import javax.inject.Named;
+import jakarta.annotation.PostConstruct;
+import jakarta.enterprise.context.SessionScoped;
+import jakarta.faces.context.FacesContext;
+import jakarta.inject.Named;
 
 @Named
 @SessionScoped

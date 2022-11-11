@@ -5,20 +5,16 @@
  */
 package net.clementlevallois.nocodeapp.web.front.functions;
 
-import cern.colt.list.DoubleArrayList;
-import cern.colt.list.IntArrayList;
-import cern.colt.matrix.impl.SparseDoubleMatrix1D;
-import cern.colt.matrix.impl.SparseDoubleMatrix2D;
-import java.io.BufferedReader;
+import io.mikael.urlbuilder.UrlBuilder;
 import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Serializable;
+import java.io.StringReader;
 import java.io.StringWriter;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -27,56 +23,35 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
-import static java.util.stream.Collectors.toList;
-import javax.enterprise.context.SessionScoped;
-import javax.faces.context.ExternalContext;
-import javax.faces.context.FacesContext;
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.json.Json;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import javax.json.JsonWriter;
-import net.clementlevallois.gaze.controller.CosineCalculation;
-import net.clementlevallois.gaze.controller.MatrixBuilder;
-import net.clementlevallois.gexfvosviewerjson.GexfToVOSViewerJson;
-import net.clementlevallois.gexfvosviewerjson.Metadata;
-import net.clementlevallois.gexfvosviewerjson.Terminology;
+import jakarta.enterprise.context.SessionScoped;
+import jakarta.faces.context.ExternalContext;
+import jakarta.faces.context.FacesContext;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
+import jakarta.json.Json;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.json.JsonWriter;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.http.RemoteLocal;
 import net.clementlevallois.nocodeapp.web.front.importdata.CellRecord;
 import net.clementlevallois.nocodeapp.web.front.importdata.DataImportBean;
 import net.clementlevallois.nocodeapp.web.front.importdata.SheetModel;
-import net.clementlevallois.nocodeapp.web.front.io.GEXFSaver;
+import net.clementlevallois.nocodeapp.web.front.utils.GEXFSaver;
 import net.clementlevallois.nocodeapp.web.front.logview.NotificationService;
-import net.clementlevallois.utils.FindAllPairs;
+import net.clementlevallois.nocodeapp.web.front.utils.Utils;
 import net.clementlevallois.utils.Multiset;
-import net.clementlevallois.utils.UnDirectedPair;
-import org.gephi.graph.api.Edge;
-import org.gephi.graph.api.Graph;
-import org.gephi.graph.api.GraphController;
-import org.gephi.graph.api.GraphFactory;
-import org.gephi.graph.api.GraphModel;
-import org.gephi.graph.api.Node;
-import org.gephi.io.exporter.api.ExportController;
-import org.gephi.io.exporter.plugin.ExporterGEXF;
-import org.gephi.project.api.ProjectController;
-import org.gephi.project.api.Workspace;
 import org.omnifaces.util.Faces;
-import org.openide.util.Lookup;
 import org.primefaces.model.StreamedContent;
 
 /**
@@ -89,7 +64,6 @@ public class GazeBean implements Serializable {
 
     private String option = "1";
     private Integer progress;
-    private Graph graphResult;
     private Boolean runButtonDisabled = true;
     private StreamedContent fileToSave;
     private Boolean renderSeeResultsButton = false;
@@ -98,12 +72,11 @@ public class GazeBean implements Serializable {
     private String edgesAsJson;
     private int minFreqNode = 1000_000;
     private int maxFreqNode = 0;
+    private String graphAsJsonVosViewer;
     private String vosviewerJsonFileName;
     private Boolean shareVVPublicly;
     private String gephistoGexfFileName;
     private Boolean shareGephistoPublicly;
-    private GraphModel gm;
-    private Workspace workspace;
     private boolean applyPMI = false;
 
     String gexf;
@@ -253,116 +226,84 @@ public class GazeBean implements Serializable {
 
     public void callCooc(Map<Integer, Multiset<String>> inputLines) throws Exception {
 
-        progress = 5;
+        HttpRequest request;
+        HttpClient client = HttpClient.newHttpClient();
+        Set<CompletableFuture> futures = new HashSet();
+        JsonObjectBuilder overallObject = Json.createObjectBuilder();
 
-        Iterator<Map.Entry<Integer, Multiset<String>>> iterator = inputLines.entrySet().iterator();
-        FindAllPairs pairFinder;
-        Multiset<UnDirectedPair<String>> allUndirectedPairs = new Multiset();
-
-        Multiset<String> nodesAsString = new Multiset();
-
-        while (iterator.hasNext()) {
-            Map.Entry<Integer, Multiset<String>> entry = iterator.next();
-            pairFinder = new FindAllPairs();
-            Multiset<String> itemsOnOneLine = entry.getValue();
-            for (String item : itemsOnOneLine.toListOfAllOccurrences()) {
-                nodesAsString.addOne(item);
+        JsonObjectBuilder linesBuilder = Json.createObjectBuilder();
+        for (Map.Entry<Integer, Multiset<String>> entryLines : inputLines.entrySet()) {
+            JsonArrayBuilder createArrayBuilder = Json.createArrayBuilder();
+            Multiset<String> targets = entryLines.getValue();
+            for (String target : targets.toListOfAllOccurrences()) {
+                createArrayBuilder.add(target);
             }
-            Set<UnDirectedPair<String>> undirectedPairsAsListOneLine = pairFinder.getAllUndirectedPairsFromList(itemsOnOneLine.toListOfAllOccurrences());
-            allUndirectedPairs.addAllFromListOrSet(undirectedPairsAsListOneLine);
+            linesBuilder.add(String.valueOf(entryLines.getKey()), createArrayBuilder);
         }
 
-        service.create(sessionBean.getLocaleBundle().getString("general.message.last_ops_creating_network"));
-        progress = 95;
+        overallObject.add("lines", linesBuilder);
 
-        ProjectController pc = Lookup.getDefault().lookup(ProjectController.class);
-        pc.newProject();
-        workspace = pc.getCurrentWorkspace();
+        JsonObject build = overallObject.build();
+        StringWriter sw = new StringWriter(128);
+        try ( JsonWriter jw = Json.createWriter(sw)) {
+            jw.write(build);
+        }
+        String jsonString = sw.toString();
 
-        //Get a graph model - it exists because we have a workspace
-        gm = Lookup.getDefault().lookup(GraphController.class).getGraphModel(workspace);
+        HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(jsonString.getBytes(StandardCharsets.UTF_8));
 
-        GraphFactory factory = gm.factory();
-        graphResult = gm.getGraph();
+        URI uri = new URI("http://localhost:7002/api/gaze/cooc");
 
-        gm.getNodeTable().addColumn("countTerms", Integer.TYPE);
-        if (applyPMI) {
-            gm.getEdgeTable().addColumn("countEdge", Integer.TYPE);
+        request = HttpRequest.newBuilder()
+                .POST(bodyPublisher)
+                .uri(uri)
+                .build();
+
+        CompletableFuture<Void> future = client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()).thenAccept(resp -> {
+            byte[] body = resp.body();
+            gexf = new String(body, StandardCharsets.UTF_8);
+        }
+        );
+        futures.add(future);
+
+        CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(futures.toArray((new CompletableFuture[0])));
+        combinedFuture.join();
+
+        if (gexf == null) {
+            service.create(sessionBean.getLocaleBundle().getString("general.message.internal_server_error"));
+            renderSeeResultsButton = true;
+            runButtonDisabled = true;
+            return;
         }
 
-        Set<Node> nodes = new HashSet();
-        Node node;
-        for (String nodeString : nodesAsString.toListOfAllOccurrences()) {
-            node = factory.newNode(nodeString);
-            node.setLabel(nodeString);
-            node.setAttribute("countTerms", nodesAsString.getCount(nodeString));
-            nodes.add(node);
+        bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(jsonString.getBytes(StandardCharsets.UTF_8));
+
+        uri = UrlBuilder
+                .empty()
+                .withScheme("http")
+                .withPort(7002)
+                .withHost("localhost")
+                .withPath("api/graphops/topnodes")
+                .addParameter("nbNodes", "30")
+                .toUri();
+
+        request = HttpRequest.newBuilder()
+                .POST(bodyPublisher)
+                .uri(uri)
+                .build();
+
+        future = client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()).thenAccept(resp -> {
+            byte[] body = resp.body();
+            String jsonResult = new String(body, StandardCharsets.UTF_8);
+            JsonObject jsonObject = Json.createReader(new StringReader(jsonResult)).readObject();
+            nodesAsJson = Utils.turnJsonObjectToString(jsonObject.getJsonObject("nodes"));
+            edgesAsJson = Utils.turnJsonObjectToString(jsonObject.getJsonObject("edges"));
         }
-        graphResult.addAllNodes(nodes);
+        );
+        futures.add(future);
 
-        Set<Edge> edgesForGraph = new HashSet();
-        Edge edge;
-        for (UnDirectedPair<String> edgeToCreate : allUndirectedPairs.getElementSet()) {
-            Node nodeSource = graphResult.getNode(edgeToCreate.getLeft());
-            Node nodeTarget = graphResult.getNode(edgeToCreate.getRight());
-            if (applyPMI) {
-                int sourceCount = (Integer) nodeSource.getAttribute("countTerms");
-                int targetCount = (Integer) nodeTarget.getAttribute("countTerms");
-                float edgePMIWeight = (float) allUndirectedPairs.getCount(edgeToCreate) / (sourceCount * targetCount);
-                edge = factory.newEdge(nodeSource, nodeTarget, 0, edgePMIWeight, false);
-                edge.setAttribute("countEdge", allUndirectedPairs.getCount(edgeToCreate));
-            } else {
-                edge = factory.newEdge(nodeSource, nodeTarget, 0, allUndirectedPairs.getCount(edgeToCreate), false);
-            }
-            edgesForGraph.add(edge);
-        }
-        graphResult.addAllEdges(edgesForGraph);
-
-        Iterator<Node> iteratorNodes = graphResult.getNodes().iterator();
-        Iterator<Edge> iteratorEdges = graphResult.getEdges().iterator();
-        JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
-        Map<Node, Integer> nodesToFreq = new HashMap();
-        while (iteratorNodes.hasNext()) {
-            Node nodeGraph = iteratorNodes.next();
-            int freqNode = (int) nodeGraph.getAttribute("countTerms");
-            nodesToFreq.put(nodeGraph, freqNode);
-            if (minFreqNode > freqNode) {
-                minFreqNode = freqNode;
-            }
-            if (maxFreqNode < freqNode) {
-                maxFreqNode = freqNode;
-            }
-        }
-
-        // we keep only the 30 most freq nodes for the graph viz
-        Map<Node, Integer> topFreq
-                = nodesToFreq.entrySet().stream()
-                        .sorted(Collections.reverseOrder(Map.Entry.comparingByValue()))
-                        .limit(30)
-                        .collect(Collectors.toMap(
-                                Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
-
-        Iterator<Map.Entry<Node, Integer>> iteratorNodes2 = topFreq.entrySet().iterator();
-
-        Set<String> nodesInGraph = new HashSet();
-        while (iteratorNodes2.hasNext()) {
-            Map.Entry<Node, Integer> next = iteratorNodes2.next();
-            nodesInGraph.add((String) next.getKey().getId());
-            objectBuilder.add((String) next.getKey().getId(), String.valueOf(next.getKey().getAttribute("countTerms")));
-        }
-        nodesAsJson = objectBuilder.build().toString();
-
-        objectBuilder = Json.createObjectBuilder();
-        while (iteratorEdges.hasNext()) {
-            Edge edgeGraph = iteratorEdges.next();
-            if (nodesInGraph.contains((String) edgeGraph.getSource().getId()) && nodesInGraph.contains((String) edgeGraph.getTarget().getId())) {
-                objectBuilder.add((String) edgeGraph.getId(), Json.createObjectBuilder()
-                        .add("source", (String) edgeGraph.getSource().getId())
-                        .add("target", ((String) edgeGraph.getTarget().getId())));
-            }
-        }
-        edgesAsJson = objectBuilder.build().toString();
-
+        combinedFuture = CompletableFuture.allOf(futures.toArray((new CompletableFuture[0])));
+        combinedFuture.join();
     }
 
     public void callSim(Map<String, Set<String>> sourcesAndTargets) throws Exception {
@@ -417,42 +358,34 @@ public class GazeBean implements Serializable {
             return;
         }
 
-        JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
+        bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(jsonString.getBytes(StandardCharsets.UTF_8));
 
-        // we keep only the 30 strongest connections on the screen viz
-        Map<Edge, Double> topWeightEdges
-                = mapEdgesToTheirWeight.entrySet().stream()
-                        .sorted(Collections.reverseOrder(Map.Entry.comparingByValue()))
-                        .limit(30)
-                        .collect(Collectors.toMap(
-                                Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
+        uri = UrlBuilder
+                .empty()
+                .withScheme("http")
+                .withPort(7002)
+                .withHost("localhost")
+                .withPath("api/graphops/topnodes")
+                .addParameter("nbNodes", "30")
+                .toUri();
 
-        Set<String> nodesInGraph = new HashSet();
+        request = HttpRequest.newBuilder()
+                .POST(bodyPublisher)
+                .uri(uri)
+                .build();
 
-        Iterator<Map.Entry<Edge, Double>> iteratorTopWeightEdges = topWeightEdges.entrySet().iterator();
-
-        while (iteratorTopWeightEdges.hasNext()) {
-            Map.Entry<Edge, Double> next = iteratorTopWeightEdges.next();
-            nodesInGraph.add((String) next.getKey().getSource().getId());
-            nodesInGraph.add((String) next.getKey().getTarget().getId());
-            objectBuilder.add((String) next.getKey().getSource().getId(), "1");
-            objectBuilder.add((String) next.getKey().getTarget().getId(), "1");
+        future = client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()).thenAccept(resp -> {
+            byte[] body = resp.body();
+            String jsonResult = new String(body, StandardCharsets.UTF_8);
+            JsonObject jsonObject = Json.createReader(new StringReader(jsonResult)).readObject();
+            nodesAsJson = Utils.turnJsonObjectToString(jsonObject.getJsonObject("nodes"));
+            edgesAsJson = Utils.turnJsonObjectToString(jsonObject.getJsonObject("edges"));
         }
-        nodesAsJson = objectBuilder.build().toString();
+        );
+        futures.add(future);
 
-        objectBuilder = Json.createObjectBuilder();
-
-        iteratorTopWeightEdges = topWeightEdges.entrySet().iterator();
-        while (iteratorTopWeightEdges.hasNext()) {
-            Map.Entry<Edge, Double> next = iteratorTopWeightEdges.next();
-            if (nodesInGraph.contains((String) next.getKey().getSource().getId()) && nodesInGraph.contains((String) next.getKey().getTarget().getId())) {
-                objectBuilder.add((String) next.getKey().getId(), Json.createObjectBuilder()
-                        .add("source", (String) next.getKey().getSource().getId())
-                        .add("target", ((String) next.getKey().getTarget().getId())));
-            }
-        }
-        edgesAsJson = objectBuilder.build().toString();
-
+        combinedFuture = CompletableFuture.allOf(futures.toArray((new CompletableFuture[0])));
+        combinedFuture.join();
     }
 
     public void gotoVV() throws IOException {
@@ -460,22 +393,45 @@ public class GazeBean implements Serializable {
             System.out.println("gm object was null so gotoVV method exited");
             return;
         }
-        InputStream stream = new ByteArrayInputStream(gexf.getBytes(StandardCharsets.UTF_8));
-        GexfToVOSViewerJson converter = new GexfToVOSViewerJson(gexf);
 
-        converter.setMaxNumberNodes(500);
-        converter.setTerminologyData(new Terminology());
-        converter.getTerminologyData().setItem("Term");
-        converter.getTerminologyData().setItems("Terms");
-        converter.getTerminologyData().setLink("Co-occurrence link");
-        converter.getTerminologyData().setLinks("Co-occurrence links");
-        converter.getTerminologyData().setLink_strength("Number of co-occurrences");
-        converter.getTerminologyData().setTotal_link_strength("Total number of co-occurrences");
-        converter.setMetadataData(new Metadata());
-        converter.getMetadataData().setAuthorCanBePlural("");
-        converter.getMetadataData().setDescriptionOfData("Made with nocodefunctions.com");
+        HttpRequest request;
+        HttpClient client = HttpClient.newHttpClient();
+        Set<CompletableFuture> futures = new HashSet();
 
-        String convertToJson = converter.convertToJson();
+        HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(gexf.getBytes(StandardCharsets.UTF_8));
+
+        URI uri = UrlBuilder
+                .empty()
+                .withScheme("http")
+                .withPort(7002)
+                .withHost("localhost")
+                .withPath("api/convert2vv")
+                .addParameter("item", "Term")
+                .addParameter("items", "Terms")
+                .addParameter("link", "Co-occurrence link")
+                .addParameter("links", "Co-occurrence links")
+                .addParameter("linkStrength", "Number of co-occurrences")
+                .addParameter("totalLinkStrength", "Total number of co-occurrences")
+                .addParameter("descriptionData", "Made with nocodefunctions.com")
+                .toUri();
+
+        request = HttpRequest.newBuilder()
+                .POST(bodyPublisher)
+                .uri(uri)
+                .build();
+
+        CompletableFuture<Void> future = client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()).thenAccept(
+                resp -> {
+                    byte[] body = resp.body();
+                    graphAsJsonVosViewer = new String(body, StandardCharsets.UTF_8);
+                }
+        );
+
+        futures.add(future);
+
+        CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(futures.toArray((new CompletableFuture[0])));
+        combinedFuture.join();
+
         String path = RemoteLocal.isLocal() ? "" : "html/vosviewer/data/";
         String subfolder;
         vosviewerJsonFileName = "vosviewer_" + Faces.getSessionId().substring(0, 20) + ".json";
@@ -491,7 +447,7 @@ public class GazeBean implements Serializable {
         }
 
         try ( BufferedWriter bw = Files.newBufferedWriter(Path.of(path + vosviewerJsonFileName), StandardCharsets.UTF_8)) {
-            bw.write(convertToJson);
+            bw.write(graphAsJsonVosViewer);
         }
 
         ExternalContext externalContext = FacesContext.getCurrentInstance().getExternalContext();
@@ -507,16 +463,7 @@ public class GazeBean implements Serializable {
 
     public void gotoGephisto() throws IOException {
 
-        ExportController ec = Lookup.getDefault().lookup(ExportController.class);
-
-        ExporterGEXF exporterGexf = (ExporterGEXF) ec.getExporter("gexf");
-        exporterGexf.setWorkspace(workspace);
-        exporterGexf.setExportDynamic(false);
-
-        StringWriter stringWriter = new StringWriter();
-        ec.exportWriter(stringWriter, exporterGexf);
-        stringWriter.close();
-        byte[] readAllBytes = stringWriter.toString().getBytes();
+        byte[] readAllBytes = gexf.getBytes();
         InputStream inputStreamToSave = new ByteArrayInputStream(readAllBytes);
 
         String path = RemoteLocal.isLocal() ? "" : "gephisto/data/";
@@ -551,7 +498,7 @@ public class GazeBean implements Serializable {
     }
 
     public StreamedContent getFileToSave() {
-        return GEXFSaver.exportGexfAsStreamedFile(workspace, "results");
+        return GEXFSaver.exportGexfAsStreamedFile(gexf, "results");
     }
 
     public void setFileToSave(StreamedContent fileToSave) {

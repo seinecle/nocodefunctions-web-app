@@ -26,10 +26,10 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.PostConstruct;
-import javax.enterprise.context.SessionScoped;
-import javax.inject.Inject;
-import javax.inject.Named;
+import jakarta.annotation.PostConstruct;
+import jakarta.enterprise.context.SessionScoped;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.ActiveLocale;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SingletonBean;
@@ -39,7 +39,6 @@ import net.clementlevallois.nocodeapp.web.front.importdata.DataFormatConverter;
 import net.clementlevallois.nocodeapp.web.front.io.ExcelSaver;
 import net.clementlevallois.nocodeapp.web.front.logview.NotificationService;
 import net.clementlevallois.umigon.model.Document;
-import org.openide.util.Exceptions;
 import org.primefaces.model.StreamedContent;
 
 /**
@@ -124,9 +123,9 @@ public class UmigonBean implements Serializable {
         service.create(sessionBean.getLocaleBundle().getString("general.message.starting_analysis"));
         DataFormatConverter dataFormatConverter = new DataFormatConverter();
         Map<Integer, String> mapOfLines = dataFormatConverter.convertToMapOfLines(inputData.getBulkData(), inputData.getDataInSheets(), inputData.getSelectedSheetName(), inputData.getSelectedColumnIndex(), inputData.getHasHeaders());
-        int maxRecords = Math.min(mapOfLines.size(),maxCapacity);
+        int maxRecords = Math.min(mapOfLines.size(), maxCapacity);
 
-        results = Arrays.asList(new Document[maxCapacity+1]);
+        results = Arrays.asList(new Document[maxCapacity + 1]);
 
         HttpRequest request;
         HttpClient client = HttpClient.newHttpClient();
@@ -134,7 +133,7 @@ public class UmigonBean implements Serializable {
         int i = 1;
         try {
             for (Map.Entry<Integer, String> entry : mapOfLines.entrySet()) {
-                if (i++ > maxCapacity){
+                if (i++ > maxCapacity) {
                     break;
                 }
                 Document doc = new Document();
@@ -149,7 +148,7 @@ public class UmigonBean implements Serializable {
                 sb.append("&text=").append(URLEncoder.encode(entry.getValue(), StandardCharsets.UTF_8.toString()));
                 sb.append("&explanation=on");
                 sb.append("&shorter=true");
-                sb.append("&owner=").append(singletonBean.getPrivateProperties().getProperty("pwdOwner"));
+                sb.append("&owner=").append(SingletonBean.getPrivateProperties().getProperty("pwdOwner"));
                 sb.append("&output-format=bytes");
                 sb.append("&explanation-lang=").append(activeLocale.getLanguageTag());
                 String uriAsString = sb.toString();
@@ -168,7 +167,7 @@ public class UmigonBean implements Serializable {
                     }
                     if (body.length >= 100 && !new String(body, StandardCharsets.UTF_8).toLowerCase().startsWith("internal") && !new String(body, StandardCharsets.UTF_8).toLowerCase().startsWith("not found")) {
                         try (
-                                ByteArrayInputStream bis = new ByteArrayInputStream(body);  ObjectInputStream ois = new ObjectInputStream(bis)) {
+                                 ByteArrayInputStream bis = new ByteArrayInputStream(body);  ObjectInputStream ois = new ObjectInputStream(bis)) {
                             Document docReturn = (Document) ois.readObject();
                             tempResults.put(Integer.valueOf(docReturn.getId()), docReturn);
                         } catch (Exception ex) {
@@ -195,7 +194,7 @@ public class UmigonBean implements Serializable {
         } catch (UnsupportedEncodingException ex) {
             System.out.println("encoding ex");
         } catch (InterruptedException ex) {
-            Exceptions.printStackTrace(ex);
+            System.out.println("ex:" + ex.getMessage());
         }
 
         /* this little danse between tempResults and results is because:

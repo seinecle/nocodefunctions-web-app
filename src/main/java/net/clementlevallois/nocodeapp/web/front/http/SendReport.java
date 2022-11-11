@@ -5,20 +5,13 @@
  */
 package net.clementlevallois.nocodeapp.web.front.http;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
-import javax.enterprise.context.SessionScoped;
-import javax.inject.Named;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SingletonBean;
-import org.openide.util.Exceptions;
 
 /**
  *

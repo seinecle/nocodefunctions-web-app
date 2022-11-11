@@ -33,10 +33,10 @@
 //import java.util.Set;
 //import java.util.logging.Level;
 //import java.util.logging.Logger;
-//import javax.annotation.PostConstruct;
-//import javax.annotation.PreDestroy;
-//import javax.ejb.Startup;
-//import javax.enterprise.context.ApplicationScoped;
+//import jakarta.annotation.PostConstruct;
+//import jakarta.annotation.PreDestroy;
+//import jakarta.ejb.Startup;
+//import jakarta.enterprise.context.ApplicationScoped;
 //import org.omnifaces.util.Faces;
 //
 ///**

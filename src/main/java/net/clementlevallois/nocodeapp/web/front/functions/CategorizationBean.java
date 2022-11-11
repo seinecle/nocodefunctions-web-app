@@ -9,24 +9,24 @@ import java.io.Serializable;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
-import javax.annotation.PostConstruct;
-import javax.enterprise.context.SessionScoped;
-import javax.faces.application.FacesMessage;
-import javax.faces.context.FacesContext;
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.json.Json;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import javax.json.JsonReader;
-import javax.json.bind.Jsonb;
-import javax.json.bind.JsonbBuilder;
-import javax.json.bind.JsonbConfig;
+import jakarta.annotation.PostConstruct;
+import jakarta.enterprise.context.SessionScoped;
+import jakarta.faces.application.FacesMessage;
+import jakarta.faces.context.FacesContext;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
+import jakarta.json.Json;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.json.JsonReader;
+import jakarta.json.bind.Jsonb;
+import jakarta.json.bind.JsonbBuilder;
+import jakarta.json.bind.JsonbConfig;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SingletonBean;
-import net.clementlevallois.nocodeapp.web.front.labelling.Annotator;
-import net.clementlevallois.nocodeapp.web.front.labelling.TaskMetadata;
+import net.clementlevallois.nocodeapp.web.front.redisops.Annotator;
+import net.clementlevallois.nocodeapp.web.front.redisops.TaskMetadata;
 import net.clementlevallois.nocodeapp.web.front.logview.NotificationService;
 import redis.clients.jedis.Jedis;
 
@@ -80,27 +80,27 @@ public class CategorizationBean implements Serializable {
     }
 
     public String confirmTask() {
-        TaskMetadata metadata = new TaskMetadata(taskId, typeOfTask);
-        List<String> categoriesToString = new ArrayList();
-
-        // adding this default category to all groups of categories
-        Item itemNoCategoryApplies = new Item();
-        itemNoCategoryApplies.setValue("no category applies");
-        categories.add(itemNoCategoryApplies);
-
-        for (Item item : categories) {
-            categoriesToString.add(item.getValue().replace(":", "-")); // this is because by convention, I have deciced that the : character is reserved as a delimiter in the redis db - see the redis-key.txt file
-        }
-        metadata.setCategories(categoriesToString);
-        metadata.setComment(comment);
-        metadata.setMultipleCategories(multiple);
-        metadata.setAnnotators(100);
-
-        JsonbConfig config = new JsonbConfig().withNullValues(true);
-        Jsonb jsonb = JsonbBuilder.create(config);
-        String metadataAsJSon = jsonb.toJson(metadata);
-        List<String> rawItems;
         try ( Jedis jedis = SingletonBean.getJedisPool().getResource()) {
+            TaskMetadata metadata = new TaskMetadata(taskId, typeOfTask, jedis);
+            List<String> categoriesToString = new ArrayList();
+
+            // adding this default category to all groups of categories
+            Item itemNoCategoryApplies = new Item();
+            itemNoCategoryApplies.setValue("no category applies");
+            categories.add(itemNoCategoryApplies);
+
+            for (Item item : categories) {
+                categoriesToString.add(item.getValue().replace(":", "-")); // this is because by convention, I have deciced that the : character is reserved as a delimiter in the redis db - see the redis-key.txt file
+            }
+            metadata.setCategories(categoriesToString);
+            metadata.setComment(comment);
+            metadata.setMultipleCategories(multiple);
+            metadata.setAnnotators(100);
+
+            JsonbConfig config = new JsonbConfig().withNullValues(true);
+            Jsonb jsonb = JsonbBuilder.create(config);
+            String metadataAsJSon = jsonb.toJson(metadata);
+            List<String> rawItems;
 
             String keyRawData = "task:" + taskId + ":rawdata";
             if (!jedis.exists(keyRawData)) {

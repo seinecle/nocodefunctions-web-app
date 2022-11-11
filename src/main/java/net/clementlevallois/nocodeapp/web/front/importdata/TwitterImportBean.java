@@ -22,23 +22,22 @@ import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import javax.enterprise.context.SessionScoped;
-import javax.faces.context.ExternalContext;
-import javax.faces.context.FacesContext;
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.json.JsonReader;
-import javax.json.bind.Jsonb;
-import javax.json.bind.JsonbBuilder;
-import javax.json.stream.JsonParser;
+import jakarta.enterprise.context.SessionScoped;
+import jakarta.faces.context.ExternalContext;
+import jakarta.faces.context.FacesContext;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
+import jakarta.json.Json;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonReader;
+import jakarta.json.bind.Jsonb;
+import jakarta.json.bind.JsonbBuilder;
+import jakarta.json.stream.JsonParser;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SingletonBean;
 import net.clementlevallois.nocodeapp.web.front.http.RemoteLocal;
 import net.clementlevallois.nocodeapp.web.front.importdata.DataImportBean.Source;
 import net.clementlevallois.nocodeapp.web.front.logview.NotificationService;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -87,7 +86,7 @@ public class TwitterImportBean implements Serializable {
             ExternalContext externalContext = FacesContext.getCurrentInstance().getExternalContext();
             externalContext.redirect(RemoteLocal.getDomain() + "import_your_data_twitter.html");
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+                                System.out.println("ex:"+ ex.getMessage());
         }
     }
 
@@ -202,7 +201,7 @@ public class TwitterImportBean implements Serializable {
 
         } catch (IOException | InterruptedException ex) {
             service.create(sessionBean.getLocaleBundle().getString("back.import.error_fetching_tweets"));
-            Exceptions.printStackTrace(ex);
+                                System.out.println("ex:"+ ex.getMessage());
             return "";
 
         }

@@ -3,12 +3,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <parent>
-        <groupId>net.clementlevallois.nocodeapp.webfront</groupId>
-        <artifactId>parentbuild</artifactId>
-        <version>1.0</version>
-        <relativePath>../../pom.xml</relativePath>
-    </parent>
+    <groupId>net.clementlevallois.nocodeapp.webfront</groupId>
     <artifactId>jsf-app</artifactId>
     <version>1.0-SNAPSHOT</version>
     <packaging>war</packaging>
@@ -19,56 +14,44 @@
         <endorsed.dir>${project.build.directory}/endorsed</endorsed.dir>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <failOnMissingWebXml>false</failOnMissingWebXml>
-        <jakartaee>9.1.0</jakartaee>
-        <maven.compiler.release>19</maven.compiler.release>
+        <jakartaee>10.0.0</jakartaee>
         <java.version>19</java.version>
         <maven.compiler.source>19</maven.compiler.source>
         <maven.compiler.target>19</maven.compiler.target>
     </properties>
     
     <dependencies>
-        <!--1.9 Mb-->
         <dependency>
-            <groupId>org.gephi</groupId>
-            <artifactId>io-exporter-api</artifactId>
-            <version>0.9.7</version>
+            <groupId>jakarta.json</groupId>
+            <artifactId>jakarta.json-api</artifactId>
+            <version>2.1.1</version>
             <type>jar</type>
         </dependency>
         <dependency>
-            <groupId>org.gephi</groupId>
-            <artifactId>io-exporter-plugin</artifactId>
-            <version>0.9.7</version>
+            <groupId>jakarta.faces</groupId>
+            <artifactId>jakarta.faces-api</artifactId>
+            <version>3.0.0</version>
             <type>jar</type>
         </dependency>
+		<!-- https://mvnrepository.com/artifact/org.glassfish/jakarta.faces -->
+		<dependency>
+			<groupId>org.glassfish</groupId>
+			<artifactId>jakarta.faces</artifactId>
+			<version>4.0.0</version>
+		</dependency>
+        <!-- https://mvnrepository.com/artifact/org.eclipse.parsson/parsson -->
         <dependency>
-            <groupId>org.gephi</groupId>
-            <artifactId>io-importer-plugin</artifactId>
-            <version>0.9.7</version>
-            <type>jar</type>
+            <groupId>org.eclipse.parsson</groupId>
+            <artifactId>parsson</artifactId>
+            <version>1.1.1</version>
         </dependency>
-        <dependency>
-            <groupId>javax</groupId>
-            <artifactId>javaee-api</artifactId>
-            <version>8.0.1</version>
-        </dependency>
-        <!--         JSON-B API 
-                 https://mvnrepository.com/artifact/jakarta.json.bind/jakarta.json.bind-api 
-        -->        
         <dependency>
             <groupId>jakarta.json.bind</groupId>
             <artifactId>jakarta.json.bind-api</artifactId>
             <version>2.0.0</version>
         </dependency>
-        <!--
-         JSON-B RI 
         <dependency>
-            <groupId>org.eclipse</groupId>
-            <artifactId>yasson</artifactId>
-            <version>2.0.2</version>
-            <scope>runtime</scope>
-        </dependency>-->
-        <dependency>
-             <!--jsoup HTML parser library @ https://jsoup.org/--> 
+            <!--jsoup HTML parser library @ https://jsoup.org/--> 
             <groupId>org.jsoup</groupId>
             <artifactId>jsoup</artifactId>
             <version>1.15.3</version>
@@ -86,24 +69,12 @@
         </dependency>
         <dependency>
             <groupId>net.clementlevallois.functions</groupId>
-            <artifactId>GexfVosViewerJson</artifactId>
-            <version>1.0</version>
-            <type>jar</type>
-        </dependency>
-        <dependency>
-            <groupId>net.clementlevallois.functions</groupId>
-            <artifactId>BIBD</artifactId>
-            <version>1.0</version>
-            <type>jar</type>
-        </dependency>
-        <dependency>
-            <groupId>net.clementlevallois.functions</groupId>
-            <artifactId>gaze</artifactId>
-            <version>1.0</version>
-        </dependency>
-        <dependency>
-            <groupId>net.clementlevallois.functions</groupId>
             <artifactId>model</artifactId>
+            <version>1.0</version>
+        </dependency>
+        <dependency>
+            <groupId>net.clementlevallois.utils</groupId>
+            <artifactId>utils-core</artifactId>
             <version>1.0</version>
         </dependency>
         <!--7kb-->
@@ -126,13 +97,19 @@
         <dependency>
             <groupId>org.primefaces</groupId>
             <artifactId>primefaces</artifactId>
-            <version>10.0.0</version>
+            <version>11.0.0</version>
         </dependency>
         <!--809kb-->
+<!-- https://mvnrepository.com/artifact/commons-fileupload/commons-fileupload -->
+		<dependency>
+			<groupId>commons-fileupload</groupId>
+			<artifactId>commons-fileupload</artifactId>
+			<version>1.4</version>
+		</dependency>
         <dependency>
             <groupId>org.omnifaces</groupId>
             <artifactId>omnifaces</artifactId>
-            <version>3.14</version>
+            <version>4.0</version>
         </dependency>
         <!--8kb-->
         <dependency>
@@ -140,45 +117,6 @@
             <artifactId>mobiledetect</artifactId>
             <version>1.1.1</version>
         </dependency>
-
-
-        <!--        <dependency>
-            <groupId>com.google.oauth-client</groupId>
-            <artifactId>google-oauth-client-servlet</artifactId>
-            <version>1.31.4</version>
-            <type>jar</type>
-        </dependency>
-         https://mvnrepository.com/artifact/com.google.oauth-client/google-oauth-client-jetty 
-        <dependency>
-            <groupId>com.google.oauth-client</groupId>
-            <artifactId>google-oauth-client-jetty</artifactId>
-            <version>1.31.4</version>
-                        <version>1.30.6</version>
-        </dependency>-->
-        <!--        <dependency>
-            <groupId>com.google.api-client</groupId>
-            <artifactId>google-api-client-appengine</artifactId>
-            <version>1.31.4</version>
-        </dependency>
-        <dependency>
-            <groupId>com.google.apis</groupId>
-            <artifactId>google-api-services-sheets</artifactId>
-            <version>v4-rev20201102-1.30.10</version>
-        </dependency>
-        <dependency>
-            <groupId>com.google.apis</groupId>
-            <artifactId>google-api-services-slides</artifactId>
-            <version>v1-rev20200803-1.30.10</version>
-            <version>v1-rev346-1.25.0</version>
-            <type>jar</type>
-        </dependency>
-         https://mvnrepository.com/artifact/com.google.apis/google-api-services-drive 
-        <dependency>
-            <groupId>com.google.apis</groupId>
-            <artifactId>google-api-services-drive</artifactId>
-            <version>v3-rev152-1.25.0</version>
-            <version>v3-rev152-1.25.0</version>
-        </dependency>-->
         <dependency>
             <groupId>com.monitorjbl</groupId>
             <artifactId>xlsx-streamer</artifactId>
@@ -190,9 +128,14 @@
             <version>3.8.0</version>
             <type>jar</type>
         </dependency>
+        <dependency>
+            <groupId>jakarta.platform</groupId>
+            <artifactId>jakarta.jakartaee-api</artifactId>
+            <version>${jakartaee}</version>
+            <type>jar</type>
+        </dependency>
     </dependencies>
-    
-    <build>
+        <build>
         <resources>
             <resource>
                 <directory>src/main/java</directory>
@@ -206,7 +149,10 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.10.0</version>
+                <version>3.10.1</version>
+				<configuration>
+                <release>19</release>
+            </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -219,7 +165,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
-                <version>3.2.0</version>
+                <version>3.3.0</version>
                 <executions>
                     <execution>
                         <phase>validate</phase>
