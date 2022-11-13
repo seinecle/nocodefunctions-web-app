@@ -159,17 +159,15 @@ public class LinkPredictionBean implements Serializable {
 
         for (String predictionKey : orderedListOfPredictions) {
             JsonObject predictionJson = predictions.getJsonObject(predictionKey);
-            Prediction prediction = new Prediction(
-                    predictionJson.getString("source node id"),
-                    predictionJson.getString("source node label"),
-                    predictionJson.getInt("source node degree"),
-                    predictionJson.getString("target node id"),
-                    predictionJson.getString("target node label"),
-                    predictionJson.getInt("target node degree"),
-                    predictionJson.getInt("prediction value")
-            );
+            Prediction prediction = new Prediction();
+            prediction.setSourceId(predictionJson.getString("source node id"));
+            prediction.setSourceLabel(predictionJson.getString("source node label"));
+            prediction.setSourceDegree(predictionJson.getInt("source node degree"));
+            prediction.setTargetId(predictionJson.getString("target node id"));
+            prediction.setTargetLabel(predictionJson.getString("target node label"));
+            prediction.setTargetDegree(predictionJson.getInt("target node degree"));
+            prediction.setPredictionValue(predictionJson.getInt("prediction value"));
             topPredictions.add(prediction);
-
         }
 
 //        predictor = new LinkPredictionController();
