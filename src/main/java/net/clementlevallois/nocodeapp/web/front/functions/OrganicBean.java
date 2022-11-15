@@ -5,6 +5,7 @@
  */
 package net.clementlevallois.nocodeapp.web.front.functions;
 
+import io.mikael.urlbuilder.UrlBuilder;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -28,16 +29,19 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.SessionScoped;
+import jakarta.faces.context.FacesContext;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
+import java.io.InputStream;
+import net.clementlevallois.importers.model.DataFormatConverter;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.importdata.DataImportBean;
 import net.clementlevallois.nocodeapp.web.front.http.SendReport;
-import net.clementlevallois.nocodeapp.web.front.importdata.DataFormatConverter;
-import net.clementlevallois.nocodeapp.web.front.io.ExcelSaver;
 import net.clementlevallois.nocodeapp.web.front.logview.NotificationService;
+import net.clementlevallois.nocodeapp.web.front.utils.Converters;
 import net.clementlevallois.umigon.model.Document;
 import org.omnifaces.util.Faces;
+import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
 
 /**
@@ -54,7 +58,6 @@ public class OrganicBean implements Serializable {
     private String[] naturalness = new String[]{"organic", "promoted"};
     private String selectedLanguage;
     private Boolean runButtonDisabled = true;
-//    private List<String> sheetNames;
     private StreamedContent fileToSave;
     private Boolean renderSeeResultsButton = false;
     private String sessionId;
@@ -149,7 +152,7 @@ public class OrganicBean implements Serializable {
                     Thread.sleep(2);
                 }
                 this.progress = 40;
-               service.create(sessionBean.getLocaleBundle().getString("general.message.almost_done"));
+                service.create(sessionBean.getLocaleBundle().getString("general.message.almost_done"));
 
                 CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(futures.toArray((new CompletableFuture[0])));
                 combinedFuture.join();
@@ -169,7 +172,7 @@ public class OrganicBean implements Serializable {
             runButtonDisabled = true;
 
         } catch (Exception ex) {
-                    System.out.println("ex:"+ ex.getMessage());
+            System.out.println("ex:" + ex.getMessage());
         }
         return "/" + sessionBean.getFunction() + "/results.xhtml?faces-redirect=true";
     }
@@ -242,7 +245,47 @@ public class OrganicBean implements Serializable {
     }
 
     public StreamedContent getFileToSave() {
-        return ExcelSaver.exportOrganic(results, sessionBean.getLocaleBundle());
+        try {
+            HttpRequest request;
+            HttpClient client = HttpClient.newHttpClient();
+            Set<CompletableFuture> futures = new HashSet();
+            byte[] documentsAsByteArray = Converters.byteArraySerializerForAnyObject(results);
+            HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(documentsAsByteArray);
+
+            String lang = FacesContext.getCurrentInstance().getViewRoot().getLocale().toLanguageTag();
+
+            URI uri = UrlBuilder
+                    .empty()
+                    .withScheme("http")
+                    .withPort(7003)
+                    .withHost("localhost")
+                    .withPath("api/export/xlsx/organic")
+                    .addParameter("lang", lang)
+                    .toUri();
+
+            request = HttpRequest.newBuilder()
+                    .POST(bodyPublisher)
+                    .uri(uri)
+                    .build();
+
+            CompletableFuture<Void> future = client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()).thenAccept(resp -> {
+                byte[] body = resp.body();
+                InputStream is = new ByteArrayInputStream(body);
+                fileToSave = DefaultStreamedContent.builder()
+                        .name("results.xlsx")
+                        .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                        .stream(() -> is)
+                        .build();
+            }
+            );
+            futures.add(future);
+
+            CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(futures.toArray((new CompletableFuture[0])));
+            combinedFuture.join();
+        } catch (IOException ex) {
+            Logger.getLogger(OrganicBean.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return fileToSave;
     }
 
     public void setFileToSave(StreamedContent fileToSave) {

@@ -43,7 +43,7 @@
 
             <p:outputLabel value="#{sessionBean.noRobot}" escape="false" rendered="#{sessionBean.testServer}"/>
             <link rel="stylesheet" href="https://unpkg.com/primeflex@3.1.0/primeflex.css"/>
-
+            <h:outputStylesheet name="css/custom.css" />
         </h:head>
 
         <h:body>
@@ -52,11 +52,9 @@
                 <f:viewAction action="#{sessionBean.init()}" />
             </f:metadata>
             <f:facet name="last">
-                <h:outputStylesheet name="css/custom.css" />
             </f:facet>
             <p:panel>
                 <ui:include src="/WEB-INF/includes/header.xhtml" />
-                <ui:include src="/WEB-INF/includes/sidebar.xhtml" />
 
                 <div style="text-align: center; font-size: xx-large">🔎</div>
                 <h1 style="text-align: center">Nocode functions</h1>

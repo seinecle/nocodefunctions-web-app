@@ -5,9 +5,13 @@
  */
 package net.clementlevallois.nocodeapp.web.front.functions;
 
+import io.mikael.urlbuilder.UrlBuilder;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.ByteArrayInputStream;
+import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -43,15 +47,18 @@ import jakarta.json.JsonObjectBuilder;
 import jakarta.json.JsonReader;
 import jakarta.json.JsonWriter;
 import jakarta.servlet.annotation.MultipartConfig;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import net.clementlevallois.importers.model.DataFormatConverter;
 import net.clementlevallois.lemmatizerlightweight.Lemmatizer;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.importdata.DataImportBean;
-import net.clementlevallois.nocodeapp.web.front.importdata.DataFormatConverter;
-import net.clementlevallois.nocodeapp.web.front.io.ExcelSaver;
 import net.clementlevallois.nocodeapp.web.front.logview.NotificationService;
+import net.clementlevallois.nocodeapp.web.front.utils.Converters;
 import net.clementlevallois.utils.Multiset;
 import net.clementlevallois.utils.TextCleaningOps;
 import org.primefaces.event.SlideEndEvent;
+import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
 import org.primefaces.model.file.UploadedFile;
 
@@ -375,10 +382,48 @@ public class TopicsBean implements Serializable {
     }
 
     public StreamedContent getFileToSave() {
-        if (communitiesResult == null || communitiesResult.isEmpty()) {
-            return null;
+        try {
+            if (communitiesResult == null || communitiesResult.isEmpty()) {
+                return null;
+            }
+            HttpRequest request;
+            HttpClient client = HttpClient.newHttpClient();
+            Set<CompletableFuture> futures = new HashSet();
+            byte[] documentsAsByteArray = Converters.byteArraySerializerForAnyObject(communitiesResult);
+            HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(documentsAsByteArray);
+
+            URI uri = UrlBuilder
+                    .empty()
+                    .withScheme("http")
+                    .withPort(7003)
+                    .withHost("localhost")
+                    .withPath("api/export/xlsx/topics")
+                    .addParameter("nbTerms", "10")
+                    .toUri();
+
+            request = HttpRequest.newBuilder()
+                    .POST(bodyPublisher)
+                    .uri(uri)
+                    .build();
+
+            CompletableFuture<Void> future = client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()).thenAccept(resp -> {
+                byte[] body = resp.body();
+                InputStream is = new ByteArrayInputStream(body);
+                fileToSave = DefaultStreamedContent.builder()
+                        .name("results.xlsx")
+                        .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                        .stream(() -> is)
+                        .build();
+            }
+            );
+            futures.add(future);
+
+            CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(futures.toArray((new CompletableFuture[0])));
+            combinedFuture.join();
+        } catch (IOException ex) {
+            Logger.getLogger(TopicsBean.class.getName()).log(Level.SEVERE, null, ex);
         }
-        return ExcelSaver.exportTopics(communitiesResult, 10);
+        return fileToSave;
     }
 
     public void setFileToSave(StreamedContent fileToSave) {

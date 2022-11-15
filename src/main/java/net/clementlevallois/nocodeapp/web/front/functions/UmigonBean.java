@@ -5,6 +5,7 @@
  */
 package net.clementlevallois.nocodeapp.web.front.functions;
 
+import io.mikael.urlbuilder.UrlBuilder;
 import java.io.ByteArrayInputStream;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
@@ -28,17 +29,21 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.SessionScoped;
+import jakarta.faces.context.FacesContext;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
+import java.io.IOException;
+import java.io.InputStream;
+import net.clementlevallois.importers.model.DataFormatConverter;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.ActiveLocale;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SingletonBean;
 import net.clementlevallois.nocodeapp.web.front.importdata.DataImportBean;
 import net.clementlevallois.nocodeapp.web.front.http.SendReport;
-import net.clementlevallois.nocodeapp.web.front.importdata.DataFormatConverter;
-import net.clementlevallois.nocodeapp.web.front.io.ExcelSaver;
 import net.clementlevallois.nocodeapp.web.front.logview.NotificationService;
+import net.clementlevallois.nocodeapp.web.front.utils.Converters;
 import net.clementlevallois.umigon.model.Document;
+import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
 
 /**
@@ -324,7 +329,47 @@ public class UmigonBean implements Serializable {
     }
 
     public StreamedContent getFileToSave() {
-        return ExcelSaver.exportUmigon(results, sessionBean.getLocaleBundle());
+        try {
+            HttpRequest request;
+            HttpClient client = HttpClient.newHttpClient();
+            Set<CompletableFuture> futures = new HashSet();
+            byte[] documentsAsByteArray = Converters.byteArraySerializerForAnyObject(results);
+            HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(documentsAsByteArray);
+
+            String lang = FacesContext.getCurrentInstance().getViewRoot().getLocale().toLanguageTag();
+
+            URI uri = UrlBuilder
+                    .empty()
+                    .withScheme("http")
+                    .withPort(7003)
+                    .withHost("localhost")
+                    .withPath("api/export/xlsx/umigon")
+                    .addParameter("lang", lang)
+                    .toUri();
+
+            request = HttpRequest.newBuilder()
+                    .POST(bodyPublisher)
+                    .uri(uri)
+                    .build();
+
+            CompletableFuture<Void> future = client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()).thenAccept(resp -> {
+                byte[] body = resp.body();
+                InputStream is = new ByteArrayInputStream(body);
+                fileToSave = DefaultStreamedContent.builder()
+                        .name("results.xlsx")
+                        .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                        .stream(() -> is)
+                        .build();
+            }
+            );
+            futures.add(future);
+
+            CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(futures.toArray((new CompletableFuture[0])));
+            combinedFuture.join();
+        } catch (IOException ex) {
+            Logger.getLogger(UmigonBean.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return fileToSave;
     }
 
     public void setFileToSave(StreamedContent fileToSave) {

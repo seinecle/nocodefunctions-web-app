@@ -42,14 +42,14 @@ import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.json.JsonWriter;
+import net.clementlevallois.importers.model.CellRecord;
+import net.clementlevallois.importers.model.SheetModel;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.http.RemoteLocal;
-import net.clementlevallois.nocodeapp.web.front.importdata.CellRecord;
 import net.clementlevallois.nocodeapp.web.front.importdata.DataImportBean;
-import net.clementlevallois.nocodeapp.web.front.importdata.SheetModel;
 import net.clementlevallois.nocodeapp.web.front.utils.GEXFSaver;
 import net.clementlevallois.nocodeapp.web.front.logview.NotificationService;
-import net.clementlevallois.nocodeapp.web.front.utils.Utils;
+import net.clementlevallois.nocodeapp.web.front.utils.Converters;
 import net.clementlevallois.utils.Multiset;
 import org.omnifaces.util.Faces;
 import org.primefaces.model.StreamedContent;
@@ -296,8 +296,8 @@ public class GazeBean implements Serializable {
             byte[] body = resp.body();
             String jsonResult = new String(body, StandardCharsets.UTF_8);
             JsonObject jsonObject = Json.createReader(new StringReader(jsonResult)).readObject();
-            nodesAsJson = Utils.turnJsonObjectToString(jsonObject.getJsonObject("nodes"));
-            edgesAsJson = Utils.turnJsonObjectToString(jsonObject.getJsonObject("edges"));
+            nodesAsJson = Converters.turnJsonObjectToString(jsonObject.getJsonObject("nodes"));
+            edgesAsJson = Converters.turnJsonObjectToString(jsonObject.getJsonObject("edges"));
         }
         );
         futures.add(future);
@@ -358,7 +358,7 @@ public class GazeBean implements Serializable {
             return;
         }
 
-        bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(jsonString.getBytes(StandardCharsets.UTF_8));
+        bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(gexf.getBytes(StandardCharsets.UTF_8));
 
         uri = UrlBuilder
                 .empty()
@@ -378,8 +378,8 @@ public class GazeBean implements Serializable {
             byte[] body = resp.body();
             String jsonResult = new String(body, StandardCharsets.UTF_8);
             JsonObject jsonObject = Json.createReader(new StringReader(jsonResult)).readObject();
-            nodesAsJson = Utils.turnJsonObjectToString(jsonObject.getJsonObject("nodes"));
-            edgesAsJson = Utils.turnJsonObjectToString(jsonObject.getJsonObject("edges"));
+            nodesAsJson = Converters.turnJsonObjectToString(jsonObject.getJsonObject("nodes"));
+            edgesAsJson = Converters.turnJsonObjectToString(jsonObject.getJsonObject("edges"));
         }
         );
         futures.add(future);

@@ -5,6 +5,7 @@
  */
 package net.clementlevallois.nocodeapp.web.front.functions;
 
+import io.mikael.urlbuilder.UrlBuilder;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -34,15 +35,17 @@ import jakarta.json.Json;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.json.JsonWriter;
+import java.io.InputStream;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.importdata.DataImportBean;
-import net.clementlevallois.nocodeapp.web.front.importdata.CellRecord;
-import net.clementlevallois.nocodeapp.web.front.importdata.SheetModel;
-import net.clementlevallois.nocodeapp.web.front.io.ExcelSaver;
 import net.clementlevallois.nocodeapp.web.front.logview.NotificationService;
 import net.clementlevallois.functions.model.Occurrence;
+import net.clementlevallois.importers.model.CellRecord;
+import net.clementlevallois.importers.model.SheetModel;
 import net.clementlevallois.utils.TextCleaningOps;
+import net.clementlevallois.nocodeapp.web.front.utils.Converters;
 import org.omnifaces.util.Faces;
+import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
 
 /**
@@ -155,8 +158,7 @@ public class PdfMatcherBean implements Serializable {
             CompletableFuture<Void> future = client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()).thenAccept(resp -> {
                 byte[] body = resp.body();
                 try (
-                        ByteArrayInputStream bis = new ByteArrayInputStream(body);
-                        ObjectInputStream ois = new ObjectInputStream(bis)) {
+                         ByteArrayInputStream bis = new ByteArrayInputStream(body);  ObjectInputStream ois = new ObjectInputStream(bis)) {
                     List<Occurrence> occurrencesFound = (List<Occurrence>) ois.readObject();
                     results.put(oneDoc.getName(), occurrencesFound);
                 } catch (IOException | ClassNotFoundException ex) {
@@ -222,10 +224,47 @@ public class PdfMatcherBean implements Serializable {
     }
 
     public StreamedContent getFileToSave() {
-        if (results == null || results.isEmpty()) {
-            return null;
+        try {
+            if (results == null || results.isEmpty()) {
+                return null;
+            }
+            byte[] documentsAsByteArray = Converters.byteArraySerializerForAnyObject(results);
+            HttpRequest request;
+            HttpClient client = HttpClient.newHttpClient();
+            Set<CompletableFuture> futures = new HashSet();
+            HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(documentsAsByteArray);
+
+            URI uri = UrlBuilder
+                    .empty()
+                    .withScheme("http")
+                    .withPort(7003)
+                    .withHost("localhost")
+                    .withPath("api/export/xlsx/pdfmatches")
+                    .toUri();
+
+            request = HttpRequest.newBuilder()
+                    .POST(bodyPublisher)
+                    .uri(uri)
+                    .build();
+
+            CompletableFuture<Void> future = client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()).thenAccept(resp -> {
+                byte[] body = resp.body();
+                InputStream is = new ByteArrayInputStream(body);
+                fileToSave = DefaultStreamedContent.builder()
+                        .name("results.xlsx")
+                        .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                        .stream(() -> is)
+                        .build();
+            }
+            );
+            futures.add(future);
+
+            CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(futures.toArray((new CompletableFuture[0])));
+            combinedFuture.join();
+        } catch (IOException ex) {
+            Logger.getLogger(PdfMatcherBean.class.getName()).log(Level.SEVERE, null, ex);
         }
-        return ExcelSaver.exportPdfMatcher(results);
+        return fileToSave;
     }
 
     public void setFileToSave(StreamedContent fileToSave) {

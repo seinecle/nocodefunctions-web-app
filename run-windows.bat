@@ -1,0 +1,1 @@
+java -Dname=jsf-app -jar payara-micro-6.2022.1.jar --deploy 'C:\Users\levallois\open\no code app\webapp\jsf-app\target\jsf-app-1.0-SNAPSHOT.war' --systemproperties sys.properties
