@@ -135,8 +135,12 @@ public class ConverterBean implements Serializable {
                 .withHost("localhost")
                 .withPath("api/convert2vv")
                 .addParameter("item", item)
+                .addParameter("items", "")
                 .addParameter("link", link)
+                .addParameter("links", "")
                 .addParameter("linkStrength", linkStrength)
+                .addParameter("descriptionData", "")
+                .addParameter("totalLinkStrength", "")
                 .toUri();
 
         request = HttpRequest.newBuilder()

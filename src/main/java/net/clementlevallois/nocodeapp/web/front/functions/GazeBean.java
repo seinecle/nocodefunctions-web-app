@@ -276,7 +276,7 @@ public class GazeBean implements Serializable {
             return;
         }
 
-        bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(jsonString.getBytes(StandardCharsets.UTF_8));
+        bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(gexf.getBytes(StandardCharsets.UTF_8));
 
         uri = UrlBuilder
                 .empty()

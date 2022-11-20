@@ -5,6 +5,7 @@
  */
 package net.clementlevallois.nocodeapp.web.front.functions;
 
+import io.mikael.urlbuilder.UrlBuilder;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -19,7 +20,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import jakarta.annotation.PostConstruct;
@@ -32,6 +32,9 @@ import jakarta.json.Json;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonReader;
 import jakarta.servlet.annotation.MultipartConfig;
+import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.utils.GEXFSaver;
 import org.primefaces.event.FileUploadEvent;
@@ -118,61 +121,73 @@ public class LinkPredictionBean implements Serializable {
         return "";
     }
 
-    public void showPredictions() throws IOException, URISyntaxException {
-        if (uploadedFile == null) {
-            System.out.println("no file found for link prediction");
-            return;
-        }
-        String uniqueId = UUID.randomUUID().toString().substring(0, 5);
-
-        System.out.println("file: " + uploadedFile.getFileName());
-        HttpRequest request;
-        HttpClient client = HttpClient.newHttpClient();
-        Set<CompletableFuture> futures = new HashSet();
-        HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(is.readAllBytes());
-
-        URI uri = new URI("http://localhost:7002/api/linkprediction/");
-
-        request = HttpRequest.newBuilder()
-                .POST(bodyPublisher)
-                .uri(uri)
-                .build();
-
-        CompletableFuture<Void> future = client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()).thenAccept(resp -> {
-            byte[] body = resp.body();
-            String jsonResultsAsString = new String(body, StandardCharsets.UTF_8);
-            try ( JsonReader reader = Json.createReader(new StringReader(jsonResultsAsString))) {
-                jsonObjectReturned = reader.readObject();
+    public Integer showPredictions() {
+        try {
+            if (uploadedFile == null) {
+                System.out.println("no file found for link prediction");
+                return 0;
             }
+            HttpRequest request;
+            HttpClient client = HttpClient.newHttpClient();
+            Set<CompletableFuture> futures = new HashSet();
+            HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(is.readAllBytes());
 
-        }
-        );
-        futures.add(future);
+            URI uri = UrlBuilder
+                    .empty()
+                    .withScheme("http")
+                    .withPort(7002)
+                    .withHost("localhost")
+                    .withPath("api/linkprediction")
+                    .addParameter("nb_predictions", String.valueOf(nbPredictions))
+                    .toUri();
 
-        CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(futures.toArray((new CompletableFuture[0])));
-        combinedFuture.join();
+            request = HttpRequest.newBuilder()
+                    .POST(bodyPublisher)
+                    .uri(uri)
+                    .build();
 
-        JsonObject predictions = jsonObjectReturned.getJsonObject("predictions");
-        augmentedGexf = jsonObjectReturned.getString("gexf augmented");
+            CompletableFuture<Void> future = client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()).thenAccept(resp -> {
+                byte[] body = resp.body();
+                String jsonResultsAsString = new String(body, StandardCharsets.UTF_8);
+                try ( JsonReader reader = Json.createReader(new StringReader(jsonResultsAsString))) {
+                    jsonObjectReturned = reader.readObject();
+                }
 
-        List<String> orderedListOfPredictions = predictions.keySet().stream().sorted().collect(Collectors.toList());
+            }
+            );
+            futures.add(future);
 
-        for (String predictionKey : orderedListOfPredictions) {
-            JsonObject predictionJson = predictions.getJsonObject(predictionKey);
-            Prediction prediction = new Prediction();
-            prediction.setSourceId(predictionJson.getString("source node id"));
-            prediction.setSourceLabel(predictionJson.getString("source node label"));
-            prediction.setSourceDegree(predictionJson.getInt("source node degree"));
-            prediction.setTargetId(predictionJson.getString("target node id"));
-            prediction.setTargetLabel(predictionJson.getString("target node label"));
-            prediction.setTargetDegree(predictionJson.getInt("target node degree"));
-            prediction.setPredictionValue(predictionJson.getInt("prediction value"));
-            topPredictions.add(prediction);
-        }
+            CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(futures.toArray((new CompletableFuture[0])));
+            combinedFuture.join();
+
+            JsonObject predictions = jsonObjectReturned.getJsonObject("predictions");
+            augmentedGexf = jsonObjectReturned.getString("gexf augmented");
+
+            List<String> orderedListOfPredictions = predictions.keySet().stream().sorted().collect(Collectors.toList());
+
+            topPredictions = new ArrayList();
+            
+            for (String predictionKey : orderedListOfPredictions) {
+                JsonObject predictionJson = predictions.getJsonObject(predictionKey);
+                Prediction prediction = new Prediction();
+                prediction.setSourceId(predictionJson.getString("source node id"));
+                prediction.setSourceLabel(predictionJson.getString("source node label"));
+                prediction.setSourceDegree(predictionJson.getInt("source node degree"));
+                prediction.setTargetId(predictionJson.getString("target node id"));
+                prediction.setTargetLabel(predictionJson.getString("target node label"));
+                prediction.setTargetDegree(predictionJson.getInt("target node degree"));
+                prediction.setPredictionValue(predictionJson.getInt("prediction value"));
+                topPredictions.add(prediction);
+            }
 
 //        predictor = new LinkPredictionController();
 //        predictor.runPrediction(is, nbPredictions, uniqueId);
 //        topPredictions = predictor.getTopPredictions();
+        } catch (IOException ex) {
+            System.out.println("exception when getting json with predictions and augmented gexf:");
+            System.out.println(ex.getMessage());
+        }
+        return 1;
     }
 
     public int getNbPredictions() {
