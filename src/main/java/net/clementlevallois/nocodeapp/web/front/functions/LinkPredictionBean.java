@@ -33,8 +33,6 @@ import jakarta.json.JsonObject;
 import jakarta.json.JsonReader;
 import jakarta.servlet.annotation.MultipartConfig;
 import java.util.ArrayList;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.utils.GEXFSaver;
 import org.primefaces.event.FileUploadEvent;

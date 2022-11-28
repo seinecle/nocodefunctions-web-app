@@ -54,6 +54,7 @@ import jakarta.servlet.annotation.MultipartConfig;
 import net.clementlevallois.importers.model.DataFormatConverter;
 import net.clementlevallois.lemmatizerlightweight.Lemmatizer;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
+import net.clementlevallois.nocodeapp.web.front.backingbeans.SingletonBean;
 import net.clementlevallois.nocodeapp.web.front.http.RemoteLocal;
 import net.clementlevallois.nocodeapp.web.front.importdata.DataImportBean;
 import net.clementlevallois.nocodeapp.web.front.importdata.DataImportBean.Source;
@@ -109,6 +110,9 @@ public class CowoBean implements Serializable {
 
     @Inject
     SessionBean sessionBean;
+
+    @Inject
+    SingletonBean singletonBean;
 
     public CowoBean() {
         if (sessionBean == null) {
@@ -571,7 +575,7 @@ public class CowoBean implements Serializable {
         path = path + subfolder;
 
         if (RemoteLocal.isLocal()) {
-            path = "C:\\Users\\levallois\\Google Drive\\open\\no code app\\webapp\\jsf-app\\private";
+            path = SingletonBean.getPATHLOCALE() + "user_created_files";
         }
 
         BufferedWriter bw = Files.newBufferedWriter(Path.of(path + vosviewerJsonFileName), StandardCharsets.UTF_8);
@@ -606,7 +610,7 @@ public class CowoBean implements Serializable {
         path = path + subfolder;
 
         if (RemoteLocal.isLocal()) {
-            path = "C:\\Users\\levallois\\Google Drive\\open\\no code app\\webapp\\jsf-app\\private\\";
+            path = SingletonBean.getPATHLOCALE() + "user_created_files";
         }
 
         File file = new File(path + gephistoGexfFileName);

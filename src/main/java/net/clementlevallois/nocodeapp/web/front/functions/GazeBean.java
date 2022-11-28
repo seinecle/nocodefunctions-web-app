@@ -45,6 +45,7 @@ import jakarta.json.JsonWriter;
 import net.clementlevallois.importers.model.CellRecord;
 import net.clementlevallois.importers.model.SheetModel;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
+import net.clementlevallois.nocodeapp.web.front.backingbeans.SingletonBean;
 import net.clementlevallois.nocodeapp.web.front.http.RemoteLocal;
 import net.clementlevallois.nocodeapp.web.front.importdata.DataImportBean;
 import net.clementlevallois.nocodeapp.web.front.utils.GEXFSaver;
@@ -443,7 +444,7 @@ public class GazeBean implements Serializable {
         path = path + subfolder;
 
         if (RemoteLocal.isLocal()) {
-            path = "C:\\Users\\levallois\\open\\no code app\\webapp\\jsf-app\\private";
+            path = SingletonBean.getPATHLOCALE() + "user_created_files";
         }
 
         try ( BufferedWriter bw = Files.newBufferedWriter(Path.of(path + vosviewerJsonFileName), StandardCharsets.UTF_8)) {
@@ -478,7 +479,7 @@ public class GazeBean implements Serializable {
         path = path + subfolder;
 
         if (RemoteLocal.isLocal()) {
-            path = "C:\\Users\\levallois\\open\\no code app\\webapp\\jsf-app\\private\\";
+            path = SingletonBean.getPATHLOCALE() + "user_created_files";
         }
 
         File file = new File(path + gephistoGexfFileName);

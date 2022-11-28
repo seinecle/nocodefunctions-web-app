@@ -37,7 +37,7 @@ public class SingletonBean {
     static JedisPool jedisPool;
     private final static String PATHLOCALE = "net.clementlevallois.nocodeapp.web.front.resources.i18n.text";
     private static Properties privateProperties;
-    private final static String PATHLOCALDEV = "C:\\Users\\levallois\\open\\no code app\\webapp\\jsf-app\\";
+    private final static String PATHLOCALDEV = "C:\\Users\\levallois\\open\\nocode-app-web-front\\";
     private final static String PATHREMOTEDEV = "/home/waouh/nocodeapp-web/";
     private static String rootProps;
     private TwitterOAuth20Service twitterOAuthService;

@@ -64,8 +64,6 @@ public class CardTestBean implements Serializable {
     @Inject
     SessionBean sessionBean;
 
-    @Inject
-    SingletonBean singletonBean;
 
     @Inject
     ActiveLocale activeLocale;
@@ -74,10 +72,7 @@ public class CardTestBean implements Serializable {
         if (sessionBean == null) {
             sessionBean = new SessionBean();
         }
-        if (singletonBean == null) {
-            singletonBean = new SingletonBean();
-        }
-        Properties privateProperties = singletonBean.getPrivateProperties();
+        Properties privateProperties = SingletonBean.getPrivateProperties();
         baseURI = "http://localhost:" + privateProperties.getProperty("nocode_api_port") + "/api/";
     }
 

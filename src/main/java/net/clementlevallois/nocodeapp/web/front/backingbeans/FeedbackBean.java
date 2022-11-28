@@ -42,8 +42,6 @@ public class FeedbackBean implements Serializable {
     @Inject
     NotificationService service;
 
-    @Inject
-    ActiveLocale activeLocale;
 
     @PostConstruct
     public void init() {
