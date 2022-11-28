@@ -492,7 +492,23 @@ public class DataImportBean implements Serializable {
             HttpClient client = HttpClient.newHttpClient();
             Set<CompletableFuture> futures = new HashSet();
             HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(is.readAllBytes());
-            URI uri = new URI("http://localhost:7003/api/import/xlsx/");
+
+            String gaze_option = "cooc";
+
+            if (sessionBean.getFunction().equals("gaze") && gazeBean != null && gazeBean.getOption().equals("2")) {
+                gaze_option = "sim";
+            }
+
+            URI uri = UrlBuilder
+                    .empty()
+                    .withScheme("http")
+                    .withPort(7003)
+                    .withHost("localhost")
+                    .withPath("api/import/xlsx")
+                    .addParameter("gaze_option", gaze_option)
+                    .addParameter("separator", ",")
+                    .toUri();
+
             request = HttpRequest.newBuilder()
                     .POST(bodyPublisher)
                     .uri(uri)
@@ -525,7 +541,7 @@ public class DataImportBean implements Serializable {
                 setSelectedSheetName(file.getFileName() + "_");
             }
 
-        } catch (IOException | URISyntaxException ex) {
+        } catch (IOException ex) {
             Logger.getLogger(DataImportBean.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
