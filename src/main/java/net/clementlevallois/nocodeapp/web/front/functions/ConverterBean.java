@@ -70,7 +70,6 @@ public class ConverterBean implements Serializable {
             sessionBean = new SessionBean();
         }
         sessionBean.setFunction("networkconverter");
-        sessionBean.sendFunctionPageReport();
     }
 
     @PostConstruct
@@ -101,13 +100,12 @@ public class ConverterBean implements Serializable {
     }
 
     public String handleFileUpload(FileUploadEvent event) {
-        System.out.println("we are in handleFileUpload");
+        sessionBean.sendFunctionPageReport();
         String success = sessionBean.getLocaleBundle().getString("general.nouns.success");
         String is_uploaded = sessionBean.getLocaleBundle().getString("general.verb.is_uploaded");
         FacesMessage message = new FacesMessage(success, event.getFile().getFileName() + " " + is_uploaded + ".");
         FacesContext.getCurrentInstance().addMessage(null, message);
         uploadedFile = event.getFile();
-//        System.out.println("file: " + uploadedFile.getFileName());
         try {
             is = uploadedFile.getInputStream();
         } catch (IOException ex) {

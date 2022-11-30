@@ -78,7 +78,6 @@ public class OrganicBean implements Serializable {
             sessionBean = new SessionBean();
         }
         sessionBean.setFunction("organic");
-        sessionBean.sendFunctionPageReport();
     }
 
     public Integer getProgress() {
@@ -106,6 +105,7 @@ public class OrganicBean implements Serializable {
             if (selectedLanguage == null || selectedLanguage.isEmpty()) {
                 selectedLanguage = "en";
             }
+            sessionBean.sendFunctionPageReport();
             service.create(sessionBean.getLocaleBundle().getString("general.message.starting_analysis"));
 
             DataFormatConverter dataFormatConverter = new DataFormatConverter();

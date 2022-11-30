@@ -96,7 +96,6 @@ public class GazeBean implements Serializable {
             sessionBean = new SessionBean();
         }
         sessionBean.setFunction("gaze");
-        sessionBean.sendFunctionPageReport();
     }
 
     public String getOption() {
@@ -113,6 +112,7 @@ public class GazeBean implements Serializable {
 
     public String runCoocAnalysis() {
         try {
+            sessionBean.sendFunctionPageReport();
             service.create(sessionBean.getLocaleBundle().getString("general.message.starting_analysis"));
             List<SheetModel> dataInSheets = inputData.getDataInSheets();
             SheetModel sheetWithData = null;
@@ -165,6 +165,7 @@ public class GazeBean implements Serializable {
 
     public String runSimAnalysis(String sourceColIndex, String sheetName) {
         try {
+            sessionBean.sendFunctionPageReport();
             service.create(sessionBean.getLocaleBundle().getString("general.message.starting_analysis"));
             List<SheetModel> dataInSheets = inputData.getDataInSheets();
             SheetModel sheetWithData = null;

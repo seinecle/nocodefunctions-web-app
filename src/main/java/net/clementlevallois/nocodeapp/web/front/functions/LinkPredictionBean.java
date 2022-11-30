@@ -71,7 +71,6 @@ public class LinkPredictionBean implements Serializable {
             sessionBean = new SessionBean();
         }
         sessionBean.setFunction("linkprediction");
-        sessionBean.sendFunctionPageReport();
     }
 
     @PostConstruct
@@ -103,13 +102,11 @@ public class LinkPredictionBean implements Serializable {
 
     public String handleFileUpload(FileUploadEvent event) throws IOException, URISyntaxException {
         success = false;
-        System.out.println("we are in handleFileUpload");
         String successMsg = sessionBean.getLocaleBundle().getString("general.nouns.success");
         String is_uploaded = sessionBean.getLocaleBundle().getString("general.verb.is_uploaded");
         FacesMessage message = new FacesMessage(successMsg, event.getFile().getFileName() + " " + is_uploaded + ".");
         FacesContext.getCurrentInstance().addMessage(null, message);
         uploadedFile = event.getFile();
-        System.out.println("file: " + uploadedFile.getFileName());
         try {
             is = uploadedFile.getInputStream();
         } catch (IOException ex) {
@@ -125,6 +122,7 @@ public class LinkPredictionBean implements Serializable {
                 System.out.println("no file found for link prediction");
                 return 0;
             }
+            sessionBean.sendFunctionPageReport();
             HttpRequest request;
             HttpClient client = HttpClient.newHttpClient();
             Set<CompletableFuture> futures = new HashSet();
@@ -164,7 +162,7 @@ public class LinkPredictionBean implements Serializable {
             List<String> orderedListOfPredictions = predictions.keySet().stream().sorted().collect(Collectors.toList());
 
             topPredictions = new ArrayList();
-            
+
             for (String predictionKey : orderedListOfPredictions) {
                 JsonObject predictionJson = predictions.getJsonObject(predictionKey);
                 Prediction prediction = new Prediction();

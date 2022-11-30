@@ -83,7 +83,6 @@ public class PdfMatcherBean implements Serializable {
     void init() {
         sessionId = Faces.getSessionId();
         sessionBean.setFunction("pdfmatcher");
-        sessionBean.sendFunctionPageReport();
         results = new HashMap();
     }
 
@@ -103,6 +102,7 @@ public class PdfMatcherBean implements Serializable {
     }
 
     public String runAnalysis() throws URISyntaxException {
+        sessionBean.sendFunctionPageReport();
         service.create(sessionBean.getLocaleBundle().getString("general.message.starting_analysis"));
         List<SheetModel> dataInSheets = inputData.getDataInSheets();
         HttpRequest request;

@@ -102,7 +102,6 @@ public class TopicsBean implements Serializable {
             sessionBean = new SessionBean();
         }
         sessionBean.setFunction("topics");
-        sessionBean.sendFunctionPageReport();
     }
 
     public Integer getProgress() {
@@ -126,6 +125,7 @@ public class TopicsBean implements Serializable {
 
     public String runAnalysis() {
         try {
+            sessionBean.sendFunctionPageReport();
             service.create(sessionBean.getLocaleBundle().getString("general.message.starting_analysis"));
             DataFormatConverter dataFormatConverter = new DataFormatConverter();
             mapOfLines = dataFormatConverter.convertToMapOfLines(inputData.getBulkData(), inputData.getDataInSheets(), inputData.getSelectedSheetName(), inputData.getSelectedColumnIndex(), inputData.getHasHeaders());
