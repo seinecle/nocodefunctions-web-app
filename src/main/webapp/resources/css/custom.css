@@ -8,10 +8,6 @@ and open the template in the editor.
     Author     : LEVALLOIS
 */
 
-.ui-fileupload{
-    /*height: 400px;*/
-}
-
 p {
     line-height: 1.5;
     margin: 0;
@@ -60,13 +56,6 @@ h2 {
     font-family:-apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica Neue, Arial, Noto Sans, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
 }
 
-/*h2 * {
-    all: unset;
-}*/
-
-.fileupload-buttonbar .fileinput-button .ui-icon-plusthick{
-    background-image: url('toto.jpg') !important;
-}
 
 
 .feedback-button-wrapper {
