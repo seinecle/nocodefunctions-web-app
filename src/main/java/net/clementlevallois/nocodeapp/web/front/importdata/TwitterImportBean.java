@@ -6,8 +6,8 @@
 package net.clementlevallois.nocodeapp.web.front.importdata;
 
 import com.github.scribejava.core.model.OAuth2AccessToken;
+import com.twitter.clientlib.model.Get2TweetsSearchRecentResponse;
 import com.twitter.clientlib.model.Tweet;
-import com.twitter.clientlib.model.TweetSearchResponse;
 import io.mikael.urlbuilder.UrlBuilder;
 import java.io.IOException;
 import java.io.Serializable;
@@ -89,7 +89,7 @@ public class TwitterImportBean implements Serializable {
             ExternalContext externalContext = FacesContext.getCurrentInstance().getExternalContext();
             externalContext.redirect(RemoteLocal.getDomain() + "import_your_data_twitter.html");
         } catch (IOException ex) {
-                                System.out.println("ex:"+ ex.getMessage());
+            System.out.println("ex:" + ex.getMessage());
         }
     }
 
@@ -160,7 +160,7 @@ public class TwitterImportBean implements Serializable {
             }
             String body = response.body();
             Jsonb jsonb = JsonbBuilder.create();
-            TweetSearchResponse tweetSearchResponse = jsonb.fromJson(body, TweetSearchResponse.class);
+            Get2TweetsSearchRecentResponse tweetSearchResponse = jsonb.fromJson(body, Get2TweetsSearchRecentResponse.class);
 
             sheets = new ArrayList();
             SheetModel sheetModel = new SheetModel();
@@ -169,6 +169,10 @@ public class TwitterImportBean implements Serializable {
             cm = new ColumnModel("0", "tweets");
             headerNames.add(cm);
             int i = 0;
+
+            if (tweetSearchResponse.getData() == null) {
+                return "";
+            }
 
             for (Tweet tweet : tweetSearchResponse.getData()) {
                 String url = "https://publish.twitter.com/oembed?url=https://twitter.com/" + tweet.getAuthorId() + "/status/" + tweet.getId();
@@ -179,17 +183,16 @@ public class TwitterImportBean implements Serializable {
                     while (jsonParser.hasNext() & !found) {
                         JsonParser.Event event = jsonParser.next();
                         switch (event) {
-                            case KEY_NAME:
+                            case KEY_NAME ->
                                 keyName = jsonParser.getString();
-                                break;
-                            case VALUE_STRING:
+                            case VALUE_STRING -> {
                                 if (keyName.equals("html")) {
                                     html = jsonParser.getString();
                                     found = true;
                                 }
-                                break;
-                            default:
-                            // No need..
+                            }
+                            default -> {
+                            }
                         }
                     }
                 }
@@ -204,7 +207,7 @@ public class TwitterImportBean implements Serializable {
 
         } catch (IOException | InterruptedException ex) {
             service.create(sessionBean.getLocaleBundle().getString("back.import.error_fetching_tweets"));
-                                System.out.println("ex:"+ ex.getMessage());
+            System.out.println("ex:" + ex.getMessage());
             return "";
 
         }

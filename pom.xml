@@ -61,11 +61,11 @@
         <dependency>
             <groupId>com.twitter</groupId>
             <artifactId>twitter-api-java-sdk</artifactId>
-            <version>1.2.4</version>
+            <version>2.0.3</version>
         </dependency>
         <dependency>
             <groupId>net.clementlevallois.functions</groupId>
-            <artifactId>model</artifactId>
+            <artifactId>functions-model</artifactId>
             <version>1.0</version>
         </dependency>
         <dependency>
@@ -75,18 +75,18 @@
         </dependency>
         <!--7kb-->
         <dependency>
-            <groupId>net.clementlevallois.umigonfamily</groupId>
+            <groupId>net.clementlevallois.functions</groupId>
             <artifactId>umigon-lemmatizer-lightweight</artifactId>
             <version>1.0</version>
         </dependency>
         <dependency>
-            <groupId>net.clementlevallois.umigonfamily</groupId>
+            <groupId>net.clementlevallois.functions</groupId>
             <artifactId>umigon-model</artifactId>
             <version>1.0</version>
         </dependency>
         <dependency>
             <groupId>net.clementlevallois.io</groupId>
-            <artifactId>model</artifactId>
+            <artifactId>io-model</artifactId>
             <version>1.0</version>
         </dependency>
         <!--5Mb-->
