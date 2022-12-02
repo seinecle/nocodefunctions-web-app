@@ -69,30 +69,6 @@
         <param-value>true</param-value>
     </context-param>
     
-    <filter>
-        <filter-name>gzipResponseFilter</filter-name>
-        <filter-class>org.omnifaces.filter.GzipResponseFilter</filter-class>
-        <init-param>
-            <description>The threshold size in bytes. Must be a number between 0 and 9999. Defaults to 150.</description>
-            <param-name>threshold</param-name>
-            <param-value>150</param-value>
-        </init-param>
-        <init-param>
-            <description>The mimetypes which needs to be compressed. Must be a commaseparated string. Defaults to the below values.</description>
-            <param-name>mimetypes</param-name>
-            <param-value>
-                text/plain, text/html, text/xml, text/css, text/javascript, text/csv, text/rtf,
-                application/xml, application/xhtml+xml, application/x-javascript, application/javascript, application/json,
-                image/svg+xml, image/gif, application/x-font-woff, application/font-woff2, image/png
-            </param-value>
-        </init-param>
-    </filter>
-    <filter-mapping>
-        <filter-name>gzipResponseFilter</filter-name>
-        <url-pattern>/*</url-pattern>
-        <dispatcher>REQUEST</dispatcher>
-        <dispatcher>ERROR</dispatcher>
-    </filter-mapping>
     <error-page>
         <exception-type>jakarta.faces.application.ViewExpiredException</exception-type>
         <location>/WEB-INF/error-pages/expired.xhtml</location>
