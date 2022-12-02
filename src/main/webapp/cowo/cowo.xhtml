@@ -75,6 +75,19 @@
                                         <p:divider align="left">
                                             <div class="p-d-inline-flex p-ai-center">
                                                 <i class="pi pi-chart-bar p-mr-2"/>
+                                                <b>#{text['general.message.max_ngram']}</b>
+                                            </div>
+                                        </p:divider>
+                                        #{text['cowo.cowo.max_size_for_ngrams']} 4
+                                        <br/>
+                                        <br/>
+                                        <p:spinner id="spinnerNGRAM" value="#{cowoBean.maxNGram}" min="1" max="4" stepFactor="1">
+                                        </p:spinner>
+                                        <p:slider for="spinnerNGRAM" minValue="1" maxValue="4" step="1"/>
+
+                                        <p:divider align="left">
+                                            <div class="p-d-inline-flex p-ai-center">
+                                                <i class="pi pi-chart-bar p-mr-2"/>
                                                 <b>#{text['general.nouns.academic_stopwords']}</b>
                                             </div>
                                         </p:divider>

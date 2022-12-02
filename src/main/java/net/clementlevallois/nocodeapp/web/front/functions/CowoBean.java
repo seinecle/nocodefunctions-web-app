@@ -86,6 +86,7 @@ public class CowoBean implements Serializable {
     private int minFreqNode = 1000_000;
     private int maxFreqNode = 0;
     private int minTermFreq = 2;
+    private int maxNGram = 4;
     private int minCoocFreqInt = 2;
     private String typeCorrection = "none";
     private boolean scientificCorpus;
@@ -310,6 +311,7 @@ public class CowoBean implements Serializable {
             overallObject.add("isScientificCorpus", scientificCorpus);
             overallObject.add("minCoocFreq", minCoocFreqInt);
             overallObject.add("minTermFreq", minTermFreq);
+            overallObject.add("maxNGram", maxNGram);
             overallObject.add("typeCorrection", typeCorrection);
 
             JsonObject build = overallObject.build();
@@ -444,6 +446,14 @@ public class CowoBean implements Serializable {
 
     public void setMinFreqNode(int minFreqNode) {
         this.minFreqNode = minFreqNode;
+    }
+
+    public int getMaxNGram() {
+        return maxNGram;
+    }
+
+    public void setMaxNGram(int maxNGram) {
+        this.maxNGram = maxNGram;
     }
 
     public int getMaxFreqNode() {
