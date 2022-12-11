@@ -178,19 +178,40 @@
                                 </p:outputPanel>
                             </p:outputPanel>
                         </h:form>
-                        <h:form id="formInfoFR">
-                            <p:dialog id="info" header="#{text['general.nouns.explanations']}" widgetVar="detailsWidget" minHeight="40" width="450" resizable="true" showEffect="fade">
-                                <p:scrollPanel mode="native" style="max-height:500px">
-                                    <h:outputText value="#{cardTestBean.umigonResultFRExplanation}" escape="false"/>
-                                </p:scrollPanel>
-                            </p:dialog>
-                        </h:form>
-                        <h:form id="formInfoEN">
-                            <p:dialog id="info" header="#{text['general.nouns.explanations']}" widgetVar="detailsWidget" minHeight="40" width="450" resizable="true" showEffect="fade">
-                                <p:scrollPanel mode="native" style="max-height:500px">
-                                    <h:outputText value="#{cardTestBean.umigonResultENExplanation}" escape="false"/>
-                                </p:scrollPanel>
-                            </p:dialog>
+                    </p:card>
+                    <p:spacer width="10"/>
+                    <p:card style="width: 30rem; margin-bottom: 2em">
+                        <f:facet name="title">
+                            #{text['index.testsentimentanalysises']}
+                        </f:facet>
+                        <h:form id="umigonES">
+                            <div class="ui-inputgroup">
+                                <p:inputText id="umigonTestES" value="#{cardTestBean.umigonTestInputES}"/>
+                                <p:commandButton value="#{text['general.verbs.compute']}" widgetVar="umigonButtonES" action="#{cardTestBean.runUmigonTestES}" update="resultES umigonES:explanationES" styleClass="btn btn-primary"/>
+                            </div>
+                            <p:outputPanel id="resultES">
+                                <h:outputText value="#{cardTestBean.umigonResultES}" style="width:40px;"/>
+                                <p:spacer width="15"/>
+                                <p:commandLink value="#{text['general.small_words.why']} 🤔" action="#{cardTestBean.setShowESExplanation(true)}" rendered="#{cardTestBean.renderSignalES}" update="umigonES:explanationES"/>
+                                <p:spacer width="15"/>
+                                <p:commandLink style="text-align: center;font-size: 80%" value="#{text['general.verbs.signal_error']}"
+                                               action="#{cardTestBean.signalUmigonES}" update="resultES"
+                                               rendered="#{cardTestBean.renderSignalES}"/>
+                                <p:spacer width="20" rendered ="#{cardTestBean.reportResultESRendered}"/>
+                                <p:outputLabel style="font-size: 80%" value="#{text['general.message.reportsent']}" rendered ="#{cardTestBean.reportResultESRendered}" />
+                                <p:graphicImage name="images/check.png" width="24px" rendered ="#{cardTestBean.reportResultESRendered}" alt="check mark"/>
+                                <p:outputPanel id="explanationES">
+                                    <br/>
+                                    <br/>
+                                    <small>
+                                        <h:outputText value="#{cardTestBean.umigonResultESExplanation}" escape="false" rendered="#{cardTestBean.showESExplanation}"/>
+                                    </small>
+                                    <br/>
+                                    <br/>
+                                    <p:commandLink value="#{text['general.verbs.hide']} ↩️" action="#{cardTestBean.setShowESExplanation(false)}" rendered="#{cardTestBean.showESExplanation}" update="umigonES:explanationES"/>
+                                    <p:spacer width="15"/>
+                                </p:outputPanel>
+                            </p:outputPanel>
                         </h:form>
                     </p:card>
                 </div>
