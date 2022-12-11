@@ -57,9 +57,9 @@
                         <br/>
                         <h:form id="form3">
                             <p:selectOneListbox id="lang" value="#{umigonBean.selectedLanguage}" style="width: 50px !important">
-                                <f:selectItem itemLabel="#{text['general.languages.english']} 🏏" itemValue="en">
-                                </f:selectItem>
-                                <f:selectItem itemLabel="#{text['general.languages.french']} 🥐" itemValue="fr">
+                                <f:selectItem itemLabel="#{text['general.languages.english']}" itemValue="en"/>
+                                <f:selectItem itemLabel="#{text['general.languages.french']}" itemValue="fr"/>
+                                <f:selectItem itemLabel="#{text['general.languages.spanish']}" itemValue="es">
                                 </f:selectItem>
                                 <p:ajax event="change" update="@this" />
                             </p:selectOneListbox>
