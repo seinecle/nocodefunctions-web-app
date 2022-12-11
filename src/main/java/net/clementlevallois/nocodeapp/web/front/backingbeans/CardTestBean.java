@@ -142,7 +142,7 @@ public class CardTestBean implements Serializable {
     }
 
     public void runUmigonTestES() throws IOException, URISyntaxException, InterruptedException {
-        showFRExplanation = false;
+        showESExplanation = false;
         SendReport send = new SendReport();
         send.initAnalytics("test: umigon es", sessionBean.getUserAgent());
         send.start();
@@ -170,7 +170,7 @@ public class CardTestBean implements Serializable {
         try (
                  ByteArrayInputStream bis = new ByteArrayInputStream(body);  ObjectInputStream ois = new ObjectInputStream(bis)) {
             Document doc = (Document) ois.readObject();
-            umigonResultFR = switch (doc.getCategoryCode()) {
+            umigonResultES = switch (doc.getCategoryCode()) {
                 case "_12" -> "😔 " + doc.getCategoryLocalizedPlainText();
                 case "_11" -> "🤗 " + doc.getCategoryLocalizedPlainText();
                 default -> "😐 " + doc.getCategoryLocalizedPlainText();
@@ -534,5 +534,15 @@ public class CardTestBean implements Serializable {
     public void setShowENExplanation(Boolean showENExplanation) {
         this.showENExplanation = showENExplanation;
     }
+
+    public String getUmigonTestInputES() {
+        return umigonTestInputES;
+    }
+
+    public void setUmigonTestInputES(String umigonTestInputES) {
+        this.umigonTestInputES = umigonTestInputES;
+    }
+    
+    
 
 }
