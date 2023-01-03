@@ -71,7 +71,7 @@
     
     <error-page>
         <exception-type>jakarta.faces.application.ViewExpiredException</exception-type>
-        <location>/WEB-INF/error-pages/expired.xhtml</location>
+        <location>/WEB-INF/error-pages/expired.html</location>
     </error-page>   
     <error-page>
         <exception-type>java.lang.Throwable</exception-type>
