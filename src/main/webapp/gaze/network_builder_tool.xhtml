@@ -70,6 +70,7 @@
                         <f:selectItem itemLabel="#{text['gaze.network_builder.option_1']}" itemValue="1"/>
                         <f:selectItem itemLabel="#{text['gaze.network_builder.option_2']}" itemValue="2"/>
                         <p:ajax update="button parametersCooc" event="valueChange" />
+                        <p:ajax update="button parametersSim" event="valueChange" />
                     </p:selectOneRadio>
                     <br/>
                     <br/>
@@ -94,6 +95,28 @@
                                 <br/>
                                 <p:selectBooleanCheckbox value="#{gazeBean.applyPMI}" itemLabel="#{text['general.message.use_pmi']}">
                                 </p:selectBooleanCheckbox>                
+                            </p>
+                        </p:tab>
+                    </p:accordionPanel>
+                </p:panel>        
+            </h:form>
+            <h:form enctype="multipart/form-data" id="parametersSim">
+                <p:panel header="#{text['general.nouns.parameters']}" rendered="#{gazeBean.option == 2}">
+                    <p:accordionPanel widgetVar="basic" activeIndex="null">
+                        <p:tab title="#{text['gaze.network_builder.if_you_need_more_parameters']}">
+                            <p class="p-m-0">
+
+                                <p:divider align="left">
+                                    <div class="p-d-inline-flex p-ai-center">
+                                        <i class="pi pi-chart-bar p-mr-2"/>
+                                        <b>#{text['general.nouns.min_targets']}</b>
+                                    </div>
+                                </p:divider>
+                                <p:outputLabel escape="false" value="#{text['gaze.network_builder.connections_should_have_min_targets_in_common']}"/>
+                                <br/>
+                                <br/>
+                                <p:outputLabel for="@next" value="#{text['general.message.at_least']}"/>
+                                <p:spinner value="#{gazeBean.minSharedTargets}"/>
                             </p>
                         </p:tab>
                     </p:accordionPanel>

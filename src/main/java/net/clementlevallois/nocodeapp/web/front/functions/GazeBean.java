@@ -42,6 +42,7 @@ import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.json.JsonWriter;
+import java.math.BigDecimal;
 import net.clementlevallois.importers.model.CellRecord;
 import net.clementlevallois.importers.model.SheetModel;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
@@ -65,6 +66,7 @@ public class GazeBean implements Serializable {
 
     private String option = "1";
     private Integer progress;
+    private Integer minSharedTargets= 1;
     private Boolean runButtonDisabled = true;
     private StreamedContent fileToSave;
     private Boolean renderSeeResultsButton = false;
@@ -325,7 +327,11 @@ public class GazeBean implements Serializable {
             linesBuilder.add(entryLines.getKey(), createArrayBuilder);
         }
 
+        JsonObjectBuilder parametersBuilder = Json.createObjectBuilder();
+        parametersBuilder.add("minSharedTarget", minSharedTargets);
+
         overallObject.add("lines", linesBuilder);
+        overallObject.add("parameters", parametersBuilder);
 
         JsonObject build = overallObject.build();
         StringWriter sw = new StringWriter(128);
@@ -574,4 +580,14 @@ public class GazeBean implements Serializable {
     public void setApplyPMI(boolean applyPMI) {
         this.applyPMI = applyPMI;
     }
+
+    public Integer getMinSharedTargets() {
+        return minSharedTargets;
+    }
+
+    public void setMinSharedTargets(Integer minSharedTargets) {
+        this.minSharedTargets = minSharedTargets;
+    }
+    
+    
 }

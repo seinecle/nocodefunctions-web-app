@@ -1,1 +1,1 @@
-java -jar payara-micro-6.2022.1.jar --deploy 'C:\Users\levallois\open\nocode-app-web-front\target\jsf-app-1.0-SNAPSHOT.war' --systemproperties 'C:\Users\levallois\open\nocode-app-web-front\sys.properties'
+java -jar payara-micro-6.2022.2.jar --nocluster --deploy 'C:\Users\levallois\open\nocode-app-web-front\target\jsf-app-1.0-SNAPSHOT.war' --systemproperties 'C:\Users\levallois\open\nocode-app-web-front\sys.properties'
