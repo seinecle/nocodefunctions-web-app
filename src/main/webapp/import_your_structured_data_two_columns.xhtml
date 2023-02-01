@@ -65,9 +65,18 @@
                                 widgetVar="fileInputChooser"
                                 style="width:700px;"
                                 >
-                                <p:fileUpload value="#{dataImportBean.file}" label="#{text['import_data.general.choose_csv_or_excel']}" mode="simple" auto="true" skinSimple="true" sizeLimit="50000000"
-                                              process="@this" listener="#{dataImportBean.handleFileUpload}" oncomplete="PF('fileInputChooser').hide()" update=":formRead :notifications :launchButtons"
-                                              allowTypes="/(\.|\/)(csv|xlsx)$/">                                
+                                <p:fileUpload
+                                    value="#{dataImportBean.file}"
+                                    label="#{text['import_data.general.choose_csv_or_excel']}"
+                                    mode="advanced"
+                                    auto="false"
+                                    skinSimple="true"
+                                    sizeLimit="50000000"
+                                    process="@this"
+                                    listener="#{dataImportBean.handleFileUpload}"
+                                    oncomplete="PF('fileInputChooser').hide()"
+                                    update=":formRead :notifications :launchButtons"
+                                    allowTypes="/(\.|\/)(csv|tsv|xlsx)$/">                                
                                 </p:fileUpload>
                                 #{text['general.message.max_file_size']}: 50Mb.
                             </p:overlayPanel>
@@ -130,7 +139,7 @@
                                                     id="renderHeaders"
                                                     value="#{dataImportBean.hasHeaders}"
                                                     itemLabel="#{text['import_data.general.my_data_has_headers']}">
-                                                    <p:ajax update="tbl" listener="#{dataImportBean.toggleHeaders}"/>
+                                                    <p:ajax update="tbl"/>
                                                 </p:selectBooleanCheckbox>
                                             </f:facet>
                                             <p:column  width="25">

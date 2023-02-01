@@ -84,7 +84,7 @@ public class DataImportBean implements Serializable {
     private UploadedFiles files;
 
     private FileUploaded fileUploaded;
-    private List<FileUploaded> filesUploaded;
+    private List<FileUploaded> filesUploaded = new ArrayList();
 
     private String gsheeturl;
 
@@ -132,44 +132,34 @@ public class DataImportBean implements Serializable {
                 addMessage(null, new FacesMessage(severity, summary, detail));
     }
 
-    public String readDataForPdfMatcherFunction() {
-        dataInSheets = new ArrayList();
-        if (fileUploaded == null && filesUploaded == null) {
-            service.create(sessionBean.getLocaleBundle().getString("general.message.no_file_upload_again"));
-            addMessage(FacesMessage.SEVERITY_WARN, "💔", sessionBean.getLocaleBundle().getString("general.message.no_file_upload_again"));
-            return "";
-        }
-        this.progress = 3;
-        Runnable incrementProgress = () -> {
-            progress = progress + 1;
-        };
-        ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
-        executor.scheduleAtFixedRate(incrementProgress, 0, 250, TimeUnit.MILLISECONDS);
-
-        if (fileUploaded != null) {
-            service.create(sessionBean.getLocaleBundle().getString("general.message.reading_pdf_file"));
-            readPdfFile(fileUploaded.getInputStream(), fileUploaded.getFileName());
-        } else if (filesUploaded != null) {
-            for (FileUploaded f : filesUploaded) {
-                if (f != null && f.getFileName().endsWith("pdf")) {
-                    source = Source.PDF;
-                    service.create(sessionBean.getLocaleBundle().getString("general.message.reading_file") + f.getFileName());
-                    readPdfFile(f.getInputStream(), f.getFileName());
-                }
+    public String handleFileUpload(FileUploadEvent event) {
+        try {
+            progress = 0;
+            file = event.getFile();
+            if (file == null) {
+                return "";
             }
+            fileUploaded = new FileUploaded(file.getInputStream(), file.getFileName());
+            service.create(sessionBean.getLocaleBundle().getString("back.import.file_successful_upload.opening") + file.getFileName() + sessionBean.getLocaleBundle().getString("back.import.file_successful_upload.closing"));
+
+            if (fileUploaded.getFileName().endsWith("xlsx")) {
+                setSource(Source.XLSX);
+            } else if (fileUploaded.getFileName().endsWith("txt")) {
+                setSource(Source.TXT);
+            } else if (fileUploaded.getFileName().endsWith("csv")) {
+                setSource(Source.CSV);
+            } else if (fileUploaded.getFileName().endsWith("pdf")) {
+                setSource(Source.PDF);
+            }
+            readButtonDisabled = false;
+            renderProgressBar = true;
+        } catch (IOException ex) {
+            Logger.getLogger(DataImportBean.class.getName()).log(Level.SEVERE, null, ex);
         }
-        executor.shutdown();
-        progress = 100;
-        service.create(sessionBean.getLocaleBundle().getString("general.message.finished_reading_data"));
-
-        fileUploaded = null;
-        filesUploaded = null;
-        gsheeturl = null;
-
-        renderCloseOverlay = true;
         return "";
     }
-
+    
+    
     public String readData() throws IOException, URISyntaxException {
         dataInSheets = new ArrayList();
         if (fileUploaded == null && filesUploaded == null) {
@@ -262,72 +252,6 @@ public class DataImportBean implements Serializable {
         return "";
     }
 
-    public String handleFileUpload(FileUploadEvent event) {
-        try {
-            progress = 0;
-            file = event.getFile();
-            if (file == null) {
-                return "";
-            }
-            fileUploaded = new FileUploaded(file.getInputStream(), file.getFileName());
-            service.create(sessionBean.getLocaleBundle().getString("back.import.file_successful_upload.opening") + file.getFileName() + sessionBean.getLocaleBundle().getString("back.import.file_successful_upload.closing"));
-
-            if (fileUploaded.getFileName().endsWith("xlsx")) {
-                setSource(Source.XLSX);
-            } else if (fileUploaded.getFileName().endsWith("txt")) {
-                setSource(Source.TXT);
-            } else if (fileUploaded.getFileName().endsWith("csv")) {
-                setSource(Source.CSV);
-            } else if (fileUploaded.getFileName().endsWith("pdf")) {
-                setSource(Source.PDF);
-            }
-            readButtonDisabled = false;
-            renderProgressBar = true;
-        } catch (IOException ex) {
-            Logger.getLogger(DataImportBean.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return "";
-    }
-
-    public void uploadMultiple() {
-        if (files != null) {
-            filesUploaded = new ArrayList();
-            for (UploadedFile f : files.getFiles()) {
-                try {
-                    FileUploaded oneFile = new FileUploaded(f.getInputStream(), f.getFileName());
-                    filesUploaded.add(oneFile);
-                    service.create(sessionBean.getLocaleBundle().getString("back.import.file_successful_upload.opening") + oneFile.getFileName() + sessionBean.getLocaleBundle().getString("back.import.file_successful_upload.closing"));
-                } catch (IOException ex) {
-                    Logger.getLogger(DataImportBean.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            }
-        }
-        readButtonDisabled = false;
-        renderProgressBar = true;
-    }
-
-    public void handleFilesUpload(FilesUploadEvent event) {
-        dataInSheets = new ArrayList();
-        files = event.getFiles();
-        filesUploaded = new ArrayList();
-        if (files != null) {
-            for (UploadedFile f : files.getFiles()) {
-                try {
-                    FileUploaded oneFile = new FileUploaded(f.getInputStream(), f.getFileName());
-                    filesUploaded.add(oneFile);
-                    service.create(sessionBean.getLocaleBundle().getString("back.import.file_successful_upload.opening") + oneFile.getFileName() + sessionBean.getLocaleBundle().getString("back.import.file_successful_upload.closing"));
-                } catch (IOException ex) {
-                    Logger.getLogger(DataImportBean.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            }
-        }
-        readButtonDisabled = false;
-        renderProgressBar = true;
-    }
-
-    public void toggleHeaders() {
-    }
-
     private void readTextFile(InputStream is, String fileName, String functionName, String gazeOption) {
 
         try {
@@ -362,7 +286,7 @@ public class DataImportBean implements Serializable {
                     resp -> {
                         byte[] body = resp.body();
                         try (
-                         ByteArrayInputStream bis = new ByteArrayInputStream(body);  ObjectInputStream ois = new ObjectInputStream(bis)) {
+                        ByteArrayInputStream bis = new ByteArrayInputStream(body); ObjectInputStream ois = new ObjectInputStream(bis)) {
                             List<SheetModel> tempResult = (List<SheetModel>) ois.readObject();
                             dataInSheets.addAll(tempResult);
                         } catch (IOException | ClassNotFoundException ex) {
@@ -409,7 +333,7 @@ public class DataImportBean implements Serializable {
                     resp -> {
                         byte[] body = resp.body();
                         try (
-                         ByteArrayInputStream bis = new ByteArrayInputStream(body);  ObjectInputStream ois = new ObjectInputStream(bis)) {
+                        ByteArrayInputStream bis = new ByteArrayInputStream(body); ObjectInputStream ois = new ObjectInputStream(bis)) {
                             List<SheetModel> tempResult = (List<SheetModel>) ois.readObject();
                             dataInSheets.addAll(tempResult);
                         } catch (IOException | ClassNotFoundException ex) {
@@ -467,7 +391,7 @@ public class DataImportBean implements Serializable {
                     resp -> {
                         byte[] body = resp.body();
                         try (
-                         ByteArrayInputStream bis = new ByteArrayInputStream(body);  ObjectInputStream ois = new ObjectInputStream(bis)) {
+                        ByteArrayInputStream bis = new ByteArrayInputStream(body); ObjectInputStream ois = new ObjectInputStream(bis)) {
                             List<SheetModel> tempResult = (List<SheetModel>) ois.readObject();
                             dataInSheets.addAll(tempResult);
                         } catch (IOException | ClassNotFoundException ex) {
@@ -517,7 +441,7 @@ public class DataImportBean implements Serializable {
                 byte[] body = resp.body();
                 if (body.length >= 100 && !new String(body, StandardCharsets.UTF_8).toLowerCase().startsWith("internal") && !new String(body, StandardCharsets.UTF_8).toLowerCase().startsWith("not found")) {
                     try (
-                             ByteArrayInputStream bis = new ByteArrayInputStream(body);  ObjectInputStream ois = new ObjectInputStream(bis)) {
+                            ByteArrayInputStream bis = new ByteArrayInputStream(body); ObjectInputStream ois = new ObjectInputStream(bis)) {
                         List<SheetModel> tempResults = (List<SheetModel>) ois.readObject();
                         dataInSheets.addAll(tempResults);
                     } catch (Exception ex) {
@@ -690,7 +614,7 @@ public class DataImportBean implements Serializable {
 
         String keyAnnotationCounterBwsScores = "task:" + taskId + ":annotations:indices:counter_bws";
 
-        try ( Jedis jedis = SingletonBean.getJedisPool().getResource()) {
+        try (Jedis jedis = SingletonBean.getJedisPool().getResource()) {
             if (bulkData) {
                 for (SheetModel sm : dataInSheets) {
                     List<CellRecord> cellRecords = sm.getColumnIndexToCellRecords().get(0);
@@ -738,7 +662,7 @@ public class DataImportBean implements Serializable {
             }
         }
 
-        try ( Jedis jedis = SingletonBean.getJedisPool().getResource()) {
+        try (Jedis jedis = SingletonBean.getJedisPool().getResource()) {
             // saving the metadata of the dataset just created
             TaskMetadata tmd = new TaskMetadata(taskId, typeOfTask, jedis);
             tmd.setDescription(datasetDescription);
@@ -980,6 +904,22 @@ public class DataImportBean implements Serializable {
         } else {
             return sessionBean.getLocaleBundle().getString("general.message.data_not_found");
         }
+    }
+
+    public FileUploaded getFileUploaded() {
+        return fileUploaded;
+    }
+
+    public void setFileUploaded(FileUploaded fileUploaded) {
+        this.fileUploaded = fileUploaded;
+    }
+
+    public List<FileUploaded> getFilesUploaded() {
+        return filesUploaded;
+    }
+
+    public void setFilesUploaded(List<FileUploaded> filesUploaded) {
+        this.filesUploaded = filesUploaded;
     }
 
 }

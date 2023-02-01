@@ -54,36 +54,37 @@
                                 widgetVar="fileInputChooser"
                                 style="width:700px;"
                                 >
+                                <p:remoteCommand name="updateAfterAllFilesUploaded"
+                                    update=" :formRead :notifications :launchButtons"/>
                                 <p:fileUpload
                                     label="#{text['import_data.general.choose_txt_or_pdf']}"
-                                    value="#{dataImportBean.files}"
-                                    mode="simple"
-                                    auto="true"
+                                    mode="advanced"
+                                    auto="false"
                                     skinSimple="true"
                                     sizeLimit="50000000"
                                     multiple="true"
-                                    process="@this"
-                                    listener="#{dataImportBean.handleFilesUpload}"
-                                    oncomplete="PF('fileInputChooser').hide()" update=" :formRead :notifications :launchButtons"
+                                    listener="#{oneFileUploadInMultipleUploadBean.handleFileUpload}"
+                                    oncomplete="PF('fileInputChooser').hide();if (!PF('fileUpload').files.length) updateAfterAllFilesUploaded();"
                                     allowTypes="/(\.|\/)(txt|pdf)$/"
                                     fileLimit="20"
-                                    rendered="#{sessionBean.function != 'pdfmatcher'}">
+                                    rendered="#{sessionBean.function != 'pdfmatcher'}"
+                                    widgetVar="fileUpload"
+                                    >
                                 </p:fileUpload>
                                 
                                
                                 <p:fileUpload
                                     label="#{text['import_data.general.choose_pdf']}"
-                                    value="#{dataImportBean.files}"
-                                    mode="simple"
-                                    auto="true"
+                                    mode="advanced"
+                                    auto="false"
                                     skinSimple="true"
                                     sizeLimit="50000000" 
                                     multiple="true"
-                                    process="@this"
-                                    listener="#{dataImportBean.handleFilesUpload}"
-                                    oncomplete="PF('fileInputChooser').hide()" update=" :formRead :notifications :launchButtons"
+                                    listener="#{oneFileUploadInMultipleUploadBean.handleFileUpload}"
+                                    oncomplete="PF('fileInputChooser').hide();if (!PF('fileUpload').files.length) updateAfterAllFilesUploaded();"
                                     allowTypes="/(\.|\/)(pdf)$/"
-                                    rendered="#{sessionBean.function == 'pdfmatcher'}">
+                                    rendered="#{sessionBean.function == 'pdfmatcher'}"
+                                    widgetVar="fileUpload">
                                 </p:fileUpload>
                                 <br/>
                                 <br/>
@@ -95,7 +96,7 @@
                             </p:overlayPanel>
                             <br/>
                             <p:outputLabel
-                                rendered="#{dataImportBean.files ne null or dataImportBean.file ne null }"
+                                rendered="#{dataImportBean.filesUploaded.size() gt '0'}"
                                 escape="false">
                                 <strong style="color:#FF6347">#{dataImportBean.displayNameForSingleUploadedFileOrSeveralFiles()}</strong>. #{text['import_data.general.click_below_to_read_it']}
                             </p:outputLabel>

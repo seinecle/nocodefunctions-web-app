@@ -116,7 +116,9 @@
                                 <br/>
                                 <br/>
                                 <p:outputLabel for="@next" value="#{text['general.message.at_least']}"/>
-                                <p:spinner value="#{gazeBean.minSharedTargets}"/>
+                                <p:spinner value="#{gazeBean.minSharedTargets}">
+                                    <f:ajax />
+                                </p:spinner>
                             </p>
                         </p:tab>
                     </p:accordionPanel>
