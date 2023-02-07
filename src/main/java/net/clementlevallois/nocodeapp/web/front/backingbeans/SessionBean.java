@@ -28,6 +28,7 @@ import jakarta.inject.Inject;
 public class SessionBean implements Serializable {
 
     private String function;
+    private String gazeOption = "1";
     private boolean mobileDevice;
     private String userAgent;
     private ResourceBundle localeBundle;
@@ -74,8 +75,17 @@ public class SessionBean implements Serializable {
         } else {
             this.function = function;
         }
-
     }
+
+    public String getGazeOption() {
+        return gazeOption;
+    }
+
+    public void setGazeOption(String gazeOption) {
+        this.gazeOption = gazeOption;
+    }
+    
+    
 
     public void sendFunctionPageReport() {
         SendReport send = new SendReport();

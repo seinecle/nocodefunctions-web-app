@@ -50,9 +50,7 @@ import net.clementlevallois.nocodeapp.web.front.functions.LabellingBean;
 import net.clementlevallois.nocodeapp.web.front.functions.UmigonBean;
 import net.clementlevallois.nocodeapp.web.front.logview.NotificationService;
 import org.primefaces.event.FileUploadEvent;
-import org.primefaces.event.FilesUploadEvent;
 import org.primefaces.model.file.UploadedFile;
-import org.primefaces.model.file.UploadedFiles;
 import redis.clients.jedis.Jedis;
 import static redis.clients.jedis.ScanParams.SCAN_POINTER_START;
 import redis.clients.jedis.ScanResult;
@@ -70,9 +68,6 @@ public class DataImportBean implements Serializable {
     NotificationService service;
 
     @Inject
-    GazeBean gazeBean;
-
-    @Inject
     LabellingBean labellingBean;
 
     @Inject
@@ -81,7 +76,6 @@ public class DataImportBean implements Serializable {
     private Integer progress;
 
     private UploadedFile file;
-    private UploadedFiles files;
 
     private FileUploaded fileUploaded;
     private List<FileUploaded> filesUploaded = new ArrayList();
@@ -134,6 +128,7 @@ public class DataImportBean implements Serializable {
 
     public String handleFileUpload(FileUploadEvent event) {
         try {
+            dataInSheets = new ArrayList();
             progress = 0;
             file = event.getFile();
             if (file == null) {
@@ -158,8 +153,7 @@ public class DataImportBean implements Serializable {
         }
         return "";
     }
-    
-    
+
     public String readData() throws IOException, URISyntaxException {
         dataInSheets = new ArrayList();
         if (fileUploaded == null && filesUploaded == null) {
@@ -168,7 +162,7 @@ public class DataImportBean implements Serializable {
             return "";
         }
 
-        String gazeOption = gazeBean == null ? "1" : gazeBean.getOption();
+        String gazeOption = sessionBean.getGazeOption();
 
         Runnable incrementProgress = () -> {
             progress = progress + 1;
@@ -243,9 +237,7 @@ public class DataImportBean implements Serializable {
         service.create(sessionBean.getLocaleBundle().getString("general.message.finished_reading_data"));
 
         fileUploaded = null;
-        fileUploaded = null;
         file = null;
-        files = null;
         gsheeturl = null;
 
         renderCloseOverlay = true;
@@ -419,7 +411,7 @@ public class DataImportBean implements Serializable {
 
             String gaze_option = "cooc";
 
-            if (sessionBean.getFunction().equals("gaze") && gazeBean != null && gazeBean.getOption().equals("2")) {
+            if (sessionBean.getGazeOption().equals("2")) {
                 gaze_option = "sim";
             }
 
@@ -460,7 +452,7 @@ public class DataImportBean implements Serializable {
             CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(futures.toArray((new CompletableFuture[0])));
             combinedFuture.join();
 
-            if (sessionBean.getFunction().equals("gaze") && gazeBean != null && gazeBean.getOption().equals("1")) {
+            if (sessionBean.getGazeOption().equals("1")) {
                 setSelectedColumnIndex("0");
                 setSelectedSheetName(file.getFileName() + "_");
             }
@@ -492,14 +484,6 @@ public class DataImportBean implements Serializable {
 
     public void setFile(UploadedFile file) {
         this.file = file;
-    }
-
-    public UploadedFiles getFiles() {
-        return files;
-    }
-
-    public void setFiles(UploadedFiles files) {
-        this.files = files;
     }
 
     public Boolean getIsExcelFile() {
@@ -644,7 +628,7 @@ public class DataImportBean implements Serializable {
                     return "";
                 }
                 List<CellRecord> cellRecords = sheetWithData.getCellRecords();
-                int selectedColAsInt = Integer.valueOf(selectedColumnIndex);
+                int selectedColAsInt = Integer.parseInt(selectedColumnIndex);
                 int i = 0;
                 for (CellRecord cr : cellRecords) {
                     if (cr.getColIndex() == selectedColAsInt) {

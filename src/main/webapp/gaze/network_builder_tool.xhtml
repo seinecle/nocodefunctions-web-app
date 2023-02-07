@@ -1,3 +1,4 @@
+
 <html 
     lang="#{activeLocale.languageTag}"
     xmlns="http://www.w3.org/1999/xhtml"
@@ -66,7 +67,7 @@
                     <p:spacer height="30" width="10"/>            
                 </div>
                 <h:form>
-                    <p:selectOneRadio value="#{gazeBean.option}">
+                    <p:selectOneRadio value="#{sessionBean.gazeOption}">
                         <f:selectItem itemLabel="#{text['gaze.network_builder.option_1']}" itemValue="1"/>
                         <f:selectItem itemLabel="#{text['gaze.network_builder.option_2']}" itemValue="2"/>
                         <p:ajax update="button parametersCooc" event="valueChange" />
@@ -74,12 +75,12 @@
                     </p:selectOneRadio>
                     <br/>
                     <br/>
-                    <p:button id="button" value="#{text['gaze.network_builder.go_with_option']} #{gazeBean.option} 🔎" outcome="/import_your_data_network_builder_option_#{gazeBean.option}.xhtml?function=gaze&amp;faces-redirect=true" styleClass="btn btn-primary" style="min-width: 15em;"/>
+                    <p:button id="button" value="#{text['gaze.network_builder.go_with_option']} #{sessionBean.gazeOption} 🔎" outcome="/import_your_data_network_builder_option_#{sessionBean.gazeOption}.xhtml?function=gaze&amp;faces-redirect=true" styleClass="btn btn-primary" style="min-width: 15em;"/>
                 </h:form>
             </p:panel>
             <p:spacer height="20"/>
             <h:form enctype="multipart/form-data" id="parametersCooc">
-                <p:panel header="#{text['general.nouns.parameters']}" rendered="#{gazeBean.option == 1}">
+                <p:panel header="#{text['general.nouns.parameters']}" rendered="#{sessionBean.gazeOption == 1}">
                     <p:accordionPanel widgetVar="basic" activeIndex="null">
                         <p:tab title="#{text['gaze.network_builder.if_you_need_more_parameters']}">
                             <p class="p-m-0">
@@ -101,7 +102,7 @@
                 </p:panel>        
             </h:form>
             <h:form enctype="multipart/form-data" id="parametersSim">
-                <p:panel header="#{text['general.nouns.parameters']}" rendered="#{gazeBean.option == 2}">
+                <p:panel header="#{text['general.nouns.parameters']}" rendered="#{sessionBean.gazeOption == 2}">
                     <p:accordionPanel widgetVar="basic" activeIndex="null">
                         <p:tab title="#{text['gaze.network_builder.if_you_need_more_parameters']}">
                             <p class="p-m-0">

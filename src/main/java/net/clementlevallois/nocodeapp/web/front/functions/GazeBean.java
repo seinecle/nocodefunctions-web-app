@@ -63,7 +63,6 @@ import org.primefaces.model.StreamedContent;
 @SessionScoped
 public class GazeBean implements Serializable {
 
-    private String option = "1";
     private Integer progress;
     private Integer minSharedTargets= 1;
     private Boolean runButtonDisabled = true;
@@ -87,7 +86,7 @@ public class GazeBean implements Serializable {
     NotificationService service;
 
     @Inject
-    DataImportBean inputData;
+    DataImportBean dataImportBean;
 
     @Inject
     SessionBean sessionBean;
@@ -99,26 +98,18 @@ public class GazeBean implements Serializable {
         sessionBean.setFunction("gaze");
     }
 
-    public String getOption() {
-        return option;
-    }
-
-    public void setOption(String option) {
-        this.option = option;
-    }
-
     public void onTabChange(String sheetName) {
-        inputData.setSelectedSheetName(sheetName);
+        dataImportBean.setSelectedSheetName(sheetName);
     }
 
     public String runCoocAnalysis() {
         try {
             sessionBean.sendFunctionPageReport();
             service.create(sessionBean.getLocaleBundle().getString("general.message.starting_analysis"));
-            List<SheetModel> dataInSheets = inputData.getDataInSheets();
+            List<SheetModel> dataInSheets = dataImportBean.getDataInSheets();
             SheetModel sheetWithData = null;
             for (SheetModel sm : dataInSheets) {
-                if (sm.getName().equals(inputData.getSelectedSheetName())) {
+                if (sm.getName().equals(dataImportBean.getSelectedSheetName())) {
                     sheetWithData = sm;
                     break;
                 }
@@ -146,7 +137,7 @@ public class GazeBean implements Serializable {
                 return "";
             }
 
-            if (inputData.getHasHeaders()) {
+            if (dataImportBean.getHasHeaders()) {
                 lines.remove(0);
             }
 
@@ -168,7 +159,7 @@ public class GazeBean implements Serializable {
         try {
             sessionBean.sendFunctionPageReport();
             service.create(sessionBean.getLocaleBundle().getString("general.message.starting_analysis"));
-            List<SheetModel> dataInSheets = inputData.getDataInSheets();
+            List<SheetModel> dataInSheets = dataImportBean.getDataInSheets();
             SheetModel sheetWithData = null;
             for (SheetModel sm : dataInSheets) {
                 if (sm.getName().equals(sheetName)) {
@@ -181,7 +172,7 @@ public class GazeBean implements Serializable {
                 return "";
             }
             Map<Integer, List<CellRecord>> mapOfCellRecordsPerRow = sheetWithData.getRowIndexToCellRecords();
-            if (inputData.getHasHeaders()) {
+            if (dataImportBean.getHasHeaders()) {
                 mapOfCellRecordsPerRow.remove(0);
             }
             Iterator<Map.Entry<Integer, List<CellRecord>>> iterator = mapOfCellRecordsPerRow.entrySet().iterator();
