@@ -99,7 +99,7 @@ public class CowoBean implements Serializable {
     private Boolean shareVVPublicly;
     private String gephistoGexfFileName;
     private Boolean shareGephistoPublicly;
-    private Integer minCharNumber = 5;
+    private Integer minCharNumber = 4;
     private Lemmatizer lemmatizer;
     private Map<Integer, String> mapOfLines;
 

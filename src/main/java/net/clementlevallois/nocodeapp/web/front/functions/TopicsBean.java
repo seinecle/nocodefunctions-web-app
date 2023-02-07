@@ -79,6 +79,7 @@ public class TopicsBean implements Serializable {
     private Boolean renderSeeResultsButton = false;
     private String selectedLanguage;
     private int precision = 50;
+    private int minCharNumber = 4;
 
     private boolean scientificCorpus;
     private boolean okToShareStopwords = false;
@@ -294,6 +295,7 @@ public class TopicsBean implements Serializable {
             overallObject.add("replaceStopwords", replaceStopwords);
             overallObject.add("isScientificCorpus", scientificCorpus);
             overallObject.add("precision", precision);
+            overallObject.add("minCharNumber", minCharNumber);
 
             JsonObject build = overallObject.build();
             StringWriter sw = new StringWriter(128);
@@ -492,6 +494,15 @@ public class TopicsBean implements Serializable {
         this.replaceStopwords = replaceStopwords;
     }
 
+    public int getMinCharNumber() {
+        return minCharNumber;
+    }
+
+    public void setMinCharNumber(int minCharNumber) {
+        this.minCharNumber = minCharNumber;
+    }
+    
+    
     public List<Locale> getAvailable() {
         List<Locale> available = new ArrayList();
         String[] availableStopwordLists = new String[]{"ar", "bg", "ca", "da", "nl", "en", "fr", "de", "el", "it", "no", "pl", "pt", "ru", "es"};
