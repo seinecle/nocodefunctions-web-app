@@ -141,10 +141,13 @@ public class DataImportBean implements Serializable {
                 setSource(Source.XLSX);
             } else if (fileUploaded.getFileName().endsWith("txt")) {
                 setSource(Source.TXT);
-            } else if (fileUploaded.getFileName().endsWith("csv")) {
+            } else if (fileUploaded.getFileName().endsWith("csv") || fileUploaded.getFileName().endsWith("tsv")) {
                 setSource(Source.CSV);
             } else if (fileUploaded.getFileName().endsWith("pdf")) {
                 setSource(Source.PDF);
+            } else {
+                service.create(sessionBean.getLocaleBundle().getString("back.import.file_successful_upload.opening") + file.getFileName() + sessionBean.getLocaleBundle().getString("back.import.file_extension_not_recognized"));
+                return "";
             }
             readButtonDisabled = false;
             renderProgressBar = true;
@@ -208,10 +211,13 @@ public class DataImportBean implements Serializable {
                     source = Source.XLSX;
                 } else if (f.getFileName().endsWith("txt")) {
                     source = Source.TXT;
-                } else if (f.getFileName().endsWith("csv")) {
+                } else if (f.getFileName().endsWith("csv") || f.getFileName().endsWith("tsv")) {
                     source = Source.CSV;
                 } else if (f.getFileName().endsWith("pdf")) {
                     source = Source.PDF;
+                } else {
+                    service.create(sessionBean.getLocaleBundle().getString("back.import.file_successful_upload.opening") + file.getFileName() + sessionBean.getLocaleBundle().getString("back.import.file_extension_not_recognized"));
+                    continue;
                 }
                 InputStream is = f.getInputStream();
                 String fileName = f.getFileName();
