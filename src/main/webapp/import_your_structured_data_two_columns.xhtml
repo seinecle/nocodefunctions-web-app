@@ -131,6 +131,10 @@
                                         <p:dataTable id="tbl" var="data"
                                                      value="#{dataInSheet.sheetData}"
                                                      rowIndexVar="rowIndex"
+                                                     scrollable="true"
+                                                     scrollWidth="100%"
+                                                     scrollHeight="400"
+                                                     tableStyle="width:auto; height:auto"
                                                      style="display:block; text-align:center"
                                                      rendered="#{not empty dataImportBean.dataInSheets}"
                                                      >
