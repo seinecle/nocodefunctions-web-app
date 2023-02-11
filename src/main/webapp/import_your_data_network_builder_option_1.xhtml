@@ -43,7 +43,7 @@
             </f:facet>
             <p:panel>
                 <ui:include src="/WEB-INF/includes/header.xhtml" />
-                
+
 
                 <h1>#{text['general.message.upload_your_data']}</h1>
             </p:panel>
@@ -62,18 +62,18 @@
                                 widgetVar="fileInputChooser"
                                 style="width:700px;"
                                 >
-                                <p:fileUpload value="#{dataImportBean.file}"
-                                              label="#{text['import_data.general.choose_csv_or_excel']}"
-                                              mode="advanced"
-                                              multiple="false"
-                                              auto="false"
-                                              skinSimple="true"
-                                              sizeLimit="50000000"
-                                              process="@this"
-                                              listener="#{dataImportBean.handleFileUpload}"
-                                              oncomplete="PF('fileInputChooser').hide()"
-                                              update=" :formRead :notifications"
-                                              allowTypes="/(\.|\/)(csv|tsv|xlsx|txt)$/">                                
+                                <p:fileUpload
+                                    label="#{text['import_data.general.choose_csv_or_excel']}"
+                                    mode="advanced"
+                                    multiple="false"
+                                    auto="false"
+                                    skinSimple="true"
+                                    sizeLimit="50000000"
+                                    process="@this"
+                                    listener="#{oneFileUploadInMultipleUploadBean.handleFileUpload}"
+                                    oncomplete="PF('fileInputChooser').hide()"
+                                    update=" :formRead :notifications"
+                                    allowTypes="/(\.|\/)(csv|tsv|xlsx|txt)$/">                                
                                 </p:fileUpload>
                                 #{text['general.message.max_file_size']}: 50Mb.
                                 <br/>
@@ -86,6 +86,12 @@
                                 • #{text['import_data.option1.for_csv_files']}
                                 <h:graphicImage name="images/coocurrences-text-example.jpg" style="vertical-align: bottom;" width="400" alt="An example of how cooccurrence data in plain text or csv should be formatted"/>
                             </p:overlayPanel>
+                            <br/>
+                            <p:outputLabel
+                                rendered="#{dataImportBean.filesUploaded.size() gt '0'}"
+                                escape="false">
+                                <strong style="color:#FF6347">#{dataImportBean.displayNameForSingleUploadedFileOrSeveralFiles()}</strong>. #{text['import_data.general.click_below_to_read_it']}
+                            </p:outputLabel>
                         </h:form>
 
                         <br/>

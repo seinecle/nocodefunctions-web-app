@@ -119,6 +119,7 @@ public class UmigonBean implements Serializable {
     }
 
     public String runAnalysis() {
+        progress = 3;
         if (selectedLanguage == null || selectedLanguage.isEmpty()) {
             selectedLanguage = "en";
         }

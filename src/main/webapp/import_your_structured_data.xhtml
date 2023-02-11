@@ -65,22 +65,27 @@
                                 widgetVar="fileInputChooser"
                                 style="width:700px;"
                                 >
-                                <p:fileUpload value="#{dataImportBean.file}"
-                                              label="#{text['import_data.general.choose_csv_or_excel']}"
-                                              mode="advanced"
-                                              auto="false"
-                                              multiple="false"
-                                              skinSimple="true"
-                                              sizeLimit="50000000"
-                                              process="@this"
-                                              listener="#{dataImportBean.handleFileUpload}"
-                                              oncomplete="PF('fileInputChooser').hide()"
-                                              update=":formRead :notifications :launchButtons"
-                                              allowTypes="/(\.|\/)(csv|tsv|xlsx)$/">                                
+                                <p:fileUpload
+                                    label="#{text['import_data.general.choose_csv_or_excel']}"
+                                    mode="advanced"
+                                    auto="false"
+                                    multiple="false"
+                                    skinSimple="true"
+                                    sizeLimit="50000000"
+                                    process="@this"
+                                    listener="#{oneFileUploadInMultipleUploadBean.handleFileUpload}"
+                                    oncomplete="PF('fileInputChooser').hide()"
+                                    update=":formRead :notifications :launchButtons"
+                                    allowTypes="/(\.|\/)(csv|tsv|xlsx)$/">                                
                                 </p:fileUpload>
                                 #{text['general.message.max_file_size']}: 50Mb.
                             </p:overlayPanel>
-                            <p:outputLabel rendered="#{dataImportBean.file ne null}" escape="false">#{text['general.message.file_loaded']} <strong style="color:#FF6347">#{dataImportBean.file.fileName}</strong>. #{text['import_data.general.click_below_to_read_it']}</p:outputLabel>
+                            <br/>
+                            <p:outputLabel
+                                rendered="#{dataImportBean.filesUploaded.size() gt '0'}"
+                                escape="false">
+                                <strong style="color:#FF6347">#{dataImportBean.displayNameForSingleUploadedFileOrSeveralFiles()}</strong>. #{text['import_data.general.click_below_to_read_it']}
+                            </p:outputLabel>
                         </h:form>
                         <br/>
                         <!--READ FILE OPERATION-->
@@ -90,12 +95,20 @@
                                 <h:graphicImage name="images/round_2_orange.png" width="20" height="20" style="vertical-align: bottom;"/>
                                 <p:spacer width="5"/>
                                 <p:commandLink id="readFileBtn" value="#{text['import_data.general.read_data']}" onclick="PF('pbAjaxLong').start()"
-                                               action="#{dataImportBean.readData}" update=":tab"/>
+                                               action="#{dataImportBean.readData}" update="pb :tab"/>
                                 <br/>
                                 <br/>
                                 <!--PROGRESS BAR FOR READ OPERATION-->
-                                <p:progressBar id="pb" widgetVar="pbAjaxLong" ajax="true" value="#{dataImportBean.progress}" rendered="#{dataImportBean.renderProgressBar}"
-                                               labelTemplate="{value}%" styleClass="p-mt-3" global="false" interval="500">
+                                <p:progressBar
+                                    id="pb"
+                                    widgetVar="pbAjaxLong"
+                                    ajax="true"
+                                    value="#{progressBarController.progress}"
+                                    rendered="#{dataImportBean.renderProgressBar}"
+                                    labelTemplate="{value}%"
+                                    styleClass="p-mt-3"
+                                    global="false"
+                                    interval="500">
                                     <p:ajax event="complete" update=":tab"/>
                                 </p:progressBar>
                             </h:form>

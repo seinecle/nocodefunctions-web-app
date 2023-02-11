@@ -45,12 +45,9 @@ import net.clementlevallois.importers.model.SheetModel;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SingletonBean;
 import net.clementlevallois.nocodeapp.web.front.redisops.TaskMetadata;
-import net.clementlevallois.nocodeapp.web.front.functions.GazeBean;
 import net.clementlevallois.nocodeapp.web.front.functions.LabellingBean;
 import net.clementlevallois.nocodeapp.web.front.functions.UmigonBean;
 import net.clementlevallois.nocodeapp.web.front.logview.NotificationService;
-import org.primefaces.event.FileUploadEvent;
-import org.primefaces.model.file.UploadedFile;
 import redis.clients.jedis.Jedis;
 import static redis.clients.jedis.ScanParams.SCAN_POINTER_START;
 import redis.clients.jedis.ScanResult;
@@ -73,11 +70,8 @@ public class DataImportBean implements Serializable {
     @Inject
     SessionBean sessionBean;
 
-    private Integer progress;
+    private Integer progress = 0;
 
-    private UploadedFile file;
-
-    private FileUploaded fileUploaded;
     private List<FileUploaded> filesUploaded = new ArrayList();
 
     private String gsheeturl;
@@ -126,40 +120,10 @@ public class DataImportBean implements Serializable {
                 addMessage(null, new FacesMessage(severity, summary, detail));
     }
 
-    public String handleFileUpload(FileUploadEvent event) {
-        try {
-            dataInSheets = new ArrayList();
-            progress = 0;
-            file = event.getFile();
-            if (file == null) {
-                return "";
-            }
-            fileUploaded = new FileUploaded(file.getInputStream(), file.getFileName());
-            service.create(sessionBean.getLocaleBundle().getString("back.import.file_successful_upload.opening") + file.getFileName() + sessionBean.getLocaleBundle().getString("back.import.file_successful_upload.closing"));
-
-            if (fileUploaded.getFileName().endsWith("xlsx")) {
-                setSource(Source.XLSX);
-            } else if (fileUploaded.getFileName().endsWith("txt")) {
-                setSource(Source.TXT);
-            } else if (fileUploaded.getFileName().endsWith("csv") || fileUploaded.getFileName().endsWith("tsv")) {
-                setSource(Source.CSV);
-            } else if (fileUploaded.getFileName().endsWith("pdf")) {
-                setSource(Source.PDF);
-            } else {
-                service.create(sessionBean.getLocaleBundle().getString("back.import.file_successful_upload.opening") + file.getFileName() + sessionBean.getLocaleBundle().getString("back.import.file_extension_not_recognized"));
-                return "";
-            }
-            readButtonDisabled = false;
-            renderProgressBar = true;
-        } catch (IOException ex) {
-            Logger.getLogger(DataImportBean.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return "";
-    }
-
     public String readData() throws IOException, URISyntaxException {
         dataInSheets = new ArrayList();
-        if (fileUploaded == null && filesUploaded == null) {
+        progress = 0;
+        if (filesUploaded.isEmpty()) {
             service.create(sessionBean.getLocaleBundle().getString("general.message.no_file_upload_again"));
             addMessage(FacesMessage.SEVERITY_WARN, "💔", sessionBean.getLocaleBundle().getString("general.message.no_file_upload_again"));
             return "";
@@ -173,68 +137,35 @@ public class DataImportBean implements Serializable {
         ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
         executor.scheduleAtFixedRate(incrementProgress, 0, 250, TimeUnit.MILLISECONDS);
 
-//        if (gsheeturl != null && !gsheeturl.isBlank()) {
-////            service.create(sessionBean.getLocaleBundle().getString("general.message.reading_google_spreadsheet"));
-////            String spreadsheetId = extractFromUrl(gsheeturl);
-////            dataInSheets = googleBean.readGSheetData(spreadsheetId);
-//        } else
-        if (fileUploaded != null) {
-            InputStream is = fileUploaded.getInputStream();
-            String fileName = fileUploaded.getFileName();
-            this.progress = 3;
+        for (FileUploaded f : filesUploaded) {
+            if (f == null) {
+                continue;
+            }
+            if (f.getFileName().endsWith("xlsx")) {
+                source = Source.XLSX;
+            } else if (f.getFileName().endsWith("txt")) {
+                source = Source.TXT;
+            } else if (f.getFileName().endsWith("csv") || f.getFileName().endsWith("tsv")) {
+                source = Source.CSV;
+            } else if (f.getFileName().endsWith("pdf")) {
+                source = Source.PDF;
+            } else {
+                service.create(sessionBean.getLocaleBundle().getString("back.import.file_successful_upload.opening") + f.getFileName() + sessionBean.getLocaleBundle().getString("back.import.file_extension_not_recognized"));
+                continue;
+            }
+            service.create(sessionBean.getLocaleBundle().getString("general.message.reading_file") + f.getFileName());
             switch (source) {
                 case XLSX -> {
-                    service.create(sessionBean.getLocaleBundle().getString("general.message.reading_excel_file"));
-                    readExcelFile(fileUploaded);
+                    readExcelFile(f);
                 }
                 case TXT -> {
-                    service.create(sessionBean.getLocaleBundle().getString("general.message.reading_text_file"));
-                    readTextFile(is, fileName, sessionBean.getFunction(), gazeOption);
+                    readTextFile(f, sessionBean.getFunction(), gazeOption);
                 }
-                case CSV -> {
-                    service.create(sessionBean.getLocaleBundle().getString("general.message.reading_csv_file"));
-                    readCsvFile(is, fileName, sessionBean.getFunction(), gazeOption);
-                }
-                case PDF -> {
-                    service.create(sessionBean.getLocaleBundle().getString("general.message.reading_pdf_file"));
-                    readPdfFile(is, fileName);
-                }
+                case CSV ->
+                    readCsvFile(f, sessionBean.getFunction(), gazeOption);
+                case PDF ->
+                    readPdfFile(f);
                 default -> {
-                }
-            }
-        } else if (filesUploaded != null) {
-            for (FileUploaded f : filesUploaded) {
-                if (f == null) {
-                    return "";
-                }
-                if (f.getFileName().endsWith("xlsx")) {
-                    source = Source.XLSX;
-                } else if (f.getFileName().endsWith("txt")) {
-                    source = Source.TXT;
-                } else if (f.getFileName().endsWith("csv") || f.getFileName().endsWith("tsv")) {
-                    source = Source.CSV;
-                } else if (f.getFileName().endsWith("pdf")) {
-                    source = Source.PDF;
-                } else {
-                    service.create(sessionBean.getLocaleBundle().getString("back.import.file_successful_upload.opening") + file.getFileName() + sessionBean.getLocaleBundle().getString("back.import.file_extension_not_recognized"));
-                    continue;
-                }
-                InputStream is = f.getInputStream();
-                String fileName = f.getFileName();
-                service.create(sessionBean.getLocaleBundle().getString("general.message.reading_file") + f.getFileName());
-                switch (source) {
-                    case XLSX -> {
-                        readExcelFile(f);
-                    }
-                    case TXT -> {
-                        readTextFile(is, fileName, sessionBean.getFunction(), gazeOption);
-                    }
-                    case CSV ->
-                        readCsvFile(is, fileName, sessionBean.getFunction(), gazeOption);
-                    case PDF ->
-                        readPdfFile(is, fileName);
-                    default -> {
-                    }
                 }
             }
         }
@@ -242,27 +173,26 @@ public class DataImportBean implements Serializable {
         progress = 100;
         service.create(sessionBean.getLocaleBundle().getString("general.message.finished_reading_data"));
 
-        fileUploaded = null;
-        file = null;
+        filesUploaded = new ArrayList();
         gsheeturl = null;
 
         renderCloseOverlay = true;
         return "";
     }
 
-    private void readTextFile(InputStream is, String fileName, String functionName, String gazeOption) {
+    private void readTextFile(FileUploaded f, String functionName, String gazeOption) {
 
         try {
             if (functionName.equals("gaze") && gazeOption.equals("1")) {
                 setSelectedColumnIndex("0");
-                setSelectedSheetName(fileName);
+                setSelectedSheetName(f.getFileName());
             }
 
             HttpRequest request;
             HttpClient client = HttpClient.newHttpClient();
             Set<CompletableFuture> futures = new HashSet();
 
-            HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(is.readAllBytes());
+            HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(f.getInputStream().readAllBytes());
 
             URI uri = UrlBuilder
                     .empty()
@@ -270,7 +200,7 @@ public class DataImportBean implements Serializable {
                     .withPort(7003)
                     .withHost("localhost")
                     .withPath("api/import/txt")
-                    .addParameter("fileName", fileName)
+                    .addParameter("fileName", f.getFileName())
                     .addParameter("functionName", functionName)
                     .addParameter("gazeOption", gazeOption)
                     .toUri();
@@ -302,7 +232,7 @@ public class DataImportBean implements Serializable {
         }
     }
 
-    private void readPdfFile(InputStream is, String fileName) {
+    private void readPdfFile(FileUploaded f) {
         try {
             String localizedEmptyLineMessage = sessionBean.getLocaleBundle().getString("general.message.empty_line");
 
@@ -310,7 +240,7 @@ public class DataImportBean implements Serializable {
             HttpClient client = HttpClient.newHttpClient();
             Set<CompletableFuture> futures = new HashSet();
 
-            HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(is.readAllBytes());
+            HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(f.getInputStream().readAllBytes());
 
             URI uri = UrlBuilder
                     .empty()
@@ -318,7 +248,7 @@ public class DataImportBean implements Serializable {
                     .withPort(7003)
                     .withHost("localhost")
                     .withPath("api/import/pdf")
-                    .addParameter("fileName", fileName)
+                    .addParameter("fileName", f.getFileName())
                     .addParameter("localizedEmptyLineMessage", localizedEmptyLineMessage)
                     .toUri();
 
@@ -349,14 +279,14 @@ public class DataImportBean implements Serializable {
         }
     }
 
-    private void readCsvFile(InputStream is, String fileName, String functionName, String gazeOption) {
+    private void readCsvFile(FileUploaded f, String functionName, String gazeOption) {
         try {
 
             /* since we DONT do a bulk import in a CSV import,
             we have no concept of "selected sheet" among several sheets.
             we need to set the file name of the unique file for a sheet name
              */
-            setSelectedSheetName(file.getFileName());
+            setSelectedSheetName(f.getFileName());
 
             // for co-occurrences, we consider all columns, starting from column zero.
             if (functionName.equals("gaze") && gazeOption.equals("1")) {
@@ -367,7 +297,7 @@ public class DataImportBean implements Serializable {
             HttpClient client = HttpClient.newHttpClient();
             Set<CompletableFuture> futures = new HashSet();
 
-            HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(is.readAllBytes());
+            HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(f.getInputStream().readAllBytes());
 
             URI uri = UrlBuilder
                     .empty()
@@ -375,7 +305,7 @@ public class DataImportBean implements Serializable {
                     .withPort(7003)
                     .withHost("localhost")
                     .withPath("api/import/csv")
-                    .addParameter("fileName", fileName)
+                    .addParameter("fileName", f.getFileName())
                     .addParameter("functionName", functionName)
                     .addParameter("gazeOption", gazeOption)
                     .toUri();
@@ -482,18 +412,6 @@ public class DataImportBean implements Serializable {
         }
         String[] fields = url.split("/");
         return fields[fields.length - 2];
-    }
-
-    public UploadedFile getFile() {
-        return file;
-    }
-
-    public void setFile(UploadedFile file) {
-        this.file = file;
-    }
-
-    public Boolean getIsExcelFile() {
-        return fileUploaded != null && fileUploaded.getFileName() != null && fileUploaded.getFileName().endsWith("xlsx");
     }
 
     public String getGsheeturl() {
@@ -882,9 +800,6 @@ public class DataImportBean implements Serializable {
     }
 
     public String displayNameForSingleUploadedFileOrSeveralFiles() {
-        if (fileUploaded != null) {
-            return "🚚 " + sessionBean.getLocaleBundle().getString("back.import.one_file_uploaded") + ": " + fileUploaded.getFileName();
-        }
         if (filesUploaded != null) {
             if (filesUploaded.size() == 1) {
                 return "🚚 " + sessionBean.getLocaleBundle().getString("back.import.one_file_uploaded") + ": " + filesUploaded.get(0).getFileName();
@@ -894,14 +809,6 @@ public class DataImportBean implements Serializable {
         } else {
             return sessionBean.getLocaleBundle().getString("general.message.data_not_found");
         }
-    }
-
-    public FileUploaded getFileUploaded() {
-        return fileUploaded;
-    }
-
-    public void setFileUploaded(FileUploaded fileUploaded) {
-        this.fileUploaded = fileUploaded;
     }
 
     public List<FileUploaded> getFilesUploaded() {

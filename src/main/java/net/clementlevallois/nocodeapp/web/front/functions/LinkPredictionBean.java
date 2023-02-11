@@ -78,11 +78,6 @@ public class LinkPredictionBean implements Serializable {
         uploadButtonMessage = sessionBean.getLocaleBundle().getString("general.message.choose_gexf_file");
     }
 
-    public String logout() {
-        FacesContext.getCurrentInstance().getExternalContext().invalidateSession();
-        return "/index?faces-redirect=true";
-    }
-
     public UploadedFile getUploadedFile() {
         return uploadedFile;
     }

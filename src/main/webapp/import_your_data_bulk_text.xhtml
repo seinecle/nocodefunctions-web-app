@@ -117,8 +117,16 @@
                                 <br/>
                                 <br/>
                                 <!--PROGRESS BAR FOR READ OPERATION-->
-                                <p:progressBar id="pb" widgetVar="pbAjaxLong" ajax="true" value="#{dataImportBean.progress}" rendered="#{dataImportBean.renderProgressBar}"
-                                               labelTemplate="{value}%" styleClass="p-mt-3" global="false" interval="500">
+                                <p:progressBar
+                                    id="pb"
+                                    widgetVar="pbAjaxLong"
+                                    ajax="true"
+                                    value="#{dataImportBean.progress}"
+                                    rendered="#{dataImportBean.renderProgressBar}"
+                                    labelTemplate="{value}%"
+                                    styleClass="p-mt-3"
+                                    global="false"
+                                    interval="500">
                                 </p:progressBar>
                             </h:form>
                         </p:outputPanel>

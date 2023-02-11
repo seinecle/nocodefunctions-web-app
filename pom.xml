@@ -73,12 +73,6 @@
             <artifactId>utils-core</artifactId>
             <version>1.0</version>
         </dependency>
-        <!--7kb-->
-        <dependency>
-            <groupId>net.clementlevallois.functions</groupId>
-            <artifactId>umigon-lemmatizer-lightweight</artifactId>
-            <version>1.0</version>
-        </dependency>
         <dependency>
             <groupId>net.clementlevallois.functions</groupId>
             <artifactId>umigon-model</artifactId>

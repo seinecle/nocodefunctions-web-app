@@ -52,12 +52,10 @@ import jakarta.json.JsonReader;
 import jakarta.json.JsonWriter;
 import jakarta.servlet.annotation.MultipartConfig;
 import net.clementlevallois.importers.model.DataFormatConverter;
-import net.clementlevallois.lemmatizerlightweight.Lemmatizer;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SingletonBean;
 import net.clementlevallois.nocodeapp.web.front.http.RemoteLocal;
 import net.clementlevallois.nocodeapp.web.front.importdata.DataImportBean;
-import net.clementlevallois.nocodeapp.web.front.importdata.DataImportBean.Source;
 import net.clementlevallois.nocodeapp.web.front.utils.GEXFSaver;
 import net.clementlevallois.nocodeapp.web.front.logview.NotificationService;
 import net.clementlevallois.nocodeapp.web.front.utils.Converters;
@@ -76,7 +74,7 @@ import org.primefaces.model.file.UploadedFile;
 
 public class CowoBean implements Serializable {
 
-    private Integer progress;
+    private Integer progress = 0;
     private Boolean runButtonDisabled = true;
     private StreamedContent fileToSave;
     private Boolean renderSeeResultsButton = false;
@@ -100,7 +98,6 @@ public class CowoBean implements Serializable {
     private String gephistoGexfFileName;
     private Boolean shareGephistoPublicly;
     private Integer minCharNumber = 4;
-    private Lemmatizer lemmatizer;
     private Map<Integer, String> mapOfLines;
 
     @Inject
@@ -111,9 +108,6 @@ public class CowoBean implements Serializable {
 
     @Inject
     SessionBean sessionBean;
-
-    @Inject
-    SingletonBean singletonBean;
 
     public CowoBean() {
         if (sessionBean == null) {
@@ -131,18 +125,17 @@ public class CowoBean implements Serializable {
         this.progress = progress;
     }
 
-    public void onComplete() {
-    }
-
-    public void cancel() {
-        progress = null;
-    }
-
     public String getReport() {
         return "";
     }
 
     public String runAnalysis() {
+        progress = 0;
+
+        HttpRequest request;
+        HttpClient client = HttpClient.newHttpClient();
+        Set<CompletableFuture> futures = new HashSet();
+
         try {
             sessionBean.sendFunctionPageReport();
             service.create(sessionBean.getLocaleBundle().getString("general.message.starting_analysis"));
@@ -157,83 +150,55 @@ public class CowoBean implements Serializable {
             if (selectedLanguage == null) {
                 selectedLanguage = "en";
             }
-            this.progress = 10;
+            progress = 10;
             service.create(sessionBean.getLocaleBundle().getString("general.message.removing_punctuation_and_cleaning"));
 
-            /* this step addresses the case of text imported from a PDF source.
-            
-            PDF imports can have their last words truncated at the end, like so:
-            
-            "Inbound call centers tend to focus on assistance for customers who need to solve their problems, ques-
-            tions bout a product or service, schedule appointments, dispatch technicians, or need instructions"
-
-            In this case, the last word of the first sentence should be removed,
-            and so should be the first word of the following line.
-            
-            Thx to https://twitter.com/Verukita1 for reporting the issue with a test case.
-            
-             */
-            if (inputData.getSource().equals(Source.PDF)) {
-                boolean cutWordDetected = false;
-                List<String> hyphens = List.of(
-                        Character.toString('\u2010'),
-                        Character.toString('\u2011'),
-                        Character.toString('\u2012'),
-                        Character.toString('\u2013'),
-                        Character.toString('\u002D'),
-                        Character.toString('\u007E'),
-                        Character.toString('\u00AD'),
-                        Character.toString('\u058A'),
-                        Character.toString('\u05BE'),
-                        Character.toString('\u1806'),
-                        Character.toString('\u2014'),
-                        Character.toString('\u2015'),
-                        Character.toString('\u2053'),
-                        Character.toString('\u207B'),
-                        Character.toString('\u208B'),
-                        Character.toString('\u2212'),
-                        Character.toString('\u301C'),
-                        Character.toString('\uFE58'),
-                        Character.toString('\uFE63'),
-                        Character.toString('\uFF0D'));
-
-                for (Map.Entry<Integer, String> entry : mapOfLines.entrySet()) {
-                    String line = entry.getValue().trim();
-                    if (cutWordDetected) {
-                        int indexFirstSpace = line.indexOf(" ");
-                        if (indexFirstSpace > 0) {
-                            line = line.substring(indexFirstSpace + 1);
-                            entry.setValue(line);
-                        }
-                        cutWordDetected = false;
-                    }
-                    for (String hyphen : hyphens) {
-                        if (line.endsWith(hyphen)) {
-                            cutWordDetected = true;
-                            int indexLastSpace = line.lastIndexOf(" ");
-                            if (indexLastSpace > 0) {
-                                line = line.substring(0, indexLastSpace);
-                                entry.setValue(line);
-                            }
-                            break;
-                        }
-                    }
-                }
-            }
             mapOfLines = TextCleaningOps.doAllCleaningOps(mapOfLines);
             mapOfLines = TextCleaningOps.putInLowerCase(mapOfLines);
 
-            this.progress = 15;
+            progress = 15;
+
+            // dealing with lemmatization
             if (selectedLanguage.equals("en") | selectedLanguage.equals("fr")) {
-                try {
-                    lemmatizer = new Lemmatizer(selectedLanguage);
-                    mapOfLines.keySet()
-                            .stream().forEach((key) -> {
-                                mapOfLines.put(key, lemmatizer.sentenceLemmatizer(mapOfLines.get(key)));
-                            });
-                } catch (Exception ex) {
-                    System.out.println("ex:" + ex.getMessage());
+                JsonObjectBuilder overallObject = Json.createObjectBuilder();
+                JsonObjectBuilder linesBuilder = Json.createObjectBuilder();
+                for (Map.Entry<Integer, String> entryLines : mapOfLines.entrySet()) {
+                    linesBuilder.add(String.valueOf(entryLines.getKey()), entryLines.getValue());
                 }
+                overallObject.add("lines", linesBuilder);
+                overallObject.add("lang", selectedLanguage);
+                JsonObject build = overallObject.build();
+                StringWriter sw = new StringWriter(128);
+                try (JsonWriter jw = Json.createWriter(sw)) {
+                    jw.write(build);
+                }
+                String jsonString = sw.toString();
+
+                HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(jsonString.getBytes(StandardCharsets.UTF_8));
+
+                URI uri = new URI("http://localhost:7002/api/lemmatizer_light/");
+
+                request = HttpRequest.newBuilder()
+                        .POST(bodyPublisher)
+                        .uri(uri)
+                        .build();
+
+                CompletableFuture<Void> future = client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()).thenAccept(resp -> {
+                    byte[] body = resp.body();
+                    String jsonReceived = new String(body, StandardCharsets.UTF_8);
+                    JsonObject jsonObjectReturned;
+                    try (JsonReader reader = Json.createReader(new StringReader(jsonReceived))) {
+                        jsonObjectReturned = reader.readObject();
+                    }
+                    for (String key : jsonObjectReturned.keySet()) {
+                        mapOfLines.put(Integer.valueOf(key), jsonObjectReturned.getString(key));
+                    }
+                }
+                );
+                futures.add(future);
+                CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(futures.toArray((new CompletableFuture[0])));
+                combinedFuture.join();
+
             } else {
                 String lemmatization = sessionBean.getLocaleBundle().getString("general.message.heavy_duty_lemmatization");
                 String wait = sessionBean.getLocaleBundle().getString("general.message.please_wait_seconds");
@@ -255,17 +220,17 @@ public class CowoBean implements Serializable {
 
                     URI uri = new URI("http://localhost:7000/lemmatize/" + selectedLanguage);
 
-                    HttpRequest request = HttpRequest.newBuilder()
+                    request = HttpRequest.newBuilder()
                             .uri(uri)
                             .POST(HttpRequest.BodyPublishers.ofString(jsonObject.toString()))
                             .build();
-                    HttpClient client = HttpClient.newHttpClient();
+                    client = HttpClient.newHttpClient();
 
                     HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
                     if (response.statusCode() == 200) {
                         String body = response.body();
                         JsonObject jsonObjectReturned;
-                        try ( JsonReader reader = Json.createReader(new StringReader(body))) {
+                        try (JsonReader reader = Json.createReader(new StringReader(body))) {
                             jsonObjectReturned = reader.readObject();
                         }
                         for (String key : jsonObjectReturned.keySet()) {
@@ -280,10 +245,12 @@ public class CowoBean implements Serializable {
 
             service.create(sessionBean.getLocaleBundle().getString("general.message.finding_key_terms"));
             progress = 20;
+            Runnable incrementProgress = () -> {
+                progress = progress + 1;
+            };
+            ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
+            executor.scheduleAtFixedRate(incrementProgress, 0, 2, TimeUnit.SECONDS);
 
-            HttpRequest request;
-            HttpClient client = HttpClient.newHttpClient();
-            Set<CompletableFuture> futures = new HashSet();
             JsonObjectBuilder overallObject = Json.createObjectBuilder();
 
             JsonObjectBuilder linesBuilder = Json.createObjectBuilder();
@@ -294,7 +261,7 @@ public class CowoBean implements Serializable {
             JsonObjectBuilder userSuppliedStopwordsBuilder = Json.createObjectBuilder();
             if (fileUserStopwords != null && fileUserStopwords.getFileName() != null) {
                 List<String> userSuppliedStopwords;
-                try ( BufferedReader br = new BufferedReader(new InputStreamReader(fileUserStopwords.getInputStream(), StandardCharsets.UTF_8))) {
+                try (BufferedReader br = new BufferedReader(new InputStreamReader(fileUserStopwords.getInputStream(), StandardCharsets.UTF_8))) {
                     userSuppliedStopwords = br.lines().collect(toList());
                 }
                 int index = 0;
@@ -302,6 +269,8 @@ public class CowoBean implements Serializable {
                     userSuppliedStopwordsBuilder.add(String.valueOf(index++), stopword);
                 }
             }
+
+            futures = new HashSet();
 
             overallObject.add("lines", linesBuilder);
             overallObject.add("lang", selectedLanguage);
@@ -316,7 +285,7 @@ public class CowoBean implements Serializable {
 
             JsonObject build = overallObject.build();
             StringWriter sw = new StringWriter(128);
-            try ( JsonWriter jw = Json.createWriter(sw)) {
+            try (JsonWriter jw = Json.createWriter(sw)) {
                 jw.write(build);
             }
             String jsonString = sw.toString();
@@ -329,9 +298,10 @@ public class CowoBean implements Serializable {
                     .POST(bodyPublisher)
                     .uri(uri)
                     .build();
-
+            client = HttpClient.newHttpClient();
             CompletableFuture<Void> future = client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()).thenAccept(resp -> {
                 byte[] body = resp.body();
+//                System.out.println(ByteNumberHumanReadable.bytesIntoHumanReadable(body.length));
                 gexf = new String(body, StandardCharsets.UTF_8);
             }
             );
@@ -339,6 +309,9 @@ public class CowoBean implements Serializable {
 
             CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(futures.toArray((new CompletableFuture[0])));
             combinedFuture.join();
+            executor.shutdown();
+            service.create(sessionBean.getLocaleBundle().getString("general.message.last_ops_creating_network"));
+            progress = 60;
 
             if (gexf == null) {
                 service.create(sessionBean.getLocaleBundle().getString("general.message.internal_server_error"));
@@ -346,6 +319,7 @@ public class CowoBean implements Serializable {
                 runButtonDisabled = true;
                 return "";
             }
+            futures = new HashSet();
 
             bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(gexf.getBytes(StandardCharsets.UTF_8));
 
@@ -362,6 +336,7 @@ public class CowoBean implements Serializable {
                     .POST(bodyPublisher)
                     .uri(uri)
                     .build();
+            client = HttpClient.newHttpClient();
 
             future = client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()).thenAccept(resp -> {
                 byte[] body = resp.body();
@@ -624,7 +599,7 @@ public class CowoBean implements Serializable {
         }
 
         File file = new File(path + gephistoGexfFileName);
-        try ( OutputStream output = new FileOutputStream(file, false)) {
+        try (OutputStream output = new FileOutputStream(file, false)) {
             inputStreamToSave.transferTo(output);
         }
 

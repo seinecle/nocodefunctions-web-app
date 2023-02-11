@@ -89,22 +89,28 @@
                 <p:panel>
                     <h:graphicImage name="images/round_1_orange.png" width="20" height="20" style="vertical-align: middle;"/>
                     <p:spacer width="5"/>
-                    <p:fileUpload value="#{linkPredictionBean.uploadedFile}" label="#{linkPredictionBean.uploadButtonMessage}" mode="simple" auto="true" skinSimple="true" sizeLimit="100000000"
-                                  process="@this" listener="#{linkPredictionBean.handleFileUpload}" allowTypes="/(\.|\/)(gexf)$/" update="launchButtons" chooseIcon="ui-icon-person">                                
+                    <p:fileUpload
+                        label="#{linkPredictionBean.uploadButtonMessage}"
+                        mode="simple"
+                        auto="false"
+                        skinSimple="true"
+                        multiple="false"
+                        sizeLimit="50000000"
+                        listener="#{linkPredictionBean.handleFileUpload}"
+                        allowTypes="/(\.|\/)(gexf)$/"
+                        update="launchButtons"
+                        chooseIcon="ui-icon-person">                                
                     </p:fileUpload>
-                    <p:spacer width="10"></p:spacer>
-                    <p:outputLabel rendered="#{linkPredictionBean.uploadedFile ne null}">🚚 File loaded! <strong style="color:#FF6347">#{linkPredictionBean.uploadedFile.fileName}</strong>. #{text['link_prediction.click_to_predict']}</p:outputLabel>
+                    <p:spacer width="10"/>
+                    <p:outputLabel
+                        rendered="#{linkPredictionBean.uploadedFile ne null}">🚚 File loaded! <strong style="color:#FF6347">#{linkPredictionBean.uploadedFile.fileName}</strong>. #{text['link_prediction.click_to_predict']}
+                    </p:outputLabel>
                     <div>
                         <p:spacer height="15" width="10"/>            
                     </div>
                     <p>
                         <p:outputLabel value="#{text['network_converter.warning_not_gephi_file']}" escape="false"/>
                     </p>
-                    <br/>
-                    <p>
-                        #{text['link_prediction.warning_size']}
-                    </p>
-                    <br/>
                     <p>
                         #{text['general.message.max_file_size']}: 100Mb
                     </p>

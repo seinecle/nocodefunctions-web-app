@@ -63,12 +63,10 @@ import org.primefaces.model.StreamedContent;
 @SessionScoped
 public class GazeBean implements Serializable {
 
-    private Integer progress;
-    private Integer minSharedTargets= 1;
+    private Integer progress = 0;
+    private Integer minSharedTargets = 1;
     private Boolean runButtonDisabled = true;
     private StreamedContent fileToSave;
-    private Boolean renderSeeResultsButton = false;
-    private String sessionId;
     private String nodesAsJson;
     private String edgesAsJson;
     private int minFreqNode = 1000_000;
@@ -104,6 +102,7 @@ public class GazeBean implements Serializable {
 
     public String runCoocAnalysis() {
         try {
+            progress = 0;
             sessionBean.sendFunctionPageReport();
             service.create(sessionBean.getLocaleBundle().getString("general.message.starting_analysis"));
             List<SheetModel> dataInSheets = dataImportBean.getDataInSheets();
@@ -144,7 +143,6 @@ public class GazeBean implements Serializable {
             callCooc(lines);
             progress = 100;
             service.create(sessionBean.getLocaleBundle().getString("general.message.analysis_complete"));
-            renderSeeResultsButton = true;
             runButtonDisabled = true;
 
             return "/" + sessionBean.getFunction() + "/results.xhtml?faces-redirect=true";
@@ -207,7 +205,6 @@ public class GazeBean implements Serializable {
             callSim(sourcesAndTargets);
             progress = 100;
             service.create(sessionBean.getLocaleBundle().getString("general.message.analysis_complete"));
-            renderSeeResultsButton = true;
             runButtonDisabled = true;
 
             return "/" + sessionBean.getFunction() + "/results.xhtml?faces-redirect=true";
@@ -239,7 +236,7 @@ public class GazeBean implements Serializable {
 
         JsonObject build = overallObject.build();
         StringWriter sw = new StringWriter(128);
-        try ( JsonWriter jw = Json.createWriter(sw)) {
+        try (JsonWriter jw = Json.createWriter(sw)) {
             jw.write(build);
         }
         String jsonString = sw.toString();
@@ -265,10 +262,10 @@ public class GazeBean implements Serializable {
 
         if (gexf == null) {
             service.create(sessionBean.getLocaleBundle().getString("general.message.internal_server_error"));
-            renderSeeResultsButton = true;
             runButtonDisabled = true;
             return;
         }
+        progress = 80;
 
         bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(gexf.getBytes(StandardCharsets.UTF_8));
 
@@ -325,7 +322,7 @@ public class GazeBean implements Serializable {
 
         JsonObject build = overallObject.build();
         StringWriter sw = new StringWriter(128);
-        try ( JsonWriter jw = Json.createWriter(sw)) {
+        try (JsonWriter jw = Json.createWriter(sw)) {
             jw.write(build);
         }
         String jsonString = sw.toString();
@@ -351,10 +348,10 @@ public class GazeBean implements Serializable {
 
         if (gexf == null) {
             service.create(sessionBean.getLocaleBundle().getString("general.message.internal_server_error"));
-            renderSeeResultsButton = true;
             runButtonDisabled = true;
             return;
         }
+        progress = 80;
 
         bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(gexf.getBytes(StandardCharsets.UTF_8));
 
@@ -444,7 +441,7 @@ public class GazeBean implements Serializable {
             path = SingletonBean.getPATHLOCALE() + "user_created_files";
         }
 
-        try ( BufferedWriter bw = Files.newBufferedWriter(Path.of(path + vosviewerJsonFileName), StandardCharsets.UTF_8)) {
+        try (BufferedWriter bw = Files.newBufferedWriter(Path.of(path + vosviewerJsonFileName), StandardCharsets.UTF_8)) {
             bw.write(graphAsJsonVosViewer);
         }
 
@@ -480,7 +477,7 @@ public class GazeBean implements Serializable {
         }
 
         File file = new File(path + gephistoGexfFileName);
-        try ( OutputStream output = new FileOutputStream(file, false)) {
+        try (OutputStream output = new FileOutputStream(file, false)) {
             inputStreamToSave.transferTo(output);
         }
 
@@ -578,6 +575,5 @@ public class GazeBean implements Serializable {
     public void setMinSharedTargets(Integer minSharedTargets) {
         this.minSharedTargets = minSharedTargets;
     }
-    
-    
+
 }
