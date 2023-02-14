@@ -46,13 +46,12 @@ import jakarta.json.JsonObjectBuilder;
 import jakarta.json.JsonReader;
 import jakarta.json.JsonWriter;
 import jakarta.servlet.annotation.MultipartConfig;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import net.clementlevallois.importers.model.DataFormatConverter;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.importdata.DataImportBean;
 import net.clementlevallois.nocodeapp.web.front.logview.NotificationService;
 import net.clementlevallois.nocodeapp.web.front.utils.Converters;
+import net.clementlevallois.nocodeapp.web.front.utils.GEXFSaver;
 import net.clementlevallois.utils.Multiset;
 import net.clementlevallois.utils.TextCleaningOps;
 import org.primefaces.event.SlideEndEvent;
@@ -72,9 +71,12 @@ public class TopicsBean implements Serializable {
 
     private Integer progress = 0;
     private String jsonResultAsString;
-    private Map<Integer, Multiset<String>> communitiesResult;
+    private Map<Integer, Multiset<String>> keywordsPerTopic;
+    private Map<Integer, Multiset<Integer>> topicsPerLine;
     private Boolean runButtonDisabled = true;
-    private StreamedContent fileToSave;
+    private StreamedContent excelFileToSave;
+    private StreamedContent fileTopicsPerLineToSave;
+    private StreamedContent gexfFile;
     private Boolean renderSeeResultsButton = false;
     private String selectedLanguage;
     private int precision = 50;
@@ -212,7 +214,7 @@ public class TopicsBean implements Serializable {
                     if (response.statusCode() == 200) {
                         String body = response.body();
                         JsonObject jsonObjectReturned;
-                        try ( JsonReader reader = Json.createReader(new StringReader(body))) {
+                        try (JsonReader reader = Json.createReader(new StringReader(body))) {
                             jsonObjectReturned = reader.readObject();
                         }
                         for (String key : jsonObjectReturned.keySet()) {
@@ -240,7 +242,7 @@ public class TopicsBean implements Serializable {
             JsonObjectBuilder userSuppliedStopwordsBuilder = Json.createObjectBuilder();
             if (fileUserStopwords != null && fileUserStopwords.getFileName() != null) {
                 List<String> userSuppliedStopwords;
-                try ( BufferedReader br = new BufferedReader(new InputStreamReader(fileUserStopwords.getInputStream(), StandardCharsets.UTF_8))) {
+                try (BufferedReader br = new BufferedReader(new InputStreamReader(fileUserStopwords.getInputStream(), StandardCharsets.UTF_8))) {
                     userSuppliedStopwords = br.lines().collect(toList());
                 }
                 int index = 0;
@@ -263,7 +265,7 @@ public class TopicsBean implements Serializable {
 
             JsonObject build = overallObject.build();
             StringWriter sw = new StringWriter(128);
-            try ( JsonWriter jw = Json.createWriter(sw)) {
+            try (JsonWriter jw = Json.createWriter(sw)) {
                 jw.write(build);
             }
             String jsonString = sw.toString();
@@ -296,19 +298,74 @@ public class TopicsBean implements Serializable {
             service.create(sessionBean.getLocaleBundle().getString("general.message.last_ops_creating_network"));
             progress = 60;
 
-            communitiesResult = new TreeMap();
+            keywordsPerTopic = new TreeMap();
+            topicsPerLine = new TreeMap();
             JsonReader jsonReader = Json.createReader(new StringReader(jsonResultAsString));
             JsonObject jsonObject = jsonReader.readObject();
-            for (String keyCommunity : jsonObject.keySet()) {
-                JsonObject termsAndFrequenciesForThisCommunity = jsonObject.getJsonObject(keyCommunity);
+
+            
+            String gexfSemanticNetwork = jsonObject.getString("gexf");
+            gexfFile = GEXFSaver.exportGexfAsStreamedFile(gexfSemanticNetwork, "semantic_network");
+
+            JsonObject keywordsPerTopicAsJson = jsonObject.getJsonObject("keywordsPerTopic");
+            for (String keyCommunity : keywordsPerTopicAsJson.keySet()) {
+                JsonObject termsAndFrequenciesForThisCommunity = keywordsPerTopicAsJson.getJsonObject(keyCommunity);
                 Iterator<String> iteratorTerms = termsAndFrequenciesForThisCommunity.keySet().iterator();
                 Multiset<String> termsAndFreqs = new Multiset();
                 while (iteratorTerms.hasNext()) {
                     String nextTerm = iteratorTerms.next();
                     termsAndFreqs.addSeveral(nextTerm, termsAndFrequenciesForThisCommunity.getInt(nextTerm));
                 }
-                communitiesResult.put(Integer.valueOf(keyCommunity), termsAndFreqs);
+                keywordsPerTopic.put(Integer.valueOf(keyCommunity), termsAndFreqs);
             }
+            JsonObject topicsPerLineAsJson = jsonObject.getJsonObject("topicsPerLine");
+            for (String lineNumber : topicsPerLineAsJson.keySet()) {
+                JsonObject topicsAndTheirCountsForOneLine = topicsPerLineAsJson.getJsonObject(lineNumber);
+                Iterator<String> iteratorTopics = topicsAndTheirCountsForOneLine.keySet().iterator();
+                Multiset<Integer> topicsAndFreqs = new Multiset();
+                while (iteratorTopics.hasNext()) {
+                    String nextTopic = iteratorTopics.next();
+                    topicsAndFreqs.addSeveral(Integer.valueOf(nextTopic), topicsAndTheirCountsForOneLine.getInt(nextTopic));
+                }
+                topicsPerLine.put(Integer.valueOf(lineNumber), topicsAndFreqs);
+            }
+
+            if (keywordsPerTopic == null || keywordsPerTopic.isEmpty()) {
+                return null;
+            }
+            futures = new HashSet();
+            byte[] topicsAsArray = Converters.byteArraySerializerForAnyObject(jsonResultAsString);
+
+            HttpRequest.BodyPublisher bodyPublisherTopics = HttpRequest.BodyPublishers.ofByteArray(topicsAsArray);
+
+            URI uriExportTopicsToExcel = UrlBuilder
+                    .empty()
+                    .withScheme("http")
+                    .withPort(7003)
+                    .withHost("localhost")
+                    .withPath("api/export/xlsx/topics")
+                    .addParameter("nbTerms", "10")
+                    .toUri();
+
+            HttpRequest requestExportTopicsToExcel = HttpRequest.newBuilder()
+                    .POST(bodyPublisherTopics)
+                    .uri(uriExportTopicsToExcel)
+                    .build();
+
+            CompletableFuture<Void> futureTopicsExport = client.sendAsync(requestExportTopicsToExcel, HttpResponse.BodyHandlers.ofByteArray()).thenAccept(resp -> {
+                byte[] body = resp.body();
+                InputStream is = new ByteArrayInputStream(body);
+                excelFileToSave = DefaultStreamedContent.builder()
+                        .name("results_topics.xlsx")
+                        .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                        .stream(() -> is)
+                        .build();
+            }
+            );
+            futures.add(futureTopicsExport);
+
+            combinedFuture = CompletableFuture.allOf(futures.toArray((new CompletableFuture[0])));
+            combinedFuture.join();
 
             progress = 100;
 
@@ -349,61 +406,30 @@ public class TopicsBean implements Serializable {
     public void dummy() {
     }
 
-    public StreamedContent getFileToSave() {
-        try {
-            if (communitiesResult == null || communitiesResult.isEmpty()) {
-                return null;
-            }
-            HttpRequest request;
-            HttpClient client = HttpClient.newHttpClient();
-            Set<CompletableFuture> futures = new HashSet();
-            byte[] documentsAsByteArray = Converters.byteArraySerializerForAnyObject(communitiesResult);
-            HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(documentsAsByteArray);
-
-            URI uri = UrlBuilder
-                    .empty()
-                    .withScheme("http")
-                    .withPort(7003)
-                    .withHost("localhost")
-                    .withPath("api/export/xlsx/topics")
-                    .addParameter("nbTerms", "10")
-                    .toUri();
-
-            request = HttpRequest.newBuilder()
-                    .POST(bodyPublisher)
-                    .uri(uri)
-                    .build();
-
-            CompletableFuture<Void> future = client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()).thenAccept(resp -> {
-                byte[] body = resp.body();
-                InputStream is = new ByteArrayInputStream(body);
-                fileToSave = DefaultStreamedContent.builder()
-                        .name("results.xlsx")
-                        .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-                        .stream(() -> is)
-                        .build();
-            }
-            );
-            futures.add(future);
-
-            CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(futures.toArray((new CompletableFuture[0])));
-            combinedFuture.join();
-        } catch (IOException ex) {
-            Logger.getLogger(TopicsBean.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return fileToSave;
+    public StreamedContent getExcelFileToSave() {
+        return excelFileToSave;
     }
 
-    public void setFileToSave(StreamedContent fileToSave) {
-        this.fileToSave = fileToSave;
+    public void setExcelFileToSave(StreamedContent excelFileToSave) {
+        this.excelFileToSave = excelFileToSave;
     }
+
+    public StreamedContent getGexfFile() {
+        return gexfFile;
+    }
+
+    public void setGexfFile(StreamedContent gexfFile) {
+        this.gexfFile = gexfFile;
+    }
+    
+    
 
     public Map<Integer, Multiset<String>> getCommunitiesResult() {
-        return communitiesResult;
+        return keywordsPerTopic;
     }
 
     public void setCommunitiesResult(Map<Integer, Multiset<String>> communitiesResult) {
-        this.communitiesResult = communitiesResult;
+        this.keywordsPerTopic = communitiesResult;
     }
 
     public int getPrecision() {
@@ -468,8 +494,7 @@ public class TopicsBean implements Serializable {
     public void setMinCharNumber(int minCharNumber) {
         this.minCharNumber = minCharNumber;
     }
-    
-    
+
     public List<Locale> getAvailable() {
         List<Locale> available = new ArrayList();
         String[] availableStopwordLists = new String[]{"ar", "bg", "ca", "da", "nl", "en", "fr", "de", "el", "it", "no", "pl", "pt", "ru", "es"};
