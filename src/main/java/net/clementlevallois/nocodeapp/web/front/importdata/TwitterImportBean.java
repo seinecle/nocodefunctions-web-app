@@ -138,7 +138,7 @@ public class TwitterImportBean implements Serializable {
                     .addParameter("days_start", "7")
                     .addParameter("days_end", "0")
                     .toUri();
-//            System.out.println("uri: " + uri);
+
             HttpClient client = HttpClient.newHttpClient();
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(uri)

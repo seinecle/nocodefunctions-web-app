@@ -5,8 +5,6 @@
  */
 package net.clementlevallois.nocodeapp.web.front.backingbeans;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.scribejava.core.model.OAuth2AccessToken;
 import com.github.scribejava.core.pkce.PKCE;
 import com.github.scribejava.core.pkce.PKCECodeChallengeMethod;
@@ -22,8 +20,6 @@ import java.util.concurrent.ExecutionException;
 import jakarta.enterprise.context.ApplicationScoped;
 import net.clementlevallois.nocodeapp.web.front.http.RemoteLocal;
 import org.omnifaces.cdi.Startup;
-import redis.clients.jedis.JedisPool;
-import redis.clients.jedis.JedisPoolConfig;
 
 /**
  *
@@ -33,8 +29,6 @@ import redis.clients.jedis.JedisPoolConfig;
 @ApplicationScoped
 public class SingletonBean {
 
-    static ObjectMapper mapper;
-    static JedisPool jedisPool;
     private final static String PATHLOCALE = "net.clementlevallois.nocodeapp.web.front.resources.i18n.text";
     private static Properties privateProperties;
     private final static String PATHLOCALDEV = "C:\\Users\\levallois\\open\\nocode-app-web-front\\";
@@ -76,15 +70,6 @@ public class SingletonBean {
             pkce.setCodeVerifier("challenge");
             twitterAuthorizationUrl = twitterOAuthService.getAuthorizationUrl(pkce, secretState);
 
-            String redisPort;
-            if (System.getProperty("os.name").toLowerCase().contains("win")) {
-                redisPort = privateProperties.getProperty("redis_port_local");
-            } else {
-                redisPort = System.getProperty("redis.port");
-            }
-//            System.out.println("redis port is: " + redisPort);
-
-            initRedis(redisPort);
         } catch (UnknownHostException ex) {
             System.out.println("ex:" + ex.getMessage());
         } catch (FileNotFoundException ex) {
@@ -93,21 +78,6 @@ public class SingletonBean {
             System.out.println("ex:" + ex.getMessage());
         }
 
-    }
-
-    private static void initRedis(String redisPort) throws UnknownHostException {
-
-        // instance a json mapper
-        mapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false); // create once, reuse
-
-        //jedis
-        JedisPoolConfig poolConfig = new JedisPoolConfig();
-        poolConfig.setMaxTotal(128);
-        jedisPool = new JedisPool(poolConfig, "localhost", Integer.parseInt(redisPort), 2000);
-    }
-
-    public static JedisPool getJedisPool() {
-        return jedisPool;
     }
 
     public static Properties getPrivateProperties() {

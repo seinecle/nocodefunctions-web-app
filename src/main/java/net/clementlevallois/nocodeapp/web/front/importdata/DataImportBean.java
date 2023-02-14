@@ -12,7 +12,6 @@ import java.io.InputStream;
 import java.io.ObjectInputStream;
 import jakarta.inject.Named;
 import java.io.Serializable;
-import java.io.StringReader;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.http.HttpClient;
@@ -20,10 +19,8 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -34,23 +31,12 @@ import jakarta.enterprise.context.SessionScoped;
 import jakarta.faces.application.FacesMessage;
 import jakarta.faces.context.FacesContext;
 import jakarta.inject.Inject;
-import jakarta.json.Json;
-import jakarta.json.JsonObject;
-import jakarta.json.JsonObjectBuilder;
-import jakarta.json.JsonReader;
 import jakarta.servlet.annotation.MultipartConfig;
 import java.nio.charset.StandardCharsets;
-import net.clementlevallois.importers.model.CellRecord;
 import net.clementlevallois.importers.model.SheetModel;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
-import net.clementlevallois.nocodeapp.web.front.backingbeans.SingletonBean;
-import net.clementlevallois.nocodeapp.web.front.redisops.TaskMetadata;
-import net.clementlevallois.nocodeapp.web.front.functions.LabellingBean;
 import net.clementlevallois.nocodeapp.web.front.functions.UmigonBean;
 import net.clementlevallois.nocodeapp.web.front.logview.NotificationService;
-import redis.clients.jedis.Jedis;
-import static redis.clients.jedis.ScanParams.SCAN_POINTER_START;
-import redis.clients.jedis.ScanResult;
 
 /**
  *
@@ -63,9 +49,6 @@ public class DataImportBean implements Serializable {
 
     @Inject
     NotificationService service;
-
-    @Inject
-    LabellingBean labellingBean;
 
     @Inject
     SessionBean sessionBean;
@@ -87,12 +70,6 @@ public class DataImportBean implements Serializable {
     private String selectedColumnIndex;
     private String selectedSheetName;
     private Source source;
-
-    private String persistToDisk = "false";
-    private String taskId = "";
-    private String emailTaskDesigner = "";
-    private String datasetDescription = "";
-    private String datasetName = "";
 
     private boolean twoColumnsColOneSelected = false;
     private boolean twoColumnsColTwoSelected = false;
@@ -506,114 +483,6 @@ public class DataImportBean implements Serializable {
         return "/" + sessionBean.getFunction() + "/" + sessionBean.getFunction() + ".xhtml?faces-redirect=true";
     }
 
-    public String goBackToLabellingPage(String colIndex, String sheetName) {
-        if (datasetDescription == null || datasetDescription.isBlank()) {
-            service.create(sessionBean.getLocaleBundle().getString("back.labelling_description_needed"));
-            return "";
-        }
-        System.out.println("column selected: " + colIndex + ", sheet selected: " + sheetName);
-        selectedColumnIndex = colIndex;
-        selectedSheetName = sheetName;
-
-        emailTaskDesigner = labellingBean.getEmailDesigner();
-        String keyRawData = "task:" + taskId + ":rawdata";
-
-        String typeOfTask = labellingBean.getTypeOfTask();
-
-        String keyAnnotationCounterBwsScores = "task:" + taskId + ":annotations:indices:counter_bws";
-
-        try (Jedis jedis = SingletonBean.getJedisPool().getResource()) {
-            if (bulkData) {
-                for (SheetModel sm : dataInSheets) {
-                    List<CellRecord> cellRecords = sm.getColumnIndexToCellRecords().get(0);
-                    int i = 0;
-                    for (CellRecord cr : cellRecords) {
-                        if (hasHeaders && i++ == 0) {
-                            //do nothing
-                        } else {
-                            jedis.lpush(keyRawData, cr.getRawValue());
-                            // only for bws because this counts the + / - scores of BWS, which is specific to this task (not applicable to categorization)
-                            if (typeOfTask.equals("bws")) {
-                                jedis.lpush(keyAnnotationCounterBwsScores, "0");
-                            }
-                        }
-                    }
-                }
-            } else {
-                SheetModel sheetWithData = null;
-                for (SheetModel sm : dataInSheets) {
-                    if (sm.getName().equals(selectedSheetName)) {
-                        sheetWithData = sm;
-                        break;
-                    }
-                }
-                if (sheetWithData == null) {
-                    service.create(sessionBean.getLocaleBundle().getString("general.message.data_not_found"));
-                    return "";
-                }
-                List<CellRecord> cellRecords = sheetWithData.getCellRecords();
-                int selectedColAsInt = Integer.parseInt(selectedColumnIndex);
-                int i = 0;
-                for (CellRecord cr : cellRecords) {
-                    if (cr.getColIndex() == selectedColAsInt) {
-                        if (hasHeaders && i++ == 0) {
-                            // do nothing
-                        } else {
-                            jedis.lpush(keyRawData, cr.getRawValue());
-                            // only for bws because this counts the + / - scores of BWS, which is specific to this task (not applicable to categorization)
-                            if (typeOfTask.equals("bws")) {
-                                jedis.lpush(keyAnnotationCounterBwsScores, "0");
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        try (Jedis jedis = SingletonBean.getJedisPool().getResource()) {
-            // saving the metadata of the dataset just created
-            TaskMetadata tmd = new TaskMetadata(taskId, typeOfTask, jedis);
-            tmd.setDescription(datasetDescription);
-            tmd.setName(datasetName);
-            tmd.setEmailDesigner(emailTaskDesigner);
-            String keyTask = "task:" + taskId;
-            jedis.set(keyTask, tmd.produceJson());
-
-            // add the id of the task to the designer key
-            String cur = SCAN_POINTER_START;
-            Iterator<String> iteratorScanResults;
-            boolean found = false;
-            do {
-                ScanResult<String> scanResult = jedis.scan(cur);
-                // work with result
-                iteratorScanResults = scanResult.getResult().iterator();
-                while (iteratorScanResults.hasNext()) {
-                    String next = iteratorScanResults.next();
-                    if (next.startsWith("designer") && next.contains(emailTaskDesigner)) {
-                        String jsonTasks = jedis.get(next);
-                        JsonReader jr = Json.createReader(new StringReader(jsonTasks));
-                        JsonObject read = jr.readObject();
-                        jr.close();
-                        JsonObjectBuilder target = Json.createObjectBuilder();
-                        read.forEach(target::add); // copy source into target
-                        target.add(taskId, "{}"); // add or update values
-                        JsonObject updatedJson = target.build(); // build destination
-                        jedis.set(next, updatedJson.toString());
-                        found = true;
-                        break;
-                    }
-                }
-
-                cur = scanResult.getCursor();
-            } while (!cur.equals(SCAN_POINTER_START) & !found);
-
-        }
-        labellingBean.setTaskId(taskId);
-        labellingBean.setEmailDesigner(emailTaskDesigner);
-
-        return "/labelling/task_definition_" + typeOfTask + ".xhtml?dataset=" + taskId + "&faces-redirect=true";
-    }
-
     public String goToAnalysisForCooccurrences(String sheetName) {
         System.out.println("sheet selected: " + sheetName);
         selectedColumnIndex = "0";
@@ -671,62 +540,6 @@ public class DataImportBean implements Serializable {
 
     public void setBulkData(Boolean bulkData) {
         this.bulkData = bulkData;
-    }
-
-    public String getPersistToDisk() {
-        return persistToDisk;
-    }
-
-    public void setPersistToDisk(String persistToDisk) {
-        if (persistToDisk == null) {
-            System.out.println("persist param was null??");
-            return;
-        }
-        if (persistToDisk.contains("=") & !persistToDisk.contains("?")) {
-            System.out.println("weird url parameters decoded in persistToDisk");
-            System.out.println("url param for persist To Disk is: " + persistToDisk);
-            this.persistToDisk = persistToDisk.split("=")[1];
-        } else if (persistToDisk.contains("=") & persistToDisk.contains("?")) {
-            this.persistToDisk = persistToDisk.split("\\?")[0];
-        } else {
-            this.persistToDisk = persistToDisk;
-        }
-        if (this.persistToDisk.equals("true")) {
-            taskId = UUID.randomUUID().toString().substring(0, 10);
-        }
-
-    }
-
-    public String getTaskId() {
-        return taskId;
-    }
-
-    public void setTaskId(String taskId) {
-        this.taskId = taskId;
-    }
-
-    public String getEmailTaskDesigner() {
-        return emailTaskDesigner;
-    }
-
-    public void setEmailTaskDesigner(String emailTaskDesigner) {
-        this.emailTaskDesigner = emailTaskDesigner;
-    }
-
-    public String getDatasetDescription() {
-        return datasetDescription;
-    }
-
-    public void setDatasetDescription(String datasetDescription) {
-        this.datasetDescription = datasetDescription;
-    }
-
-    public String getDatasetName() {
-        return datasetName;
-    }
-
-    public void setDatasetName(String datasetName) {
-        this.datasetName = datasetName;
     }
 
     public void twoColumns(String colIndex, String dataInSheetName) {

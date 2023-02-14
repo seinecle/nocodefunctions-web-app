@@ -5,7 +5,6 @@
  */
 package net.clementlevallois.nocodeapp.web.front.backingbeans;
 
-import au.com.flyingkite.mobiledetect.UAgentInfo;
 import com.github.scribejava.core.model.OAuth2AccessToken;
 import jakarta.inject.Named;
 import java.io.Serializable;
@@ -29,7 +28,6 @@ public class SessionBean implements Serializable {
 
     private String function;
     private String gazeOption = "1";
-    private boolean mobileDevice;
     private String userAgent;
     private ResourceBundle localeBundle;
     private boolean testServer;
@@ -91,18 +89,6 @@ public class SessionBean implements Serializable {
         SendReport send = new SendReport();
         send.initAnalytics("function launched: " + this.function, userAgent);
         send.start();
-    }
-
-    public boolean isMobileDevice() {
-        // check if mobile device
-        UAgentInfo agentInfo = new UAgentInfo(userAgent, null);
-        mobileDevice = agentInfo.detectMobileQuick();
-
-        return mobileDevice;
-    }
-
-    public void setMobileDevice(boolean mobileDevice) {
-        this.mobileDevice = mobileDevice;
     }
 
     public String logout() {

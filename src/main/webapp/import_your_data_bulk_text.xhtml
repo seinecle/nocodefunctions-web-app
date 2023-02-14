@@ -29,7 +29,6 @@
         <h:body>
             <f:metadata>
                 <f:viewParam name="function" value="#{sessionBean.function}" />
-                <f:viewParam name="persistToDisk" value="#{dataImportBean.persistToDisk}" />
                 <f:viewAction action="#{dataImportBean.setBulkData(true)}" />
             </f:metadata>
             <f:facet name="last">
@@ -139,37 +138,7 @@
                                     action="#{dataImportBean.gotToFunctionWithDataInBulk}"
                                     onclick="PF('pbAjaxLong').start();PF('gazeLaunchButton').disable()"
                                     styleClass="btn btn-primary"
-                                    rendered="#{not empty dataImportBean.dataInSheets and sessionBean.function != 'labelling'}"/>
-
-                                <p:panel rendered="#{not empty dataImportBean.dataInSheets and sessionBean.function == 'labelling'}" class="ui-fluid">
-                                    <div class="p-field">
-                                        <label for="name">#{text['import_data.structured_data.labelling.short_name']}</label>
-                                        <br/>
-                                        <small>#{text['general.message.keep_it_short_exclamation']}</small>
-                                        <br/>
-                                        <br/>
-                                        <p:inputText
-                                            id="name"
-                                            value="#{dataImportBean.datasetName}"
-                                            placeholder="#{text['general.message.name_of_dataset']}"/>
-                                    </div>
-                                    <br/>
-                                    <br/>
-                                    <div class="p-field">
-                                        <label for="description">#{text['import_data.structured_data.labelling.description_visible_to_annotators']}</label>
-                                        <br/>
-                                        <small>#{text['general.message.describe_items_short']}</small>
-                                        <br/>
-                                        <br/>
-                                        <p:inputText
-                                            id="description"
-                                            value="#{dataImportBean.datasetDescription}"
-                                            placeholder="#{text['general.message.your_description_here']}"/>
-                                    </div>
-                                    <br/>
-                                    <br/>
-                                    <p:commandButton value="#{text['general.verbs.confirm']}" action="#{dataImportBean.goBackToLabellingPage(null,null)}" styleClass="btn btn-primary" update=":header:messages "/>
-                                </p:panel>
+                                    rendered="#{not empty dataImportBean.dataInSheets}"/>
                             </h:form>
                         </p:outputPanel>
                         <br/>

@@ -35,8 +35,6 @@
         <h:body>
             <f:metadata>
                 <f:viewParam name="function" value="#{sessionBean.function}" />
-                <f:viewParam name="datasetUUID" value="#{dataImportBean.taskId}" />
-                <f:viewParam name="persistToDisk" value="#{dataImportBean.persistToDisk}" />
                 <f:viewAction action="#{dataImportBean.setBulkData(false)}" />
             </f:metadata>
             <f:facet name="last">
@@ -144,38 +142,11 @@
                                                         <h:graphicImage name="images/round_3_orange.png" width="20" height="20" style="vertical-align: bottom;"/>
                                                         <p:spacer width="5"/>
                                                         <div class="column_button">
-                                                            <p:commandLink value="#{text['import_data.structured_data.click_for_this_column']}" action="#{dataImportBean.selectColumn(colIndex, dataInSheet.name)}" styleClass="p-mr-2" rendered="#{sessionBean.function != 'labelling'}" >
-                                                                <p:confirm type="popup" header="#{text['general.verbs.confirm']}" message="#{text['import_data.structured_data.confirm_analysis_on_this_column']}" icon="pi pi-exclamation-triangle"/>
-                                                            </p:commandLink>
-                                                            <p:commandLink value="#{text['import_data.structured_data.click_for_this_column']}" action="#{dataImportBean.goBackToLabellingPage(colIndex, dataInSheet.name)}" styleClass="p-mr-2" rendered="#{sessionBean.function == 'labelling'}">
+                                                            <p:commandLink value="#{text['import_data.structured_data.click_for_this_column']}" action="#{dataImportBean.selectColumn(colIndex, dataInSheet.name)}" styleClass="p-mr-2">
                                                                 <p:confirm type="popup" header="#{text['general.verbs.confirm']}" message="#{text['import_data.structured_data.confirm_analysis_on_this_column']}" icon="pi pi-exclamation-triangle"/>
                                                             </p:commandLink>
                                                         </div>
                                                         <p:confirmPopup global="true">
-                                                            <p:panel rendered="#{sessionBean.function == 'labelling'}" class="ui-fluid">
-                                                                <div class="p-field">
-                                                                    <label for="name">#{text['import_data.structured_data.labelling.short_name']}</label>
-                                                                    <br/>
-                                                                    <small><span style="color:red;">#{text['general.message.keep_it_short_exclamation']}</span></small>
-                                                                    <br/>
-                                                                    <br/>
-                                                                    <p:inputText id="name" value="#{dataImportBean.datasetName}" placeholder="#{text['general.message.name_of_dataset']}">
-                                                                        <p:ajax event="keyup"/>
-                                                                    </p:inputText>
-                                                                </div>
-                                                                <br/>
-                                                                <br/>
-                                                                <div class="p-field">
-                                                                    <label for="description">#{text['import_data.structured_data.labelling.description_visible_to_annotators']}</label>
-                                                                    <br/>
-                                                                    <small>#{text['general.message.describe_items_short']}</small>
-                                                                    <br/>
-                                                                    <br/>
-                                                                    <p:inputText id="description" value="#{dataImportBean.datasetDescription}" placeholder="#{text['general.message.your_description_here']}">
-                                                                        <p:ajax event="keyup"/>
-                                                                    </p:inputText>
-                                                                </div>
-                                                            </p:panel>
                                                             <p:commandButton value="#{text['general.small_words.no']}" type="button" styleClass="ui-confirm-popup-no ui-button-flat"/>
                                                             <p:commandButton value="#{text['general.small_words.yes']}" type="button" styleClass="ui-confirm-popup-yes" />
                                                         </p:confirmPopup>
