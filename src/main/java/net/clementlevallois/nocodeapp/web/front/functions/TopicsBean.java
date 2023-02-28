@@ -330,7 +330,7 @@ public class TopicsBean implements Serializable {
                 topicsPerLine.put(Integer.valueOf(lineNumber), topicsAndFreqs);
             }
 
-            if (keywordsPerTopic == null || keywordsPerTopic.isEmpty()) {
+            if (keywordsPerTopic.isEmpty()) {
                 return null;
             }
             futures = new HashSet();
