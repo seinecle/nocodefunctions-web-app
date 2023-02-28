@@ -109,7 +109,7 @@ public class TwitterImportBean implements Serializable {
     public String searchTweets() {
         dataInputBean.setSource(Source.TWITTER);
         sheets = new ArrayList();
-        dataInputBean.setDataInSheets(new ArrayList());
+        dataInputBean.setDataInSheets(sheets);
 
         if (sessionBean.getTwitterOAuth2AccessToken() == null) {
             service.create(sessionBean.getLocaleBundle().getString("back.import.twitter_credentials_not found"));
@@ -162,7 +162,6 @@ public class TwitterImportBean implements Serializable {
             Jsonb jsonb = JsonbBuilder.create();
             Get2TweetsSearchRecentResponse tweetSearchResponse = jsonb.fromJson(body, Get2TweetsSearchRecentResponse.class);
 
-            sheets = new ArrayList();
             SheetModel sheetModel = new SheetModel();
             List<ColumnModel> headerNames = new ArrayList();
             ColumnModel cm;
