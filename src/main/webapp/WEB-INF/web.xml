@@ -83,6 +83,6 @@
     </error-page>   
     <error-page>
         <exception-type>java.lang.Throwable</exception-type>
-        <location>/index.html</location>
+        <location>/error-pages/expired.html</location>
     </error-page>   
 </web-app>
