@@ -364,10 +364,18 @@ public class DataImportBean implements Serializable {
             futures.add(future);
             CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(futures.toArray((new CompletableFuture[0])));
             combinedFuture.join();
-
+            
+            // for coocurrences the data must start at the leftest column
             if (sessionBean.getGazeOption().equals("1")) {
                 setSelectedColumnIndex("0");
-                setSelectedSheetName(file.getFileName() + "_");
+            }
+            
+            // by default the selected sheet is the first one of the workbook
+            // this gets changed when the user selects a different sheet in the preview
+            // there is a listener in the data table in the xhtml that sets the selected sheet
+            // to the one currently selected by the user
+            if (!dataInSheets.isEmpty()) {
+                setSelectedSheetName(dataInSheets.get(0).getName());
             }
 
         } catch (IOException ex) {
@@ -444,18 +452,14 @@ public class DataImportBean implements Serializable {
     }
 
     public String selectColumn(String colIndex, String sheetName) {
-        System.out.println("column selected: " + colIndex + ", sheet selected: " + sheetName);
         selectedColumnIndex = colIndex;
         selectedSheetName = sheetName;
         bulkData = false;
-        System.out.println("function is: " + sessionBean.getFunction());
         return "/" + sessionBean.getFunction() + "/" + sessionBean.getFunction() + ".xhtml?faces-redirect=true";
     }
 
     public String launchAnalysisForTwoColumnsDataset() {
         bulkData = false;
-        System.out.println("function is: " + sessionBean.getFunction());
-
         if (!twoColumnsColOneSelected || !twoColumnsColTwoSelected) {
             service.create(sessionBean.getLocaleBundle().getString("back.import.two_columns_needed"));
             addMessage(FacesMessage.SEVERITY_WARN, "😳", sessionBean.getLocaleBundle().getString("back.import.two_columns_needed"));
@@ -478,16 +482,13 @@ public class DataImportBean implements Serializable {
     }
 
     public String gotToFunctionWithDataInBulk() {
-        System.out.println("function is: " + sessionBean.getFunction());
         bulkData = true;
         return "/" + sessionBean.getFunction() + "/" + sessionBean.getFunction() + ".xhtml?faces-redirect=true";
     }
 
     public String goToAnalysisForCooccurrences(String sheetName) {
-        System.out.println("sheet selected: " + sheetName);
         selectedColumnIndex = "0";
         selectedSheetName = sheetName;
-        System.out.println("function is: " + sessionBean.getFunction());
         return "/" + sessionBean.getFunction() + "/" + sessionBean.getFunction() + ".xhtml?faces-redirect=true";
     }
 
@@ -499,7 +500,7 @@ public class DataImportBean implements Serializable {
     }
 
     public void setDataInSheets(List<SheetModel> dataInSheets) {
-        this.dataInSheets.addAll(dataInSheets);
+        this.dataInSheets = dataInSheets;
     }
 
     public Boolean getHasHeaders() {
@@ -543,7 +544,6 @@ public class DataImportBean implements Serializable {
     }
 
     public void twoColumns(String colIndex, String dataInSheetName) {
-        System.out.println("column selected: " + colIndex + ", sheet selected: " + dataInSheetName);
         if (this.twoColumnsColOneSelected && currColBeingSelected.equals("col1")) {
             twoColumnsIndexForColOne = colIndex;
         }
