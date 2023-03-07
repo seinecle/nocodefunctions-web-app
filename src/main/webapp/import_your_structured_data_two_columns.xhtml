@@ -35,8 +35,6 @@
         <h:body>
             <f:metadata>
                 <f:viewParam name="function" value="#{sessionBean.function}" />
-                <f:viewParam name="datasetUUID" value="#{dataImportBean.taskId}" />
-                <f:viewParam name="persistToDisk" value="#{dataImportBean.persistToDisk}" />
                 <f:viewAction action="#{dataImportBean.setBulkData(false)}" />
             </f:metadata>
 
