@@ -148,8 +148,12 @@ public class ConverterBean implements Serializable {
 
         CompletableFuture<Void> future = client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()).thenAccept(
                 resp -> {
-                    byte[] body = resp.body();
-                    graphAsJsonVosViewer = new String(body, StandardCharsets.UTF_8);
+                    if (resp.statusCode() == 200) {
+                        byte[] body = resp.body();
+                        graphAsJsonVosViewer = new String(body, StandardCharsets.UTF_8);
+                    } else {
+                        graphAsJsonVosViewer = null;
+                    }
                 }
         );
 
@@ -157,6 +161,14 @@ public class ConverterBean implements Serializable {
 
         CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(futures.toArray((new CompletableFuture[0])));
         combinedFuture.join();
+
+        if (graphAsJsonVosViewer == null) {
+            System.out.println("graphAsJsonVosViewer returned by the API was not a 200 code");
+            String error = sessionBean.getLocaleBundle().getString("general.nouns.error");
+            FacesMessage message = new FacesMessage(error, error);
+            FacesContext.getCurrentInstance().addMessage(null, message);
+            return;
+        }
 
         String path = RemoteLocal.isLocal() ? "C:\\Users\\levallois\\open\\nocode-app-functions\\gexf-vosviewer-converter\\testswebapp\\" : "html/vosviewer/data/";
         String subfolder;
@@ -276,7 +288,11 @@ public class ConverterBean implements Serializable {
 
             CompletableFuture<Void> future = client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()).thenAccept(
                     resp -> {
-                        gexfAsByteArray = resp.body();
+                        if (resp.statusCode() == 200) {
+                            gexfAsByteArray = resp.body();
+                        } else {
+                            gexfAsByteArray = null;
+                        }
                     }
             );
 
@@ -284,6 +300,14 @@ public class ConverterBean implements Serializable {
 
             CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(futures.toArray((new CompletableFuture[0])));
             combinedFuture.join();
+
+            if (gexfAsByteArray == null) {
+                System.out.println("gexfAsByteArray returned by the API was not a 200 code");
+                String error = sessionBean.getLocaleBundle().getString("general.nouns.error");
+                FacesMessage message = new FacesMessage(error, error);
+                FacesContext.getCurrentInstance().addMessage(null, message);
+                return null;
+            }
 
             InputStream inputStreamToSave = new ByteArrayInputStream(gexfAsByteArray);
             fileStream = DefaultStreamedContent.builder()
@@ -293,7 +317,7 @@ public class ConverterBean implements Serializable {
                     .build();
 
         } catch (IOException ex) {
-                    System.out.println("ex:"+ ex.getMessage());
+            System.out.println("ex:" + ex.getMessage());
         }
         return fileStream;
     }

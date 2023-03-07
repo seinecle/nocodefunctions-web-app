@@ -184,14 +184,21 @@ public class CowoBean implements Serializable {
                         .build();
 
                 CompletableFuture<Void> future = client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()).thenAccept(resp -> {
-                    byte[] body = resp.body();
-                    String jsonReceived = new String(body, StandardCharsets.UTF_8);
-                    JsonObject jsonObjectReturned;
-                    try (JsonReader reader = Json.createReader(new StringReader(jsonReceived))) {
-                        jsonObjectReturned = reader.readObject();
-                    }
-                    for (String key : jsonObjectReturned.keySet()) {
-                        mapOfLines.put(Integer.valueOf(key), jsonObjectReturned.getString(key));
+                    if (resp.statusCode() == 200) {
+                        byte[] body = resp.body();
+                        String jsonReceived = new String(body, StandardCharsets.UTF_8);
+                        JsonObject jsonObjectReturned;
+                        try (JsonReader reader = Json.createReader(new StringReader(jsonReceived))) {
+                            jsonObjectReturned = reader.readObject();
+                        }
+                        for (String key : jsonObjectReturned.keySet()) {
+                            mapOfLines.put(Integer.valueOf(key), jsonObjectReturned.getString(key));
+                        }
+                    } else {
+                        System.out.println("lemmatization lightweight returned by the API was not a 200 code");
+                        String error = sessionBean.getLocaleBundle().getString("general.nouns.error");
+                        FacesMessage message = new FacesMessage(error, error);
+                        FacesContext.getCurrentInstance().addMessage(null, message);
                     }
                 }
                 );
@@ -236,7 +243,13 @@ public class CowoBean implements Serializable {
                         for (String key : jsonObjectReturned.keySet()) {
                             mapOfLines.put(Integer.valueOf(key), jsonObjectReturned.getString(key));
                         }
+                    } else {
+                        System.out.println("lemmatization heavyweight returned by the API was not a 200 code");
+                        String error = sessionBean.getLocaleBundle().getString("general.nouns.error");
+                        FacesMessage message = new FacesMessage(error, error);
+                        FacesContext.getCurrentInstance().addMessage(null, message);
                     }
+
                 } catch (URISyntaxException | IOException | InterruptedException ex) {
                     System.out.println("ex:" + ex.getMessage());
                 }
@@ -300,9 +313,16 @@ public class CowoBean implements Serializable {
                     .build();
             client = HttpClient.newHttpClient();
             CompletableFuture<Void> future = client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()).thenAccept(resp -> {
-                byte[] body = resp.body();
-//                System.out.println(ByteNumberHumanReadable.bytesIntoHumanReadable(body.length));
-                gexf = new String(body, StandardCharsets.UTF_8);
+                if (resp.statusCode() == 200) {
+                    byte[] body = resp.body();
+                    gexf = new String(body, StandardCharsets.UTF_8);
+                } else {
+                    System.out.println("cowo returned by the API was not a 200 code");
+                    String error = sessionBean.getLocaleBundle().getString("general.nouns.error");
+                    FacesMessage message = new FacesMessage(error, error);
+                    FacesContext.getCurrentInstance().addMessage(null, message);
+                }
+
             }
             );
             futures.add(future);
@@ -339,11 +359,18 @@ public class CowoBean implements Serializable {
             client = HttpClient.newHttpClient();
 
             future = client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()).thenAccept(resp -> {
-                byte[] body = resp.body();
-                String jsonResult = new String(body, StandardCharsets.UTF_8);
-                JsonObject jsonObject = Json.createReader(new StringReader(jsonResult)).readObject();
-                nodesAsJson = Converters.turnJsonObjectToString(jsonObject.getJsonObject("nodes"));
-                edgesAsJson = Converters.turnJsonObjectToString(jsonObject.getJsonObject("edges"));
+                if (resp.statusCode() == 200) {
+                    byte[] body = resp.body();
+                    String jsonResult = new String(body, StandardCharsets.UTF_8);
+                    JsonObject jsonObject = Json.createReader(new StringReader(jsonResult)).readObject();
+                    nodesAsJson = Converters.turnJsonObjectToString(jsonObject.getJsonObject("nodes"));
+                    edgesAsJson = Converters.turnJsonObjectToString(jsonObject.getJsonObject("edges"));
+                } else {
+                    System.out.println("top nodes returned by the API was not a 200 code");
+                    String error = sessionBean.getLocaleBundle().getString("general.nouns.error");
+                    FacesMessage message = new FacesMessage(error, error);
+                    FacesContext.getCurrentInstance().addMessage(null, message);
+                }
             }
             );
             futures.add(future);
@@ -457,7 +484,6 @@ public class CowoBean implements Serializable {
 
     public void uploadFile() {
         if (fileUserStopwords != null && fileUserStopwords.getFileName() != null) {
-
             String success = sessionBean.getLocaleBundle().getString("general.nouns.success");
             String is_uploaded = sessionBean.getLocaleBundle().getString("general.verb.is_uploaded");
             FacesMessage message = new FacesMessage(success, fileUserStopwords.getFileName() + " " + is_uploaded + ".");
