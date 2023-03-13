@@ -81,6 +81,7 @@ public class TopicsBean implements Serializable {
     private String selectedLanguage;
     private int precision = 50;
     private int minCharNumber = 4;
+    private int minTermFreq = 2;
 
     private boolean scientificCorpus;
     private boolean okToShareStopwords = false;
@@ -262,6 +263,7 @@ public class TopicsBean implements Serializable {
             overallObject.add("isScientificCorpus", scientificCorpus);
             overallObject.add("precision", precision);
             overallObject.add("minCharNumber", minCharNumber);
+            overallObject.add("minTermFreq", minTermFreq);
 
             JsonObject build = overallObject.build();
             StringWriter sw = new StringWriter(128);
@@ -494,6 +496,16 @@ public class TopicsBean implements Serializable {
     public void setMinCharNumber(int minCharNumber) {
         this.minCharNumber = minCharNumber;
     }
+
+    public int getMinTermFreq() {
+        return minTermFreq;
+    }
+
+    public void setMinTermFreq(int minTermFreq) {
+        this.minTermFreq = minTermFreq;
+    }
+    
+    
 
     public List<Locale> getAvailable() {
         List<Locale> available = new ArrayList();

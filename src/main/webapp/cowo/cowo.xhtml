@@ -68,9 +68,21 @@
                                         #{text['cowo.cowo.remove_smaller_words']} 4
                                         <br/>
                                         <br/>
-                                        <p:spinner id="spinner1" value="#{cowoBean.minCharNumber}" min="0" max="10" stepFactor="1">
+                                        <p:spinner id="spinner1" value="#{cowoBean.minCharNumber}" min="1" max="10" stepFactor="1">
                                         </p:spinner>
-                                        <p:slider for="spinner1" minValue="0" maxValue="10" step="1"/>
+                                        <p:slider for="spinner1" minValue="1" maxValue="10" step="1"/>
+
+                                        <p:divider align="left">
+                                            <div class="p-d-inline-flex p-ai-center">
+                                                <i class="pi pi-chart-bar p-mr-2"/>
+                                                <b>#{text['general.message.min_word_freq']}</b>
+                                            </div>
+                                        </p:divider>
+                                        #{text['cowo.cowo.remove_infrequent_words']}:
+                                        <br/>
+                                        <br/>
+                                        <p:spinner id="spinnerFreq" value="#{cowoBean.minTermFreq}" min="2" max="10" stepFactor="1"/>
+                                        <p:slider for="spinnerFreq" minValue="2" maxValue="10" step="1"/>
 
                                         <p:divider align="left">
                                             <div class="p-d-inline-flex p-ai-center">

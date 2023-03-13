@@ -141,7 +141,7 @@ public class PdfMatcherBean implements Serializable {
 
             JsonObject build = overallObject.build();
             StringWriter sw = new StringWriter(128);
-            try ( JsonWriter jw = Json.createWriter(sw)) {
+            try (JsonWriter jw = Json.createWriter(sw)) {
                 jw.write(build);
             }
             String jsonString = sw.toString();
@@ -158,7 +158,7 @@ public class PdfMatcherBean implements Serializable {
             CompletableFuture<Void> future = client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()).thenAccept(resp -> {
                 byte[] body = resp.body();
                 try (
-                         ByteArrayInputStream bis = new ByteArrayInputStream(body);  ObjectInputStream ois = new ObjectInputStream(bis)) {
+                        ByteArrayInputStream bis = new ByteArrayInputStream(body); ObjectInputStream ois = new ObjectInputStream(bis)) {
                     List<Occurrence> occurrencesFound = (List<Occurrence>) ois.readObject();
                     results.put(oneDoc.getName(), occurrencesFound);
                 } catch (IOException | ClassNotFoundException ex) {

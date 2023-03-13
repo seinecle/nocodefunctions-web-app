@@ -48,7 +48,6 @@ import jakarta.inject.Named;
 import jakarta.json.Json;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
-import jakarta.json.JsonReader;
 import jakarta.json.JsonWriter;
 import jakarta.servlet.annotation.MultipartConfig;
 import net.clementlevallois.importers.model.DataFormatConverter;
@@ -157,104 +156,6 @@ public class CowoBean implements Serializable {
             mapOfLines = TextCleaningOps.putInLowerCase(mapOfLines);
 
             progress = 15;
-
-            // dealing with lemmatization
-            if (selectedLanguage.equals("en") | selectedLanguage.equals("fr")) {
-                JsonObjectBuilder overallObject = Json.createObjectBuilder();
-                JsonObjectBuilder linesBuilder = Json.createObjectBuilder();
-                for (Map.Entry<Integer, String> entryLines : mapOfLines.entrySet()) {
-                    linesBuilder.add(String.valueOf(entryLines.getKey()), entryLines.getValue());
-                }
-                overallObject.add("lines", linesBuilder);
-                overallObject.add("lang", selectedLanguage);
-                JsonObject build = overallObject.build();
-                StringWriter sw = new StringWriter(128);
-                try (JsonWriter jw = Json.createWriter(sw)) {
-                    jw.write(build);
-                }
-                String jsonString = sw.toString();
-
-                HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(jsonString.getBytes(StandardCharsets.UTF_8));
-
-                URI uri = new URI("http://localhost:7002/api/lemmatizer_light/");
-
-                request = HttpRequest.newBuilder()
-                        .POST(bodyPublisher)
-                        .uri(uri)
-                        .build();
-
-                CompletableFuture<Void> future = client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()).thenAccept(resp -> {
-                    if (resp.statusCode() == 200) {
-                        byte[] body = resp.body();
-                        String jsonReceived = new String(body, StandardCharsets.UTF_8);
-                        JsonObject jsonObjectReturned;
-                        try (JsonReader reader = Json.createReader(new StringReader(jsonReceived))) {
-                            jsonObjectReturned = reader.readObject();
-                        }
-                        for (String key : jsonObjectReturned.keySet()) {
-                            mapOfLines.put(Integer.valueOf(key), jsonObjectReturned.getString(key));
-                        }
-                    } else {
-                        System.out.println("lemmatization lightweight returned by the API was not a 200 code");
-                        String error = sessionBean.getLocaleBundle().getString("general.nouns.error");
-                        FacesMessage message = new FacesMessage(error, error);
-                        FacesContext.getCurrentInstance().addMessage(null, message);
-                    }
-                }
-                );
-                futures.add(future);
-                CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(futures.toArray((new CompletableFuture[0])));
-                combinedFuture.join();
-
-            } else {
-                String lemmatization = sessionBean.getLocaleBundle().getString("general.message.heavy_duty_lemmatization");
-                String wait = sessionBean.getLocaleBundle().getString("general.message.please_wait_seconds");
-                FacesContext.getCurrentInstance().
-                        addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, lemmatization, wait));
-                service.create(lemmatization + " " + wait);
-                progress = 15;
-                Runnable incrementProgress = () -> {
-                    progress = progress + 1;
-                };
-                ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
-                executor.scheduleAtFixedRate(incrementProgress, 0, 2, TimeUnit.SECONDS);
-                try {
-                    JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
-                    for (Map.Entry<Integer, String> entry : mapOfLines.entrySet()) {
-                        objectBuilder.add(String.valueOf(entry.getKey()), entry.getValue());
-                    }
-                    JsonObject jsonObject = objectBuilder.build();
-
-                    URI uri = new URI("http://localhost:7000/lemmatize/" + selectedLanguage);
-
-                    request = HttpRequest.newBuilder()
-                            .uri(uri)
-                            .POST(HttpRequest.BodyPublishers.ofString(jsonObject.toString()))
-                            .build();
-                    client = HttpClient.newHttpClient();
-
-                    HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-                    if (response.statusCode() == 200) {
-                        String body = response.body();
-                        JsonObject jsonObjectReturned;
-                        try (JsonReader reader = Json.createReader(new StringReader(body))) {
-                            jsonObjectReturned = reader.readObject();
-                        }
-                        for (String key : jsonObjectReturned.keySet()) {
-                            mapOfLines.put(Integer.valueOf(key), jsonObjectReturned.getString(key));
-                        }
-                    } else {
-                        System.out.println("lemmatization heavyweight returned by the API was not a 200 code");
-                        String error = sessionBean.getLocaleBundle().getString("general.nouns.error");
-                        FacesMessage message = new FacesMessage(error, error);
-                        FacesContext.getCurrentInstance().addMessage(null, message);
-                    }
-
-                } catch (URISyntaxException | IOException | InterruptedException ex) {
-                    System.out.println("ex:" + ex.getMessage());
-                }
-                executor.shutdown();
-            }
 
             service.create(sessionBean.getLocaleBundle().getString("general.message.finding_key_terms"));
             progress = 20;
@@ -456,6 +357,14 @@ public class CowoBean implements Serializable {
 
     public void setMaxNGram(int maxNGram) {
         this.maxNGram = maxNGram;
+    }
+
+    public int getMinTermFreq() {
+        return minTermFreq;
+    }
+
+    public void setMinTermFreq(int minTermFreq) {
+        this.minTermFreq = minTermFreq;
     }
 
     public int getMaxFreqNode() {
