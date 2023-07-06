@@ -5,7 +5,6 @@
  */
 package net.clementlevallois.nocodeapp.web.front.backingbeans;
 
-import com.github.scribejava.core.model.OAuth2AccessToken;
 import jakarta.inject.Named;
 import java.io.Serializable;
 import java.util.Locale;
@@ -33,7 +32,7 @@ public class SessionBean implements Serializable {
     private boolean testServer;
     private String noRobot;
 
-    private OAuth2AccessToken twitterOAuth2AccessToken;
+//    private OAuth2AccessToken twitterOAuth2AccessToken;
 
     @Inject
     SingletonBean singletonBean;
@@ -111,6 +110,10 @@ public class SessionBean implements Serializable {
         return RemoteLocal.getDomain();
     }
 
+    public String hostFunctionsAPI() {
+        return RemoteLocal.getHostFunctionsAPI();
+    }
+
     public void refreshLocaleBundle() {
         localeBundle = ResourceBundle.getBundle(SingletonBean.getPATHLOCALE(), FacesContext.getCurrentInstance().getViewRoot().getLocale());
     }
@@ -136,13 +139,6 @@ public class SessionBean implements Serializable {
         this.noRobot = noRobot;
     }
 
-    public OAuth2AccessToken getTwitterOAuth2AccessToken() {
-        return twitterOAuth2AccessToken;
-    }
-
-    public void setTwitterOAuth2AccessToken(OAuth2AccessToken twitterOAuth2AccessToken) {
-        this.twitterOAuth2AccessToken = twitterOAuth2AccessToken;
-    }
 
     public SingletonBean getSingletonBean() {
         return singletonBean;

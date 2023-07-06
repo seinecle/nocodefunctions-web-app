@@ -85,10 +85,13 @@ public class CowoBean implements Serializable {
     private int minTermFreq = 2;
     private int maxNGram = 4;
     private int minCoocFreqInt = 2;
+    private boolean removeNonAsciiCharacters = false;
     private String typeCorrection = "none";
     private boolean scientificCorpus;
     private boolean okToShareStopwords = false;
     private boolean replaceStopwords = false;
+    private boolean lemmatize = true;
+    private boolean usePMI = false;
     private UploadedFile fileUserStopwords;
     private String vosviewerJsonFileName;
     private String graphAsJsonVosViewer;
@@ -132,8 +135,12 @@ public class CowoBean implements Serializable {
         progress = 0;
 
         HttpRequest request;
-        HttpClient client = HttpClient.newHttpClient();
-        Set<CompletableFuture> futures = new HashSet();
+        HttpClient client = null;
+        Set<CompletableFuture> futures = null;
+
+        if (usePMI) {
+            typeCorrection = "pmi";
+        }
 
         try {
             sessionBean.sendFunctionPageReport();
@@ -152,7 +159,7 @@ public class CowoBean implements Serializable {
             progress = 10;
             service.create(sessionBean.getLocaleBundle().getString("general.message.removing_punctuation_and_cleaning"));
 
-            mapOfLines = TextCleaningOps.doAllCleaningOps(mapOfLines);
+            mapOfLines = TextCleaningOps.doAllCleaningOps(mapOfLines, removeNonAsciiCharacters);
             mapOfLines = TextCleaningOps.putInLowerCase(mapOfLines);
 
             progress = 15;
@@ -192,6 +199,8 @@ public class CowoBean implements Serializable {
             overallObject.add("minCharNumber", minCharNumber);
             overallObject.add("replaceStopwords", replaceStopwords);
             overallObject.add("isScientificCorpus", scientificCorpus);
+            overallObject.add("lemmatize", lemmatize);
+            overallObject.add("removeAccents", removeNonAsciiCharacters);
             overallObject.add("minCoocFreq", minCoocFreqInt);
             overallObject.add("minTermFreq", minTermFreq);
             overallObject.add("maxNGram", maxNGram);
@@ -214,13 +223,13 @@ public class CowoBean implements Serializable {
                     .build();
             client = HttpClient.newHttpClient();
             CompletableFuture<Void> future = client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()).thenAccept(resp -> {
+                byte[] body = resp.body();
                 if (resp.statusCode() == 200) {
-                    byte[] body = resp.body();
                     gexf = new String(body, StandardCharsets.UTF_8);
                 } else {
                     System.out.println("cowo returned by the API was not a 200 code");
-                    String error = sessionBean.getLocaleBundle().getString("general.nouns.error");
-                    FacesMessage message = new FacesMessage(error, error);
+                    String errorMessage = new String(body, StandardCharsets.UTF_8);
+                    FacesMessage message = new FacesMessage(errorMessage, errorMessage);
                     FacesContext.getCurrentInstance().addMessage(null, message);
                 }
 
@@ -257,7 +266,6 @@ public class CowoBean implements Serializable {
                     .POST(bodyPublisher)
                     .uri(uri)
                     .build();
-            client = HttpClient.newHttpClient();
 
             future = client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()).thenAccept(resp -> {
                 if (resp.statusCode() == 200) {
@@ -383,6 +391,14 @@ public class CowoBean implements Serializable {
         this.scientificCorpus = scientificCorpus;
     }
 
+    public boolean isRemoveNonAsciiCharacters() {
+        return removeNonAsciiCharacters;
+    }
+
+    public void setRemoveNonAsciiCharacters(boolean removeNonAsciiCharacters) {
+        this.removeNonAsciiCharacters = removeNonAsciiCharacters;
+    }
+
     public UploadedFile getFileUserStopwords() {
         return fileUserStopwords;
     }
@@ -439,6 +455,22 @@ public class CowoBean implements Serializable {
 
     public void setMinCharNumber(Integer minCharNumber) {
         this.minCharNumber = minCharNumber;
+    }
+
+    public boolean isUsePMI() {
+        return usePMI;
+    }
+
+    public void setUsePMI(boolean usePMI) {
+        this.usePMI = usePMI;
+    }
+
+    public boolean isLemmatize() {
+        return lemmatize;
+    }
+
+    public void setLemmatize(boolean lemmatize) {
+        this.lemmatize = lemmatize;
     }
 
     public void gotoVV() throws IOException {
@@ -514,7 +546,10 @@ public class CowoBean implements Serializable {
     }
 
     public void gotoGephisto() throws IOException {
-
+        if (gexf == null) {
+            System.out.println("gm object was null so gotoGephisto method exited");
+            return;
+        }
         byte[] readAllBytes = gexf.getBytes();
         InputStream inputStreamToSave = new ByteArrayInputStream(readAllBytes);
 
@@ -551,7 +586,7 @@ public class CowoBean implements Serializable {
 
     public List<Locale> getAvailable() {
         List<Locale> available = new ArrayList();
-        String[] availableStopwordLists = new String[]{"ar", "bg", "ca", "da", "nl", "en", "fr", "de", "el", "it", "no", "pl", "pt", "ru", "es"};
+        String[] availableStopwordLists = new String[]{"ar", "bg", "ca", "da", "de", "el", "en", "es", "fr", "it", "ja", "nl", "no", "pl", "pt", "ro", "ru", "tr"};
         for (String tag : availableStopwordLists) {
             available.add(Locale.forLanguageTag(tag));
         }

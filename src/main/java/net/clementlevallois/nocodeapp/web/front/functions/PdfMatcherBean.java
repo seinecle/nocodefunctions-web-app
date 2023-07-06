@@ -63,6 +63,7 @@ public class PdfMatcherBean implements Serializable {
     private Boolean renderSeeResultsButton = false;
     private String sessionId;
     private int nbContext = 5;
+    private Boolean caseSensitive = false;
     private String searchedTerm;
     Map<String, List<Occurrence>> results = new HashMap();
     List<Match> resultsForDisplay = new ArrayList();
@@ -137,6 +138,7 @@ public class PdfMatcherBean implements Serializable {
             overallObject.add("lines", linesBuilder);
             overallObject.add("pages", pagesBuilder);
             overallObject.add("nbContext", nbContext);
+            overallObject.add("caseSensitive", caseSensitive);
             overallObject.add("searchedTerm", searchedTerm);
 
             JsonObject build = overallObject.build();
@@ -327,5 +329,15 @@ public class PdfMatcherBean implements Serializable {
     public void setResultsForDisplay(List<Match> resultsForDisplay) {
         this.resultsForDisplay = resultsForDisplay;
     }
+
+    public Boolean getCaseSensitive() {
+        return caseSensitive;
+    }
+
+    public void setCaseSensitive(Boolean caseSensitive) {
+        this.caseSensitive = caseSensitive;
+    }
+    
+    
 
 }

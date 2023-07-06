@@ -1,8 +1,8 @@
 <html 
     lang="#{activeLocale.languageTag}"
     xmlns="http://www.w3.org/1999/xhtml"
-    xmlns:h="http://java.sun.com/jsf/html"
-    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:h="jakarta.faces.html"
+    xmlns:f="jakarta.faces.core"
     xmlns:p="http://primefaces.org/ui"
     xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
     <f:view locale="#{activeLocale.current}">
@@ -67,6 +67,17 @@
                         </f:facet>
                         <h2>
                             <p:inputText value="#{pdfMatcherBean.searchedTerm}"/>
+                            <br/>
+                            <br/>
+                            <i><p:outputLabel escape="false" value="#{text['pdfmatcher.tool.complex_query_allowed']}"/> (programmation AND java) OR python AND NOT("monty python")</i>
+                        </h2>
+                    </p:fieldset>
+                    <p:fieldset>
+                        <f:facet name="legend">
+                            <h3>#{text['pdfmatcher.tool.search_case_sensitive']}</h3>
+                        </f:facet>
+                        <h2>
+                            <p:selectBooleanCheckbox value="#{pdfMatcherBean.caseSensitive}" itemLabel="#{text['general.message.case_sensitive']}" escape="false"/>
                         </h2>
                     </p:fieldset>
                 </p:panel>

@@ -1,8 +1,8 @@
 <html 
     lang="#{activeLocale.languageTag}"
     xmlns="http://www.w3.org/1999/xhtml"
-    xmlns:h="http://java.sun.com/jsf/html"
-    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:h="jakarta.faces.html"
+    xmlns:f="jakarta.faces.core"
     xmlns:p="http://primefaces.org/ui"
     xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
     <f:view locale="#{activeLocale.current}">
@@ -66,8 +66,6 @@
             </script>
             <p:panel>
                 <ui:include src="/WEB-INF/includes/header.xhtml"/>
-                <ui:include src="/WEB-INF/includes/sidebar.xhtml"/>
-
                 <h1>#{text['network_converter.tagline']}</h1>
             </p:panel>
             <p:spacer height="20"/>
@@ -93,8 +91,18 @@
                 <p:panel>
                     <h:graphicImage name="images/round_1_orange.png" width="20" height="20" style="vertical-align: middle;"/>
                     <p:spacer width="5"/>
-                    <p:fileUpload value="#{converterBean.uploadedFile}" label="#{converterBean.uploadButtonMessage}" mode="simple" auto="true" skinSimple="true" sizeLimit="100000000"
-                                  process="@this" listener="#{converterBean.handleFileUpload}" allowTypes="/(\.|\/)(json|gexf)$/" update="launchButtons" chooseIcon="ui-icon-person">                                
+                    <p:fileUpload
+                        label="#{converterBean.uploadButtonMessage}"
+                        mode="advanced"
+                        auto="false"
+                        multiple="false"
+                        skinSimple="true"
+                        sizeLimit="100000000"
+                        process="@this"
+                        listener="#{converterBean.handleFileUpload}"
+                        allowTypes="/(\.|\/)(json|gexf)$/"
+                        update="launchButtons"
+                        chooseIcon="ui-icon-person">                                
                     </p:fileUpload>
                     <p:spacer width="10"/>
                     <p:outputLabel rendered="#{converterBean.uploadedFile ne null}" escape="false">#{text['general.message.file_loaded']} <strong style="color:#FF6347">#{converterBean.uploadedFile.fileName}</strong>. #{text['network_converter.click_to_convert']}</p:outputLabel>

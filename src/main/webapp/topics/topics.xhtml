@@ -1,8 +1,8 @@
 <html 
     lang="#{activeLocale.languageTag}"
     xmlns="http://www.w3.org/1999/xhtml"
-    xmlns:h="http://java.sun.com/jsf/html"
-    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:h="jakarta.faces.html"
+    xmlns:f="jakarta.faces.core"
     xmlns:o="http://omnifaces.org/ui"
     xmlns:p="http://primefaces.org/ui"
     xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
@@ -59,7 +59,7 @@
                                                itemValue="#{l.toLanguageTag()}"
                                                itemLabel="#{l.getDisplayLanguage(activeLocale.current)}">
                                 </f:selectItems>
-                                <p:ajax event="change" update="@this" />
+                                <p:ajax event="change" process="@this"/>
                             </p:selectOneListbox>
                         </h:form>                    
                         <p:spacer width="10" height="10"/>
@@ -98,6 +98,35 @@
                                         <p:spinner id="spinnerFreq" value="#{topicsBean.minTermFreq}" min="2" max="10" stepFactor="1"/>
 
                                         <p:slider for="spinnerFreq" minValue="2" maxValue="10" step="1"/>
+
+                                        <p:divider align="left">
+                                            <div class="p-d-inline-flex p-ai-center">
+                                                <i class="pi pi-chart-bar p-mr-2"/>
+                                                <b>#{text['general.nouns.lemmatization']}</b>
+                                            </div>
+                                        </p:divider>
+                                        #{text['general.message.lemmatization_explanation']}
+                                        <br/>
+                                        <br/>
+                                        <p:selectBooleanCheckbox value="#{topicsBean.lemmatize}" itemLabel="#{text['general.verbs.lemmatize']}" escape="false"/>
+                                        <div>
+                                            <p:spacer width="30" height="20"/>
+                                        </div>
+                                        
+                                        <p:divider align="left">
+                                            <div class="p-d-inline-flex p-ai-center">
+                                                <i class="pi pi-chart-bar p-mr-2"/>
+                                                <b>#{text['general.nouns.accents_removal']}</b>
+                                            </div>
+                                        </p:divider>
+                                        #{text['general.message.accents_removal_explanation']}
+                                        <br/>
+                                        <br/>
+                                        <p:selectBooleanCheckbox value="#{topicsBean.removeNonAsciiCharacters}" itemLabel="#{text['general.verbs.remove_accents']}" escape="false"/>
+                                        <div>
+                                            <p:spacer width="30" height="20"/>
+                                        </div>
+                                        
 
                                         
                                         <p:divider align="left">

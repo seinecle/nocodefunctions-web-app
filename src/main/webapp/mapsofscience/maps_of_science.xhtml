@@ -1,0 +1,28 @@
+<html 
+    lang="#{activeLocale.languageTag}"
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="jakarta.faces.html"
+    xmlns:f="jakarta.faces.core"
+    xmlns:p="http://primefaces.org/ui"
+    xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+    <f:view locale="#{activeLocale.current}">
+
+        <h:head>        <!-- Primary Meta Tags -->
+        </h:head>
+
+        <h:body>
+            <f:metadata>
+                <f:viewParam name="lang" value="#{activeLocale.languageTag}" />
+                <f:viewParam name="function" value="#{sessionBean.function}" />
+            </f:metadata>
+            <f:facet name="last">
+                <h:outputStylesheet name="css/custom.css" />
+            </f:facet>
+            <p:panel>
+                <ui:include src="/WEB-INF/includes/header.xhtml"/>
+                <h1>IN PROGRESS - COME BACK OFTEN</h1>
+            </p:panel>
+            <p:spacer height="20"/>
+        </h:body>
+    </f:view>
+</html>

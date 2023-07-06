@@ -32,6 +32,22 @@ public class RemoteLocal {
         return result;
     }
 
+    public static String getHostFunctionsAPI() {
+        if (System.getProperty("os.name").toLowerCase().contains("win")) {
+            return "http://localhost:7002/";
+        } else {
+            String protocol = "https://";
+            String domain;
+            if (System.getProperty("test") != null && System.getProperty("test").equals("yes")) {
+                domain = "test.nocodefunctions.com";
+            } else {
+                domain = "nocodefunctions.com";
+            }
+            return protocol + domain + "/";
+
+        }
+    }
+
     public static boolean isLocal() {
         return System.getProperty("test") == null || System.getProperty("test").isBlank();
     }

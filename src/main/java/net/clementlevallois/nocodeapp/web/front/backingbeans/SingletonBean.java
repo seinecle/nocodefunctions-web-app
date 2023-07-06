@@ -5,11 +5,11 @@
  */
 package net.clementlevallois.nocodeapp.web.front.backingbeans;
 
-import com.github.scribejava.core.model.OAuth2AccessToken;
-import com.github.scribejava.core.pkce.PKCE;
-import com.github.scribejava.core.pkce.PKCECodeChallengeMethod;
-import com.twitter.clientlib.TwitterCredentialsOAuth2;
-import com.twitter.clientlib.auth.TwitterOAuth20Service;
+//import com.github.scribejava.core.model.OAuth2AccessToken;
+//import com.github.scribejava.core.pkce.PKCE;
+//import com.github.scribejava.core.pkce.PKCECodeChallengeMethod;
+//import com.twitter.clientlib.TwitterCredentialsOAuth2;
+//import com.twitter.clientlib.auth.TwitterOAuth20Service;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -34,7 +34,7 @@ public class SingletonBean {
     private final static String PATHLOCALDEV = "C:\\Users\\levallois\\open\\nocode-app-web-front\\";
     private final static String PATHREMOTEDEV = "/home/waouh/nocodeapp-web/";
     private static String rootProps;
-    private TwitterOAuth20Service twitterOAuthService;
+//    private TwitterOAuth20Service twitterOAuthService;
     private String twitterAuthorizationUrl;
 
     public SingletonBean() {
@@ -52,23 +52,23 @@ public class SingletonBean {
             String twitterClientId = privateProperties.getProperty("twitter_client_id");
             String twitterClientSecret = privateProperties.getProperty("twitter_client_secret");
 
-            TwitterCredentialsOAuth2 credentials = new TwitterCredentialsOAuth2(twitterClientId,
-                    twitterClientSecret,
-                    "",
-                    "");
-
-            twitterOAuthService = new TwitterOAuth20Service(
-                    credentials.getTwitterOauth2ClientId(),
-                    credentials.getTwitterOAuth2ClientSecret(),
-                    RemoteLocal.getDomain() + "twitter_auth.html",
-                    "offline.access tweet.read users.read");
-
-            final String secretState = "state";
-            PKCE pkce = new PKCE();
-            pkce.setCodeChallenge("challenge");
-            pkce.setCodeChallengeMethod(PKCECodeChallengeMethod.PLAIN);
-            pkce.setCodeVerifier("challenge");
-            twitterAuthorizationUrl = twitterOAuthService.getAuthorizationUrl(pkce, secretState);
+//            TwitterCredentialsOAuth2 credentials = new TwitterCredentialsOAuth2(twitterClientId,
+//                    twitterClientSecret,
+//                    "",
+//                    "");
+//
+//            twitterOAuthService = new TwitterOAuth20Service(
+//                    credentials.getTwitterOauth2ClientId(),
+//                    credentials.getTwitterOAuth2ClientSecret(),
+//                    RemoteLocal.getDomain() + "twitter_auth.html",
+//                    "offline.access tweet.read users.read");
+//
+//            final String secretState = "state";
+//            PKCE pkce = new PKCE();
+//            pkce.setCodeChallenge("challenge");
+//            pkce.setCodeChallengeMethod(PKCECodeChallengeMethod.PLAIN);
+//            pkce.setCodeVerifier("challenge");
+//            twitterAuthorizationUrl = twitterOAuthService.getAuthorizationUrl(pkce, secretState);
 
         } catch (UnknownHostException ex) {
             System.out.println("ex:" + ex.getMessage());
@@ -96,26 +96,26 @@ public class SingletonBean {
 //        return rootProps;
 //    }
 
-    public TwitterOAuth20Service getTwitterOAuthService() {
-        return twitterOAuthService;
-    }
-
-    public String getTwitterAuthorizationUrl() {
-        return twitterAuthorizationUrl;
-    }
-
-    public OAuth2AccessToken getOAuth2AccessToken(String code) {
-        try {
-            PKCE pkce = new PKCE();
-            pkce.setCodeChallenge("challenge");
-            pkce.setCodeChallengeMethod(PKCECodeChallengeMethod.PLAIN);
-            pkce.setCodeVerifier("challenge");
-            return twitterOAuthService.getAccessToken(pkce, code);
-        } catch (IOException | ExecutionException | InterruptedException ex) {
-            System.out.println("ex:" + ex.getMessage());
-            return null;
-        }
-
-    }
+//    public TwitterOAuth20Service getTwitterOAuthService() {
+//        return twitterOAuthService;
+//    }
+//
+//    public String getTwitterAuthorizationUrl() {
+//        return twitterAuthorizationUrl;
+//    }
+//
+//    public OAuth2AccessToken getOAuth2AccessToken(String code) {
+//        try {
+//            PKCE pkce = new PKCE();
+//            pkce.setCodeChallenge("challenge");
+//            pkce.setCodeChallengeMethod(PKCECodeChallengeMethod.PLAIN);
+//            pkce.setCodeVerifier("challenge");
+//            return twitterOAuthService.getAccessToken(pkce, code);
+//        } catch (IOException | ExecutionException | InterruptedException ex) {
+//            System.out.println("ex:" + ex.getMessage());
+//            return null;
+//        }
+//
+//    }
 
 }

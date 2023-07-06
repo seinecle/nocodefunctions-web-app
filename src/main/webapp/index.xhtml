@@ -1,8 +1,8 @@
 <html 
     lang="#{activeLocale.languageTag}"
     xmlns="http://www.w3.org/1999/xhtml"
-    xmlns:h="http://java.sun.com/jsf/html"
-    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:h="jakarta.faces.html"
+    xmlns:f="jakarta.faces.core"
     xmlns:p="http://primefaces.org/ui"
     xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
     <f:view locale="#{activeLocale.current}">
@@ -72,6 +72,10 @@
                     </div>
                     <p:spacer width="10"/>
                     <div class="flex justify-content-center justify-content-center buttonIndexPage">
+                        <p:button value="#{text['index.button.organic']}" outcome="organic/organic_listening_voice_of_customer_tool.html"/>
+                    </div>
+                    <p:spacer width="10"/>
+                    <div class="flex justify-content-center justify-content-center buttonIndexPage">
                         <p:button value="#{text['index.button.cowo']}" outcome="cowo/semantic_networks_tool.html"/>
                     </div>
                     <p:spacer width="10"/>
@@ -97,6 +101,14 @@
                     <p:spacer width="10"/>
                     <div class="flex justify-content-center justify-content-center buttonIndexPage">
                         <p:button value="#{text['index.button.pdfmatcher']}" outcome="pdfmatcher/pdf_matcher_tool.html"/>
+                    </div>
+                    <p:spacer width="10"/>
+                    <div class="flex justify-content-center justify-content-center buttonIndexPage">
+                        <p:button value="️ #{text['index.button.mapsofscience']}" outcome="mapsofscience/maps_of_science.html"/>
+                    </div>
+                    <p:spacer width="10"/>
+                    <div class="flex justify-content-center justify-content-center buttonIndexPage">
+                        <p:button value="#{text['index.button.spatialize']}" outcome="spatialize/spatialize_network.html"/>
                     </div>
                 </div>
             </p:panel>
@@ -289,6 +301,10 @@
                     </div>
                     <p:spacer width="10"/>
                     <div class="flex justify-content-center justify-content-center buttonIndexPage">
+                        <p:button value="#{text['index.button.organic']}" outcome="organic/organic_listening_voice_of_customer_tool.html"/>
+                    </div>
+                    <p:spacer width="10"/>
+                    <div class="flex justify-content-center justify-content-center buttonIndexPage">
                         <p:button value="#{text['index.button.cowo']}" outcome="cowo/semantic_networks_tool.html"/>
                     </div>
                     <p:spacer width="10"/>
@@ -314,6 +330,14 @@
                     <p:spacer width="10"/>
                     <div class="flex justify-content-center justify-content-center buttonIndexPage">
                         <p:button value="#{text['index.button.pdfmatcher']}" outcome="pdfmatcher/pdf_matcher_tool.html"/>
+                    </div>
+                    <p:spacer width="10"/>
+                    <div class="flex justify-content-center justify-content-center buttonIndexPage">
+                        <p:button value="#{text['index.button.mapsofscience']}" outcome="mapsofscience/maps_of_science.html"/>
+                    </div>
+                    <p:spacer width="10"/>
+                    <div class="flex justify-content-center justify-content-center buttonIndexPage">
+                        <p:button value="#{text['index.button.spatialize']}" outcome="spatialize/spatialize_network.html"/>
                     </div>
                 </div>
             </p:panel>

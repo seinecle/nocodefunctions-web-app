@@ -90,15 +90,6 @@ public class ConverterBean implements Serializable {
         this.uploadedFile = uploadedFile;
     }
 
-    public void upload() {
-        if (uploadedFile != null) {
-            String success = sessionBean.getLocaleBundle().getString("general.nouns.success");
-            String is_uploaded = sessionBean.getLocaleBundle().getString("general.verb.is_uploaded");
-            FacesMessage message = new FacesMessage(success, uploadedFile.getFileName() + " " + is_uploaded + ".");
-            FacesContext.getCurrentInstance().addMessage(null, message);
-        }
-    }
-
     public String handleFileUpload(FileUploadEvent event) {
         sessionBean.sendFunctionPageReport();
         String success = sessionBean.getLocaleBundle().getString("general.nouns.success");

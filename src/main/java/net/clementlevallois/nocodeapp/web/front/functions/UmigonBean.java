@@ -77,9 +77,6 @@ public class UmigonBean implements Serializable {
     DataImportBean inputData;
 
     @Inject
-    SingletonBean singletonBean;
-
-    @Inject
     ActiveLocale activeLocale;
 
     public UmigonBean() {

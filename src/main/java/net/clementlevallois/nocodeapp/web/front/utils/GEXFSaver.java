@@ -7,6 +7,7 @@ package net.clementlevallois.nocodeapp.web.front.utils;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
 
@@ -18,7 +19,7 @@ public class GEXFSaver {
 
     public static StreamedContent exportGexfAsStreamedFile(String gexf, String resultFileNameWithoutExtension) {
 
-        byte[] readAllBytes = gexf.getBytes();
+        byte[] readAllBytes = gexf.getBytes(StandardCharsets.UTF_8);
         InputStream is = new ByteArrayInputStream(readAllBytes);
         StreamedContent file = DefaultStreamedContent.builder()
                 .name(resultFileNameWithoutExtension + ".gexf")

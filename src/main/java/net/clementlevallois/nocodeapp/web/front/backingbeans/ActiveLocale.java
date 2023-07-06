@@ -109,6 +109,9 @@ public class ActiveLocale implements Serializable {
 
         @Override
         public int compare(Locale firstLocale, Locale secondLocale) {
+            if (firstLocale == null || secondLocale == null || current == null){
+                return -1;
+            }
             return firstLocale.getDisplayName(current).compareTo(secondLocale.getDisplayName(current));
         }
 

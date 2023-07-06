@@ -33,6 +33,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jakarta.enterprise.context.SessionScoped;
+import jakarta.faces.application.FacesMessage;
 import jakarta.faces.context.ExternalContext;
 import jakarta.faces.context.FacesContext;
 import jakarta.inject.Inject;
@@ -284,11 +285,18 @@ public class GazeBean implements Serializable {
                 .build();
 
         future = client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()).thenAccept(resp -> {
-            byte[] body = resp.body();
-            String jsonResult = new String(body, StandardCharsets.UTF_8);
-            JsonObject jsonObject = Json.createReader(new StringReader(jsonResult)).readObject();
-            nodesAsJson = Converters.turnJsonObjectToString(jsonObject.getJsonObject("nodes"));
-            edgesAsJson = Converters.turnJsonObjectToString(jsonObject.getJsonObject("edges"));
+            if (resp.statusCode() == 200) {
+                byte[] body = resp.body();
+                String jsonResult = new String(body, StandardCharsets.UTF_8);
+                JsonObject jsonObject = Json.createReader(new StringReader(jsonResult)).readObject();
+                nodesAsJson = Converters.turnJsonObjectToString(jsonObject.getJsonObject("nodes"));
+                edgesAsJson = Converters.turnJsonObjectToString(jsonObject.getJsonObject("edges"));
+            } else {
+                System.out.println("gaze results by the API was not a 200 code");
+                String error = sessionBean.getLocaleBundle().getString("general.nouns.error");
+                FacesMessage message = new FacesMessage(error, error);
+                FacesContext.getCurrentInstance().addMessage(null, message);
+            }
         }
         );
         futures.add(future);

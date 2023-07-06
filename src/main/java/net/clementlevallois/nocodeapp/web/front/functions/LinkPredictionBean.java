@@ -12,7 +12,6 @@ import java.io.InputStream;
 import java.io.Serializable;
 import java.io.StringReader;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -22,7 +21,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
-import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.SessionScoped;
 import jakarta.faces.application.FacesMessage;
 import jakarta.faces.context.FacesContext;
@@ -31,6 +29,7 @@ import jakarta.inject.Named;
 import jakarta.json.Json;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonReader;
+import jakarta.json.stream.JsonParsingException;
 import jakarta.servlet.annotation.MultipartConfig;
 import java.util.ArrayList;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
@@ -73,11 +72,6 @@ public class LinkPredictionBean implements Serializable {
         sessionBean.setFunction("linkprediction");
     }
 
-    @PostConstruct
-    void init() {
-        uploadButtonMessage = sessionBean.getLocaleBundle().getString("general.message.choose_gexf_file");
-    }
-
     public UploadedFile getUploadedFile() {
         return uploadedFile;
     }
@@ -86,16 +80,7 @@ public class LinkPredictionBean implements Serializable {
         this.uploadedFile = uploadedFile;
     }
 
-    public void upload() {
-        if (uploadedFile != null) {
-            String successMsg = sessionBean.getLocaleBundle().getString("general.nouns.success");
-            String is_uploaded = sessionBean.getLocaleBundle().getString("general.verb.is_uploaded");
-            FacesMessage message = new FacesMessage(successMsg, uploadedFile.getFileName() + " " + is_uploaded + ".");
-            FacesContext.getCurrentInstance().addMessage(null, message);
-        }
-    }
-
-    public String handleFileUpload(FileUploadEvent event) throws IOException, URISyntaxException {
+    public String handleFileUpload(FileUploadEvent event) {
         success = false;
         String successMsg = sessionBean.getLocaleBundle().getString("general.nouns.success");
         String is_uploaded = sessionBean.getLocaleBundle().getString("general.verb.is_uploaded");
@@ -140,16 +125,23 @@ public class LinkPredictionBean implements Serializable {
             CompletableFuture<Void> future = client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()).thenAccept(resp -> {
                 byte[] body = resp.body();
                 String jsonResultsAsString = new String(body, StandardCharsets.UTF_8);
-                try ( JsonReader reader = Json.createReader(new StringReader(jsonResultsAsString))) {
+                try (JsonReader reader = Json.createReader(new StringReader(jsonResultsAsString))) {
                     jsonObjectReturned = reader.readObject();
+                } catch (JsonParsingException jsonEx) {
+                    System.out.println("error: the json we received from link prediction is not formatted as json");
                 }
-
             }
             );
             futures.add(future);
 
             CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(futures.toArray((new CompletableFuture[0])));
             combinedFuture.join();
+
+            if (jsonObjectReturned == null) {
+                System.out.println("error: the json we received from link prediction is not formatted as json");
+                return -1;
+
+            }
 
             JsonObject predictions = jsonObjectReturned.getJsonObject("predictions");
             augmentedGexf = jsonObjectReturned.getString("gexf augmented");
@@ -171,9 +163,6 @@ public class LinkPredictionBean implements Serializable {
                 topPredictions.add(prediction);
             }
 
-//        predictor = new LinkPredictionController();
-//        predictor.runPrediction(is, nbPredictions, uniqueId);
-//        topPredictions = predictor.getTopPredictions();
         } catch (IOException ex) {
             System.out.println("exception when getting json with predictions and augmented gexf:");
             System.out.println(ex.getMessage());
@@ -207,7 +196,7 @@ public class LinkPredictionBean implements Serializable {
 
     public StreamedContent getFileToSave() throws FileNotFoundException {
         success = true;
-        if (is == null) {
+        if (augmentedGexf == null) {
             System.out.println("no file found for link prediction");
             return null;
         }

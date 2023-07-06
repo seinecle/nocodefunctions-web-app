@@ -1,6 +1,6 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
       xmlns:p="http://primefaces.org/ui"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
     <f:view locale="#{activeLocale.current}">
@@ -76,7 +76,7 @@
                     <div>
                         <p:spacer height="30" width="10"/>            
                     </div>
-                    <p:outputLabel for="nbPred" value="#{text['link_prediction.choose_gexf_or_read_below']}"/>
+                    <p:outputLabel for="nbPred" value="#{text['link_prediction.how_many_links']}"/>
                     <br/>
                     <p:inputText value="#{linkPredictionBean.nbPredictions}" id="nbPred">
                         <p:keyFilter mask="num" />
@@ -90,8 +90,8 @@
                     <h:graphicImage name="images/round_1_orange.png" width="20" height="20" style="vertical-align: middle;"/>
                     <p:spacer width="5"/>
                     <p:fileUpload
-                        label="#{linkPredictionBean.uploadButtonMessage}"
-                        mode="simple"
+                        label="#{text['general.message.choose_gexf_file']}"
+                        mode="advanced"
                         auto="false"
                         skinSimple="true"
                         multiple="false"

@@ -72,19 +72,18 @@
         <dependency>
             <groupId>net.clementlevallois.utils</groupId>
             <artifactId>utils-core</artifactId>
-            <version>1.0</version>
+            <version>0.13</version>
         </dependency>
         <dependency>
             <groupId>net.clementlevallois.functions</groupId>
             <artifactId>umigon-model</artifactId>
-            <version>1.0</version>
+            <version>0.12</version>
         </dependency>
         <dependency>
             <groupId>net.clementlevallois.io</groupId>
             <artifactId>io-model</artifactId>
             <version>1.0</version>
         </dependency>
-        <!--5Mb-->
         <dependency>
             <groupId>org.primefaces</groupId>
             <artifactId>primefaces</artifactId>
@@ -94,19 +93,13 @@
         <dependency>
             <groupId>org.omnifaces</groupId>
             <artifactId>omnifaces</artifactId>
-            <version>4.0.1</version>
+            <version>4.1</version>
         </dependency>
         <dependency>
             <groupId>jakarta.platform</groupId>
             <artifactId>jakarta.jakartaee-api</artifactId>
             <version>${jakartaee}</version>
             <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.twitter</groupId>
-            <artifactId>twitter-api-java-sdk</artifactId>
-            <version>2.0.3</version>
-            <type>jar</type>
         </dependency>
     </dependencies>
     <build>

@@ -1,8 +1,8 @@
 <html 
     lang="#{activeLocale.languageTag}"
     xmlns="http://www.w3.org/1999/xhtml"
-    xmlns:h="http://java.sun.com/jsf/html"
-    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:h="jakarta.faces.html"
+    xmlns:f="jakarta.faces.core"
     xmlns:p="http://primefaces.org/ui"
     xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
     <f:view locale="#{activeLocale.current}">
@@ -20,7 +20,7 @@
             <meta property="og:site_name" content="Nocode functions"/>
             <meta property="og:url" content="https://nocodefunctions.com/organic/organic_listening_voice_of_customer_tool.html"/>
             <meta property="og:title" content="#{text['organic.title']}"/>
-            <meta property="og:description" content="Upload some text and separate natural comments from communication talk - without coding"/>
+            <meta property="og:description" content="#{text['organic.description']}"/>
             <meta property="og:image" content="/images/workflow_medium.jpg"/>
 
             <!-- Twitter -->
@@ -54,11 +54,74 @@
             </f:facet>
             <p:panel>
                 <ui:include src="/WEB-INF/includes/header.xhtml" />
-                <ui:include src="/WEB-INF/includes/sidebar.xhtml"/>
-
                 <h1>#{text['organic.title']}</h1>
             </p:panel>
             <p:spacer height="20"/>
+            <p:panel>
+                <div style="text-align: center">
+                    <h3>#{text['general.message.new_api_available']}</h3>
+                </div>
+                <br/>
+                <br/>
+                <p>#{text['general.message.try_it_just_click_on_link']}</p>
+                <span style="overflow-wrap: break-word;">
+                    <a href="#{sessionBean.hostFunctionsAPI()}api/organicForAText?text-lang=en&amp;text=Buy our product now&amp;explanation=on&amp;output-format=html&amp;explanation-lang=#{activeLocale.languageTag}" target="_blank">
+                        #{sessionBean.hostFunctionsAPI()}
+                        <span style="color:blue">
+                            api/organicForAText?
+                        </span>
+                        <span style="color:red">
+                            text-lang=
+                        </span>
+                        en
+                        <span style="color:green">
+                            &amp;
+                        </span>
+                        <span style="color:red">
+                            text=
+                        </span>
+                        Buy our products now
+                        <span style="color:green">
+                            &amp;
+                        </span>
+                        <span style="color:red">
+                            explanation=
+                        </span>
+                        on
+                        <span style="color:green">
+                            &amp;
+                        </span>
+                        <span style="color:red">
+                            output-format=
+                        </span>
+                        html
+                        <span style="color:green">
+                            &amp;
+                        </span>
+                        <span style="color:red">
+                            explanation-lang=
+                        </span>
+                        fr
+                    </a>
+                </span>
+                <br/>
+                <br/>
+                <p>#{text['umigon.sentiment_analysis_tool.api.try_with_parameters']}
+                    <br/>
+                    <br/>
+                    <span style="color:red">text-lang</span>: #{text['umigon.sentiment_analysis_tool.api.text-lang.details']}
+                    <br/>
+                    <span style="color:red">text</span>: #{text['umigon.sentiment_analysis_tool.api.text.details']}
+                    <br/>
+                    <span style="color:red">explanation</span>: #{text['umigon.sentiment_analysis_tool.api.explanation.details']}
+                    <br/>
+                    <span style="color:red">output-format</span>: #{text['umigon.sentiment_analysis_tool.api.output-format.details']}
+                    <br/>
+                    <span style="color:red">explanation-lang</span>: #{text['umigon.sentiment_analysis_tool.api.explanation-lang.details']}
+                    <br/>
+                </p>
+            </p:panel>
+            <p:spacer height="30"/>
             <p:panel>
                 <div style="text-align: center">            
                     <i>#{text['general.message.use_it_directly_by_selecting_a_data_source']}</i>
@@ -74,12 +137,6 @@
                     <br/>
                     <br/>
                     <p:button value="#{text['general.message.text_structured']}" icon="pi pi-file-excel" iconPos="right" outcome="/import_your_structured_data.xhtml?function=organic&amp;faces-redirect=true" styleClass="btn btn-primary" style="min-width: 15em;"/>
-                    <br/>
-                    <br/>
-                    #{text['general.small_words.or']}
-                    <br/>
-                    <br/>
-                    <p:button value="#{text['import_data.twitter.title']}" icon="pi pi-twitter" iconPos="right" outcome="/import_your_data_twitter.xhtml?function=organic&amp;faces-redirect=true" styleClass="btn btn-primary" style="min-width: 15em;"/>
                 </div>
             </p:panel>
             <p:spacer height="60"/>

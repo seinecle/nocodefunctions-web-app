@@ -7,7 +7,6 @@ package net.clementlevallois.nocodeapp.web.front.functions;
 
 import io.mikael.urlbuilder.UrlBuilder;
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
@@ -18,6 +17,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -32,15 +32,17 @@ import jakarta.enterprise.context.SessionScoped;
 import jakarta.faces.context.FacesContext;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
+import java.io.IOException;
 import java.io.InputStream;
 import net.clementlevallois.importers.model.DataFormatConverter;
+import net.clementlevallois.nocodeapp.web.front.backingbeans.ActiveLocale;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
+import net.clementlevallois.nocodeapp.web.front.backingbeans.SingletonBean;
 import net.clementlevallois.nocodeapp.web.front.importdata.DataImportBean;
 import net.clementlevallois.nocodeapp.web.front.http.SendReport;
 import net.clementlevallois.nocodeapp.web.front.logview.NotificationService;
 import net.clementlevallois.nocodeapp.web.front.utils.Converters;
 import net.clementlevallois.umigon.model.Document;
-import org.omnifaces.util.Faces;
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
 
@@ -53,31 +55,41 @@ import org.primefaces.model.StreamedContent;
 
 public class OrganicBean implements Serializable {
 
-    private Integer progress;
+    private Integer progress = 3;
+    private Integer countTreated = 0;
     private List<Document> results;
-    private String[] naturalness = new String[]{"organic", "promoted"};
+    private ConcurrentHashMap<Integer, Document> tempResults;
+    private String[] tones;
     private String selectedLanguage;
     private Boolean runButtonDisabled = true;
     private StreamedContent fileToSave;
     private Boolean renderSeeResultsButton = false;
-    private String sessionId;
     private List<Document> filteredDocuments;
-    private ConcurrentHashMap<Integer, Document> tempResults = new ConcurrentHashMap();
+    private Integer maxCapacity = 10_000;
+    private String[] naturalness = new String[]{"organic", "promoted"};
 
     @Inject
     NotificationService service;
 
     @Inject
+    SessionBean sessionBean;
+
+    @Inject
     DataImportBean inputData;
 
     @Inject
-    SessionBean sessionBean;
+    ActiveLocale activeLocale;
 
     public OrganicBean() {
-        if (sessionBean == null) {
-            sessionBean = new SessionBean();
-        }
+    }
+
+    @PostConstruct
+    private void init() {
         sessionBean.setFunction("organic");
+        String promoted_tone = sessionBean.getLocaleBundle().getString("organic.general.soundspromoted");
+        String neutral_tone = sessionBean.getLocaleBundle().getString("organic.general.soundsorganic");
+
+        tones = new String[]{promoted_tone, neutral_tone};
     }
 
     public Integer getProgress() {
@@ -88,6 +100,14 @@ public class OrganicBean implements Serializable {
         this.progress = progress;
     }
 
+    public Integer getMaxCapacity() {
+        return maxCapacity;
+    }
+
+    public void setMaxCapacity(Integer maxCapacity) {
+        this.maxCapacity = maxCapacity;
+    }
+
     public void onComplete() {
     }
 
@@ -95,85 +115,105 @@ public class OrganicBean implements Serializable {
         progress = null;
     }
 
-    @PostConstruct
-    public void init() {
-        sessionId = Faces.getSessionId();
-    }
-
     public String runAnalysis() {
+        progress = 3;
+        if (selectedLanguage == null || selectedLanguage.isEmpty()) {
+            selectedLanguage = "en";
+        }
+        sessionBean.sendFunctionPageReport();
+        tempResults = new ConcurrentHashMap(maxCapacity + 1);
+        filteredDocuments = new ArrayList(maxCapacity + 1);
+        service.create(sessionBean.getLocaleBundle().getString("general.message.starting_analysis"));
+        DataFormatConverter dataFormatConverter = new DataFormatConverter();
+        Map<Integer, String> mapOfLines = dataFormatConverter.convertToMapOfLines(inputData.getBulkData(), inputData.getDataInSheets(), inputData.getSelectedSheetName(), inputData.getSelectedColumnIndex(), inputData.getHasHeaders());
+        int maxRecords = Math.min(mapOfLines.size(), maxCapacity);
+
+        results = Arrays.asList(new Document[maxCapacity + 1]);
+
+        HttpRequest request;
+        HttpClient client = HttpClient.newHttpClient();
+        Set<CompletableFuture> futures = new HashSet();
+        int i = 1;
         try {
-            if (selectedLanguage == null || selectedLanguage.isEmpty()) {
-                selectedLanguage = "en";
-            }
-            sessionBean.sendFunctionPageReport();
-            service.create(sessionBean.getLocaleBundle().getString("general.message.starting_analysis"));
+            for (Map.Entry<Integer, String> entry : mapOfLines.entrySet()) {
+                if (i++ > maxCapacity) {
+                    break;
+                }
+                Document doc = new Document();
+                String id = String.valueOf(entry.getKey());
+                doc.setText(entry.getValue());
+                doc.setId(id);
 
-            DataFormatConverter dataFormatConverter = new DataFormatConverter();
-            Map<Integer, String> inputLines = dataFormatConverter.convertToMapOfLines(inputData.getBulkData(), inputData.getDataInSheets(), inputData.getSelectedSheetName(), inputData.getSelectedColumnIndex(), inputData.getHasHeaders());
+                StringBuilder sb = new StringBuilder();
+                sb.append("http://localhost:7002/api/organicForAText");
+                sb.append("?text-lang=").append(selectedLanguage);
+                sb.append("&id=").append(doc.getId());
+                sb.append("&text=").append(URLEncoder.encode(entry.getValue(), StandardCharsets.UTF_8.toString()));
+                sb.append("&explanation=on");
+                sb.append("&shorter=true");
+                sb.append("&owner=").append(SingletonBean.getPrivateProperties().getProperty("pwdOwner"));
+                sb.append("&output-format=bytes");
+                sb.append("&explanation-lang=").append(activeLocale.getLanguageTag());
+                String uriAsString = sb.toString();
 
-            if (inputLines == null || inputLines.isEmpty()) {
-                service.create(sessionBean.getLocaleBundle().getString("general.message.data_not_found"));
-                return "";
-            }
-            int maxRecords = inputLines.size();
-            results = Arrays.asList(new Document[maxRecords]);
+                URI uri = new URI(uriAsString);
 
-            HttpRequest request;
-            HttpClient client = HttpClient.newHttpClient();
-            Set<CompletableFuture> futures = new HashSet();
+                request = HttpRequest.newBuilder()
+                        .uri(uri)
+                        .build();
 
-            try {
-                for (Map.Entry<Integer, String> entry : inputLines.entrySet()) {
-                    Document doc = new Document();
-                    String id = String.valueOf(entry.getKey());
-                    doc.setText(entry.getValue());
-                    doc.setId(id);
-
-                    URI uri = new URI("http://localhost:7002/api/organicForAText/bytes/" + selectedLanguage + "?id=" + doc.getId() + "&text=" + URLEncoder.encode(entry.getValue(), StandardCharsets.UTF_8.toString()));
-
-                    request = HttpRequest.newBuilder()
-                            .uri(uri)
-                            .build();
-
-                    CompletableFuture<Void> future = client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()).thenAccept(resp -> {
-                        byte[] body = resp.body();
+                CompletableFuture<Void> future = client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()).thenAccept(resp -> {
+                    byte[] body = resp.body();
+                    Float situation = (countTreated++ * 100 / (float) maxRecords);
+                    if (situation.intValue() > progress) {
+                        progress = situation.intValue();
+                    }
+                    if (body.length >= 100 && !new String(body, StandardCharsets.UTF_8).toLowerCase().startsWith("internal") && !new String(body, StandardCharsets.UTF_8).toLowerCase().startsWith("not found")) {
                         try (
                                  ByteArrayInputStream bis = new ByteArrayInputStream(body);  ObjectInputStream ois = new ObjectInputStream(bis)) {
                             Document docReturn = (Document) ois.readObject();
                             tempResults.put(Integer.valueOf(docReturn.getId()), docReturn);
-                        } catch (IOException | ClassNotFoundException ex) {
-                            Logger.getLogger(UmigonBean.class.getName()).log(Level.SEVERE, null, ex);
+                        } catch (Exception ex) {
+                            System.out.println("error in body:");
+                            System.out.println(new String(body, StandardCharsets.UTF_8));
+                            Logger.getLogger(OrganicBean.class.getName()).log(Level.SEVERE, null, ex);
                         }
                     }
-                    );
-                    futures.add(future);
-                    // this is because we need to slow down a bit the requests to DeepL - sending too many thros a
-                    // java.util.concurrent.CompletionException: java.io.IOException: too many concurrent streams
-                    Thread.sleep(2);
                 }
-                this.progress = 40;
-                service.create(sessionBean.getLocaleBundle().getString("general.message.almost_done"));
-
-                CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(futures.toArray((new CompletableFuture[0])));
-                combinedFuture.join();
-
-            } catch (URISyntaxException exception) {
-                System.out.println("error!!");
-            } catch (UnsupportedEncodingException ex) {
-                System.out.println("encoding ex");
+                );
+                futures.add(future);
+                // this is because we need to slow down a bit the requests sending too many thros a
+                // java.util.concurrent.CompletionException: java.io.IOException: too many concurrent streams
+                Thread.sleep(2);
             }
+            this.progress = 40;
+            service.create(sessionBean.getLocaleBundle().getString("general.message.almost_done"));
 
-            for (Map.Entry<Integer, Document> entry : tempResults.entrySet()) {
-                results.set(entry.getKey(), entry.getValue());
-            }
+            CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(futures.toArray((new CompletableFuture[0])));
+            combinedFuture.join();
 
-            service.create(sessionBean.getLocaleBundle().getString("general.message.analysis_complete"));
-            renderSeeResultsButton = true;
-            runButtonDisabled = true;
-
-        } catch (Exception ex) {
+        } catch (URISyntaxException exception) {
+            System.out.println("error!!");
+        } catch (UnsupportedEncodingException ex) {
+            System.out.println("encoding ex");
+        } catch (InterruptedException ex) {
             System.out.println("ex:" + ex.getMessage());
         }
+
+        /* this little danse between tempResults and results is because:
+            -> we use tempResults which is a ConcurrentMap to handle the concurrent inserts following the parallel calls to the Umigon API
+            -> we use results which is a List to regain the original order of texts (notice that we insert the docs in a precise order)
+         */
+        for (Map.Entry<Integer, Document> entry : tempResults.entrySet()) {
+            results.set(entry.getKey(), entry.getValue());
+        }
+
+        this.progress = 100;
+
+        service.create(sessionBean.getLocaleBundle().getString("general.message.analysis_complete"));
+        renderSeeResultsButton = true;
+        runButtonDisabled = true;
+
         return "/" + sessionBean.getFunction() + "/results.xhtml?faces-redirect=true";
     }
 
@@ -193,12 +233,12 @@ public class OrganicBean implements Serializable {
         this.results = results;
     }
 
-    public String[] getNaturalness() {
-        return naturalness;
+    public String[] getTones() {
+        return tones;
     }
 
-    public void setNaturalness(String[] naturalness) {
-        this.naturalness = naturalness;
+    public void setTones(String[] tones) {
+        this.tones = tones;
     }
 
     public String getSelectedLanguage() {
@@ -238,6 +278,48 @@ public class OrganicBean implements Serializable {
         SendReport sender = new SendReport();
         sender.initErrorReport(docFound.getText() + " - should not be " + docFound.getCategorizationResult().toString());
         sender.start();
+        return "";
+    }
+
+    public String showExplanation(int rowId) {
+        Document docFound;
+
+        if (filteredDocuments != null && rowId < filteredDocuments.size() && filteredDocuments.size() != results.size()) {
+            docFound = filteredDocuments.get(rowId);
+            if (docFound == null) {
+                System.out.println("doc to explain not found in backing bean / filtered collection");
+                return "";
+            }
+            docFound.setShowExplanation(true);
+        } else {
+            docFound = results.get(rowId);
+            if (docFound == null) {
+                System.out.println("doc to explain not found in backing bean  / results collection");
+                return "";
+            }
+            docFound.setShowExplanation(true);
+        }
+        return "";
+    }
+
+    public String hideExplanation(int rowId) {
+        Document docFound;
+
+        if (filteredDocuments != null && rowId < filteredDocuments.size() && filteredDocuments.size() != results.size()) {
+            docFound = filteredDocuments.get(rowId);
+            if (docFound == null) {
+                System.out.println("doc explanation to hide not found in backing bean / filtered collection");
+                return "";
+            }
+            docFound.setShowExplanation(false);
+        } else {
+            docFound = results.get(rowId);
+            if (docFound == null) {
+                System.out.println("doc explanation to hide not found in backing bean  / results collection");
+                return "";
+            }
+            docFound.setShowExplanation(false);
+        }
         return "";
     }
 
@@ -299,5 +381,4 @@ public class OrganicBean implements Serializable {
     public void setFilteredDocuments(List<Document> filteredDocuments) {
         this.filteredDocuments = filteredDocuments;
     }
-
 }

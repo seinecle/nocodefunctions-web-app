@@ -31,9 +31,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 import static java.util.stream.Collectors.toList;
 import jakarta.enterprise.context.SessionScoped;
 import jakarta.faces.application.FacesMessage;
@@ -45,6 +42,7 @@ import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.json.JsonReader;
 import jakarta.json.JsonWriter;
+import jakarta.json.stream.JsonParsingException;
 import jakarta.servlet.annotation.MultipartConfig;
 import net.clementlevallois.importers.model.DataFormatConverter;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
@@ -86,6 +84,8 @@ public class TopicsBean implements Serializable {
     private boolean scientificCorpus;
     private boolean okToShareStopwords = false;
     private boolean replaceStopwords = false;
+    private boolean lemmatize = true;
+    private boolean removeNonAsciiCharacters = false;
     private UploadedFile fileUserStopwords;
 
     private Map<Integer, String> mapOfLines;
@@ -121,8 +121,8 @@ public class TopicsBean implements Serializable {
     public String runAnalysis() {
         progress = 0;
         HttpRequest request;
-        HttpClient client = HttpClient.newHttpClient();
-        Set<CompletableFuture> futures = new HashSet();
+        HttpClient client;
+        Set<CompletableFuture> futures;
         try {
             sessionBean.sendFunctionPageReport();
             service.create(sessionBean.getLocaleBundle().getString("general.message.starting_analysis"));
@@ -140,93 +140,8 @@ public class TopicsBean implements Serializable {
             progress = 10;
             service.create(sessionBean.getLocaleBundle().getString("general.message.removing_punctuation_and_cleaning"));
 
-            mapOfLines = TextCleaningOps.doAllCleaningOps(mapOfLines);
+            mapOfLines = TextCleaningOps.doAllCleaningOps(mapOfLines, removeNonAsciiCharacters);
             mapOfLines = TextCleaningOps.putInLowerCase(mapOfLines);
-
-            progress = 15;
-            if (selectedLanguage.equals("en") | selectedLanguage.equals("fr")) {
-                JsonObjectBuilder overallObject = Json.createObjectBuilder();
-                JsonObjectBuilder linesBuilder = Json.createObjectBuilder();
-                for (Map.Entry<Integer, String> entryLines : mapOfLines.entrySet()) {
-                    linesBuilder.add(String.valueOf(entryLines.getKey()), entryLines.getValue());
-                }
-                overallObject.add("lines", linesBuilder);
-                overallObject.add("lang", selectedLanguage);
-                JsonObject build = overallObject.build();
-                StringWriter sw = new StringWriter(128);
-                try (JsonWriter jw = Json.createWriter(sw)) {
-                    jw.write(build);
-                }
-                String jsonString = sw.toString();
-
-                HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(jsonString.getBytes(StandardCharsets.UTF_8));
-
-                URI uri = new URI("http://localhost:7002/api/lemmatizer_light/");
-
-                request = HttpRequest.newBuilder()
-                        .POST(bodyPublisher)
-                        .uri(uri)
-                        .build();
-
-                CompletableFuture<Void> future = client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()).thenAccept(resp -> {
-                    byte[] body = resp.body();
-                    String jsonReceived = new String(body, StandardCharsets.UTF_8);
-                    JsonObject jsonObjectReturned;
-                    try (JsonReader reader = Json.createReader(new StringReader(jsonReceived))) {
-                        jsonObjectReturned = reader.readObject();
-                    }
-                    for (String key : jsonObjectReturned.keySet()) {
-                        mapOfLines.put(Integer.valueOf(key), jsonObjectReturned.getString(key));
-                    }
-                }
-                );
-                futures.add(future);
-                CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(futures.toArray((new CompletableFuture[0])));
-                combinedFuture.join();
-
-            } else {
-                String lemmatization = sessionBean.getLocaleBundle().getString("general.message.heavy_duty_lemmatization");
-                String wait = sessionBean.getLocaleBundle().getString("general.message.please_wait_seconds");
-                FacesContext.getCurrentInstance().
-                        addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, lemmatization, wait));
-                service.create(lemmatization + " " + wait);
-                progress = 15;
-                Runnable incrementProgress = () -> {
-                    progress = progress + 1;
-                };
-                ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
-                executor.scheduleAtFixedRate(incrementProgress, 0, 2, TimeUnit.SECONDS);
-                try {
-                    JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
-                    for (Map.Entry<Integer, String> entry : mapOfLines.entrySet()) {
-                        objectBuilder.add(String.valueOf(entry.getKey()), entry.getValue());
-                    }
-                    JsonObject jsonObject = objectBuilder.build();
-
-                    URI uri = new URI("http://localhost:7000/lemmatize/" + selectedLanguage);
-
-                    request = HttpRequest.newBuilder()
-                            .uri(uri)
-                            .POST(HttpRequest.BodyPublishers.ofString(jsonObject.toString()))
-                            .build();
-                    client = HttpClient.newHttpClient();
-
-                    HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-                    if (response.statusCode() == 200) {
-                        String body = response.body();
-                        JsonObject jsonObjectReturned;
-                        try (JsonReader reader = Json.createReader(new StringReader(body))) {
-                            jsonObjectReturned = reader.readObject();
-                        }
-                        for (String key : jsonObjectReturned.keySet()) {
-                            mapOfLines.put(Integer.valueOf(key), jsonObjectReturned.getString(key));
-                        }
-                    }
-                } catch (URISyntaxException | IOException | InterruptedException ex) {
-                    System.out.println("ex:" + ex.getMessage());
-                }
-                executor.shutdown();
-            }
 
             service.create(sessionBean.getLocaleBundle().getString("general.message.finding_key_terms"));
             progress = 20;
@@ -261,6 +176,8 @@ public class TopicsBean implements Serializable {
             overallObject.add("userSuppliedStopwords", userSuppliedStopwordsBuilder);
             overallObject.add("replaceStopwords", replaceStopwords);
             overallObject.add("isScientificCorpus", scientificCorpus);
+            overallObject.add("lemmatize", lemmatize);
+            overallObject.add("removeAccents", removeNonAsciiCharacters);
             overallObject.add("precision", precision);
             overallObject.add("minCharNumber", minCharNumber);
             overallObject.add("minTermFreq", minTermFreq);
@@ -283,7 +200,14 @@ public class TopicsBean implements Serializable {
 
             CompletableFuture<Void> future = client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()).thenAccept(resp -> {
                 byte[] body = resp.body();
-                jsonResultAsString = new String(body, StandardCharsets.UTF_8);
+                if (resp.statusCode() == 200) {
+                    jsonResultAsString = new String(body, StandardCharsets.UTF_8);
+                } else {
+                    System.out.println("topic returned by the API was not a 200 code");
+                    String errorMessage = new String(body, StandardCharsets.UTF_8);
+                    FacesMessage message = new FacesMessage(errorMessage, errorMessage);
+                    FacesContext.getCurrentInstance().addMessage(null, message);
+                }
             }
             );
             futures.add(future);
@@ -303,9 +227,17 @@ public class TopicsBean implements Serializable {
             keywordsPerTopic = new TreeMap();
             topicsPerLine = new TreeMap();
             JsonReader jsonReader = Json.createReader(new StringReader(jsonResultAsString));
-            JsonObject jsonObject = jsonReader.readObject();
+            JsonObject jsonObject = null;
+            try {
+                jsonObject = jsonReader.readObject();
+            } catch (JsonParsingException jsonEx) {
+                System.out.println("error: the json we received is not formatted as json");
+                service.create(sessionBean.getLocaleBundle().getString("general.message.internal_server_error"));
+                renderSeeResultsButton = true;
+                runButtonDisabled = true;
+                return "";
+            }
 
-            
             String gexfSemanticNetwork = jsonObject.getString("gexf");
             gexfFile = GEXFSaver.exportGexfAsStreamedFile(gexfSemanticNetwork, "semantic_network");
 
@@ -423,8 +355,6 @@ public class TopicsBean implements Serializable {
     public void setGexfFile(StreamedContent gexfFile) {
         this.gexfFile = gexfFile;
     }
-    
-    
 
     public Map<Integer, Multiset<String>> getCommunitiesResult() {
         return keywordsPerTopic;
@@ -489,6 +419,22 @@ public class TopicsBean implements Serializable {
         this.replaceStopwords = replaceStopwords;
     }
 
+    public boolean isRemoveNonAsciiCharacters() {
+        return removeNonAsciiCharacters;
+    }
+
+    public void setRemoveNonAsciiCharacters(boolean removeNonAsciiCharacters) {
+        this.removeNonAsciiCharacters = removeNonAsciiCharacters;
+    }
+
+    public boolean isLemmatize() {
+        return lemmatize;
+    }
+
+    public void setLemmatize(boolean lemmatize) {
+        this.lemmatize = lemmatize;
+    }
+
     public int getMinCharNumber() {
         return minCharNumber;
     }
@@ -504,12 +450,10 @@ public class TopicsBean implements Serializable {
     public void setMinTermFreq(int minTermFreq) {
         this.minTermFreq = minTermFreq;
     }
-    
-    
 
     public List<Locale> getAvailable() {
         List<Locale> available = new ArrayList();
-        String[] availableStopwordLists = new String[]{"ar", "bg", "ca", "da", "nl", "en", "fr", "de", "el", "it", "no", "pl", "pt", "ru", "es"};
+        String[] availableStopwordLists = new String[]{"ar", "bg", "ca", "da", "de", "el", "en", "es", "fr", "it", "ja", "nl", "no", "pl", "pt", "ro", "ru", "tr"};
         for (String tag : availableStopwordLists) {
             available.add(Locale.forLanguageTag(tag));
         }
