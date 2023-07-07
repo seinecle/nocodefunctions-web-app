@@ -5,6 +5,7 @@
  */
 package net.clementlevallois.nocodeapp.web.front.backingbeans;
 
+import io.mikael.urlbuilder.UrlBuilder;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -12,13 +13,11 @@ import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.util.Properties;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jakarta.inject.Named;
@@ -26,9 +25,7 @@ import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
 import net.clementlevallois.nocodeapp.web.front.functions.UmigonBean;
 import net.clementlevallois.nocodeapp.web.front.http.SendReport;
-import net.clementlevallois.umigon.model.Category;
 import net.clementlevallois.umigon.model.Document;
-import net.clementlevallois.umigon.model.ResultOneHeuristics;
 
 /**
  *
@@ -63,11 +60,16 @@ public class CardTestBean implements Serializable {
     private String organicResultEN = "";
     private String organicResultFRExplanation = "";
     private String organicResultENExplanation = "";
+
     private static String baseURI;
+
+    private Properties privateProperties;
 
     private Boolean showFRExplanation = false;
     private Boolean showENExplanation = false;
     private Boolean showESExplanation = false;
+    private Boolean showENExplanationOrganic = false;
+    private Boolean showFRExplanationOrganic = false;
 
     @Inject
     SessionBean sessionBean;
@@ -79,7 +81,7 @@ public class CardTestBean implements Serializable {
         if (sessionBean == null) {
             sessionBean = new SessionBean();
         }
-        Properties privateProperties = SingletonBean.getPrivateProperties();
+        privateProperties = SingletonBean.getPrivateProperties();
         baseURI = "http://localhost:" + privateProperties.getProperty("nocode_api_port") + "/api/";
     }
 
@@ -97,18 +99,19 @@ public class CardTestBean implements Serializable {
         send.initAnalytics("test: umigon fr", sessionBean.getUserAgent());
         send.start();
 
-        StringBuilder sb = new StringBuilder();
-        sb.append(baseURI);
-        sb.append("sentimentForAText");
-        sb.append("?text-lang=").append("fr");
-        sb.append("&text=").append(URLEncoder.encode(umigonTestInputFR, StandardCharsets.UTF_8.toString()));
-        sb.append("&explanation=on");
-        sb.append("&shorter=true");
-        sb.append("&output-format=bytes");
-        sb.append("&explanation-lang=").append(activeLocale.getLanguageTag());
-        String uriAsString = sb.toString();
-
-        URI uri = new URI(uriAsString);
+        URI uri = UrlBuilder
+                .empty()
+                .withScheme("http")
+                .withHost("localhost")
+                .withPort((Integer.valueOf(privateProperties.getProperty("nocode_api_port"))))
+                .withPath("api/sentimentForAText")
+                .addParameter("text-lang", "fr")
+                .addParameter("text",umigonTestInputFR)
+                .addParameter("explanation", "on")
+                .addParameter("shorter", "true")
+                .addParameter("output-format", "bytes")
+                .addParameter("explanation-lang", activeLocale.getLanguageTag())
+                .toUri();
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(uri)
@@ -143,23 +146,24 @@ public class CardTestBean implements Serializable {
     }
 
     public void runOrganicTestFR() throws IOException, URISyntaxException, InterruptedException {
-        showFRExplanation = false;
+        showFRExplanationOrganic = false;
         SendReport send = new SendReport();
         send.initAnalytics("test: organic fr", sessionBean.getUserAgent());
         send.start();
 
-        StringBuilder sb = new StringBuilder();
-        sb.append(baseURI);
-        sb.append("organicForAText");
-        sb.append("?text-lang=").append("fr");
-        sb.append("&text=").append(URLEncoder.encode(organicTestInputFR, StandardCharsets.UTF_8.toString()));
-        sb.append("&explanation=on");
-        sb.append("&shorter=true");
-        sb.append("&output-format=bytes");
-        sb.append("&explanation-lang=").append(activeLocale.getLanguageTag());
-        String uriAsString = sb.toString();
-
-        URI uri = new URI(uriAsString);
+        URI uri = UrlBuilder
+                .empty()
+                .withScheme("http")
+                .withHost("localhost")
+                .withPort((Integer.valueOf(privateProperties.getProperty("nocode_api_port"))))
+                .withPath("api/organicForAText")
+                .addParameter("text-lang", "fr")
+                .addParameter("text",organicTestInputFR)
+                .addParameter("explanation", "on")
+                .addParameter("shorter", "true")
+                .addParameter("output-format", "bytes")
+                .addParameter("explanation-lang", activeLocale.getLanguageTag())
+                .toUri();
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(uri)
@@ -168,48 +172,55 @@ public class CardTestBean implements Serializable {
 
         HttpResponse<byte[]> response = client.send(request, HttpResponse.BodyHandlers.ofByteArray());
         byte[] body = response.body();
-        try (
-                ByteArrayInputStream bis = new ByteArrayInputStream(body); ObjectInputStream ois = new ObjectInputStream(bis)) {
-            Document doc = (Document) ois.readObject();
-            switch (doc.getCategoryCode()) {
-                case "_61":
-                    organicResultFR = "📢 " + doc.getCategoryLocalizedPlainText();
-                    break;
-                case "_611":
-                    organicResultFR = "📢 " + doc.getCategoryLocalizedPlainText();
-                    break;
-                default:
-                    organicResultFR = "🌿 " + doc.getCategoryLocalizedPlainText();
-                    break;
-            }
-            organicResultFRExplanation = doc.getExplanationHtml();
+        if (response.statusCode() == 200) {
+            try (
+                    ByteArrayInputStream bis = new ByteArrayInputStream(body); ObjectInputStream ois = new ObjectInputStream(bis)) {
+                Document doc = (Document) ois.readObject();
+                switch (doc.getCategoryCode()) {
+                    case "_61":
+                        organicResultFR = "📢 " + doc.getCategoryLocalizedPlainText();
+                        break;
+                    case "_611":
+                        organicResultFR = "📢 " + doc.getCategoryLocalizedPlainText();
+                        break;
+                    default:
+                        organicResultFR = "🌿 " + doc.getCategoryLocalizedPlainText();
+                        break;
+                }
+                organicResultFRExplanation = doc.getExplanationHtml();
 
-        } catch (IOException | ClassNotFoundException ex) {
-            Logger.getLogger(UmigonBean.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (IOException | ClassNotFoundException ex) {
+                Logger.getLogger(UmigonBean.class.getName()).log(Level.SEVERE, null, ex);
+            }
+
+            renderSignalOrganicFR = true;
+            reportResultFRRendered = false;
+        } else {
+            String wrongResult = new String(body, StandardCharsets.UTF_8);
+            System.out.println("error in retrieving organic test in French: " + wrongResult);
         }
 
-        renderSignalFR = true;
-        reportResultFRRendered = false;
     }
 
     public void runOrganicTestEN() throws IOException, URISyntaxException, InterruptedException {
-        showENExplanation = false;
+        showENExplanationOrganic = false;
         SendReport send = new SendReport();
         send.initAnalytics("test: organic en", sessionBean.getUserAgent());
         send.start();
 
-        StringBuilder sb = new StringBuilder();
-        sb.append(baseURI);
-        sb.append("organicForAText");
-        sb.append("?text-lang=").append("en");
-        sb.append("&text=").append(URLEncoder.encode(organicTestInputEN, StandardCharsets.UTF_8.toString()));
-        sb.append("&explanation=on");
-        sb.append("&shorter=true");
-        sb.append("&output-format=bytes");
-        sb.append("&explanation-lang=").append(activeLocale.getLanguageTag());
-        String uriAsString = sb.toString();
-
-        URI uri = new URI(uriAsString);
+        URI uri = UrlBuilder
+                .empty()
+                .withScheme("http")
+                .withHost("localhost")
+                .withPort((Integer.valueOf(privateProperties.getProperty("nocode_api_port"))))
+                .withPath("api/organicForAText")
+                .addParameter("text-lang", "en")
+                .addParameter("text", organicTestInputEN)
+                .addParameter("explanation", "on")
+                .addParameter("shorter", "true")
+                .addParameter("output-format", "bytes")
+                .addParameter("explanation-lang", activeLocale.getLanguageTag())
+                .toUri();
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(uri)
@@ -218,28 +229,32 @@ public class CardTestBean implements Serializable {
 
         HttpResponse<byte[]> response = client.send(request, HttpResponse.BodyHandlers.ofByteArray());
         byte[] body = response.body();
-        try (
-                ByteArrayInputStream bis = new ByteArrayInputStream(body); ObjectInputStream ois = new ObjectInputStream(bis)) {
-            Document doc = (Document) ois.readObject();
-            switch (doc.getCategoryCode()) {
-                case "_61":
-                    organicResultEN = "📢 " + doc.getCategoryLocalizedPlainText();
-                    break;
-                case "_611":
-                    organicResultEN = "📢 " + doc.getCategoryLocalizedPlainText();
-                    break;
-                default:
-                    organicResultEN = "🌿 " + doc.getCategoryLocalizedPlainText();
-                    break;
+        if (response.statusCode() == 200) {
+            try (
+                    ByteArrayInputStream bis = new ByteArrayInputStream(body); ObjectInputStream ois = new ObjectInputStream(bis)) {
+                Document doc = (Document) ois.readObject();
+                switch (doc.getCategoryCode()) {
+                    case "_61":
+                        organicResultEN = "📢 " + doc.getCategoryLocalizedPlainText();
+                        break;
+                    case "_611":
+                        organicResultEN = "📢 " + doc.getCategoryLocalizedPlainText();
+                        break;
+                    default:
+                        organicResultEN = "🌿 " + doc.getCategoryLocalizedPlainText();
+                        break;
+                }
+                organicResultENExplanation = doc.getExplanationHtml();
+                renderSignalOrganicEN = true;
+                reportResultENRendered = false;
+            } catch (IOException | ClassNotFoundException ex) {
+                Logger.getLogger(UmigonBean.class.getName()).log(Level.SEVERE, null, ex);
             }
-            organicResultENExplanation = doc.getExplanationHtml();
-
-        } catch (IOException | ClassNotFoundException ex) {
-            Logger.getLogger(UmigonBean.class.getName()).log(Level.SEVERE, null, ex);
+        } else {
+            String wrongResult = new String(body, StandardCharsets.UTF_8);
+            System.out.println("error in retrieving organic test in English: " + wrongResult);
         }
 
-        renderSignalFR = true;
-        reportResultFRRendered = false;
     }
 
     public void runUmigonTestES() throws IOException, URISyntaxException, InterruptedException {
@@ -248,18 +263,19 @@ public class CardTestBean implements Serializable {
         send.initAnalytics("test: umigon es", sessionBean.getUserAgent());
         send.start();
 
-        StringBuilder sb = new StringBuilder();
-        sb.append(baseURI);
-        sb.append("sentimentForAText");
-        sb.append("?text-lang=").append("es");
-        sb.append("&text=").append(URLEncoder.encode(umigonTestInputES, StandardCharsets.UTF_8.toString()));
-        sb.append("&explanation=on");
-        sb.append("&shorter=true");
-        sb.append("&output-format=bytes");
-        sb.append("&explanation-lang=").append(activeLocale.getLanguageTag());
-        String uriAsString = sb.toString();
-
-        URI uri = new URI(uriAsString);
+        URI uri = UrlBuilder
+                .empty()
+                .withScheme("http")
+                .withHost("localhost")
+                .withPort((Integer.valueOf(privateProperties.getProperty("nocode_api_port"))))
+                .withPath("api/sentimentForAText")
+                .addParameter("text-lang", "es")
+                .addParameter("text", umigonTestInputES)
+                .addParameter("explanation", "on")
+                .addParameter("shorter", "true")
+                .addParameter("output-format", "bytes")
+                .addParameter("explanation-lang", activeLocale.getLanguageTag())
+                .toUri();
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(uri)
@@ -282,7 +298,8 @@ public class CardTestBean implements Serializable {
             umigonResultESExplanation = doc.getExplanationHtml();
 
         } catch (IOException | ClassNotFoundException ex) {
-            Logger.getLogger(UmigonBean.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(UmigonBean.class
+                    .getName()).log(Level.SEVERE, null, ex);
         }
 
         renderSignalES = true;
@@ -290,22 +307,24 @@ public class CardTestBean implements Serializable {
     }
 
     public void runUmigonTestEN() throws UnsupportedEncodingException, URISyntaxException, IOException, InterruptedException {
+        showENExplanation = false;
         SendReport send = new SendReport();
         send.initAnalytics("test: umigon en", sessionBean.getUserAgent());
         send.start();
 
-        StringBuilder sb = new StringBuilder();
-        sb.append(baseURI);
-        sb.append("sentimentForAText");
-        sb.append("?text-lang=").append("en");
-        sb.append("&text=").append(URLEncoder.encode(umigonTestInputEN, StandardCharsets.UTF_8.toString()));
-        sb.append("&explanation=on");
-        sb.append("&output-format=bytes");
-        sb.append("&shorter=true");
-        sb.append("&explanation-lang=").append(activeLocale.getLanguageTag());
-        String uriAsString = sb.toString();
-
-        URI uri = new URI(uriAsString);
+        URI uri = UrlBuilder
+                .empty()
+                .withScheme("http")
+                .withHost("localhost")
+                .withPort((Integer.valueOf(privateProperties.getProperty("nocode_api_port"))))
+                .withPath("api/sentimentForAText")
+                .addParameter("text-lang", "en")
+                .addParameter("text",umigonTestInputEN)
+                .addParameter("explanation", "on")
+                .addParameter("shorter", "true")
+                .addParameter("output-format", "bytes")
+                .addParameter("explanation-lang", activeLocale.getLanguageTag())
+                .toUri();
 
         HttpRequest request = HttpRequest.newBuilder().uri(uri).build();
         HttpClient client = HttpClient.newHttpClient();
@@ -329,12 +348,12 @@ public class CardTestBean implements Serializable {
             umigonResultENExplanation = doc.getExplanationHtml();
 
         } catch (Exception ex) {
-            Logger.getLogger(CardTestBean.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(CardTestBean.class
+                    .getName()).log(Level.SEVERE, null, ex);
         }
 
         renderSignalEN = true;
         reportResultENRendered = false;
-
     }
 
     public String getUmigonResultFR() {
@@ -596,6 +615,22 @@ public class CardTestBean implements Serializable {
 
     public void setOrganicResultENExplanation(String organicResultENExplanation) {
         this.organicResultENExplanation = organicResultENExplanation;
+    }
+
+    public Boolean getShowENExplanationOrganic() {
+        return showENExplanationOrganic;
+    }
+
+    public void setShowENExplanationOrganic(Boolean showENExplanationOrganic) {
+        this.showENExplanationOrganic = showENExplanationOrganic;
+    }
+
+    public Boolean getShowFRExplanationOrganic() {
+        return showFRExplanationOrganic;
+    }
+
+    public void setShowFRExplanationOrganic(Boolean showFRExplanationOrganic) {
+        this.showFRExplanationOrganic = showFRExplanationOrganic;
     }
 
 }
