@@ -69,14 +69,13 @@
                                     auto="false"
                                     multiple="false"
                                     skinSimple="true"
-                                    sizeLimit="50000000"
-                                    process="@this"
+                                    sizeLimit="100000000"
                                     listener="#{oneFileUploadInMultipleUploadBean.handleFileUpload}"
                                     oncomplete="PF('fileInputChooser').hide()"
                                     update=":formRead :notifications :launchButtons"
                                     allowTypes="/(\.|\/)(csv|tsv|xlsx)$/">                                
                                 </p:fileUpload>
-                                #{text['general.message.max_file_size']}: 50Mb.
+                                #{text['general.message.max_file_size']}: 100Mb.
                             </p:overlayPanel>
                             <br/>
                             <p:outputLabel

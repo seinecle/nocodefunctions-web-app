@@ -60,12 +60,12 @@
                                     mode="advanced"
                                     auto="false"
                                     skinSimple="true"
-                                    sizeLimit="50000000"
+                                    sizeLimit="100000000"
                                     multiple="true"
                                     listener="#{oneFileUploadInMultipleUploadBean.handleFileUpload}"
                                     oncomplete="PF('fileInputChooser').hide();if (!PF('fileUpload').files.length) updateAfterAllFilesUploaded();"
                                     allowTypes="/(\.|\/)(txt|pdf)$/"
-                                    fileLimit="20"
+                                    fileLimit="50"
                                     rendered="#{sessionBean.function != 'pdfmatcher'}"
                                     widgetVar="fileUpload"
                                     >
@@ -77,7 +77,7 @@
                                     mode="advanced"
                                     auto="false"
                                     skinSimple="true"
-                                    sizeLimit="50000000" 
+                                    sizeLimit="100000000" 
                                     multiple="true"
                                     listener="#{oneFileUploadInMultipleUploadBean.handleFileUpload}"
                                     oncomplete="PF('fileInputChooser').hide();if (!PF('fileUpload').files.length) updateAfterAllFilesUploaded();"
@@ -88,7 +88,7 @@
                                 <br/>
                                 <br/>
                                 <br/>
-                                #{text['general.message.max_file_size']}: 50Mb
+                                #{text['general.message.max_file_size']}: 100Mb
                                 <br/>
                                 <br/>
                                 #{text['general.message.several_files_possible']}

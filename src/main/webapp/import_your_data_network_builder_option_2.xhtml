@@ -66,13 +66,13 @@
                                     multiple="false"
                                     auto="false"
                                     skinSimple="true"
-                                    sizeLimit="50000000"
+                                    sizeLimit="100000000"
                                     listener="#{oneFileUploadInMultipleUploadBean.handleFileUpload}"
                                     oncomplete="PF('fileInputChooser').hide()"
                                     update=":formRead :notifications"
                                     allowTypes="/(\.|\/)(csv|tsv|xlsx|txt)$/">                                
                                 </p:fileUpload>
-                                #{text['general.message.max_file_size']}: 50Mb. #{text['import_data.option2.file_must_have_columns']}
+                                #{text['general.message.max_file_size']}: 100Mb. #{text['import_data.option2.file_must_have_columns']}
                                 <br/>
                             </p:overlayPanel>
                             <br/>
