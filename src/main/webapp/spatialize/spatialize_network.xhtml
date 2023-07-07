@@ -79,20 +79,24 @@
                     <br/>
                     <br/>
                 </p:fieldset>
-
-                <div class="p-d-inline-flex p-ai-center">
-                    <i class="pi pi-stopwatch p-mr-2"/>
-                    <b>#{text['spatialize.select_duration_in_seconds']}</b>
+                <div>
+                    <p:spacer height="20" width="10"/>            
                 </div>
-                <br/>
-                <br/>
-                <h:form id="durationPanel">
-                    <p:spinner id="spinnerDuration" value="#{spatializeBean.durationInSeconds}" min="5" max="60" stepFactor="1"/>
-                    <div>
-                        <p:spacer height="10" width="10"/>            
+                <p:fieldset>
+                    <div class="p-d-inline-flex p-ai-center">
+                        <i class="pi pi-stopwatch p-mr-2"/>
+                        <b>#{text['spatialize.select_duration_in_seconds']}</b>
                     </div>
-                    <p:slider for="spinnerDuration" minValue="5" maxValue="60" step="1"/>
-                </h:form>            
+                    <br/>
+                    <br/>
+                    <h:form id="durationPanel">
+                        <p:spinner id="spinnerDuration" value="#{spatializeBean.durationInSeconds}" min="5" max="60" stepFactor="1"/>
+                        <div>
+                            <p:spacer height="10" width="10"/>            
+                        </div>
+                        <p:slider for="spinnerDuration" minValue="5" maxValue="60" step="1"/>
+                    </h:form>            
+                </p:fieldset>
             </p:panel>
             <div>
                 <p:spacer height="20" width="10"/>            
@@ -101,13 +105,12 @@
             <h:form id="launchButtons">
                 <p:panel>
                     <p:fileUpload
-                        value="#{spatializeBean.uploadedFile}"
                         label="#{text['general.message.choose_gexf_file']}"
                         mode="advanced"
                         auto="false"
+                        multiple="false"
                         skinSimple="true"
                         sizeLimit="1000000000"
-                        process="@this"
                         listener="#{spatializeBean.handleFileUpload}"
                         allowTypes="/(\.|\/)(gexf)$/"
                         update="launchButtons download"
@@ -123,7 +126,7 @@
                     <p:spacer height="20" width="10"/>            
                 </div>
                 <p:panel id = "buttonSpatializeGexf">
-                    <p:commandButton value="#{text['general.verbs.compute']}"
+                    <p:commandButton value="#{text['spatialize.launch_spatialization']}"
                                      ajax="false"
                                      action="#{spatializeBean.layout}"
                                      onclick="PF('pbAjaxLong').start()"
