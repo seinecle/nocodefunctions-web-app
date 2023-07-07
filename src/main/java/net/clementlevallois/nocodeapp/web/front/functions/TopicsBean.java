@@ -15,7 +15,6 @@ import java.io.Serializable;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -44,8 +43,10 @@ import jakarta.json.JsonReader;
 import jakarta.json.JsonWriter;
 import jakarta.json.stream.JsonParsingException;
 import jakarta.servlet.annotation.MultipartConfig;
+import java.util.Properties;
 import net.clementlevallois.importers.model.DataFormatConverter;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
+import net.clementlevallois.nocodeapp.web.front.backingbeans.SingletonBean;
 import net.clementlevallois.nocodeapp.web.front.importdata.DataImportBean;
 import net.clementlevallois.nocodeapp.web.front.logview.NotificationService;
 import net.clementlevallois.nocodeapp.web.front.utils.Converters;
@@ -88,6 +89,8 @@ public class TopicsBean implements Serializable {
     private boolean removeNonAsciiCharacters = false;
     private UploadedFile fileUserStopwords;
 
+    private final Properties privateProperties;
+
     private Map<Integer, String> mapOfLines;
 
     @Inject
@@ -98,12 +101,14 @@ public class TopicsBean implements Serializable {
 
     @Inject
     SessionBean sessionBean;
-
+    
+    
     public TopicsBean() {
         if (sessionBean == null) {
             sessionBean = new SessionBean();
         }
         sessionBean.setFunction("topics");
+        privateProperties = SingletonBean.getPrivateProperties();
     }
 
     public Integer getProgress() {
@@ -191,7 +196,13 @@ public class TopicsBean implements Serializable {
 
             HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(jsonString.getBytes(StandardCharsets.UTF_8));
 
-            URI uri = new URI("http://localhost:7002/api/topics/");
+            URI uri = UrlBuilder
+                    .empty()
+                    .withScheme("http")
+                    .withHost("localhost")
+                    .withPort((Integer.valueOf(privateProperties.getProperty("nocode_api_port"))))
+                    .withPath("api/topics")
+                    .toUri();
 
             request = HttpRequest.newBuilder()
                     .POST(bodyPublisher)
@@ -307,7 +318,7 @@ public class TopicsBean implements Serializable {
             renderSeeResultsButton = true;
             runButtonDisabled = true;
 
-        } catch (IOException | NumberFormatException | URISyntaxException ex) {
+        } catch (IOException | NumberFormatException  ex) {
             System.out.println("ex:" + ex.getMessage());
         }
         return "/" + sessionBean.getFunction() + "/results.xhtml?faces-redirect=true";

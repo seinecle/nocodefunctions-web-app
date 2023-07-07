@@ -19,7 +19,6 @@ import java.io.Serializable;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -50,6 +49,7 @@ import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.json.JsonWriter;
 import jakarta.servlet.annotation.MultipartConfig;
+import java.util.Properties;
 import net.clementlevallois.importers.model.DataFormatConverter;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SingletonBean;
@@ -101,6 +101,7 @@ public class CowoBean implements Serializable {
     private Boolean shareGephistoPublicly;
     private Integer minCharNumber = 4;
     private Map<Integer, String> mapOfLines;
+    private final Properties privateProperties;
 
     @Inject
     NotificationService service;
@@ -116,6 +117,7 @@ public class CowoBean implements Serializable {
             sessionBean = new SessionBean();
         }
         sessionBean.setFunction("cowo");
+        privateProperties = SingletonBean.getPrivateProperties();
 
     }
 
@@ -215,7 +217,13 @@ public class CowoBean implements Serializable {
 
             HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(jsonString.getBytes(StandardCharsets.UTF_8));
 
-            URI uri = new URI("http://localhost:7002/api/cowo/");
+            URI uri = UrlBuilder
+                    .empty()
+                    .withScheme("http")
+                    .withHost("localhost")
+                    .withPort((Integer.valueOf(privateProperties.getProperty("nocode_api_port"))))
+                    .withPath("api/cowo")
+                    .toUri();
 
             request = HttpRequest.newBuilder()
                     .POST(bodyPublisher)
@@ -287,7 +295,7 @@ public class CowoBean implements Serializable {
             combinedFuture = CompletableFuture.allOf(futures.toArray((new CompletableFuture[0])));
             combinedFuture.join();
 
-        } catch (IOException | NumberFormatException | URISyntaxException ex) {
+        } catch (IOException | NumberFormatException  ex) {
             System.out.println("ex:" + ex.getMessage());
         }
 

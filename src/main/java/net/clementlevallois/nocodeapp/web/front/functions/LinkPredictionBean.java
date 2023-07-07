@@ -32,12 +32,14 @@ import jakarta.json.JsonReader;
 import jakarta.json.stream.JsonParsingException;
 import jakarta.servlet.annotation.MultipartConfig;
 import java.util.ArrayList;
+import java.util.Properties;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.utils.GEXFSaver;
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.StreamedContent;
 import org.primefaces.model.file.UploadedFile;
 import net.clementlevallois.functions.model.Prediction;
+import net.clementlevallois.nocodeapp.web.front.backingbeans.SingletonBean;
 
 /**
  *
@@ -58,6 +60,9 @@ public class LinkPredictionBean implements Serializable {
     private List<Prediction> topPredictions;
     private Prediction selectedLink;
 
+    private final Properties privateProperties;
+    
+    
     private StreamedContent fileToSave;
 
     private boolean success = false;
@@ -70,6 +75,7 @@ public class LinkPredictionBean implements Serializable {
             sessionBean = new SessionBean();
         }
         sessionBean.setFunction("linkprediction");
+        privateProperties = SingletonBean.getPrivateProperties();
     }
 
     public UploadedFile getUploadedFile() {
@@ -111,7 +117,7 @@ public class LinkPredictionBean implements Serializable {
             URI uri = UrlBuilder
                     .empty()
                     .withScheme("http")
-                    .withPort(7002)
+                    .withPort((Integer.valueOf(privateProperties.getProperty("nocode_api_port"))))
                     .withHost("localhost")
                     .withPath("api/linkprediction")
                     .addParameter("nb_predictions", String.valueOf(nbPredictions))
