@@ -19,19 +19,15 @@
             <meta name="msapplication-config" content="#{resource['images/favicons/browserconfig.xml']}"/>
             <meta name="theme-color" content="#ffffff"/>
             <link rel="shortcut icon" type="image/x-icon" href="#{resource['images/favicons/favicon.ico']}"/>
-
             <meta name="robots" content="noindex"/>
-
-            <link rel="stylesheet" href="https://unpkg.com/primeflex@3.3.0/primeflex.css"/>
         </h:head>
 
         <h:body>
+            <h:outputStylesheet name="css/primeflex.css" />
+            <h:outputStylesheet name="css/custom.css" />
             <f:metadata>
                 <f:viewAction action="#{highlighterBean.doTheHighlight()}" />
             </f:metadata>        
-            <f:facet name="last">
-                <h:outputStylesheet name="css/custom.css" />
-            </f:facet>
 
             <script type="text/javascript">
                 //<![CDATA[

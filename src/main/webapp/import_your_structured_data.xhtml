@@ -27,30 +27,23 @@
             <meta name="msapplication-config" content="#{resource['images/favicons/browserconfig.xml']}"/>
             <meta name="theme-color" content="#ffffff"/>
             <link rel="shortcut icon" type="image/x-icon" href="#{resource['images/favicons/favicon.ico']}"/>
-
             <meta name="robots" content="noindex"/>
-            <link rel="stylesheet" href="https://unpkg.com/primeflex@3.3.0/primeflex.css"/>
         </h:head>
-
         <h:body>
+            <h:outputStylesheet name="css/primeflex.css" />
+            <h:outputStylesheet name="css/custom.css" />
             <f:metadata>
                 <f:viewParam name="function" value="#{sessionBean.function}" />
                 <f:viewAction action="#{dataImportBean.setBulkData(false)}" />
             </f:metadata>
-            <f:facet name="last">
-                <h:outputStylesheet name="css/custom.css" />
-            </f:facet>
             <p:panel>
                 <ui:include src="/WEB-INF/includes/header.xhtml" />
-
-
                 <h1>#{text['import_data.general.upload_a_dataset']}</h1>
             </p:panel>
             <p:spacer height="20"/>
             <p:panel>
                 <div class="grid" >
                     <div class="col-12 md:9 lg:col-9">
-
                         <p:spacer height="20"/>
                         <h:form enctype="multipart/form-data" id="launchButtons">
 

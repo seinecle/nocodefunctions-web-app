@@ -19,16 +19,11 @@
             <meta name="msapplication-config" content="#{resource['images/favicons/browserconfig.xml']}"/>
             <meta name="theme-color" content="#ffffff"/>
             <link rel="shortcut icon" type="image/x-icon" href="#{resource['images/favicons/favicon.ico']}"/>
-
-
             <meta name="robots" content="noindex"/>
-            <link rel="stylesheet" href="https://unpkg.com/primeflex@3.3.0/primeflex.css"/>
         </h:head>
-
         <h:body>
-            <f:facet name="last">
-                <h:outputStylesheet name="css/custom.css" />
-            </f:facet>
+            <h:outputStylesheet name="css/primeflex.css" />
+            <h:outputStylesheet name="css/custom.css" />
 
             <script type="text/javascript">
                 //<![CDATA[
@@ -46,9 +41,7 @@
                 <i class="pi pi-spinner pi-spin" style="font-size:3rem"></i>
             </p:dialog>
             <p:panel>
-                <ui:include src="/WEB-INF/includes/header.xhtml"/>
-                <ui:include src="/WEB-INF/includes/sidebar.xhtml"/>
-                
+                <ui:include src="/WEB-INF/includes/header.xhtml"/>                
                 <h1>#{text['pdfmatcher.results.tagline']}</h1>
             </p:panel>
             <p:spacer height="20"/>
