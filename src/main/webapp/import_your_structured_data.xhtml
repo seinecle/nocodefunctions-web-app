@@ -46,30 +46,22 @@
                     <div class="col-12 md:9 lg:col-9">
                         <p:spacer height="20"/>
                         <h:form enctype="multipart/form-data" id="launchButtons">
-
                             <h:graphicImage name="images/round_1_orange.png" width="20" height="20" style="vertical-align: bottom;"/>
-                            <p:spacer width="5"/>
-                            <p:commandLink id="fileBtn" value="#{text['import_data.general.open_a_file']}" type="button" />
-                            <p:overlayPanel
-                                for="fileBtn"
-                                dynamic="true"
-                                widgetVar="fileInputChooser"
-                                style="width:700px;"
-                                >
-                                <p:fileUpload
-                                    label="#{text['import_data.general.choose_csv_or_excel']}"
-                                    mode="advanced"
-                                    auto="false"
-                                    multiple="false"
-                                    skinSimple="true"
-                                    sizeLimit="100000000"
-                                    listener="#{oneFileUploadInMultipleUploadBean.handleFileUpload}"
-                                    oncomplete="PF('fileInputChooser').hide()"
-                                    update=":formRead :notifications :launchButtons"
-                                    allowTypes="/(\.|\/)(csv|tsv|xlsx)$/">                                
-                                </p:fileUpload>
-                                #{text['general.message.max_file_size']}: 100Mb.
-                            </p:overlayPanel>
+                            <div>
+                                <p:spacer height="5" width="5"/>
+                            </div>
+                            <p:fileUpload
+                                label="#{text['import_data.general.choose_csv_or_excel']}"
+                                mode="advanced"
+                                auto="false"
+                                multiple="false"
+                                skinSimple="true"
+                                sizeLimit="100000000"
+                                listener="#{oneFileUploadInMultipleUploadBean.handleFileUpload}"
+                                update=":formRead :notifications :launchButtons"
+                                allowTypes="/(\.|\/)(csv|tsv|xlsx)$/">                                
+                            </p:fileUpload>
+                            #{text['general.message.max_file_size']}: 100Mb.
                             <br/>
                             <p:outputLabel
                                 rendered="#{dataImportBean.filesUploaded.size() gt '0'}"
@@ -82,10 +74,14 @@
                         <p:outputPanel id="formRead">
                             <h:form enctype="multipart/form-data" >
                                 <!--READ FILE BUTTON-->
-                                <h:graphicImage name="images/round_2_orange.png" width="20" height="20" style="vertical-align: bottom;"/>
+                                <h:graphicImage name="images/round_2_orange.png" width="20" height="20" style="vertical-align: middle;"/>
                                 <p:spacer width="5"/>
-                                <p:commandLink id="readFileBtn" value="#{text['import_data.general.read_data']}" onclick="PF('pbAjaxLong').start()"
-                                               action="#{dataImportBean.readData}" update="pb :tab"/>
+                                <p:commandButton
+                                    id="readFileBtn"
+                                    value="#{text['import_data.general.read_data']}"
+                                    onclick="PF('pbAjaxLong').start()"
+                                    action="#{dataImportBean.readData}"
+                                    update="pb :tab"/>
                                 <br/>
                                 <br/>
                                 <!--PROGRESS BAR FOR READ OPERATION-->
@@ -173,7 +169,6 @@
                     </div>
                 </div>
             </p:panel>
-
             <ui:include src="/WEB-INF/includes/footer.xhtml" />
         </h:body>
     </f:view>

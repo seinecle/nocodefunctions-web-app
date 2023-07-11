@@ -29,6 +29,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.SessionScoped;
+import jakarta.faces.application.FacesMessage;
+import jakarta.faces.context.FacesContext;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import jakarta.json.Json;
@@ -43,7 +45,6 @@ import net.clementlevallois.nocodeapp.web.front.logview.NotificationService;
 import net.clementlevallois.functions.model.Occurrence;
 import net.clementlevallois.importers.model.CellRecord;
 import net.clementlevallois.importers.model.SheetModel;
-import net.clementlevallois.utils.TextCleaningOps;
 import net.clementlevallois.nocodeapp.web.front.utils.Converters;
 import org.omnifaces.util.Faces;
 import org.primefaces.model.DefaultStreamedContent;
@@ -98,6 +99,27 @@ public class PdfMatcherBean implements Serializable {
         this.progress = progress;
     }
 
+    public void addMessage(FacesMessage.Severity severity, String summary, String detail) {
+        FacesContext.getCurrentInstance().
+                addMessage(null, new FacesMessage(severity, summary, detail));
+    }
+
+    public String goToPdfUpload() {
+        searchedTerm = searchedTerm.replaceAll("\\R", "");
+        long countDoubleQuotes = searchedTerm.codePoints().filter(ch -> ch == '"').count();
+        long countOpeningBracket = searchedTerm.codePoints().filter(ch -> ch == '(').count();
+        long countClosingBracket = searchedTerm.codePoints().filter(ch -> ch == ')').count();
+        if ((countDoubleQuotes % 2) != 0) {
+            addMessage(FacesMessage.SEVERITY_WARN, "💔", sessionBean.getLocaleBundle().getString("pdfmatcher.tool.error.quotes"));
+            return "";
+        }
+        if (countOpeningBracket != countClosingBracket) {
+            addMessage(FacesMessage.SEVERITY_WARN, "💔", sessionBean.getLocaleBundle().getString("pdfmatcher.tool.error.parentheses"));
+            return "";
+        }
+        return "/import_your_data_bulk_text.xhtml?function=pdfmatcher&amp;faces-redirect=true";
+    }
+
     public void onComplete() {
     }
 
@@ -108,19 +130,6 @@ public class PdfMatcherBean implements Serializable {
     public String runAnalysis() throws URISyntaxException {
         String endOfPage = sessionBean.getLocaleBundle().getString("pdfmatcher.tool.end_of_page");
         String startOfPage = sessionBean.getLocaleBundle().getString("pdfmatcher.tool.start_of_page");
-
-        searchedTerm = searchedTerm.replaceAll("\\R", "");
-        long countDoubleQuotes = searchedTerm.codePoints().filter(ch -> ch == '"').count();
-        long countOpeningBracket = searchedTerm.codePoints().filter(ch -> ch == '(').count();
-        long countClosingBracket = searchedTerm.codePoints().filter(ch -> ch == ')').count();
-        if ((countDoubleQuotes % 2) != 0) {
-            service.create(sessionBean.getLocaleBundle().getString("pdfmatcher.tool.error.quotes"));
-            return "";
-        }
-        if (countOpeningBracket != countClosingBracket) {
-            service.create(sessionBean.getLocaleBundle().getString("pdfmatcher.tool.error.parentheses"));
-            return "";
-        }
 
         sessionBean.sendFunctionPageReport();
         service.create(sessionBean.getLocaleBundle().getString("general.message.starting_analysis"));
@@ -199,9 +208,6 @@ public class PdfMatcherBean implements Serializable {
 
         CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(futures.toArray((new CompletableFuture[0])));
         combinedFuture.join();
-
-        searchedTerm = TextCleaningOps.doAllCleaningOps(searchedTerm);
-        searchedTerm = searchedTerm.toLowerCase();
 
         for (Map.Entry<String, List<Occurrence>> entry : results.entrySet()) {
             List<Occurrence> occurrences = entry.getValue();

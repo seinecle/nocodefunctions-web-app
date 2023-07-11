@@ -43,58 +43,74 @@
             <p:panel>
                 <div class="grid" >
                     <div class="col-12 md:9 lg:col-9">
-
-                        <h:form enctype="multipart/form-data">
+                        <h:form enctype="multipart/form-data" id="launchButtons">
                             <h:graphicImage name="images/round_1_orange.png" width="20" height="20" style="vertical-align: bottom;"/>
-                            <p:spacer width="5"/>
-                            <p:commandLink id="fileBtn" value="#{text['import_data.general.open_a_file']}" type="button" />
-                            <p:overlayPanel
-                                for="fileBtn"
-                                dynamic="true"
-                                widgetVar="fileInputChooser"
-                                style="width:700px;"
-                                >
-                                <p:fileUpload
-                                    label="#{text['import_data.general.choose_csv_or_excel']}"
-                                    mode="advanced"
-                                    multiple="false"
-                                    auto="false"
-                                    skinSimple="true"
-                                    sizeLimit="50000000"
-                                    listener="#{oneFileUploadInMultipleUploadBean.handleFileUpload}"
-                                    oncomplete="PF('fileInputChooser').hide()"
-                                    update=" :formRead :notifications"
-                                    allowTypes="/(\.|\/)(csv|tsv|xlsx|txt)$/">                                
-                                </p:fileUpload>
-                                #{text['general.message.max_file_size']}: 50Mb.
+                            <div>
+                                <p:spacer height="5" width="5"/>
+                            </div>
+                            <p:remoteCommand name="updateAfterAllFilesUploaded"
+                                             update=":formRead :notifications :launchButtons"/>
+                            <p:fileUpload
+                                label="#{text['import_data.general.choose_csv_or_excel']}"
+                                mode="advanced"
+                                multiple="false"
+                                auto="false"
+                                skinSimple="true"
+                                sizeLimit="50000000"
+                                listener="#{oneFileUploadInMultipleUploadBean.handleFileUpload}"
+                                oncomplete="updateAfterAllFilesUploaded();"
+                                allowTypes="/(\.|\/)(csv|tsv|xlsx|txt)$/">                                
+                            </p:fileUpload>
+                            <p:outputPanel rendered="#{dataImportBean.filesUploaded.size() lt '1'}">
+                                <p:outputLabel
+                                    escape="false"
+                                    value="#{text['general.message.max_file_size']}: 50Mb."/>
                                 <br/>
                                 <br/>
-                                • #{text['import_data.option1.for_Excel_files']}
-                                <h:graphicImage name="images/coocurrences-excel-example.jpg" style="vertical-align: bottom;" width="400" alt="An example of how cooccurrence data in Excel should be formatted"/>
+                                <p:outputLabel
+                                    escape="false"
+                                    value="• #{text['import_data.option1.for_Excel_files']}"/>
+                                <br/>
+                                <br/>
+                                <p:graphicImage
+                                    name="images/coocurrences-excel-example.jpg"
+                                    style="vertical-align: bottom;"
+                                    width="400"
+                                    alt="An example of how cooccurrence data in Excel should be formatted"/>
                                 <br/>
                                 <br/>
                                 <br/>
-                                • #{text['import_data.option1.for_csv_files']}
-                                <h:graphicImage name="images/coocurrences-text-example.jpg" style="vertical-align: bottom;" width="400" alt="An example of how cooccurrence data in plain text or csv should be formatted"/>
-                            </p:overlayPanel>
-                            <br/>
+                                <p:outputLabel
+                                    escape="false"
+                                    value="• #{text['import_data.option1.for_csv_files']}"/>
+                                <br/>                            
+                                <br/>
+                                <p:graphicImage
+                                    name="images/coocurrences-text-example.jpg"
+                                    style="vertical-align: bottom;"
+                                    width="400"
+                                    alt="An example of how cooccurrence data in plain text or csv should be formatted"/>
+                                <br/>
+                            </p:outputPanel>
                             <p:outputLabel
                                 rendered="#{dataImportBean.filesUploaded.size() gt '0'}"
                                 escape="false">
                                 <strong style="color:#FF6347">#{dataImportBean.displayNameForSingleUploadedFileOrSeveralFiles()}</strong>. #{text['import_data.general.click_below_to_read_it']}
                             </p:outputLabel>
                         </h:form>
-
                         <br/>
-
                         <!--READ FILE OPERATION-->
                         <p:outputPanel id="formRead">
                             <h:form enctype="multipart/form-data" >
                                 <!--READ FILE BUTTON-->
-                                <h:graphicImage name="images/round_2_orange.png" width="20" height="20" style="vertical-align: bottom;"/>
+                                <h:graphicImage name="images/round_2_orange.png" width="20" height="20" style="vertical-align: middle;"/>
                                 <p:spacer width="5"/>
-                                <p:commandLink id="readFileBtn" value="#{text['import_data.general.read_data']}" onclick="PF('pbAjaxLong').start()"
-                                               action="#{dataImportBean.readData}" update=":tab :launch" />
+                                <p:commandButton
+                                    id="readFileBtn"
+                                    value="#{text['import_data.general.read_data']}"
+                                    onclick="PF('pbAjaxLong').start()"
+                                    action="#{dataImportBean.readData}"
+                                    update=":tab :launch" />
                                 <br/>
                                 <br/>
                                 <!--PROGRESS BAR FOR READ OPERATION-->

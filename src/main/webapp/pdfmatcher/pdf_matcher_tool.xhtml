@@ -61,6 +61,7 @@
                         <f:facet name="legend">
                             <h3>#{text['pdfmatcher.tool.select_search_word']}</h3>
                         </f:facet>
+                        <p:growl id="growl" showDetail="true" />
                         <h2>
                             <p:inputText value="#{pdfMatcherBean.searchedTerm}"/>
                             <br/>
@@ -114,9 +115,10 @@
                             value="#{text['general.message.text_in_bulk_pdf_only']}"
                             icon="pi pi-file-pdf"
                             iconPos="right"
-                            action="/import_your_data_bulk_text.xhtml?function=pdfmatcher&amp;faces-redirect=true"
+                            action="#{pdfMatcherBean.goToPdfUpload}"
                             styleClass="btn btn-primary"
-                            style="min-width: 15em;"/>
+                            style="min-width: 15em;"
+                            update="growl" />
                     </div>
                 </p:panel>
             </h:form>

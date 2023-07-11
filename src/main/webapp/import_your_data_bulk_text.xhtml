@@ -43,59 +43,57 @@
             <p:panel>
                 <div class="grid" >
                     <div class="col-12 md:9 lg:col-9">
-
                         <h:form enctype="multipart/form-data" id="launchButtons">
                             <h:graphicImage name="images/round_1_orange.png" width="20" height="20" style="vertical-align: bottom;"/>
-                            <p:spacer width="5"/>
-                            <p:commandLink id="fileBtn" value="#{text['import_data.general.open_a_file']}" type="button" />
-                            <p:overlayPanel
-                                for="fileBtn"
-                                dynamic="true"
-                                widgetVar="fileInputChooser"
-                                style="width:700px;"
+                            <br/>
+                            <br/>
+                            <p:remoteCommand name="updateAfterAllFilesUploaded"
+                                             update=" :formRead :notifications :launchButtons"/>
+                            <p:fileUpload
+                                label="#{text['import_data.general.choose_txt_or_pdf']}"
+                                mode="advanced"
+                                auto="false"
+                                skinSimple="true"
+                                sizeLimit="100000000"
+                                multiple="true"
+                                listener="#{oneFileUploadInMultipleUploadBean.handleFileUpload}"
+                                oncomplete="if (!PF('fileUpload').files.length) updateAfterAllFilesUploaded();"
+                                allowTypes="/(\.|\/)(txt|pdf)$/"
+                                fileLimit="50"
+                                rendered="#{sessionBean.function != 'pdfmatcher'}"
+                                widgetVar="fileUpload"
                                 >
-                                <p:remoteCommand name="updateAfterAllFilesUploaded"
-                                                 update=" :formRead :notifications :launchButtons"/>
-                                <p:fileUpload
-                                    label="#{text['import_data.general.choose_txt_or_pdf']}"
-                                    mode="advanced"
-                                    auto="false"
-                                    skinSimple="true"
-                                    sizeLimit="100000000"
-                                    multiple="true"
-                                    listener="#{oneFileUploadInMultipleUploadBean.handleFileUpload}"
-                                    oncomplete="PF('fileInputChooser').hide();if (!PF('fileUpload').files.length) updateAfterAllFilesUploaded();"
-                                    allowTypes="/(\.|\/)(txt|pdf)$/"
-                                    fileLimit="50"
-                                    rendered="#{sessionBean.function != 'pdfmatcher'}"
-                                    widgetVar="fileUpload"
-                                    >
-                                </p:fileUpload>
+                            </p:fileUpload>
 
-                                <p:fileUpload
-                                    label="#{text['import_data.general.choose_pdf']}"
-                                    mode="advanced"
-                                    auto="false"
-                                    skinSimple="true"
-                                    sizeLimit="100000000" 
-                                    sequential="true"
-                                    multiple="true"
-                                    listener="#{oneFileUploadInMultipleUploadBean.handleFileUpload}"
-                                    oncomplete="PF('fileInputChooser').hide();if (!PF('fileUpload').files.length) updateAfterAllFilesUploaded();"
-                                    allowTypes="/(\.|\/)(pdf)$/"
-                                    rendered="#{sessionBean.function == 'pdfmatcher'}"
-                                    widgetVar="fileUpload"
-                                    fileLimit="100"                                    
-                                    >
-                                </p:fileUpload>
-                                <br/>
-                                <br/>
-                                <br/>
+                            <p:fileUpload
+                                label="#{text['import_data.general.choose_pdf']}"
+                                mode="advanced"
+                                auto="false"
+                                skinSimple="true"
+                                sizeLimit="100000000" 
+                                sequential="true"
+                                multiple="true"
+                                listener="#{oneFileUploadInMultipleUploadBean.handleFileUpload}"
+                                oncomplete="if (!PF('fileUpload').files.length) updateAfterAllFilesUploaded();"
+                                allowTypes="/(\.|\/)(pdf)$/"
+                                rendered="#{sessionBean.function == 'pdfmatcher'}"
+                                widgetVar="fileUpload"
+                                fileLimit="100"                                    
+                                >
+                            </p:fileUpload>
+                            <p:outputLabel
+                                rendered="#{dataImportBean.filesUploaded.size() lt '1'}"
+                                escape="false">
                                 #{text['general.message.max_file_size']}: 100Mb
-                                <br/>
-                                <br/>
-                                #{text['general.message.several_files_possible']}
-                            </p:overlayPanel>
+                            </p:outputLabel>
+                            <br/>
+                            <br/>
+                            <p:outputLabel
+                                rendered="#{dataImportBean.filesUploaded.size() lt '1'}"
+                                escape="false"
+                                value="#{text['general.message.several_files_possible']}/"/>
+                            <br/>
+                            <br/>
                             <br/>
                             <p:outputLabel
                                 rendered="#{dataImportBean.filesUploaded.size() gt '0'}"
@@ -103,14 +101,18 @@
                                 <strong style="color:#FF6347">#{dataImportBean.displayNameForSingleUploadedFileOrSeveralFiles()}</strong>. #{text['import_data.general.click_below_to_read_it']}
                             </p:outputLabel>
                         </h:form>
+                        <br/>
 
                         <!--READ FILE OPERATION-->
                         <p:outputPanel id="formRead">
                             <h:form enctype="multipart/form-data" >
+                                <p:growl id="growl" showDetail="true" />
                                 <!--READ FILE BUTTON-->
-                                <h:graphicImage name="images/round_2_orange.png" width="20" height="20" style="vertical-align: bottom;"/>
-                                <p:spacer width="5"/>
-                                <p:commandLink
+                                <h:graphicImage name="images/round_2_orange.png" width="20" height="20" style="vertical-align: middle;"/>
+                                <div>
+                                    <p:spacer height="5" width="5"/>
+                                </div>
+                                <p:commandButton
                                     id="readFileBtn"
                                     value="#{text['import_data.general.read_data']}"
                                     onclick="PF('pbAjaxLong').start()"
@@ -141,7 +143,8 @@
                                     action="#{dataImportBean.gotToFunctionWithDataInBulk}"
                                     onclick="PF('pbAjaxLong').start();PF('gazeLaunchButton').disable()"
                                     styleClass="btn btn-primary"
-                                    rendered="#{not empty dataImportBean.dataInSheets}"/>
+                                    rendered="#{not empty dataImportBean.dataInSheets}"
+                                    />
                             </h:form>
                         </p:outputPanel>
                         <br/>
