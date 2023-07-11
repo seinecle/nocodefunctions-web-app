@@ -36,6 +36,7 @@ import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.json.JsonWriter;
 import java.io.InputStream;
+import java.util.concurrent.ConcurrentHashMap;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.importdata.DataImportBean;
 import net.clementlevallois.nocodeapp.web.front.logview.NotificationService;
@@ -62,10 +63,12 @@ public class PdfMatcherBean implements Serializable {
     private StreamedContent fileToSave;
     private Boolean renderSeeResultsButton = false;
     private String sessionId;
-    private int nbContext = 5;
+    private String typeOfContext = "surroundingWords";
+    private int nbWords = 5;
+    private int nbLines = 2;
     private Boolean caseSensitive = false;
     private String searchedTerm;
-    Map<String, List<Occurrence>> results = new HashMap();
+    ConcurrentHashMap<String, List<Occurrence>> results = new ConcurrentHashMap();
     List<Match> resultsForDisplay = new ArrayList();
 
     @Inject
@@ -84,7 +87,7 @@ public class PdfMatcherBean implements Serializable {
     void init() {
         sessionId = Faces.getSessionId();
         sessionBean.setFunction("pdfmatcher");
-        results = new HashMap();
+        results = new ConcurrentHashMap();
     }
 
     public Integer getProgress() {
@@ -103,23 +106,39 @@ public class PdfMatcherBean implements Serializable {
     }
 
     public String runAnalysis() throws URISyntaxException {
+        String endOfPage = sessionBean.getLocaleBundle().getString("pdfmatcher.tool.end_of_page");
+        String startOfPage = sessionBean.getLocaleBundle().getString("pdfmatcher.tool.start_of_page");
+
+        searchedTerm = searchedTerm.replaceAll("\\R", "");
+        long countDoubleQuotes = searchedTerm.codePoints().filter(ch -> ch == '"').count();
+        long countOpeningBracket = searchedTerm.codePoints().filter(ch -> ch == '(').count();
+        long countClosingBracket = searchedTerm.codePoints().filter(ch -> ch == ')').count();
+        if ((countDoubleQuotes % 2) != 0) {
+            service.create(sessionBean.getLocaleBundle().getString("pdfmatcher.tool.error.quotes"));
+            return "";
+        }
+        if (countOpeningBracket != countClosingBracket) {
+            service.create(sessionBean.getLocaleBundle().getString("pdfmatcher.tool.error.parentheses"));
+            return "";
+        }
+
         sessionBean.sendFunctionPageReport();
         service.create(sessionBean.getLocaleBundle().getString("general.message.starting_analysis"));
         List<SheetModel> dataInSheets = inputData.getDataInSheets();
         HttpRequest request;
         HttpClient client = HttpClient.newHttpClient();
         Set<CompletableFuture> futures = new HashSet();
-        results = new HashMap();
+        results = new ConcurrentHashMap();
+        BodyPublisher bodyPublisher;
+        URI uri = new URI("http://localhost:7002/api/pdfmatcher/");
 
         for (SheetModel oneDoc : dataInSheets) {
 
             Map<Integer, String> lines = new HashMap();
             int i = 0;
-            for (SheetModel sm : dataInSheets) {
-                List<CellRecord> cellRecords = sm.getColumnIndexToCellRecords().get(0);
-                for (CellRecord cr : cellRecords) {
-                    lines.put(i++, cr.getRawValue());
-                }
+            List<CellRecord> cellRecords = oneDoc.getColumnIndexToCellRecords().get(0);
+            for (CellRecord cr : cellRecords) {
+                lines.put(i++, cr.getRawValue());
             }
 
             JsonObjectBuilder overallObject = Json.createObjectBuilder();
@@ -137,7 +156,13 @@ public class PdfMatcherBean implements Serializable {
 
             overallObject.add("lines", linesBuilder);
             overallObject.add("pages", pagesBuilder);
-            overallObject.add("nbContext", nbContext);
+            overallObject.add("startOfPage", startOfPage);
+            overallObject.add("endOfPage", endOfPage);
+            if (typeOfContext.equals("surroundingWords")) {
+                overallObject.add("nbWords", nbWords);
+            } else {
+                overallObject.add("nbLines", nbLines);
+            }
             overallObject.add("caseSensitive", caseSensitive);
             overallObject.add("searchedTerm", searchedTerm);
 
@@ -148,9 +173,7 @@ public class PdfMatcherBean implements Serializable {
             }
             String jsonString = sw.toString();
 
-            BodyPublisher bodyPublisher = BodyPublishers.ofString(jsonString);
-
-            URI uri = new URI("http://localhost:7002/api/pdfmatcher/");
+            bodyPublisher = BodyPublishers.ofString(jsonString);
 
             request = HttpRequest.newBuilder()
                     .POST(bodyPublisher)
@@ -181,16 +204,14 @@ public class PdfMatcherBean implements Serializable {
         searchedTerm = searchedTerm.toLowerCase();
 
         for (Map.Entry<String, List<Occurrence>> entry : results.entrySet()) {
-            System.out.println("doc: " + entry.getKey());
             List<Occurrence> occurrences = entry.getValue();
             Match match = new Match();
             match.setFileName(entry.getKey());
             StringBuilder sb = new StringBuilder();
             for (Occurrence occ : occurrences) {
                 sb.append("page ").append(occ.getPage()).append(": ");
-                String formattedTerm = "<span style=\"color: #FF0000;\">" + searchedTerm + "</span>";
-                String context = occ.getContext().replace(searchedTerm, formattedTerm);
-                sb.append(context);
+                sb.append("<br/>");
+                sb.append(occ.getContext());
                 sb.append("<br/>");
             }
             match.setListOfOccurrences(sb.toString());
@@ -273,12 +294,12 @@ public class PdfMatcherBean implements Serializable {
         this.fileToSave = fileToSave;
     }
 
-    public int getNbContext() {
-        return nbContext;
+    public int getNbWords() {
+        return nbWords;
     }
 
-    public void setNbContext(int nbContext) {
-        this.nbContext = nbContext;
+    public void setNbWords(int nbWords) {
+        this.nbWords = nbWords;
     }
 
     public String getSearchedTerm() {
@@ -289,11 +310,11 @@ public class PdfMatcherBean implements Serializable {
         this.searchedTerm = searchedTerm;
     }
 
-    public Map<String, List<Occurrence>> getResults() {
+    public ConcurrentHashMap<String, List<Occurrence>> getResults() {
         return results;
     }
 
-    public void setResults(Map<String, List<Occurrence>> results) {
+    public void setResults(ConcurrentHashMap<String, List<Occurrence>> results) {
         this.results = results;
     }
 
@@ -337,7 +358,21 @@ public class PdfMatcherBean implements Serializable {
     public void setCaseSensitive(Boolean caseSensitive) {
         this.caseSensitive = caseSensitive;
     }
-    
-    
+
+    public String getTypeOfContext() {
+        return typeOfContext;
+    }
+
+    public void setTypeOfContext(String typeOfContext) {
+        this.typeOfContext = typeOfContext;
+    }
+
+    public int getNbLines() {
+        return nbLines;
+    }
+
+    public void setNbLines(int nbLines) {
+        this.nbLines = nbLines;
+    }
 
 }

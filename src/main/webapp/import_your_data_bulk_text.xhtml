@@ -15,7 +15,7 @@
             <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
             <meta http-equiv="cleartype" content="on"/>
             <meta name="HandheldFriendly" content="true"/>
-            
+
             <link rel="apple-touch-icon" sizes="180x180" href="#{resource['images/favicons/apple-touch-icon.png']}"/>
             <link rel="icon" type="image/png" sizes="32x32" href="#{resource['images/favicons/favicon-32x32.png']}"/>
             <link rel="icon" type="image/png" sizes="16x16" href="#{resource['images/favicons/favicon-16x16.png']}"/>
@@ -55,7 +55,7 @@
                                 style="width:700px;"
                                 >
                                 <p:remoteCommand name="updateAfterAllFilesUploaded"
-                                    update=" :formRead :notifications :launchButtons"/>
+                                                 update=" :formRead :notifications :launchButtons"/>
                                 <p:fileUpload
                                     label="#{text['import_data.general.choose_txt_or_pdf']}"
                                     mode="advanced"
@@ -71,20 +71,22 @@
                                     widgetVar="fileUpload"
                                     >
                                 </p:fileUpload>
-                                
-                               
+
                                 <p:fileUpload
                                     label="#{text['import_data.general.choose_pdf']}"
                                     mode="advanced"
                                     auto="false"
                                     skinSimple="true"
                                     sizeLimit="100000000" 
+                                    sequential="true"
                                     multiple="true"
                                     listener="#{oneFileUploadInMultipleUploadBean.handleFileUpload}"
                                     oncomplete="PF('fileInputChooser').hide();if (!PF('fileUpload').files.length) updateAfterAllFilesUploaded();"
                                     allowTypes="/(\.|\/)(pdf)$/"
                                     rendered="#{sessionBean.function == 'pdfmatcher'}"
-                                    widgetVar="fileUpload">
+                                    widgetVar="fileUpload"
+                                    fileLimit="100"                                    
+                                    >
                                 </p:fileUpload>
                                 <br/>
                                 <br/>

@@ -78,13 +78,28 @@
                     </p:fieldset>
                 </p:panel>
                 <p:panel>
-                    <p:fieldset>
+                    <p:fieldset id="contextParams">
                         <f:facet name="legend">
-                            <h3>#{text['pdfmatcher.tool.nb_words_for_context']}</h3>
+                            <h3>#{text['pdfmatcher.tool.type_of_context']}</h3>
                         </f:facet>
-                        <h2>
-                            <p:spinner value="#{pdfMatcherBean.nbContext}" min="0" max="15"/>
-                        </h2>
+                        <p:spacer height="5" width="10"/>            
+                        <i><p:outputLabel escape="false" value="#{text['pdfmatcher.tool.type_of_context_description']}"/></i>
+                        <p:spacer height="5" width="10"/>            
+                        <p:selectOneRadio id="console" value="#{pdfMatcherBean.typeOfContext}">
+                            <f:selectItem itemLabel="#{text['pdfmatcher.tool.surrounding_lines']}" itemValue="surroundingLines"/>
+                            <f:selectItem itemLabel="#{text['pdfmatcher.tool.surrounding_words']}" itemValue="surroundingWords"/>
+                            <p:ajax update="lines words"/>
+                        </p:selectOneRadio>
+                        <p:outputPanel id="lines">
+                            <h2>
+                                <p:spinner value="#{pdfMatcherBean.nbLines}" min="0" max="5" rendered="#{pdfMatcherBean.typeOfContext == 'surroundingLines'}" />
+                            </h2>
+                        </p:outputPanel>                        
+                        <p:outputPanel id="words">
+                            <h2>
+                                <p:spinner value="#{pdfMatcherBean.nbWords}" min="0" max="15" rendered="#{pdfMatcherBean.typeOfContext == 'surroundingWords'}" />
+                            </h2>
+                        </p:outputPanel>
                     </p:fieldset>
                 </p:panel>
                 <p:panel>
