@@ -1,10 +1,10 @@
-/target/
-/bws/
-/html/
-private/
-faces-config.NavData
+**/target/**
+**/private/**
+**/user_created_files/**
 list-process.sh
 nb-configuration.xml
 options.txt
 start.sh
 sys.properties
+payara-micro*.jar
+faces-config.NavData
