@@ -48,8 +48,6 @@
                             <div>
                                 <p:spacer height="5" width="5"/>
                             </div>
-                            <p:remoteCommand name="updateAfterAllFilesUploaded"
-                                             update=":formRead :notifications :launchButtons"/>
                             <p:fileUpload
                                 label="#{text['import_data.general.choose_csv_or_excel']}"
                                 mode="advanced"
@@ -58,80 +56,84 @@
                                 skinSimple="true"
                                 sizeLimit="50000000"
                                 listener="#{oneFileUploadInMultipleUploadBean.handleFileUpload}"
-                                oncomplete="updateAfterAllFilesUploaded();"
+                                update=":notifications whenFileUploaded"
                                 allowTypes="/(\.|\/)(csv|tsv|xlsx|txt)$/">                                
                             </p:fileUpload>
-                            <p:outputPanel rendered="#{dataImportBean.filesUploaded.size() lt '1'}">
-                                <p:outputLabel
-                                    escape="false"
-                                    value="#{text['general.message.max_file_size']}: 50Mb."/>
-                                <br/>
-                                <br/>
-                                <p:outputLabel
-                                    escape="false"
-                                    value="• #{text['import_data.option1.for_Excel_files']}"/>
-                                <br/>
-                                <br/>
-                                <p:graphicImage
-                                    name="images/coocurrences-excel-example.jpg"
-                                    style="vertical-align: bottom;"
-                                    width="400"
-                                    alt="An example of how cooccurrence data in Excel should be formatted"/>
-                                <br/>
-                                <br/>
-                                <br/>
-                                <p:outputLabel
-                                    escape="false"
-                                    value="• #{text['import_data.option1.for_csv_files']}"/>
-                                <br/>                            
-                                <br/>
-                                <p:graphicImage
-                                    name="images/coocurrences-text-example.jpg"
-                                    style="vertical-align: bottom;"
-                                    width="400"
-                                    alt="An example of how cooccurrence data in plain text or csv should be formatted"/>
-                                <br/>
+                            <p:outputPanel id = "whenFileUploaded">
+                                <p:outputPanel rendered="#{dataImportBean.filesUploaded.size() lt '1'}">
+                                    <p:outputLabel
+                                        escape="false"
+                                        value="#{text['general.message.max_file_size']}: 50Mb."/>
+                                    <br/>
+                                    <br/>
+                                    <p:outputLabel
+                                        escape="false"
+                                        value="• #{text['import_data.option1.for_Excel_files']}"/>
+                                    <br/>
+                                    <br/>
+                                    <p:graphicImage
+                                        name="images/coocurrences-excel-example.jpg"
+                                        style="vertical-align: bottom;"
+                                        width="400"
+                                        alt="An example of how cooccurrence data in Excel should be formatted"/>
+                                    <br/>
+                                    <br/>
+                                    <br/>
+                                    <p:outputLabel
+                                        escape="false"
+                                        value="• #{text['import_data.option1.for_csv_files']}"/>
+                                    <br/>                            
+                                    <br/>
+                                    <p:graphicImage
+                                        name="images/coocurrences-text-example.jpg"
+                                        style="vertical-align: bottom;"
+                                        width="400"
+                                        alt="An example of how cooccurrence data in plain text or csv should be formatted"/>
+                                    <br/>
+                                </p:outputPanel>
+                                <p:outputPanel rendered="#{dataImportBean.filesUploaded.size() gt '0'}">
+                                    <p:outputLabel
+                                        rendered="#{dataImportBean.filesUploaded.size() gt '0'}"
+                                        escape="false">
+                                        <strong style="color:#FF6347">#{dataImportBean.displayNameForSingleUploadedFileOrSeveralFiles()}</strong>. #{text['import_data.general.click_below_to_read_it']}
+                                    </p:outputLabel>
+                                    <br/>
+                                    <br/>
+                                    <!--READ FILE BUTTON-->
+                                    <h:graphicImage name="images/round_2_orange.png" width="20" height="20" style="vertical-align: middle;"/>
+                                    <p:spacer width="5"/>
+                                    <p:commandButton
+                                        id="readFileBtn"
+                                        value="#{text['import_data.general.read_data']}"
+                                        onclick="PF('pbAjaxLong').start()"
+                                        action="#{dataImportBean.readData}"
+                                        update=":tab :launch" />
+                                    <br/>
+                                    <br/>
+                                    <!--PROGRESS BAR FOR READ OPERATION-->
+                                    <p:progressBar id="pb" widgetVar="pbAjaxLong" ajax="true" value="#{dataImportBean.progress}" rendered="#{dataImportBean.renderProgressBar}"
+                                                   labelTemplate="{value}%" styleClass="p-mt-3" global="false" interval="500">
+                                        <p:ajax event="complete" update=":tab :launch"/>
+                                    </p:progressBar>
+                                </p:outputPanel>
                             </p:outputPanel>
-                            <p:outputLabel
-                                rendered="#{dataImportBean.filesUploaded.size() gt '0'}"
-                                escape="false">
-                                <strong style="color:#FF6347">#{dataImportBean.displayNameForSingleUploadedFileOrSeveralFiles()}</strong>. #{text['import_data.general.click_below_to_read_it']}
-                            </p:outputLabel>
                         </h:form>
-                        <br/>
-                        <!--READ FILE OPERATION-->
-                        <p:outputPanel id="formRead">
-                            <h:form enctype="multipart/form-data" >
-                                <!--READ FILE BUTTON-->
-                                <h:graphicImage name="images/round_2_orange.png" width="20" height="20" style="vertical-align: middle;"/>
-                                <p:spacer width="5"/>
-                                <p:commandButton
-                                    id="readFileBtn"
-                                    value="#{text['import_data.general.read_data']}"
-                                    onclick="PF('pbAjaxLong').start()"
-                                    action="#{dataImportBean.readData}"
-                                    update=":tab :launch" />
-                                <br/>
-                                <br/>
-                                <!--PROGRESS BAR FOR READ OPERATION-->
-                                <p:progressBar id="pb" widgetVar="pbAjaxLong" ajax="true" value="#{dataImportBean.progress}" rendered="#{dataImportBean.renderProgressBar}"
-                                               labelTemplate="{value}%" styleClass="p-mt-3" global="false" interval="500">
-                                    <p:ajax event="complete" update=":tab :launch"/>
-                                </p:progressBar>
-                            </h:form>
-                        </p:outputPanel>
-
                         <br/>
                         <br/>
 
                         <p:outputPanel id="launch">
                             <h:form>
-                                <p:commandButton value="#{text['general.verbs.compute']}" widgetVar="gazeLaunchButton" action="#{gazeBean.runCoocAnalysis}" onclick="PF('pbAjaxLong').start();PF('gazeLaunchButton').disable()" styleClass="btn btn-primary" rendered="#{not empty dataImportBean.dataInSheets}"/>
+                                <p:commandButton
+                                    value="#{text['general.verbs.compute']}"
+                                    widgetVar="gazeLaunchButton"
+                                    action="#{gazeBean.runCoocAnalysis}"
+                                    onclick="PF('pbAjaxLong').start();PF('gazeLaunchButton').disable()"
+                                    styleClass="btn btn-primary"
+                                    rendered="#{not empty dataImportBean.dataInSheets}"/>
                             </h:form>
                         </p:outputPanel>
 
                         <p:spacer height="20"/>
-
 
                         <p:tabView value="#{dataImportBean.dataInSheets}" var="dataInSheet" id="tab">
                             <p:ajax event="tabChange" listener="#{gazeBean.onTabChange(dataInSheet.name)}"/>
@@ -174,7 +176,7 @@
                                 <h:form>
                                     <!--wrong error from netbeans, do not add onmessage in o:socket when there is a f:ajax inside-->
                                     <o:socket channel="push" scope="session">
-                                        <f:ajax event="updateNotifications" render=":notifications" />
+                                        <f:ajax event="updateNotifications"/>
                                     </o:socket>
                                 </h:form>
                             </p:scrollPanel>

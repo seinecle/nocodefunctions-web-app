@@ -47,93 +47,85 @@
                             <h:graphicImage name="images/round_1_orange.png" width="20" height="20" style="vertical-align: bottom;"/>
                             <br/>
                             <br/>
-                            <p:remoteCommand name="updateAfterAllFilesUploaded"
-                                             update=" :formRead :notifications :launchButtons"/>
                             <p:fileUpload
                                 label="#{text['import_data.general.choose_txt_or_pdf']}"
                                 mode="advanced"
-                                auto="false"
                                 skinSimple="true"
                                 sizeLimit="100000000"
                                 multiple="true"
                                 listener="#{oneFileUploadInMultipleUploadBean.handleFileUpload}"
-                                oncomplete="if (!PF('fileUpload').files.length) updateAfterAllFilesUploaded();"
+                                update=":notifications whenFileUploaded"
                                 allowTypes="/(\.|\/)(txt|pdf)$/"
+                                sequential="true"
                                 fileLimit="50"
                                 rendered="#{sessionBean.function != 'pdfmatcher'}"
-                                widgetVar="fileUpload"
                                 >
                             </p:fileUpload>
 
                             <p:fileUpload
                                 label="#{text['import_data.general.choose_pdf']}"
                                 mode="advanced"
-                                auto="false"
                                 skinSimple="true"
                                 sizeLimit="100000000" 
                                 sequential="true"
                                 multiple="true"
                                 listener="#{oneFileUploadInMultipleUploadBean.handleFileUpload}"
-                                oncomplete="if (!PF('fileUpload').files.length) updateAfterAllFilesUploaded();"
+                                update=":notifications whenFileUploaded"
                                 allowTypes="/(\.|\/)(pdf)$/"
                                 rendered="#{sessionBean.function == 'pdfmatcher'}"
-                                widgetVar="fileUpload"
                                 fileLimit="100"                                    
                                 >
                             </p:fileUpload>
-                            <p:outputLabel
-                                rendered="#{dataImportBean.filesUploaded.size() lt '1'}"
-                                escape="false">
+                            <br/>
+                            <br/>
+                            <p:outputLabel  escape="false">
                                 #{text['general.message.max_file_size']}: 100Mb
                             </p:outputLabel>
                             <br/>
                             <br/>
-                            <p:outputLabel
-                                rendered="#{dataImportBean.filesUploaded.size() lt '1'}"
-                                escape="false"
-                                value="#{text['general.message.several_files_possible']}/"/>
-                            <br/>
-                            <br/>
-                            <br/>
-                            <p:outputLabel
-                                rendered="#{dataImportBean.filesUploaded.size() gt '0'}"
-                                escape="false">
-                                <strong style="color:#FF6347">#{dataImportBean.displayNameForSingleUploadedFileOrSeveralFiles()}</strong>. #{text['import_data.general.click_below_to_read_it']}
-                            </p:outputLabel>
+                            <p:outputPanel id = "whenFileUploaded">
+                                <p:outputPanel rendered="#{dataImportBean.filesUploaded.size() gt '0'}">
+                                    <p:outputLabel
+                                        escape="false"
+                                        value="#{text['general.message.several_files_possible']}/"/>
+                                    <br/>
+                                    <br/>
+                                    <p:outputLabel
+                                        escape="false">
+                                        <strong style="color:#FF6347">#{dataImportBean.displayNameForSingleUploadedFileOrSeveralFiles()}</strong>. #{text['import_data.general.click_below_to_read_it']}
+                                    </p:outputLabel>
+                                    <br/>
+                                    <br/>
+                                    <!--READ FILE OPERATION-->
+                                    <p:growl id="growl" showDetail="true" />
+                                    <!--READ FILE BUTTON-->
+                                    <h:graphicImage name="images/round_2_orange.png" width="20" height="20" style="vertical-align: middle;"/>
+                                    <div>
+                                        <p:spacer height="5" width="5"/>
+                                    </div>
+                                    <p:commandButton
+                                        id="readFileBtn"
+                                        value="#{text['import_data.general.read_data']}"
+                                        onclick="PF('pbAjaxLong').start()"
+                                        action="#{dataImportBean.readData}"
+                                        update=":header:messages dataTable launch"/>
+                                    <br/>
+                                    <br/>
+                                    <!--PROGRESS BAR FOR READ OPERATION-->
+                                    <p:progressBar
+                                        id="pb"
+                                        widgetVar="pbAjaxLong"
+                                        ajax="true"
+                                        value="#{dataImportBean.progress}"
+                                        rendered="#{dataImportBean.renderProgressBar}"
+                                        labelTemplate="{value}%"
+                                        styleClass="p-mt-3"
+                                        global="false"
+                                        interval="500">
+                                    </p:progressBar>
+                                </p:outputPanel>
+                            </p:outputPanel>
                         </h:form>
-                        <br/>
-
-                        <!--READ FILE OPERATION-->
-                        <p:outputPanel id="formRead">
-                            <h:form enctype="multipart/form-data" >
-                                <p:growl id="growl" showDetail="true" />
-                                <!--READ FILE BUTTON-->
-                                <h:graphicImage name="images/round_2_orange.png" width="20" height="20" style="vertical-align: middle;"/>
-                                <div>
-                                    <p:spacer height="5" width="5"/>
-                                </div>
-                                <p:commandButton
-                                    id="readFileBtn"
-                                    value="#{text['import_data.general.read_data']}"
-                                    onclick="PF('pbAjaxLong').start()"
-                                    action="#{dataImportBean.readData}"
-                                    update=":header:messages dataTable launch"/>
-                                <br/>
-                                <br/>
-                                <!--PROGRESS BAR FOR READ OPERATION-->
-                                <p:progressBar
-                                    id="pb"
-                                    widgetVar="pbAjaxLong"
-                                    ajax="true"
-                                    value="#{dataImportBean.progress}"
-                                    rendered="#{dataImportBean.renderProgressBar}"
-                                    labelTemplate="{value}%"
-                                    styleClass="p-mt-3"
-                                    global="false"
-                                    interval="500">
-                                </p:progressBar>
-                            </h:form>
-                        </p:outputPanel>
                         <br/>
                         <br/>
                         <p:outputPanel id="launch">
@@ -187,7 +179,7 @@
                                 <h:form>
                                     <!--wrong error from netbeans, do not add onmessage in o:socket when there is a f:ajax inside-->
                                     <o:socket channel="push" scope="session">
-                                        <f:ajax event="updateNotifications" render=":notifications" />
+                                        <f:ajax event="updateNotifications"/>
                                     </o:socket>
                                 </h:form>
                             </p:scrollPanel>

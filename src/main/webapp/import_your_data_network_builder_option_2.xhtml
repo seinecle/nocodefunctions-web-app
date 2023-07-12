@@ -57,42 +57,43 @@
                                 skinSimple="true"
                                 sizeLimit="100000000"
                                 listener="#{oneFileUploadInMultipleUploadBean.handleFileUpload}"
-                                update=":formRead :notifications"
+                                update=":notifications whenFileUploaded"
                                 allowTypes="/(\.|\/)(csv|tsv|xlsx|txt)$/">                                
                             </p:fileUpload>
-                            #{text['general.message.max_file_size']}: 100Mb. #{text['import_data.option2.file_must_have_columns']}
                             <br/>
-                            <br/>
-                            <p:outputLabel
-                                rendered="#{dataImportBean.filesUploaded.size() gt '0'}"
-                                escape="false">
-                                <strong style="color:#FF6347">#{dataImportBean.displayNameForSingleUploadedFileOrSeveralFiles()}</strong>. #{text['import_data.general.click_below_to_read_it']}
-                            </p:outputLabel>
+                            <!--READ FILE OPERATION-->
+                            <p:outputPanel id = "whenFileUploaded">
+                                <p:outputPanel rendered="#{dataImportBean.filesUploaded.size() lt '1'}">
+                                    <p:outputLabel
+                                        escape="false"
+                                        value="#{text['general.message.max_file_size']}: 100Mb. #{text['import_data.option2.file_must_have_columns']}"/>
+                                </p:outputPanel>
+                                <p:outputPanel rendered="#{dataImportBean.filesUploaded.size() gt '0'}">
+                                    <p:outputLabel
+                                        escape="false">
+                                        <strong style="color:#FF6347">#{dataImportBean.displayNameForSingleUploadedFileOrSeveralFiles()}</strong>. #{text['import_data.general.click_below_to_read_it']}
+                                    </p:outputLabel>
+                                    <!--READ FILE BUTTON-->
+                                    <br/>
+                                    <br/>
+                                    <h:graphicImage name="images/round_2_orange.png" width="20" height="20" style="vertical-align: middle;"/>
+                                    <p:spacer width="5"/>
+                                    <p:commandButton
+                                        id="readFileBtn"
+                                        value="#{text['import_data.general.read_data']}"
+                                        onclick="PF('pbAjaxLong').start()"
+                                        action="#{dataImportBean.readData}"
+                                        update=":tab"/>
+                                    <br/>
+                                    <br/>
+                                    <!--PROGRESS BAR FOR READ OPERATION-->
+                                    <p:progressBar id="pb" widgetVar="pbAjaxLong" ajax="true" value="#{dataImportBean.progress}" rendered="#{dataImportBean.renderProgressBar}"
+                                                   labelTemplate="{value}%" styleClass="p-mt-3" global="false" interval="500">
+                                        <p:ajax event="complete" update=":tab"/>
+                                    </p:progressBar>
+                                </p:outputPanel>
+                            </p:outputPanel>
                         </h:form>
-
-                        <br/>
-
-                        <!--READ FILE OPERATION-->
-                        <p:outputPanel id="formRead">
-                            <h:form enctype="multipart/form-data" >
-                                <!--READ FILE BUTTON-->
-                                <h:graphicImage name="images/round_2_orange.png" width="20" height="20" style="vertical-align: middle;"/>
-                                <p:spacer width="5"/>
-                                <p:commandButton
-                                    id="readFileBtn"
-                                    value="#{text['import_data.general.read_data']}"
-                                    onclick="PF('pbAjaxLong').start()"
-                                    action="#{dataImportBean.readData}"
-                                    update=":tab"/>
-                                <br/>
-                                <br/>
-                                <!--PROGRESS BAR FOR READ OPERATION-->
-                                <p:progressBar id="pb" widgetVar="pbAjaxLong" ajax="true" value="#{dataImportBean.progress}" rendered="#{dataImportBean.renderProgressBar}"
-                                               labelTemplate="{value}%" styleClass="p-mt-3" global="false" interval="500">
-                                    <p:ajax event="complete" update=":tab"/>
-                                </p:progressBar>
-                            </h:form>
-                        </p:outputPanel>
 
                         <p:spacer height="20"/>
 
@@ -154,7 +155,7 @@
                                 <h:form>
                                     <!--wrong error from netbeans, do not add onmessage in o:socket when there is a f:ajax inside-->
                                     <o:socket channel="push" scope="session">
-                                        <f:ajax event="updateNotifications" render=":notifications" />
+                                        <f:ajax event="updateNotifications"/>
                                     </o:socket>
                                 </h:form>
                             </p:scrollPanel>
