@@ -108,13 +108,13 @@
 //            String redirectPage = "";
 //            if (sessionBean.getFunction().equals("gaze")) {
 //                if (gazeBean.getOption().equals("1")){
-//                    redirectPage = "import_your_data_network_builder_option_1.html";
+//                    redirectPage = "import/import_your_data_network_builder_option_1.html";
 //                }
 //                if (gazeBean.getOption().equals("2")){
-//                    redirectPage = "import_your_data_network_builder_option_2.html";
+//                    redirectPage = "import/import_your_data_network_builder_option_2.html";
 //                }
 //            }else{
-//                redirectPage = "import_your_data.html";
+//                redirectPage = "import/import_your_data.html";
 //            }
 //            context.getExternalContext().redirect(baseURL + redirectPage);
 //        } catch (IOException ex) {

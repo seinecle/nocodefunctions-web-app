@@ -9,8 +9,8 @@
     <f:view locale="#{activeLocale.current}">
 
         <h:head>
-            <title>#{text['import_data.bulk.title']}</title>
-            <meta name="description" content="#{text['import_data.bulk.description']}"/>
+            <title>#{text['import_data.pdfregion.title']}</title>
+            <meta name="description" content="#{text['import_data.pdfregion.description']}"/>
             <meta http-equiv="content-language" content="en-us"/>
             <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
             <meta http-equiv="cleartype" content="on"/>
@@ -48,21 +48,6 @@
                             <br/>
                             <br/>
                             <p:fileUpload
-                                label="#{text['import_data.general.choose_txt_or_pdf']}"
-                                mode="advanced"
-                                skinSimple="true"
-                                sizeLimit="100000000"
-                                multiple="true"
-                                listener="#{oneFileUploadInMultipleUploadBean.handleFileUpload}"
-                                update=":notifications whenFileUploaded"
-                                allowTypes="/(\.|\/)(txt|pdf)$/"
-                                sequential="true"
-                                fileLimit="50"
-                                rendered="#{sessionBean.function != 'pdfmatcher'}"
-                                >
-                            </p:fileUpload>
-
-                            <p:fileUpload
                                 label="#{text['import_data.general.choose_pdf']}"
                                 mode="advanced"
                                 skinSimple="true"
@@ -72,7 +57,6 @@
                                 listener="#{oneFileUploadInMultipleUploadBean.handleFileUpload}"
                                 update=":notifications whenFileUploaded"
                                 allowTypes="/(\.|\/)(pdf)$/"
-                                rendered="#{sessionBean.function == 'pdfmatcher'}"
                                 fileLimit="100"                                    
                                 >
                             </p:fileUpload>
@@ -87,7 +71,7 @@
                                 <p:outputPanel rendered="#{dataImportBean.filesUploaded.size() gt '0'}">
                                     <p:outputLabel
                                         escape="false"
-                                        value="#{text['general.message.several_files_possible']}/"/>
+                                        value="#{text['general.message.several_files_possible']}"/>
                                     <br/>
                                     <br/>
                                     <p:outputLabel
@@ -104,11 +88,11 @@
                                         <p:spacer height="5" width="5"/>
                                     </div>
                                     <p:commandButton
-                                        id="readFileBtn"
-                                        value="#{text['import_data.general.read_data']}"
+                                        id="execute"
+                                        value="#{text['import_data.pdfregion.proceed']}"
                                         onclick="PF('pbAjaxLong').start()"
-                                        action="#{dataImportBean.readData}"
-                                        update=":header:messages dataTable launch"/>
+                                        action="#{pdfRegionExtractorBean.extract}"
+                                        update=":header:messages"/>
                                     <br/>
                                     <br/>
                                     <!--PROGRESS BAR FOR READ OPERATION-->
@@ -116,59 +100,20 @@
                                         id="pb"
                                         widgetVar="pbAjaxLong"
                                         ajax="true"
-                                        value="#{dataImportBean.progress}"
-                                        rendered="#{dataImportBean.renderProgressBar}"
+                                        value="#{pdfRegionExtractorBean.progress}"
+                                        rendered="#{pdfRegionExtractorBean.renderProgressBar}"
                                         labelTemplate="{value}%"
                                         styleClass="p-mt-3"
                                         global="false"
                                         interval="500">
                                     </p:progressBar>
                                 </p:outputPanel>
+                                <br/>
+                                <br/>
                             </p:outputPanel>
                         </h:form>
                         <br/>
                         <br/>
-                        <p:outputPanel id="launch">
-                            <h:form>
-                                <p:commandButton
-                                    value="#{text['general.verbs.compute']}"
-                                    action="#{dataImportBean.gotToFunctionWithDataInBulk}"
-                                    onclick="PF('pbAjaxLong').start();PF('gazeLaunchButton').disable()"
-                                    styleClass="btn btn-primary"
-                                    rendered="#{not empty dataImportBean.dataInSheets}"
-                                    />
-                            </h:form>
-                        </p:outputPanel>
-                        <br/>
-                        <br/>
-                        <p:outputPanel id="dataTable">
-                            <p:outputPanel  rendered="#{not empty dataImportBean.dataInSheets}">
-                                <h3>#{text['import_data.general.preview_your_data']}</h3>
-                                <p:tabView value="#{dataImportBean.dataInSheets}" var="dataInSheet">
-                                    <p:tab title="#{dataInSheet.name}">
-                                        <div class="card">
-                                            <h:form id="formTable">
-                                                <p:dataTable id="tbl" var="data"
-                                                             value="#{dataInSheet.sheetData}"
-                                                             rowIndexVar="rowIndex"
-                                                             style="display:block; text-align:center"
-                                                             rendered="#{not empty dataImportBean.dataInSheets}"
-                                                             >
-                                                    <p:column  width="25">
-                                                        <h:outputText value="#{rowIndex+1}" />
-                                                    </p:column>
-                                                    <p:columns value="#{dataInSheet.tableHeaderNames}"
-                                                               var="mycolHeader" columnIndexVar="colIndex">
-                                                        <h:outputText value="#{data[mycolHeader.colIndex].cellValue}"/>
-                                                        <br />
-                                                    </p:columns>
-                                                </p:dataTable>
-                                            </h:form>
-                                        </div>
-                                    </p:tab>
-                                </p:tabView>
-                            </p:outputPanel>
-                        </p:outputPanel>
                     </div>
                     <div class="col-3 flex-grow-1">
                         <p:panel header="Log">

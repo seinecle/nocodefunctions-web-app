@@ -117,7 +117,7 @@ public class PdfMatcherBean implements Serializable {
             addMessage(FacesMessage.SEVERITY_WARN, "💔", sessionBean.getLocaleBundle().getString("pdfmatcher.tool.error.parentheses"));
             return "";
         }
-        return "/import_your_data_bulk_text.xhtml?function=pdfmatcher&amp;faces-redirect=true";
+        return "/import/import_your_data_bulk_text.xhtml?function=pdfmatcher&amp;faces-redirect=true";
     }
 
     public void onComplete() {

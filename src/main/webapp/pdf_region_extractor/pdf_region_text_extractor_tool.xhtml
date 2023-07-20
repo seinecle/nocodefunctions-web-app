@@ -1,0 +1,222 @@
+<html 
+    lang="#{activeLocale.languageTag}"
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="jakarta.faces.html"
+    xmlns:f="jakarta.faces.core"
+    xmlns:o="http://omnifaces.org/ui"
+    xmlns:p="http://primefaces.org/ui"
+    xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+    <f:view locale="#{activeLocale.current}">
+
+        <h:head>
+            <title>#{text['pdfmatcher.tool.title']}</title>
+            <meta name="description" content="#{text['pdfregionextractor.tool.description']}"/>
+            <meta http-equiv="content-language" content="en-us"/>
+            <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+            <meta http-equiv="cleartype" content="on"/>
+            <meta name="HandheldFriendly" content="true"/>
+
+            <!-- Open Graph / Facebook -->
+            <meta property="og:type" content="website"/>
+            <meta property="og:site_name" content="Nocode functions"/>
+            <meta property="og:url" content="https://nocodefunctions.com/pdf_region_extractor/pdf_region_text_extractor_tool.html"/>
+            <meta property="og:title" content="#{text['pdfregionextractor.tool.title']}"/>
+            <meta property="og:description" content="#{text['pdfregionextractor.tool.description']}"/>
+            <meta property="og:image" content="/images/workflow_medium.jpg"/>
+
+            <!-- Twitter -->
+            <meta property="twitter:card" content="summary_large_image"/>
+            <meta property="twitter:url" content="https://nocodefunctions.com/pdf_region_extractor/pdf_region_text_extractor_tool.html"/>
+            <meta property="twitter:title" content="#{text['pdfregionextractor.tool.title']}"/>
+            <meta property="twitter:description" content="#{text['pdfregionextractor.tool.description']}"/>
+            <meta property="twitter:image" content="/images/workflow_medium.jpg"/>
+
+            <link rel="apple-touch-icon" sizes="180x180" href="#{resource['images/favicons/apple-touch-icon.png']}"/>
+            <link rel="icon" type="image/png" sizes="32x32" href="#{resource['images/favicons/favicon-32x32.png']}"/>
+            <link rel="icon" type="image/png" sizes="16x16" href="#{resource['images/favicons/favicon-16x16.png']}"/>
+            <link rel="manifest" href="#{resource['images/favicons/site.webmanifest']}"/>
+            <link rel="mask-icon" href="#{resource['images/favicons/safari-pinned-tab.svg']}" color="#5bbad5"/>
+            <link rel="shortcut icon" href="#{resource['images/favicons/favicon.ico']}"/>
+            <meta name="msapplication-TileColor" content="#da532c"/>
+            <meta name="msapplication-config" content="#{resource['images/favicons/browserconfig.xml']}"/>
+            <meta name="theme-color" content="#ffffff"/>
+            <link rel="shortcut icon" type="image/x-icon" href="#{resource['images/favicons/favicon.ico']}"/>
+
+            <p:outputLabel value="#{sessionBean.noRobot}" escape="false" rendered="#{sessionBean.testServer}"/>
+        </h:head>
+        <h:body>
+            <h:outputStylesheet name="css/primeflex.css" />
+            <h:outputStylesheet name="css/custom.css" />
+            <f:metadata>
+                <f:viewParam name="lang" value="#{activeLocale.languageTag}" />
+                <f:viewParam name="function" value="#{sessionBean.function}" />
+                <f:viewAction action="#{dataImportBean.setBulkData(true)}" />
+            </f:metadata>
+            <p:panel>
+                <ui:include src="/WEB-INF/includes/header.xhtml"/>
+                <h1>#{text['pdfmatcher.tool.tagline']}</h1>
+            </p:panel>
+            <div>
+                <p:spacer height="20" width="10"/>            
+            </div>
+            <div class="grid" >
+                <div class="col-12 md:9 lg:col-9">
+                    <p:outputLabel value="#{text['pdfregionextractor.tool.description_long']}" escape="false"/>
+                    <br/>
+                    <br/>
+                    <h:form enctype="multipart/form-data" id="fileUpload">
+                        <h:graphicImage name="images/round_1_orange.png" width="20" height="20" style="vertical-align: bottom;"/>
+                        <br/>
+                        <br/>
+                        <p:fileUpload
+                            label="#{text['pdfregionextractor.tool.upload_sample']}"
+                            mode="advanced"
+                            skinSimple="true"
+                            sizeLimit="100000000" 
+                            multiple="false"
+                            listener="#{oneFileUploadInMultipleUploadBean.handleFileUpload}"
+                            update=":notifications whenFileUploaded"
+                            allowTypes="/(\.|\/)(pdf)$/"
+                            >
+                        </p:fileUpload>
+                        <br/>
+                        <br/>
+                        <p:outputLabel  escape="false">
+                            #{text['general.message.max_file_size']}: 100Mb
+                        </p:outputLabel>
+                        <br/>
+                        <br/>
+                        <p:outputPanel id = "whenFileUploaded">
+                            <p:outputPanel rendered="#{dataImportBean.filesUploaded.size() gt '0'}">
+                                <p:outputLabel
+                                    escape="false">
+                                    <strong style="color:#FF6347">#{dataImportBean.displayNameForSingleUploadedFileOrSeveralFiles()}</strong>. #{text['import_data.general.click_below_to_read_it']}
+                                </p:outputLabel>
+                                <br/>
+                                <br/>
+                                <!--READ FILE OPERATION-->
+                                <p:growl id="growl" showDetail="true" />
+                                <!--READ FILE BUTTON-->
+                                <h:graphicImage name="images/round_2_orange.png" width="20" height="20" style="vertical-align: middle;"/>
+                                <div>
+                                    <p:spacer height="5" width="5"/>
+                                </div>
+                                <p:commandButton
+                                    id="readFileBtn"
+                                    value="#{text['import_data.general.read_data']}"
+                                    onclick="PF('pbAjaxLong').start()"
+                                    action="#{dataImportBean.readData}"
+                                    update=":header:messages dataTable"/>
+                                <br/>
+                                <br/>
+                                <!--PROGRESS BAR FOR READ OPERATION-->
+                                <p:progressBar
+                                    id="pb"
+                                    widgetVar="pbAjaxLong"
+                                    ajax="true"
+                                    value="#{dataImportBean.progress}"
+                                    rendered="#{dataImportBean.renderProgressBar}"
+                                    labelTemplate="{value}%"
+                                    styleClass="p-mt-3"
+                                    global="false"
+                                    interval="500">
+                                </p:progressBar>
+                            </p:outputPanel>
+                        </p:outputPanel>
+                    </h:form>
+                    <p:spacer height="20"/>
+                    <p:panel>
+                        <h:form>
+                            <p:outputLabel value="#{text['pdfregionextractor.tool.all_pages_or_selected_long']}" escape="false"/>
+                            <br/>
+                            <br/>
+                            <p:selectBooleanCheckbox
+                                id="allPages"
+                                value="#{pdfRegionExtractorBean.allPages}"
+                                escape="false"
+                                itemLabel= "#{text['pdfregionextractor.tool.all_pages_or_selected_short']}">
+                                <p:ajax update="dataTable"/>
+                            </p:selectBooleanCheckbox>
+                        </h:form>
+                    </p:panel>
+                    <p:spacer height="20"/>
+                    <p:outputPanel id="dataTable">
+                        <p:outputPanel  rendered="#{not empty dataImportBean.imagesPerFiles}">
+                            <h3>#{text['import_data.general.preview_your_data']}</h3>
+                            <p:tabView
+                                value="#{dataImportBean.imagesPerFiles}"
+                                var="imagesPerOneFile"
+                                dynamic="true"
+                                cache="false"
+                                activeIndex="#{dataImporterBean.tabIndex}">
+                                <p:tab title="#{imagesPerOneFile.fileName}">
+                                    <div class="card">
+                                        <h:form id="formTable">
+                                            <p:dataTable id="tbl"
+                                                         value="#{imagesPerOneFile.getANumberOfImages(pdfRegionExtractorBean.allPages, 1)}"
+                                                         rowIndexVar="rowIndex"
+                                                         style="display:block; text-align:center"
+                                                         var="image"
+                                                         >
+                                                <p:column>
+                                                    <p:imageCropper id="cropper"
+                                                                    value="#{pdfRegionExtractorBean.selectedRegion}"
+                                                                    image="#{dataImportBean.getImage()}"
+                                                                    initialCoords="225,75,300,125"
+                                                                    minSize="20,20"
+                                                                    cache="false"
+                                                                    >
+                                                        <f:param name="rowIndex" value="#{rowIndex}"/>
+                                                        <f:param name="rowIndex2" value="#{rowIndex}"/>
+                                                    </p:imageCropper>
+                                                </p:column>
+                                                <p:column>
+                                                    <p:outputPanel rendered="#{pdfRegionExtractorBean.allPages == false}">
+                                                        <p:outputLabel value="#{text['pdfregionextractor.tool.region_on_this_page']}" escape="false"/>
+                                                        <br/>
+                                                        <p:selectBooleanCheckbox id="setThisPage" value="#{pdfRegionExtractorBean.selectPage}" escape="false">
+                                                            <p:ajax/>
+                                                            <f:param name="rowIndex3" value="#{rowIndex}"/>
+                                                        </p:selectBooleanCheckbox>
+                                                    </p:outputPanel>
+                                                    <br/>
+                                                    <br/>
+                                                    <p:commandButton
+                                                        value="#{text['pdfregionextractor.tool.confirm_region']}"
+                                                        action="#{pdfRegionExtractorBean.goToPdfUpload}"
+                                                        styleClass="btn btn-primary"
+                                                        >
+                                                        <f:param name="rowIndex" value="#{rowIndex}"/>
+                                                        <f:param name="rowIndex2" value="#{rowIndex}"/>
+                                                    </p:commandButton>
+
+                                                </p:column>
+                                            </p:dataTable>
+                                        </h:form>
+                                    </div>
+                                </p:tab>
+                            </p:tabView>
+                        </p:outputPanel>
+
+                    </p:outputPanel>
+                </div>
+                <div class="col-3 flex-grow-1">
+                    <p:panel header="Log">
+                        <p:scrollPanel id="scrollPanel" mode="native" style="height:100%">
+                            <h:dataTable id="notifications" value="#{logBean.notifications}" var="notification">
+                                <h:column>#{notification.message}</h:column>
+                            </h:dataTable>
+                            <h:form>
+                                <!--wrong error from netbeans, do not add onmessage in o:socket when there is a f:ajax inside-->
+                                <o:socket channel="push" scope="session">
+                                    <f:ajax event="updateNotifications"/>
+                                </o:socket>
+                            </h:form>
+                        </p:scrollPanel>
+                    </p:panel>
+                </div>
+            </div>
+            <ui:include src="/WEB-INF/includes/footer.xhtml" />
+        </h:body>
+    </f:view>
+</html>

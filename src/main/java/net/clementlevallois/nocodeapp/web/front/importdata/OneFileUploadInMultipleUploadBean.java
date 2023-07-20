@@ -31,14 +31,15 @@ public class OneFileUploadInMultipleUploadBean {
 
     @Inject
     SessionBean sessionBean;
-    
-    
+
     public void handleFileUpload(FileUploadEvent event) {
         try {
             UploadedFile f = event.getFile();
             if (f == null) {
                 return;
             }
+            
+            String currentFunction = sessionBean.getFunction();
             FileUploaded oneFile = new FileUploaded(f.getInputStream(), f.getFileName());
 
             service.create(sessionBean.getLocaleBundle().getString("back.import.file_successful_upload.opening") + oneFile.getFileName() + sessionBean.getLocaleBundle().getString("back.import.file_successful_upload.closing"));
@@ -46,6 +47,10 @@ public class OneFileUploadInMultipleUploadBean {
             dataImportBean.getFilesUploaded().add(oneFile);
             dataImportBean.setReadButtonDisabled(Boolean.FALSE);
             dataImportBean.setRenderProgressBar(Boolean.TRUE);
+
+            if (currentFunction.equals("pdf_region_extractor")) {
+                dataImportBean.storePdFile(oneFile);
+            }
 
         } catch (IOException ex) {
             Logger.getLogger(OneFileUploadInMultipleUploadBean.class.getName()).log(Level.SEVERE, null, ex);

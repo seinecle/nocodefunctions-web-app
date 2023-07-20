@@ -4,6 +4,7 @@
  */
 package net.clementlevallois.nocodeapp.web.front.importdata;
 
+import java.io.IOException;
 import java.io.InputStream;
 
 /**
@@ -11,21 +12,21 @@ import java.io.InputStream;
  * @author LEVALLOIS
  */
 public class FileUploaded {
-    
-    private InputStream inputStream;
+
+    private byte[] bytes;
     private String fileName;
 
-    public FileUploaded(InputStream is, String fileName) {
-        this.inputStream = is;
+    public FileUploaded(InputStream is, String fileName) throws IOException {
+        this.bytes = is.readAllBytes();
         this.fileName = fileName;
     }
-    
-    public InputStream getInputStream() {
-        return inputStream;
+
+    public byte[] getBytes() {
+        return bytes;
     }
 
-    public void setInputStream(InputStream is) {
-        this.inputStream = is;
+    public void setBytes(byte[] bytes) {
+        this.bytes = bytes;
     }
 
     public String getFileName() {
@@ -35,7 +36,5 @@ public class FileUploaded {
     public void setFileName(String fileName) {
         this.fileName = fileName;
     }
-    
-    
-    
+
 }

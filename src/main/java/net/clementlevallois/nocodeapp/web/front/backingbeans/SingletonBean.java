@@ -16,9 +16,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.UnknownHostException;
 import java.util.Properties;
-import java.util.concurrent.ExecutionException;
 import jakarta.enterprise.context.ApplicationScoped;
-import net.clementlevallois.nocodeapp.web.front.http.RemoteLocal;
 import org.omnifaces.cdi.Startup;
 
 /**

@@ -8,7 +8,6 @@ package net.clementlevallois.nocodeapp.web.front.importdata;
 import io.mikael.urlbuilder.UrlBuilder;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.ObjectInputStream;
 import jakarta.inject.Named;
 import java.io.Serializable;
@@ -30,13 +29,20 @@ import java.util.logging.Logger;
 import jakarta.enterprise.context.SessionScoped;
 import jakarta.faces.application.FacesMessage;
 import jakarta.faces.context.FacesContext;
+import jakarta.faces.event.PhaseId;
 import jakarta.inject.Inject;
 import jakarta.servlet.annotation.MultipartConfig;
 import java.nio.charset.StandardCharsets;
+import java.util.Base64;
+import java.util.Map;
+import java.util.HashMap;
+import net.clementlevallois.importers.model.ImagesPerFile;
 import net.clementlevallois.importers.model.SheetModel;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.functions.UmigonBean;
 import net.clementlevallois.nocodeapp.web.front.logview.NotificationService;
+import org.primefaces.model.DefaultStreamedContent;
+import org.primefaces.model.StreamedContent;
 
 /**
  *
@@ -78,6 +84,12 @@ public class DataImportBean implements Serializable {
     private Integer countOfSelectedColOne = 0;
     private Integer countOfSelectedColTwo = 0;
     private String currColBeingSelected;
+    private List<ImagesPerFile> imagesPerFiles;
+    private List<String> imageNamesOfCurrentFile;
+    private Map<String, String> pdfsToBeExtracted;
+    private String currentFunction;
+
+    private int tabIndex;
 
     public enum Source {
         TXT,
@@ -90,6 +102,7 @@ public class DataImportBean implements Serializable {
 
     public DataImportBean() {
         dataInSheets = new ArrayList();
+        pdfsToBeExtracted = new HashMap();
     }
 
     public void addMessage(FacesMessage.Severity severity, String summary, String detail) {
@@ -98,7 +111,9 @@ public class DataImportBean implements Serializable {
     }
 
     public String readData() throws IOException, URISyntaxException {
+        currentFunction = sessionBean.getFunction();
         dataInSheets = new ArrayList();
+        pdfsToBeExtracted = new HashMap();
         progress = 0;
         if (filesUploaded.isEmpty()) {
             service.create(sessionBean.getLocaleBundle().getString("general.message.no_file_upload_again"));
@@ -136,12 +151,13 @@ public class DataImportBean implements Serializable {
                     readExcelFile(f);
                 }
                 case TXT -> {
-                    readTextFile(f, sessionBean.getFunction(), gazeOption);
+                    readTextFile(f, currentFunction, gazeOption);
                 }
                 case CSV ->
-                    readCsvFile(f, sessionBean.getFunction(), gazeOption);
-                case PDF ->
+                    readCsvFile(f, currentFunction, gazeOption);
+                case PDF -> {
                     readPdfFile(f);
+                }
                 default -> {
                 }
             }
@@ -159,84 +175,98 @@ public class DataImportBean implements Serializable {
 
     private void readTextFile(FileUploaded f, String functionName, String gazeOption) {
 
-        try {
-            if (functionName.equals("gaze") && gazeOption.equals("1")) {
-                setSelectedColumnIndex("0");
-                setSelectedSheetName(f.getFileName());
-            }
+        if (functionName.equals("gaze") && gazeOption.equals("1")) {
+            setSelectedColumnIndex("0");
+            setSelectedSheetName(f.getFileName());
+        }
+        HttpRequest request;
+        HttpClient client = HttpClient.newHttpClient();
+        Set<CompletableFuture> futures = new HashSet();
+        HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(f.getBytes());
+        URI uri = UrlBuilder
+                .empty()
+                .withScheme("http")
+                .withPort(7003)
+                .withHost("localhost")
+                .withPath("api/import/txt")
+                .addParameter("fileName", f.getFileName())
+                .addParameter("functionName", functionName)
+                .addParameter("gazeOption", gazeOption)
+                .toUri();
+        request = HttpRequest.newBuilder()
+                .POST(bodyPublisher)
+                .uri(uri)
+                .build();
+        CompletableFuture<Void> future = client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()).thenAccept(
+                resp -> {
+                    byte[] body = resp.body();
+                    try (
+                    ByteArrayInputStream bis = new ByteArrayInputStream(body); ObjectInputStream ois = new ObjectInputStream(bis)) {
+                        List<SheetModel> tempResult = (List<SheetModel>) ois.readObject();
+                        dataInSheets.addAll(tempResult);
+                    } catch (IOException | ClassNotFoundException ex) {
+                        Logger.getLogger(DataImportBean.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+        );
+        futures.add(future);
+        CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(futures.toArray((new CompletableFuture[0])));
+        combinedFuture.join();
+        progress = 100;
 
-            HttpRequest request;
-            HttpClient client = HttpClient.newHttpClient();
-            Set<CompletableFuture> futures = new HashSet();
+    }
 
-            HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(f.getInputStream().readAllBytes());
+    public void storePdFile(FileUploaded f) {
+        String pdfEncodedAsString = Base64.getEncoder().encodeToString(f.getBytes());
+        pdfsToBeExtracted.put(f.getFileName(), pdfEncodedAsString);
+    }
 
-            URI uri = UrlBuilder
+    private void readPdfFile(FileUploaded f) {
+        String localizedEmptyLineMessage = sessionBean.getLocaleBundle().getString("general.message.empty_line");
+        HttpRequest request;
+        HttpClient client = HttpClient.newHttpClient();
+        Set<CompletableFuture> futures = new HashSet();
+        HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(f.getBytes());
+        URI uri;
+        if (currentFunction.equals("pdf_region_extractor")) {
+            imagesPerFiles = new ArrayList();
+            imageNamesOfCurrentFile = new ArrayList();
+            uri = UrlBuilder
                     .empty()
                     .withScheme("http")
                     .withPort(7003)
                     .withHost("localhost")
-                    .withPath("api/import/txt")
+                    .withPath("api/import/pdf/return-png")
                     .addParameter("fileName", f.getFileName())
-                    .addParameter("functionName", functionName)
-                    .addParameter("gazeOption", gazeOption)
+                    .addParameter("localizedEmptyLineMessage", localizedEmptyLineMessage)
                     .toUri();
 
-            request = HttpRequest.newBuilder()
-                    .POST(bodyPublisher)
-                    .uri(uri)
-                    .build();
-
-            CompletableFuture<Void> future = client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()).thenAccept(
-                    resp -> {
-                        byte[] body = resp.body();
-                        try (
-                        ByteArrayInputStream bis = new ByteArrayInputStream(body); ObjectInputStream ois = new ObjectInputStream(bis)) {
-                            List<SheetModel> tempResult = (List<SheetModel>) ois.readObject();
-                            dataInSheets.addAll(tempResult);
-                        } catch (IOException | ClassNotFoundException ex) {
-                            Logger.getLogger(DataImportBean.class.getName()).log(Level.SEVERE, null, ex);
-                        }
-                    }
-            );
-
-            futures.add(future);
-
-            CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(futures.toArray((new CompletableFuture[0])));
-            combinedFuture.join();
-        } catch (IOException ex) {
-            System.out.println("ex:" + ex.getMessage());
-        }
-    }
-
-    private void readPdfFile(FileUploaded f) {
-        try {
-            String localizedEmptyLineMessage = sessionBean.getLocaleBundle().getString("general.message.empty_line");
-
-            HttpRequest request;
-            HttpClient client = HttpClient.newHttpClient();
-            Set<CompletableFuture> futures = new HashSet();
-
-            HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(f.getInputStream().readAllBytes());
-
-            URI uri = UrlBuilder
+        } else {
+            uri = UrlBuilder
                     .empty()
                     .withScheme("http")
                     .withPort(7003)
                     .withHost("localhost")
                     .withPath("api/import/pdf")
                     .addParameter("fileName", f.getFileName())
-                    .addParameter("localizedEmptyLineMessage", localizedEmptyLineMessage)
                     .toUri();
-
-            request = HttpRequest.newBuilder()
-                    .POST(bodyPublisher)
-                    .uri(uri)
-                    .build();
-
-            CompletableFuture<Void> future = client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()).thenAccept(
-                    resp -> {
-                        byte[] body = resp.body();
+        }
+        request = HttpRequest.newBuilder()
+                .POST(bodyPublisher)
+                .uri(uri)
+                .build();
+        CompletableFuture<Void> future = client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()).thenAccept(
+                resp -> {
+                    byte[] body = resp.body();
+                    if (currentFunction.equals("pdf_region_extractor")) {
+                        try (
+                        ByteArrayInputStream bis = new ByteArrayInputStream(body); ObjectInputStream ois = new ObjectInputStream(bis)) {
+                            ImagesPerFile imagesPerOneFile = (ImagesPerFile) ois.readObject();
+                            imagesPerFiles.add(imagesPerOneFile);
+                        } catch (IOException | ClassNotFoundException ex) {
+                            Logger.getLogger(DataImportBean.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+                    } else {
                         try (
                         ByteArrayInputStream bis = new ByteArrayInputStream(body); ObjectInputStream ois = new ObjectInputStream(bis)) {
                             List<SheetModel> tempResult = (List<SheetModel>) ois.readObject();
@@ -245,141 +275,114 @@ public class DataImportBean implements Serializable {
                             Logger.getLogger(DataImportBean.class.getName()).log(Level.SEVERE, null, ex);
                         }
                     }
-            );
-
-            futures.add(future);
-
-            CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(futures.toArray((new CompletableFuture[0])));
-            combinedFuture.join();
-        } catch (IOException ex) {
-            System.out.println("ex:" + ex.getMessage());
-        }
+                }
+        );
+        futures.add(future);
+        CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(futures.toArray((new CompletableFuture[0])));
+        combinedFuture.join();
     }
 
     private void readCsvFile(FileUploaded f, String functionName, String gazeOption) {
-        try {
-
-            /* since we DONT do a bulk import in a CSV import,
-            we have no concept of "selected sheet" among several sheets.
-            we need to set the file name of the unique file for a sheet name
-             */
-            setSelectedSheetName(f.getFileName());
-
-            // for co-occurrences, we consider all columns, starting from column zero.
-            if (functionName.equals("gaze") && gazeOption.equals("1")) {
-                setSelectedColumnIndex("0");
-            }
-
-            HttpRequest request;
-            HttpClient client = HttpClient.newHttpClient();
-            Set<CompletableFuture> futures = new HashSet();
-
-            HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(f.getInputStream().readAllBytes());
-
-            URI uri = UrlBuilder
-                    .empty()
-                    .withScheme("http")
-                    .withPort(7003)
-                    .withHost("localhost")
-                    .withPath("api/import/csv")
-                    .addParameter("fileName", f.getFileName())
-                    .addParameter("functionName", functionName)
-                    .addParameter("gazeOption", gazeOption)
-                    .toUri();
-
-            request = HttpRequest.newBuilder()
-                    .POST(bodyPublisher)
-                    .uri(uri)
-                    .build();
-
-            CompletableFuture<Void> future = client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()).thenAccept(
-                    resp -> {
-                        byte[] body = resp.body();
-                        try (
-                        ByteArrayInputStream bis = new ByteArrayInputStream(body); ObjectInputStream ois = new ObjectInputStream(bis)) {
-                            List<SheetModel> tempResult = (List<SheetModel>) ois.readObject();
-                            dataInSheets.addAll(tempResult);
-                        } catch (IOException | ClassNotFoundException ex) {
-                            Logger.getLogger(DataImportBean.class.getName()).log(Level.SEVERE, null, ex);
-                        }
-                    }
-            );
-
-            futures.add(future);
-
-            CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(futures.toArray((new CompletableFuture[0])));
-            combinedFuture.join();
-        } catch (IOException ex) {
-            System.out.println("ex:" + ex.getMessage());
+        /* since we DONT do a bulk import in a CSV import,
+        we have no concept of "selected sheet" among several sheets.
+        we need to set the file name of the unique file for a sheet name
+         */
+        setSelectedSheetName(f.getFileName());
+        // for co-occurrences, we consider all columns, starting from column zero.
+        if (functionName.equals("gaze") && gazeOption.equals("1")) {
+            setSelectedColumnIndex("0");
         }
+        HttpRequest request;
+        HttpClient client = HttpClient.newHttpClient();
+        Set<CompletableFuture> futures = new HashSet();
+        HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(f.getBytes());
+        URI uri = UrlBuilder
+                .empty()
+                .withScheme("http")
+                .withPort(7003)
+                .withHost("localhost")
+                .withPath("api/import/csv")
+                .addParameter("fileName", f.getFileName())
+                .addParameter("functionName", functionName)
+                .addParameter("gazeOption", gazeOption)
+                .toUri();
+        request = HttpRequest.newBuilder()
+                .POST(bodyPublisher)
+                .uri(uri)
+                .build();
+        CompletableFuture<Void> future = client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()).thenAccept(
+                resp -> {
+                    byte[] body = resp.body();
+                    try (
+                    ByteArrayInputStream bis = new ByteArrayInputStream(body); ObjectInputStream ois = new ObjectInputStream(bis)) {
+                        List<SheetModel> tempResult = (List<SheetModel>) ois.readObject();
+                        dataInSheets.addAll(tempResult);
+
+                    } catch (IOException | ClassNotFoundException ex) {
+                        Logger.getLogger(DataImportBean.class
+                                .getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+        );
+        futures.add(future);
+        CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(futures.toArray((new CompletableFuture[0])));
+        combinedFuture.join();
     }
 
     private void readExcelFile(FileUploaded file) {
-        try {
-            InputStream is = file.getInputStream();
-            HttpRequest request;
-            HttpClient client = HttpClient.newHttpClient();
-            Set<CompletableFuture> futures = new HashSet();
-            HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(is.readAllBytes());
-
-            String gaze_option = "cooc";
-
-            if (sessionBean.getGazeOption().equals("2")) {
-                gaze_option = "sim";
-            }
-
-            URI uri = UrlBuilder
-                    .empty()
-                    .withScheme("http")
-                    .withPort(7003)
-                    .withHost("localhost")
-                    .withPath("api/import/xlsx")
-                    .addParameter("gaze_option", gaze_option)
-                    .addParameter("separator", ",")
-                    .toUri();
-
-            request = HttpRequest.newBuilder()
-                    .POST(bodyPublisher)
-                    .uri(uri)
-                    .build();
-            CompletableFuture<Void> future = client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()).thenAccept(resp -> {
-                byte[] body = resp.body();
-                if (body.length >= 100 && !new String(body, StandardCharsets.UTF_8).toLowerCase().startsWith("internal") && !new String(body, StandardCharsets.UTF_8).toLowerCase().startsWith("not found")) {
-                    try (
-                            ByteArrayInputStream bis = new ByteArrayInputStream(body); ObjectInputStream ois = new ObjectInputStream(bis)) {
-                        List<SheetModel> tempResults = (List<SheetModel>) ois.readObject();
-                        dataInSheets.addAll(tempResults);
-                    } catch (Exception ex) {
-                        System.out.println("error in body:");
-                        System.out.println(new String(body, StandardCharsets.UTF_8));
-                        Logger.getLogger(UmigonBean.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-                } else {
-                    System.out.println("problem with the reading of excel file:");
+        HttpRequest request;
+        HttpClient client = HttpClient.newHttpClient();
+        Set<CompletableFuture> futures = new HashSet();
+        HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(file.getBytes());
+        String gaze_option = "cooc";
+        if (sessionBean.getGazeOption().equals("2")) {
+            gaze_option = "sim";
+        }
+        URI uri = UrlBuilder
+                .empty()
+                .withScheme("http")
+                .withPort(7003)
+                .withHost("localhost")
+                .withPath("api/import/xlsx")
+                .addParameter("gaze_option", gaze_option)
+                .addParameter("separator", ",")
+                .toUri();
+        request = HttpRequest.newBuilder()
+                .POST(bodyPublisher)
+                .uri(uri)
+                .build();
+        CompletableFuture<Void> future = client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()).thenAccept(resp -> {
+            byte[] body = resp.body();
+            if (body.length >= 100 && !new String(body, StandardCharsets.UTF_8).toLowerCase().startsWith("internal") && !new String(body, StandardCharsets.UTF_8).toLowerCase().startsWith("not found")) {
+                try (
+                        ByteArrayInputStream bis = new ByteArrayInputStream(body); ObjectInputStream ois = new ObjectInputStream(bis)) {
+                    List<SheetModel> tempResults = (List<SheetModel>) ois.readObject();
+                    dataInSheets.addAll(tempResults);
+                } catch (Exception ex) {
+                    System.out.println("error in body:");
                     System.out.println(new String(body, StandardCharsets.UTF_8));
+                    Logger.getLogger(UmigonBean.class.getName()).log(Level.SEVERE, null, ex);
                 }
-
-            }
-            );
-            futures.add(future);
-            CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(futures.toArray((new CompletableFuture[0])));
-            combinedFuture.join();
-            
-            // for coocurrences the data must start at the leftest column
-            if (sessionBean.getGazeOption().equals("1")) {
-                setSelectedColumnIndex("0");
-            }
-            
-            // by default the selected sheet is the first one of the workbook
-            // this gets changed when the user selects a different sheet in the preview
-            // there is a listener in the data table in the xhtml that sets the selected sheet
-            // to the one currently selected by the user
-            if (!dataInSheets.isEmpty()) {
-                setSelectedSheetName(dataInSheets.get(0).getName());
+            } else {
+                System.out.println("problem with the reading of excel file:");
+                System.out.println(new String(body, StandardCharsets.UTF_8));
             }
 
-        } catch (IOException ex) {
-            Logger.getLogger(DataImportBean.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        );
+        futures.add(future);
+        CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(futures.toArray((new CompletableFuture[0])));
+        combinedFuture.join();
+        // for coocurrences the data must start at the leftest column
+        if (sessionBean.getGazeOption().equals("1")) {
+            setSelectedColumnIndex("0");
+        }
+        // by default the selected sheet is the first one of the workbook
+        // this gets changed when the user selects a different sheet in the preview
+        // there is a listener in the data table in the xhtml that sets the selected sheet
+        // to the one currently selected by the user
+        if (!dataInSheets.isEmpty()) {
+            setSelectedSheetName(dataInSheets.get(0).getName());
         }
     }
 
@@ -455,7 +458,7 @@ public class DataImportBean implements Serializable {
         selectedColumnIndex = colIndex;
         selectedSheetName = sheetName;
         bulkData = false;
-        return "/" + sessionBean.getFunction() + "/" + sessionBean.getFunction() + ".xhtml?faces-redirect=true";
+        return "/" + currentFunction + "/" + currentFunction + ".xhtml?faces-redirect=true";
     }
 
     public String launchAnalysisForTwoColumnsDataset() {
@@ -478,18 +481,18 @@ public class DataImportBean implements Serializable {
             return "";
         }
 
-        return "/" + sessionBean.getFunction() + "/" + sessionBean.getFunction() + ".xhtml?faces-redirect=true";
+        return "/" + currentFunction + "/" + currentFunction + ".xhtml?faces-redirect=true";
     }
 
     public String gotToFunctionWithDataInBulk() {
         bulkData = true;
-        return "/" + sessionBean.getFunction() + "/" + sessionBean.getFunction() + ".xhtml?faces-redirect=true";
+        return "/" + currentFunction + "/" + currentFunction + ".xhtml?faces-redirect=true";
     }
 
     public String goToAnalysisForCooccurrences(String sheetName) {
         selectedColumnIndex = "0";
         selectedSheetName = sheetName;
-        return "/" + sessionBean.getFunction() + "/" + sessionBean.getFunction() + ".xhtml?faces-redirect=true";
+        return "/" + currentFunction + "/" + currentFunction + ".xhtml?faces-redirect=true";
     }
 
     public List<SheetModel> getDataInSheets() {
@@ -630,6 +633,49 @@ public class DataImportBean implements Serializable {
 
     public void setFilesUploaded(List<FileUploaded> filesUploaded) {
         this.filesUploaded = filesUploaded;
+    }
+
+    public List<ImagesPerFile> getImagesPerFiles() {
+        return imagesPerFiles;
+    }
+
+    public void setImagesPerFiles(List<ImagesPerFile> imagesPerFiles) {
+        this.imagesPerFiles = imagesPerFiles;
+    }
+
+    public StreamedContent getImage() {
+        FacesContext context = FacesContext.getCurrentInstance();
+
+        if (context.getCurrentPhaseId() == PhaseId.RENDER_RESPONSE) {
+            // So, we're rendering the view. Return a stub StreamedContent so that it will generate right URL.
+            return new DefaultStreamedContent();
+        }
+        String index = context.getExternalContext().getRequestParameterMap().get("rowIndex");
+        byte[] image = imagesPerFiles.get(tabIndex).getImage(Integer.parseInt(index));
+        ByteArrayInputStream stream = new ByteArrayInputStream(image);
+        StreamedContent imageAsStream = DefaultStreamedContent.builder().name(index).contentType("image/png").stream(() -> stream).build();
+        imageNamesOfCurrentFile.add(imageAsStream.toString());
+        return imageAsStream;
+    }
+
+    public int getTabIndex() {
+        return tabIndex;
+    }
+
+    public void setTabIndex(int tabIndex) {
+        this.tabIndex = tabIndex;
+    }
+
+    public Map<String, String> getPdfsToBeExtracted() {
+        return pdfsToBeExtracted;
+    }
+
+    public void setPdfsToBeExtracted(Map<String, String> pdfsToBeExtracted) {
+        this.pdfsToBeExtracted = pdfsToBeExtracted;
+    }
+
+    public List<String> getImageNamesOfCurrentFile() {
+        return imageNamesOfCurrentFile;
     }
 
 }

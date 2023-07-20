@@ -87,7 +87,7 @@
 //            sessionBean.setTwitterOAuth2AccessToken(accessToken);
 //            searchButtonDisabled = false;
 //            ExternalContext externalContext = FacesContext.getCurrentInstance().getExternalContext();
-//            externalContext.redirect(RemoteLocal.getDomain() + "import_your_data_twitter.html");
+//            externalContext.redirect(RemoteLocal.getDomain() + "import/import_your_data_twitter.html");
 //        } catch (IOException ex) {
 //            System.out.println("ex:" + ex.getMessage());
 //        }
@@ -97,7 +97,7 @@
 //        sheets = new ArrayList();
 //        dataInputBean.setDataInSheets(new ArrayList());
 //
-//        return "/import_your_data_twitter.html?faces-redirect=true";
+//        return "/import/import_your_data_twitter.html?faces-redirect=true";
 //    }
 //
 //    public String goToConnectURL() throws IOException {
