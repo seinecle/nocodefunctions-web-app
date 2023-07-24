@@ -61,7 +61,15 @@
             </div>
             <div class="grid" >
                 <div class="col-12 md:9 lg:col-9">
-                    <p:outputLabel value="#{text['pdfregionextractor.tool.description_long']}" escape="false"/>
+                    <p:panel>
+                        <p:outputLabel value="#{text['pdfregionextractor.tool.description_long_1']}" escape="false"/>
+                        <br/>
+                        <br/>
+                        <p:outputLabel value="#{text['pdfregionextractor.tool.description_long_2']}" escape="false"/>
+                        <br/>
+                        <br/>
+                        <p:outputLabel value="#{text['pdfregionextractor.tool.description_long_3']}" escape="false"/>
+                    </p:panel>
                     <br/>
                     <br/>
                     <h:form enctype="multipart/form-data" id="fileUpload">
@@ -151,7 +159,7 @@
                                 activeIndex="#{dataImporterBean.tabIndex}">
                                 <p:tab title="#{imagesPerOneFile.fileName}">
                                     <div class="card">
-                                        <h:form id="formTable">
+                                        <h:form>
                                             <p:dataTable id="tbl"
                                                          value="#{imagesPerOneFile.getANumberOfImages(pdfRegionExtractorBean.allPages, 1)}"
                                                          rowIndexVar="rowIndex"
@@ -162,7 +170,7 @@
                                                     <p:imageCropper id="cropper"
                                                                     value="#{pdfRegionExtractorBean.selectedRegion}"
                                                                     image="#{dataImportBean.getImage()}"
-                                                                    initialCoords="225,75,300,125"
+                                                                    initialCoords="10,10,50,50"
                                                                     minSize="20,20"
                                                                     cache="false"
                                                                     >
@@ -185,11 +193,11 @@
                                                         value="#{text['pdfregionextractor.tool.confirm_region']}"
                                                         action="#{pdfRegionExtractorBean.goToPdfUpload}"
                                                         styleClass="btn btn-primary"
+                                                        process="@this cropper"
                                                         >
                                                         <f:param name="rowIndex" value="#{rowIndex}"/>
                                                         <f:param name="rowIndex2" value="#{rowIndex}"/>
                                                     </p:commandButton>
-
                                                 </p:column>
                                             </p:dataTable>
                                         </h:form>

@@ -36,6 +36,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.UUID;
 import net.clementlevallois.importers.model.ImagesPerFile;
 import net.clementlevallois.importers.model.SheetModel;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
@@ -653,7 +654,8 @@ public class DataImportBean implements Serializable {
         String index = context.getExternalContext().getRequestParameterMap().get("rowIndex");
         byte[] image = imagesPerFiles.get(tabIndex).getImage(Integer.parseInt(index));
         ByteArrayInputStream stream = new ByteArrayInputStream(image);
-        StreamedContent imageAsStream = DefaultStreamedContent.builder().name(index).contentType("image/png").stream(() -> stream).build();
+        String random = UUID.randomUUID().toString(); 
+        StreamedContent imageAsStream = DefaultStreamedContent.builder().name(random).contentType("image/png").stream(() -> stream).build();
         imageNamesOfCurrentFile.add(imageAsStream.toString());
         return imageAsStream;
     }
@@ -677,5 +679,7 @@ public class DataImportBean implements Serializable {
     public List<String> getImageNamesOfCurrentFile() {
         return imageNamesOfCurrentFile;
     }
+    
+    
 
 }
