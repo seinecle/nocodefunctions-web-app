@@ -60,6 +60,7 @@ import net.clementlevallois.nocodeapp.web.front.logview.NotificationService;
 import net.clementlevallois.nocodeapp.web.front.utils.Converters;
 import net.clementlevallois.utils.TextCleaningOps;
 import org.omnifaces.util.Faces;
+import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
 import org.primefaces.model.file.UploadedFile;
 
@@ -295,7 +296,7 @@ public class CowoBean implements Serializable {
             combinedFuture = CompletableFuture.allOf(futures.toArray((new CompletableFuture[0])));
             combinedFuture.join();
 
-        } catch (IOException | NumberFormatException  ex) {
+        } catch (IOException | NumberFormatException ex) {
             System.out.println("ex:" + ex.getMessage());
         }
 
@@ -332,6 +333,12 @@ public class CowoBean implements Serializable {
     }
 
     public StreamedContent getFileToSave() {
+        if (gexf == null) {
+            System.out.println("gexf was null in cowo function");
+            FacesMessage message = new FacesMessage("", sessionBean.getLocaleBundle().getString("general.message.internal_server_error"));
+            FacesContext.getCurrentInstance().addMessage(null, message);
+            return new DefaultStreamedContent();
+        }
         return GEXFSaver.exportGexfAsStreamedFile(gexf, "results");
     }
 
