@@ -121,14 +121,13 @@ public class UmigonBean implements Serializable {
             selectedLanguage = "en";
         }
         sessionBean.sendFunctionPageReport();
-        tempResults = new ConcurrentHashMap(maxCapacity + 1);
-        filteredDocuments = new ArrayList(maxCapacity + 1);
         service.create(sessionBean.getLocaleBundle().getString("general.message.starting_analysis"));
         DataFormatConverter dataFormatConverter = new DataFormatConverter();
         Map<Integer, String> mapOfLines = dataFormatConverter.convertToMapOfLines(inputData.getBulkData(), inputData.getDataInSheets(), inputData.getSelectedSheetName(), inputData.getSelectedColumnIndex(), inputData.getHasHeaders());
         int maxRecords = Math.min(mapOfLines.size(), maxCapacity);
-
-        results = Arrays.asList(new Document[maxCapacity + 1]);
+        tempResults = new ConcurrentHashMap(maxRecords + 1);
+        filteredDocuments = new ArrayList(maxRecords + 1);
+        results = Arrays.asList(new Document[maxRecords + 1]);
 
         HttpRequest request;
         HttpClient client = HttpClient.newHttpClient();
