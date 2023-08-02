@@ -150,6 +150,21 @@
                         <p:outputLabel escape="false" value="#{text['gaze.network_builder.tips_and_tricks.details']}"/>
                     </p>
                 </p:fieldset>
+                <p:spacer height="20"/>
+                <p:fieldset>
+                    <f:facet name="legend">
+                        <h3>#{text['general.message.read_this_tutorial']}</h3>
+                    </f:facet>
+                    <p id="hide-mobile" style="text-align:center;">
+                        <p:link href="https://medium.com/@vespinozag/turn-a-list-and-their-targets-into-a-network-with-nocodefunctions-app-and-visualize-it-in-gephi-1d412d1b0820" target="_blank">
+                        <p:graphicImage
+                            name="images/ve-gaze.jpg"
+                            alt="tutorial by Veronica Espinoza on transforming lists into networks"
+                            style="-webkit-filter: drop-shadow(5px 5px 5px #222222);
+                                        filter: drop-shadow(5px 5px 5px #222222);"/>
+                        </p:link>
+                    </p>
+                </p:fieldset>
             </p:panel>
             <ui:include src="/WEB-INF/includes/footer.xhtml" />
         </h:body>
