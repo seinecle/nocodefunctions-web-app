@@ -172,9 +172,9 @@ public class ConverterBean implements Serializable {
 
         path = path + subfolder;
 
-        BufferedWriter bw = Files.newBufferedWriter(Path.of(path + vosviewerJsonFileName), StandardCharsets.UTF_8);
-        bw.write(graphAsJsonVosViewer);
-        bw.close();
+        try (BufferedWriter bw = Files.newBufferedWriter(Path.of(path + vosviewerJsonFileName), StandardCharsets.UTF_8)) {
+            bw.write(graphAsJsonVosViewer);
+        }
 
         ExternalContext externalContext = FacesContext.getCurrentInstance().getExternalContext();
         String urlVV;

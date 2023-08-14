@@ -119,7 +119,6 @@ public class CowoBean implements Serializable {
         }
         sessionBean.setFunction("cowo");
         privateProperties = SingletonBean.getPrivateProperties();
-
     }
 
     public Integer getProgress() {

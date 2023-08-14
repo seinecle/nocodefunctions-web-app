@@ -120,6 +120,7 @@ public class UmigonBean implements Serializable {
         if (selectedLanguage == null || selectedLanguage.isEmpty()) {
             selectedLanguage = "en";
         }
+        countTreated = 0;
         sessionBean.sendFunctionPageReport();
         service.create(sessionBean.getLocaleBundle().getString("general.message.starting_analysis"));
         DataFormatConverter dataFormatConverter = new DataFormatConverter();

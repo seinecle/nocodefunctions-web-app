@@ -110,6 +110,10 @@
                     <div class="flex justify-content-center justify-content-center buttonIndexPage">
                         <p:button value="#{text['index.button.pdfregionextractor']}" outcome="pdf_region_extractor/pdf_region_text_extractor_tool.html"/>
                     </div>
+                    <p:spacer width="10"/>
+                    <div class="flex justify-content-center justify-content-center buttonIndexPage">
+                        <p:button value="#{text['index.button.bibliocoupling']}" outcome="bibliocoupling/bibliographic_coupling_tool.html"/>
+                    </div>
                 </div>
             </p:panel>
             <p:spacer height="10" width="10"/>
@@ -431,16 +435,24 @@
                     <div class="flex justify-content-center justify-content-center buttonIndexPage">
                         <p:button value="#{text['index.button.pdfregionextractor']}" outcome="pdf_region_extractor/pdf_region_text_extractor_tool.html"/>
                     </div>
+                    <p:spacer width="10"/>
+                    <div class="flex justify-content-center justify-content-center buttonIndexPage">
+                        <p:button value="#{text['index.button.pdfregionextractor']}" outcome="pdf_region_extractor/pdf_region_text_extractor_tool.html"/>
+                    </div>
+                    <p:spacer width="10"/>
+                    <div class="flex justify-content-center justify-content-center buttonIndexPage">
+                        <p:button value="#{text['index.button.bibliocoupling']}" outcome="bibliocoupling/bibliographic_coupling_tool.html"/>
+                    </div>
                 </div>
             </p:panel>
             <p:spacer height="10" width="10"/>
             <p:panel>
                 <p:fieldset legend="#{text['index.datapolicy']}">
-                        <p>
-                            <small>
-                                <h:outputText value="#{text['index.datapolicy.forallotherfunctions.details']}" escape="false" />
-                            </small>
-                        </p>
+                    <p>
+                        <small>
+                            <h:outputText value="#{text['index.datapolicy.forallotherfunctions.details']}" escape="false" />
+                        </small>
+                    </p>
                     <br/>
                     <p><small><a href="https://nocodefunctions.com/html/privacy_policy.html" target="_blank">#{text['index.datapolicy.link']}</a></small></p>
                 </p:fieldset>

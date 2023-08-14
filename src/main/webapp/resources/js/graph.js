@@ -1,13 +1,12 @@
 /* global Viva */
 var executions = 0;
-
 function main(nodes, edges, mincount, maxcount) {
-    if (executions >0){
+    if (executions > 0) {
         return;
     }
     executions++;
-    
-    
+
+
 // Step 1. We create a graph object.
     var graph = Viva.Graph.graph();
 

@@ -32,8 +32,6 @@ public class SingletonBean {
     private final static String PATHLOCALDEV = "C:\\Users\\levallois\\open\\nocode-app-web-front\\";
     private final static String PATHREMOTEDEV = "/home/waouh/nocodeapp-web/";
     private static String rootProps;
-//    private TwitterOAuth20Service twitterOAuthService;
-    private String twitterAuthorizationUrl;
 
     public SingletonBean() {
         try {
@@ -46,27 +44,6 @@ public class SingletonBean {
             privateProperties = new Properties();
             privateProperties.load(is);
 
-            // This is the new Twitter client for java by Twitter.
-            String twitterClientId = privateProperties.getProperty("twitter_client_id");
-            String twitterClientSecret = privateProperties.getProperty("twitter_client_secret");
-
-//            TwitterCredentialsOAuth2 credentials = new TwitterCredentialsOAuth2(twitterClientId,
-//                    twitterClientSecret,
-//                    "",
-//                    "");
-//
-//            twitterOAuthService = new TwitterOAuth20Service(
-//                    credentials.getTwitterOauth2ClientId(),
-//                    credentials.getTwitterOAuth2ClientSecret(),
-//                    RemoteLocal.getDomain() + "twitter_auth.html",
-//                    "offline.access tweet.read users.read");
-//
-//            final String secretState = "state";
-//            PKCE pkce = new PKCE();
-//            pkce.setCodeChallenge("challenge");
-//            pkce.setCodeChallengeMethod(PKCECodeChallengeMethod.PLAIN);
-//            pkce.setCodeVerifier("challenge");
-//            twitterAuthorizationUrl = twitterOAuthService.getAuthorizationUrl(pkce, secretState);
 
         } catch (UnknownHostException ex) {
             System.out.println("ex:" + ex.getMessage());
@@ -85,35 +62,4 @@ public class SingletonBean {
     public static String getPATHLOCALE() {
         return PATHLOCALE;
     }
-//
-//    public static String getPATHREMOTEDEV() {
-//        return PATHREMOTEDEV;
-//    }
-//
-//    public static String getRootProps() {
-//        return rootProps;
-//    }
-
-//    public TwitterOAuth20Service getTwitterOAuthService() {
-//        return twitterOAuthService;
-//    }
-//
-//    public String getTwitterAuthorizationUrl() {
-//        return twitterAuthorizationUrl;
-//    }
-//
-//    public OAuth2AccessToken getOAuth2AccessToken(String code) {
-//        try {
-//            PKCE pkce = new PKCE();
-//            pkce.setCodeChallenge("challenge");
-//            pkce.setCodeChallengeMethod(PKCECodeChallengeMethod.PLAIN);
-//            pkce.setCodeVerifier("challenge");
-//            return twitterOAuthService.getAccessToken(pkce, code);
-//        } catch (IOException | ExecutionException | InterruptedException ex) {
-//            System.out.println("ex:" + ex.getMessage());
-//            return null;
-//        }
-//
-//    }
-
 }
