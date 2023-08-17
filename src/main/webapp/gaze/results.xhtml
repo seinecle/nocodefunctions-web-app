@@ -39,12 +39,7 @@
                 }
                 //]]>
             </script>
-            <style type="text/css" media="screen">
-                html, body, svg {
-                    width: 100%;
-                    height: 100%;
-                }
-            </style>
+
             <p:dialog modal="true" widgetVar="statusDialog" header="#{text['general.message.wait_and_authorize_popup']}" draggable="false" closable="false"
                       resizable="false">
                 <i class="pi pi-spinner pi-spin" style="font-size:3rem"></i>
@@ -53,13 +48,16 @@
                 <ui:include src="/WEB-INF/includes/header.xhtml" />
                 <h1>#{text['gaze.results.tagline']}</h1>
             </p:panel>
+            <p:spacer height="10"/>
+            <ui:include src="/WEB-INF/includes/call-form.xhtml" />
+            <p:spacer height="10"/>
+                <div id="graphDiv">
+                </div>
             <p:spacer height="20"/>
             <p:panel>
                 <h:form>
                     <p:remoteCommand name="onload" action="#{gazeBean.execGraph(20)}" oncomplete="main('#{gazeBean.nodesAsJson}','#{gazeBean.edgesAsJson}','#{gazeBean.minFreqNode}','#{gazeBean.maxFreqNode}');" autoRun="true" />
                 </h:form>
-                <div id="graphDiv" style="max-height: 350px;">
-                </div>
                 <h:form target="_blank">
                     <div class="grid">
                         <div class="col-12 md:col-6 lg:col-3 border-1 border-200">

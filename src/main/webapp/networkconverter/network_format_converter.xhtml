@@ -69,7 +69,9 @@
                 <ui:include src="/WEB-INF/includes/header.xhtml"/>
                 <h1>#{text['network_converter.tagline']}</h1>
             </p:panel>
-            <p:spacer height="20"/>
+            <p:spacer height="10"/>
+            <ui:include src="/WEB-INF/includes/call-form.xhtml" />
+            <p:spacer height="10"/>
             <p:panel>
                 <div>
                     <i>#{text['network_converter.choose_file_or_read_below']}</i>
@@ -161,10 +163,10 @@
                         <br/>
                         <p>
                             <strong>
-                            <p:outputLabel value="#{text['network_converter.limit_to_500_nodes.question']}" escape="false"/>    
+                                <p:outputLabel value="#{text['network_converter.limit_to_500_nodes.question']}" escape="false"/>    
                             </strong>
                         </p>
-                            <p:outputLabel value="#{text['network_converter.limit_to_500_nodes.details']}" escape="false"/>    
+                        <p:outputLabel value="#{text['network_converter.limit_to_500_nodes.details']}" escape="false"/>    
                         <br/>
                         <br/>
                         <p:fieldset>
@@ -182,7 +184,7 @@
                             <br/>
                             <div class="p-field">
                                 <p:outputLabel for="link" value="#{text['general.nouns.link']} " styleClass="p-d-block"/>
-                                
+
                                 <p:inputText id="link" styleClass="p-d-block" value="#{converterBean.link}">
                                     <p:ajax event="keyup" process="@this"/>
                                 </p:inputText>

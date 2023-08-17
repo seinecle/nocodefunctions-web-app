@@ -169,6 +169,12 @@ public class SendReport extends Thread {
         try {
             String paramsString = ParameterStringBuilder.getParamsString(params);
             url = new URL(baseURL + endPoint + "?" + paramsString);
+            boolean hasInternetAccess = java.net.InetAddress.getByName(url.toString()).isReachable(1000);
+            if (!hasInternetAccess) {
+                System.out.println("report not sent on function counter because we are local and middleware not deployed locally");
+                return;
+            }
+
             HttpURLConnection con = (HttpURLConnection) url.openConnection();
             con.setRequestMethod("GET");
             con.setRequestProperty("Accept-Charset", "UTF-8");

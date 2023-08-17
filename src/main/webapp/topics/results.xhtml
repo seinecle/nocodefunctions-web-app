@@ -43,8 +43,10 @@
                 <ui:include src="/WEB-INF/includes/header.xhtml"/>
                 <h1>#{text['topics.topics_extraction_tool.tagline']}</h1>
             </p:panel>
-            <p:spacer height="20"/>
-            <p:panel header="">
+            <p:spacer height="10"/>
+            <ui:include src="/WEB-INF/includes/call-form.xhtml" />
+            <p:spacer height="10"/>
+F            <p:panel header="">
                 <h:form target="_blank">
                     <p:commandButton
                         value="#{text['general.verbs.download_results']}"

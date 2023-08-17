@@ -37,7 +37,6 @@ import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.json.JsonWriter;
-import java.io.ObjectInputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.Arrays;
@@ -78,6 +77,8 @@ public class BiblioCouplingBean implements Serializable {
     private final Properties privateProperties;
     private ConcurrentHashMap<String, Set<String>> sourcesAndTargets;
     private int minSharedTargets;
+    private Set<String> pubErrors;
+    private String field;
 
     private int countTreated = 0;
 
@@ -103,6 +104,7 @@ public class BiblioCouplingBean implements Serializable {
     public String runBiblioCouplingAnalysis() {
         try {
             progress = 0;
+            pubErrors = new HashSet();
             sessionBean.sendFunctionPageReport();
             service.create(sessionBean.getLocaleBundle().getString("general.message.starting_analysis"));
             DataFormatConverter dataFormatConverter = new DataFormatConverter();
@@ -114,7 +116,7 @@ public class BiblioCouplingBean implements Serializable {
             HttpClient client = HttpClient.newHttpClient();
             Set<CompletableFuture> futures = new HashSet();
             int i = 1;
-            service.create(sessionBean.getLocaleBundle().getString("bibliocoupling.info.startopenalexdataretrieval"));
+            service.create("🎢" + sessionBean.getLocaleBundle().getString("bibliocoupling.info.startopenalexdataretrieval"));
             try {
                 for (Map.Entry<Integer, String> entry : mapOfLines.entrySet()) {
                     if (i++ > maxSources) {
@@ -127,7 +129,8 @@ public class BiblioCouplingBean implements Serializable {
                             .withHost("localhost")
                             .withPort((Integer.valueOf(privateProperties.getProperty("nocode_api_port"))))
                             .withPath("api/bibliocoupling")
-                            .addParameter("title", entry.getValue())
+                            .addParameter("identifier", entry.getValue())
+                            .addParameter("fieldType", field)
                             .addParameter("number", String.valueOf(entry.getKey()))
                             .toUri();
 
@@ -137,40 +140,37 @@ public class BiblioCouplingBean implements Serializable {
 
                     CompletableFuture<Void> future = client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()).thenAccept(resp -> {
                         byte[] body = resp.body();
+                        String result = new String(body, StandardCharsets.UTF_8);
                         Float situation = (countTreated++ * 100 / (float) maxSources);
                         if (situation.intValue() > progress) {
                             progress = situation.intValue();
                         }
-                        if (body.length >= 100 && !new String(body, StandardCharsets.UTF_8).toLowerCase().startsWith("internal") && !new String(body, StandardCharsets.UTF_8).toLowerCase().startsWith("not found")) {
-                            try (
-                                    ByteArrayInputStream bis = new ByteArrayInputStream(body); ObjectInputStream ois = new ObjectInputStream(bis)) {
-                                String result = (String) ois.readObject();
-                                String[] fields = result.split("\\|");
-                                if (fields.length > 1) {
-
-                                    String[] targets = fields[1].split(",");
-                                    Set<String> targetsSet = new HashSet(Arrays.asList(targets));
+                        if (body.length >= 100
+                                && !result.toLowerCase().startsWith("internal")
+                                && !result.toLowerCase().startsWith("not found")) {
+                            String[] fields = result.split("\\|");
+                            if (fields.length > 1) {
+                                String[] targets = fields[1].split(",");
+                                Set<String> targetsSet = new HashSet(Arrays.asList(targets));
+                                if (!targetsSet.isEmpty()) {
                                     sourcesAndTargets.put(fields[0], targetsSet);
                                 } else {
-                                    service.create(sessionBean.getLocaleBundle().getString("general.message.internal_server_error"));
+                                    pubErrors.add(result);
                                 }
-                            } catch (Exception ex) {
-                                System.out.println("error in body:");
-                                System.out.println(new String(body, StandardCharsets.UTF_8));
-                                Logger.getLogger(UmigonBean.class.getName()).log(Level.SEVERE, null, ex);
+                            } else {
+                                pubErrors.add(result);
                             }
+                        } else {
+                            System.out.println("API biblio coupling returned an error:");
+                            System.out.println(result);
                         }
-                    }
-                    );
+                    });
                     futures.add(future);
                     // this is because we need to slow down a bit the requests sending too many throws a
                     // java.util.concurrent.CompletionException: java.io.IOException: too many concurrent streams
-
-                    // also the function calls the OpenAlex API which can't be called more than 10 times per seconds.
-                    Thread.sleep(250);
+                    Thread.sleep(2);
                 }
-                this.progress = 40;
-                service.create(sessionBean.getLocaleBundle().getString("general.message.almost_done"));
+                this.progress = 20;
 
                 CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(futures.toArray((new CompletableFuture[0])));
                 combinedFuture.join();
@@ -178,8 +178,8 @@ public class BiblioCouplingBean implements Serializable {
             } catch (InterruptedException ex) {
                 System.out.println("ex:" + ex.getMessage());
             }
-            service.create(sessionBean.getLocaleBundle().getString("bibliocoupling.info.openalexdataretrieved"));
-            service.create(sessionBean.getLocaleBundle().getString("bibliocoupling.info.startsim"));
+            service.create("🏁" + sessionBean.getLocaleBundle().getString("bibliocoupling.info.openalexdataretrieved"));
+            service.create("💻" + sessionBean.getLocaleBundle().getString("bibliocoupling.info.startsim"));
 
             callSim(sourcesAndTargets);
             this.progress = 100;
@@ -484,5 +484,15 @@ public class BiblioCouplingBean implements Serializable {
     public void setProgress(Integer progress) {
         this.progress = progress;
     }
+
+    public String getField() {
+        return field;
+    }
+
+    public void setField(String field) {
+        this.field = field;
+    }
+    
+    
 
 }

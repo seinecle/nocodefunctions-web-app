@@ -44,6 +44,9 @@
                 <ui:include src="/WEB-INF/includes/header.xhtml" />
                 <h1>#{text['organic.tagline']}</h1>
             </p:panel>
+            <p:spacer height="10"/>
+            <ui:include src="/WEB-INF/includes/call-form.xhtml" />
+            <p:spacer height="10"/>
             <p:panel>
                 <h:form target="_blank">
                     <p:commandButton value="Download results" ajax="false" onclick="PrimeFaces.monitorDownload(start, stop);"

@@ -51,10 +51,12 @@
                 <ui:include src="/WEB-INF/includes/header.xhtml"/>
                 <h1>#{text['umigon.results.tagline']}</h1>
             </p:panel>
-            <p:spacer height="20"/>
+            <p:spacer height="10"/>
+            <ui:include src="/WEB-INF/includes/call-form.xhtml" />
+            <p:spacer height="10"/>
             <p:panel>
                 <h:form target="_blank">
-                    
+
                     <p:commandLink action="#{twitterImportBean.navigateBackToSearch()}" value="#{text['general.message.go_back_do_search_twitter']}" rendered="#{dataImportBean.source == 'TWITTER'}"/>
                     <br/>
                     <br/>

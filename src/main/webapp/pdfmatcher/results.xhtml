@@ -44,7 +44,9 @@
                 <ui:include src="/WEB-INF/includes/header.xhtml"/>                
                 <h1>#{text['pdfmatcher.results.tagline']}</h1>
             </p:panel>
-            <p:spacer height="20"/>
+            <p:spacer height="10"/>
+            <ui:include src="/WEB-INF/includes/call-form.xhtml" />
+            <p:spacer height="10"/>
             <p:panel>
                 <h:form target="_blank">
                     <p:commandButton
@@ -52,7 +54,7 @@
                         ajax="false"
                         onclick="PrimeFaces.monitorDownload(start, stop);"
                         icon="pi pi-arrow-down" styleClass="p-mr-2">
-                        
+
                         <p:fileDownload value="#{pdfMatcherBean.fileToSave}"/>
                     </p:commandButton>
                 </h:form>
