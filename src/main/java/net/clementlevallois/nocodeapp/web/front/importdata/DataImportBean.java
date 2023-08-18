@@ -201,13 +201,22 @@ public class DataImportBean implements Serializable {
         CompletableFuture<Void> future = client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()).thenAccept(
                 resp -> {
                     byte[] body = resp.body();
-                    try (
-                    ByteArrayInputStream bis = new ByteArrayInputStream(body); ObjectInputStream ois = new ObjectInputStream(bis)) {
-                        List<SheetModel> tempResult = (List<SheetModel>) ois.readObject();
-                        dataInSheets.addAll(tempResult);
-                    } catch (IOException | ClassNotFoundException ex) {
-                        Logger.getLogger(DataImportBean.class.getName()).log(Level.SEVERE, null, ex);
+                    if (resp.statusCode() == 200) {
+                        try (
+                        ByteArrayInputStream bis = new ByteArrayInputStream(body); ObjectInputStream ois = new ObjectInputStream(bis)) {
+                            List<SheetModel> tempResult = (List<SheetModel>) ois.readObject();
+                            dataInSheets.addAll(tempResult);
+                        } catch (IOException | ClassNotFoundException ex) {
+                            Logger.getLogger(DataImportBean.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+                    } else {
+                        System.out.println("return of txt reader by the API was not a 200 code");
+                        String errorMessage = new String(body, StandardCharsets.UTF_8);
+                        System.out.println(errorMessage);
+                        FacesMessage message = new FacesMessage(errorMessage, errorMessage);
+                        FacesContext.getCurrentInstance().addMessage(null, message);
                     }
+
                 }
         );
         futures.add(future);
@@ -259,22 +268,31 @@ public class DataImportBean implements Serializable {
         CompletableFuture<Void> future = client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()).thenAccept(
                 resp -> {
                     byte[] body = resp.body();
-                    if (currentFunction.equals("pdf_region_extractor")) {
-                        try (
-                        ByteArrayInputStream bis = new ByteArrayInputStream(body); ObjectInputStream ois = new ObjectInputStream(bis)) {
-                            ImagesPerFile imagesPerOneFile = (ImagesPerFile) ois.readObject();
-                            imagesPerFiles.add(imagesPerOneFile);
-                        } catch (IOException | ClassNotFoundException ex) {
-                            Logger.getLogger(DataImportBean.class.getName()).log(Level.SEVERE, null, ex);
+                    if (resp.statusCode() == 200) {
+                        if (currentFunction.equals("pdf_region_extractor")) {
+                            try (
+                            ByteArrayInputStream bis = new ByteArrayInputStream(body); ObjectInputStream ois = new ObjectInputStream(bis)) {
+                                ImagesPerFile imagesPerOneFile = (ImagesPerFile) ois.readObject();
+                                imagesPerFiles.add(imagesPerOneFile);
+                            } catch (IOException | ClassNotFoundException ex) {
+                                Logger.getLogger(DataImportBean.class.getName()).log(Level.SEVERE, null, ex);
+                            }
+                        } else {
+                            try (
+                            ByteArrayInputStream bis = new ByteArrayInputStream(body); ObjectInputStream ois = new ObjectInputStream(bis)) {
+                                List<SheetModel> tempResult = (List<SheetModel>) ois.readObject();
+                                dataInSheets.addAll(tempResult);
+                            } catch (IOException | ClassNotFoundException ex) {
+                                Logger.getLogger(DataImportBean.class.getName()).log(Level.SEVERE, null, ex);
+                            }
                         }
                     } else {
-                        try (
-                        ByteArrayInputStream bis = new ByteArrayInputStream(body); ObjectInputStream ois = new ObjectInputStream(bis)) {
-                            List<SheetModel> tempResult = (List<SheetModel>) ois.readObject();
-                            dataInSheets.addAll(tempResult);
-                        } catch (IOException | ClassNotFoundException ex) {
-                            Logger.getLogger(DataImportBean.class.getName()).log(Level.SEVERE, null, ex);
-                        }
+                        System.out.println("return of pdf reader by the API was not a 200 code");
+                        String errorMessage = new String(body, StandardCharsets.UTF_8);
+                        System.out.println(errorMessage);
+                        FacesMessage message = new FacesMessage(errorMessage, errorMessage);
+                        FacesContext.getCurrentInstance().addMessage(null, message);
+
                     }
                 }
         );
@@ -314,14 +332,22 @@ public class DataImportBean implements Serializable {
         CompletableFuture<Void> future = client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()).thenAccept(
                 resp -> {
                     byte[] body = resp.body();
-                    try (
-                    ByteArrayInputStream bis = new ByteArrayInputStream(body); ObjectInputStream ois = new ObjectInputStream(bis)) {
-                        List<SheetModel> tempResult = (List<SheetModel>) ois.readObject();
-                        dataInSheets.addAll(tempResult);
+                    if (resp.statusCode() == 200) {
+                        try (
+                        ByteArrayInputStream bis = new ByteArrayInputStream(body); ObjectInputStream ois = new ObjectInputStream(bis)) {
+                            List<SheetModel> tempResult = (List<SheetModel>) ois.readObject();
+                            dataInSheets.addAll(tempResult);
 
-                    } catch (IOException | ClassNotFoundException ex) {
-                        Logger.getLogger(DataImportBean.class
-                                .getName()).log(Level.SEVERE, null, ex);
+                        } catch (IOException | ClassNotFoundException ex) {
+                            Logger.getLogger(DataImportBean.class
+                                    .getName()).log(Level.SEVERE, null, ex);
+                        }
+                    } else {
+                        System.out.println("return of csv reader by the API was not a 200 code");
+                        String errorMessage = new String(body, StandardCharsets.UTF_8);
+                        System.out.println(errorMessage);
+                        FacesMessage message = new FacesMessage(errorMessage, errorMessage);
+                        FacesContext.getCurrentInstance().addMessage(null, message);
                     }
                 }
         );
@@ -365,8 +391,11 @@ public class DataImportBean implements Serializable {
                     Logger.getLogger(UmigonBean.class.getName()).log(Level.SEVERE, null, ex);
                 }
             } else {
-                System.out.println("problem with the reading of excel file:");
-                System.out.println(new String(body, StandardCharsets.UTF_8));
+                System.out.println("return of xlsx reader by the API was not a 200 code");
+                String errorMessage = new String(body, StandardCharsets.UTF_8);
+                System.out.println(errorMessage);
+                FacesMessage message = new FacesMessage(errorMessage, errorMessage);
+                FacesContext.getCurrentInstance().addMessage(null, message);
             }
 
         }
@@ -654,7 +683,7 @@ public class DataImportBean implements Serializable {
         String index = context.getExternalContext().getRequestParameterMap().get("rowIndex");
         byte[] image = imagesPerFiles.get(tabIndex).getImage(Integer.parseInt(index));
         ByteArrayInputStream stream = new ByteArrayInputStream(image);
-        String random = UUID.randomUUID().toString(); 
+        String random = UUID.randomUUID().toString();
         StreamedContent imageAsStream = DefaultStreamedContent.builder().name(random).contentType("image/png").stream(() -> stream).build();
         imageNamesOfCurrentFile.add(imageAsStream.toString());
         return imageAsStream;
@@ -679,7 +708,4 @@ public class DataImportBean implements Serializable {
     public List<String> getImageNamesOfCurrentFile() {
         return imageNamesOfCurrentFile;
     }
-    
-    
-
 }
