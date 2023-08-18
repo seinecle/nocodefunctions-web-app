@@ -36,7 +36,7 @@ public class SendReport extends Thread {
     String freeCommentSuggestion = "";
     String url = "";
     String locale = "";
-    boolean testLocalOnWindows = true;
+    boolean testLocalOnWindows = false;
     boolean middleWareRunningOnWindows = false;
 
     public SendReport() {
@@ -98,10 +98,12 @@ public class SendReport extends Thread {
         String baseURL;
         String endPoint = null;
         Map<String, String> params = new HashMap();
-        if (testLocalOnWindows && System.getProperty("os.name").toLowerCase().contains("wind")) {
+        if (System.getProperty("os.name").toLowerCase().contains("win")) {
             baseURL = SingletonBean.getPrivateProperties().getProperty("middleware_local_baseurl");
+            testLocalOnWindows = true;
         } else {
             baseURL = SingletonBean.getPrivateProperties().getProperty("middleware_remote_baseurl");
+            testLocalOnWindows = false;
         }
         if (TYPE.equals("error")) {
             endPoint = "sendUmigonReport";
@@ -170,16 +172,17 @@ public class SendReport extends Thread {
         try {
             String paramsString = ParameterStringBuilder.getParamsString(params);
             url = new URL(baseURL + endPoint + "?" + paramsString);
-            boolean hasInternetAccess = java.net.InetAddress.getByName("middleware.clementlevallois.net").isReachable(1000);
-            if (!hasInternetAccess | (testLocalOnWindows & !middleWareRunningOnWindows)) {
-                System.out.println("report not sent on function counter because we are local and middleware not deployed locally");
-                return;
+            if (testLocalOnWindows && !middleWareRunningOnWindows) {
+                System.out.println("report not sent on function counter because we are local on Windows but middleware not deployed locally");
+                System.out.println("testLocalOnWindows: " + testLocalOnWindows);
+                System.out.println("middleWareRunningOnWindows: " + middleWareRunningOnWindows);
             }
 
             HttpURLConnection con = (HttpURLConnection) url.openConnection();
             con.setRequestMethod("GET");
             con.setRequestProperty("Accept-Charset", "UTF-8");
             con.getResponseCode();
+            System.out.println("function launched: " + event);
         } catch (UnsupportedEncodingException ex) {
             ex.printStackTrace();
         } catch (IOException ex) {
