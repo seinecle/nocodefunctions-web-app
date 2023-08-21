@@ -21,6 +21,7 @@ import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.SessionScoped;
 import jakarta.faces.context.FacesContext;
 import jakarta.inject.Named;
+import java.io.IOException;
 
 @Named
 @SessionScoped
@@ -47,7 +48,7 @@ public class ActiveLocale implements Serializable {
         return current.toLanguageTag();
     }
 
-    public void setLanguageTag(String languageTag) {
+    public void setLanguageTag(String languageTag) throws IOException {
 
         String correctLangTag;
         if (languageTag == null) {
@@ -64,9 +65,17 @@ public class ActiveLocale implements Serializable {
             correctLangTag = languageTag;
         }
 
-        current = Locale.forLanguageTag(correctLangTag);
-        FacesContext.getCurrentInstance().getViewRoot().setLocale(current);
-        sessionBean.refreshLocaleBundle();
+        Locale newLocale = Locale.forLanguageTag(correctLangTag);
+        if (current == null) {
+            current = FacesContext.getCurrentInstance().getViewRoot().getLocale();
+        }
+        if (newLocale.equals(current)) {
+            return;
+        } else {
+            current = newLocale;
+            FacesContext.getCurrentInstance().getViewRoot().setLocale(newLocale);
+            sessionBean.refreshLocaleBundle();
+        }
     }
 
     public List<Locale> getAvailable() {
@@ -94,8 +103,8 @@ public class ActiveLocale implements Serializable {
             }
         }
         List<Locale> sortedList = available.stream()
-			.sorted(new ActiveLocale.LocaleComparator())
-			.collect(Collectors.toList());
+                .sorted(new ActiveLocale.LocaleComparator())
+                .collect(Collectors.toList());
         available = new ArrayList();
         available.addAll(sortedList);
         if (!requestLocale.getLanguage().equals("en")) {
@@ -109,7 +118,7 @@ public class ActiveLocale implements Serializable {
 
         @Override
         public int compare(Locale firstLocale, Locale secondLocale) {
-            if (firstLocale == null || secondLocale == null || current == null){
+            if (firstLocale == null || secondLocale == null || current == null) {
                 return -1;
             }
             return firstLocale.getDisplayName(current).compareTo(secondLocale.getDisplayName(current));

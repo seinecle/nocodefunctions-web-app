@@ -27,20 +27,20 @@ import org.omnifaces.cdi.Startup;
 @ApplicationScoped
 public class SingletonBean {
 
-    private final static String PATHLOCALE = "net.clementlevallois.nocodeapp.web.front.resources.i18n.text";
+    private final static String PATHLOCALE = "net.clementlevallois.nocodeapp.web.front.i18n";
     private static Properties privateProperties;
     private final static String PATHLOCALDEV = "C:\\Users\\levallois\\open\\nocode-app-web-front\\";
     private final static String PATHREMOTEDEV = "/home/waouh/nocodeapp-web/";
-    private static String rootProps;
+    private static String rootProject;
 
     public SingletonBean() {
         try {
             if (System.getProperty("os.name").toLowerCase().contains("win")) {
-                rootProps = PATHLOCALDEV;
+                rootProject = PATHLOCALDEV;
             } else {
-                rootProps = PATHREMOTEDEV;
+                rootProject = PATHREMOTEDEV;
             }
-            InputStream is = new FileInputStream(rootProps + "private/private.properties");
+            InputStream is = new FileInputStream(rootProject + "private/private.properties");
             privateProperties = new Properties();
             privateProperties.load(is);
 
@@ -61,5 +61,9 @@ public class SingletonBean {
 
     public static String getPATHLOCALE() {
         return PATHLOCALE;
+    }
+    
+    public static String getExternalFolderForInternationalizationFiles(){
+        return rootProject + "i18n/";
     }
 }

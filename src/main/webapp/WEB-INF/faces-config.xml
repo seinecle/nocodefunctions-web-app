@@ -56,7 +56,7 @@
             <supported-locale>eu</supported-locale>
             <supported-locale>fa</supported-locale>
             <supported-locale>fi</supported-locale>
-            <supported-locale>fr_FR</supported-locale>
+            <supported-locale>fr</supported-locale>
             <supported-locale>fy</supported-locale>
             <supported-locale>ga</supported-locale>
             <supported-locale>gd</supported-locale>
@@ -144,7 +144,7 @@
             <supported-locale>zu</supported-locale>
         </locale-config>
         <resource-bundle>
-            <base-name>net.clementlevallois.nocodeapp.web.front.resources.i18n.text</base-name>
+            <base-name>net.clementlevallois.nocodeapp.web.front.i18n.I18nStaticFilesResourceBundle</base-name>
             <var>text</var>
         </resource-bundle>
     </application>

@@ -16,6 +16,13 @@ import net.clementlevallois.nocodeapp.web.front.http.RemoteLocal;
 import net.clementlevallois.nocodeapp.web.front.http.SendReport;
 import jakarta.annotation.PostConstruct;
 import jakarta.inject.Inject;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.PropertyResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import net.clementlevallois.nocodeapp.web.front.i18n.I18nStaticFilesResourceBundle;
 
 /**
  *
@@ -33,22 +40,23 @@ public class SessionBean implements Serializable {
     private String noRobot;
 
 //    private OAuth2AccessToken twitterOAuth2AccessToken;
-
     @Inject
     SingletonBean singletonBean;
-    
+
     public SessionBean() {
     }
 
     @PostConstruct
     public void init() {
+        Locale locale = FacesContext.getCurrentInstance().getViewRoot().getLocale();
         final HttpServletRequest request = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
         if (request != null) {
             userAgent = request.getHeader("user-agent");
         } else {
             userAgent = "unknown-user-agent";
         }
-        localeBundle = ResourceBundle.getBundle(SingletonBean.getPATHLOCALE(), FacesContext.getCurrentInstance().getViewRoot().getLocale());
+        I18nStaticFilesResourceBundle dbb = new I18nStaticFilesResourceBundle();
+        localeBundle = dbb.simpleMethodToGetResourceBundle(locale);
     }
 
     ;
@@ -81,8 +89,6 @@ public class SessionBean implements Serializable {
     public void setGazeOption(String gazeOption) {
         this.gazeOption = gazeOption;
     }
-    
-    
 
     public void sendFunctionPageReport() {
         SendReport send = new SendReport();
@@ -114,8 +120,10 @@ public class SessionBean implements Serializable {
         return RemoteLocal.getHostFunctionsAPI();
     }
 
-    public void refreshLocaleBundle() {
-        localeBundle = ResourceBundle.getBundle(SingletonBean.getPATHLOCALE(), FacesContext.getCurrentInstance().getViewRoot().getLocale());
+    public void refreshLocaleBundle() throws IOException {
+        Locale locale = FacesContext.getCurrentInstance().getViewRoot().getLocale();
+        I18nStaticFilesResourceBundle dbb = new I18nStaticFilesResourceBundle();
+        localeBundle = dbb.simpleMethodToGetResourceBundle(locale);
     }
 
     public ResourceBundle getLocaleBundle() {
@@ -139,7 +147,6 @@ public class SessionBean implements Serializable {
         this.noRobot = noRobot;
     }
 
-
     public SingletonBean getSingletonBean() {
         return singletonBean;
     }
@@ -147,14 +154,5 @@ public class SessionBean implements Serializable {
     public void setSingletonBean(SingletonBean singletonBean) {
         this.singletonBean = singletonBean;
     }
-
-    
-    
-    
-    
-    
-    
-    
-    
 
 }
