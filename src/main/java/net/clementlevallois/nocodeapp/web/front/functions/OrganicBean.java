@@ -66,7 +66,6 @@ public class OrganicBean implements Serializable {
     private Boolean renderSeeResultsButton = false;
     private List<Document> filteredDocuments;
     private Integer maxCapacity = 10_000;
-    private String[] naturalness = new String[]{"organic", "promoted"};
 
     @Inject
     NotificationService service;

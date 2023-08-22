@@ -101,14 +101,22 @@ public class TopicsBean implements Serializable {
 
     @Inject
     SessionBean sessionBean;
-    
-    
+
     public TopicsBean() {
         if (sessionBean == null) {
             sessionBean = new SessionBean();
         }
         sessionBean.setFunction("topics");
         privateProperties = SingletonBean.getPrivateProperties();
+    }
+
+    public void addMessage(FacesMessage.Severity severity, String summary, String detail) {
+        try {
+            FacesContext.getCurrentInstance().
+                    addMessage(null, new FacesMessage(severity, summary, detail));
+        } catch (NullPointerException e) {
+            System.out.println("FacesContext.getCurrentInstance was null. Detail: " + detail);
+        }
     }
 
     public Integer getProgress() {
@@ -216,8 +224,7 @@ public class TopicsBean implements Serializable {
                 } else {
                     System.out.println("topic returned by the API was not a 200 code");
                     String errorMessage = new String(body, StandardCharsets.UTF_8);
-                    FacesMessage message = new FacesMessage(errorMessage, errorMessage);
-                    FacesContext.getCurrentInstance().addMessage(null, message);
+                    addMessage(FacesMessage.SEVERITY_WARN, "💔", errorMessage);
                 }
             }
             );
@@ -318,7 +325,7 @@ public class TopicsBean implements Serializable {
             renderSeeResultsButton = true;
             runButtonDisabled = true;
 
-        } catch (IOException | NumberFormatException  ex) {
+        } catch (IOException | NumberFormatException ex) {
             System.out.println("ex:" + ex.getMessage());
         }
         return "/" + sessionBean.getFunction() + "/results.xhtml?faces-redirect=true";
@@ -407,8 +414,7 @@ public class TopicsBean implements Serializable {
         if (fileUserStopwords != null) {
             String success = sessionBean.getLocaleBundle().getString("general.nouns.success");
             String is_uploaded = sessionBean.getLocaleBundle().getString("general.verb.is_uploaded");
-            FacesMessage message = new FacesMessage(success, fileUserStopwords.getFileName() + " " + is_uploaded + ".");
-            FacesContext.getCurrentInstance().addMessage(null, message);
+            addMessage(FacesMessage.SEVERITY_INFO, success, fileUserStopwords.getFileName() + " " + is_uploaded + ".");
         }
     }
 

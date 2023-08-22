@@ -100,8 +100,12 @@ public class PdfMatcherBean implements Serializable {
     }
 
     public void addMessage(FacesMessage.Severity severity, String summary, String detail) {
-        FacesContext.getCurrentInstance().
-                addMessage(null, new FacesMessage(severity, summary, detail));
+        try {
+            FacesContext.getCurrentInstance().
+                    addMessage(null, new FacesMessage(severity, summary, detail));
+        } catch (NullPointerException e) {
+            System.out.println("FacesContext.getCurrentInstance was null. Detail: " + detail);
+        }
     }
 
     public String goToPdfUpload() {

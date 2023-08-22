@@ -101,6 +101,15 @@ public class GazeBean implements Serializable {
         dataImportBean.setSelectedSheetName(sheetName);
     }
 
+    public void addMessage(FacesMessage.Severity severity, String summary, String detail) {
+        try {
+            FacesContext.getCurrentInstance().
+                    addMessage(null, new FacesMessage(severity, summary, detail));
+        } catch (NullPointerException e) {
+            System.out.println("FacesContext.getCurrentInstance was null. Detail: " + detail);
+        }
+    }
+
     public String runCoocAnalysis() {
         try {
             progress = 0;
@@ -294,8 +303,7 @@ public class GazeBean implements Serializable {
             } else {
                 System.out.println("gaze results by the API was not a 200 code");
                 String error = sessionBean.getLocaleBundle().getString("general.nouns.error");
-                FacesMessage message = new FacesMessage(error, error);
-                FacesContext.getCurrentInstance().addMessage(null, message);
+                    addMessage(FacesMessage.SEVERITY_WARN, "💔", error);
             }
         }
         );

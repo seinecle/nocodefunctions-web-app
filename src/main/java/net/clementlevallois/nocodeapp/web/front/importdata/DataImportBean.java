@@ -107,8 +107,12 @@ public class DataImportBean implements Serializable {
     }
 
     public void addMessage(FacesMessage.Severity severity, String summary, String detail) {
-        FacesContext.getCurrentInstance().
-                addMessage(null, new FacesMessage(severity, summary, detail));
+        try {
+            FacesContext.getCurrentInstance().
+                    addMessage(null, new FacesMessage(severity, summary, detail));
+        } catch (NullPointerException e) {
+            System.out.println("FacesContext.getCurrentInstance was null. Detail: " + detail);
+        }
     }
 
     public String readData() throws IOException, URISyntaxException {
@@ -213,8 +217,8 @@ public class DataImportBean implements Serializable {
                         System.out.println("return of txt reader by the API was not a 200 code");
                         String errorMessage = new String(body, StandardCharsets.UTF_8);
                         System.out.println(errorMessage);
-                        FacesMessage message = new FacesMessage(errorMessage, errorMessage);
-                        FacesContext.getCurrentInstance().addMessage(null, message);
+                        service.create(errorMessage);
+                        addMessage(FacesMessage.SEVERITY_WARN, "💔", errorMessage);
                     }
 
                 }
@@ -290,8 +294,8 @@ public class DataImportBean implements Serializable {
                         System.out.println("return of pdf reader by the API was not a 200 code");
                         String errorMessage = new String(body, StandardCharsets.UTF_8);
                         System.out.println(errorMessage);
-                        FacesMessage message = new FacesMessage(errorMessage, errorMessage);
-                        FacesContext.getCurrentInstance().addMessage(null, message);
+                        service.create(errorMessage);
+                        addMessage(FacesMessage.SEVERITY_WARN, "💔", errorMessage);
 
                     }
                 }
@@ -346,8 +350,8 @@ public class DataImportBean implements Serializable {
                         System.out.println("return of csv reader by the API was not a 200 code");
                         String errorMessage = new String(body, StandardCharsets.UTF_8);
                         System.out.println(errorMessage);
-                        FacesMessage message = new FacesMessage(errorMessage, errorMessage);
-                        FacesContext.getCurrentInstance().addMessage(null, message);
+                        service.create(errorMessage);
+                        addMessage(FacesMessage.SEVERITY_WARN, "💔", errorMessage);
                     }
                 }
         );

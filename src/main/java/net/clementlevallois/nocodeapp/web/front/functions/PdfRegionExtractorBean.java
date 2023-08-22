@@ -102,8 +102,12 @@ public class PdfRegionExtractorBean implements Serializable {
     }
 
     public void addMessage(FacesMessage.Severity severity, String summary, String detail) {
-        FacesContext.getCurrentInstance().
-                addMessage(null, new FacesMessage(severity, summary, detail));
+        try {
+            FacesContext.getCurrentInstance().
+                    addMessage(null, new FacesMessage(severity, summary, detail));
+        } catch (NullPointerException e) {
+            System.out.println("FacesContext.getCurrentInstance was null. Detail: " + detail);
+        }
     }
 
     public String goToPdfUpload() throws IOException {
@@ -162,9 +166,6 @@ public class PdfRegionExtractorBean implements Serializable {
         if (index == null) {
             return;
         }
-//        if (selectedRegion.getOriginalFilename().equals(inputData.getImageNamesOfCurrentFile().get(Integer.parseInt(index)))) {
-//            this.selectedRegions[Integer.parseInt(index)] = selectedRegion;
-//        }
         if (counterImages == Integer.parseInt(index)) {
             this.selectedRegions[Integer.parseInt(index)] = selectedRegion;
         }

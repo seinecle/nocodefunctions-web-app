@@ -121,6 +121,15 @@ public class CowoBean implements Serializable {
         privateProperties = SingletonBean.getPrivateProperties();
     }
 
+    public void addMessage(FacesMessage.Severity severity, String summary, String detail) {
+        try {
+            FacesContext.getCurrentInstance().
+                    addMessage(null, new FacesMessage(severity, summary, detail));
+        } catch (NullPointerException e) {
+            System.out.println("FacesContext.getCurrentInstance was null. Detail: " + detail);
+        }
+    }
+
     public Integer getProgress() {
         return progress;
     }
@@ -237,8 +246,8 @@ public class CowoBean implements Serializable {
                 } else {
                     System.out.println("cowo returned by the API was not a 200 code");
                     String errorMessage = new String(body, StandardCharsets.UTF_8);
-                    FacesMessage message = new FacesMessage(errorMessage, errorMessage);
-                    FacesContext.getCurrentInstance().addMessage(null, message);
+                    service.create(errorMessage);
+                    addMessage(FacesMessage.SEVERITY_WARN, "💔", errorMessage);
                 }
 
             }
@@ -285,8 +294,8 @@ public class CowoBean implements Serializable {
                 } else {
                     System.out.println("top nodes returned by the API was not a 200 code");
                     String error = sessionBean.getLocaleBundle().getString("general.nouns.error");
-                    FacesMessage message = new FacesMessage(error, error);
-                    FacesContext.getCurrentInstance().addMessage(null, message);
+                    service.create(error);
+                    addMessage(FacesMessage.SEVERITY_WARN, "💔", error);
                 }
             }
             );
@@ -334,8 +343,7 @@ public class CowoBean implements Serializable {
     public StreamedContent getFileToSave() {
         if (gexf == null) {
             System.out.println("gexf was null in cowo function");
-            FacesMessage message = new FacesMessage("", sessionBean.getLocaleBundle().getString("general.message.internal_server_error"));
-            FacesContext.getCurrentInstance().addMessage(null, message);
+            addMessage(FacesMessage.SEVERITY_WARN, "💔", sessionBean.getLocaleBundle().getString("general.message.internal_server_error"));
             return new DefaultStreamedContent();
         }
         return GEXFSaver.exportGexfAsStreamedFile(gexf, "results");

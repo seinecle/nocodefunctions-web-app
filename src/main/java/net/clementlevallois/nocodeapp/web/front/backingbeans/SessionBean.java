@@ -17,11 +17,6 @@ import net.clementlevallois.nocodeapp.web.front.http.SendReport;
 import jakarta.annotation.PostConstruct;
 import jakarta.inject.Inject;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.PropertyResourceBundle;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import net.clementlevallois.nocodeapp.web.front.i18n.I18nStaticFilesResourceBundle;
 
 /**
