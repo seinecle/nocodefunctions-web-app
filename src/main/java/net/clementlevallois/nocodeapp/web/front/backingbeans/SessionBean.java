@@ -33,6 +33,7 @@ public class SessionBean implements Serializable {
     private ResourceBundle localeBundle;
     private boolean testServer;
     private String noRobot;
+    private Locale currentLocale;
 
 //    private OAuth2AccessToken twitterOAuth2AccessToken;
     @Inject
@@ -43,7 +44,7 @@ public class SessionBean implements Serializable {
 
     @PostConstruct
     public void init() {
-        Locale locale = FacesContext.getCurrentInstance().getViewRoot().getLocale();
+        currentLocale = FacesContext.getCurrentInstance().getViewRoot().getLocale();
         final HttpServletRequest request = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
         if (request != null) {
             userAgent = request.getHeader("user-agent");
@@ -51,7 +52,7 @@ public class SessionBean implements Serializable {
             userAgent = "unknown-user-agent";
         }
         I18nStaticFilesResourceBundle dbb = new I18nStaticFilesResourceBundle();
-        localeBundle = dbb.simpleMethodToGetResourceBundle(locale);
+        localeBundle = dbb.simpleMethodToGetResourceBundle(currentLocale);
     }
 
     ;
@@ -92,9 +93,9 @@ public class SessionBean implements Serializable {
     }
 
     public String logout() {
-        Locale currLocale = FacesContext.getCurrentInstance().getExternalContext().getRequestLocale();
+        Locale persistLocale = currentLocale;
         FacesContext.getCurrentInstance().getExternalContext().invalidateSession();
-        FacesContext.getCurrentInstance().getViewRoot().setLocale(currLocale);
+        FacesContext.getCurrentInstance().getViewRoot().setLocale(persistLocale);
 
         return "/index?faces-redirect=true";
     }
@@ -116,9 +117,8 @@ public class SessionBean implements Serializable {
     }
 
     public void refreshLocaleBundle() throws IOException {
-        Locale locale = FacesContext.getCurrentInstance().getViewRoot().getLocale();
         I18nStaticFilesResourceBundle dbb = new I18nStaticFilesResourceBundle();
-        localeBundle = dbb.simpleMethodToGetResourceBundle(locale);
+        localeBundle = dbb.simpleMethodToGetResourceBundle(currentLocale);
     }
 
     public ResourceBundle getLocaleBundle() {
@@ -149,5 +149,15 @@ public class SessionBean implements Serializable {
     public void setSingletonBean(SingletonBean singletonBean) {
         this.singletonBean = singletonBean;
     }
+
+    public Locale getCurrentLocale() {
+        return currentLocale;
+    }
+
+    public void setCurrentLocale(Locale currentLocale) {
+        this.currentLocale = currentLocale;
+    }
+    
+    
 
 }

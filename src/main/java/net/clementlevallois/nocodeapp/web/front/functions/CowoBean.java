@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package net.clementlevallois.nocodeapp.web.front.functions;
 
 import io.mikael.urlbuilder.UrlBuilder;
@@ -249,7 +244,6 @@ public class CowoBean implements Serializable {
                     service.create(errorMessage);
                     addMessage(FacesMessage.SEVERITY_WARN, "💔", errorMessage);
                 }
-
             }
             );
             futures.add(future);
@@ -433,9 +427,8 @@ public class CowoBean implements Serializable {
         if (fileUserStopwords != null && fileUserStopwords.getFileName() != null) {
             String success = sessionBean.getLocaleBundle().getString("general.nouns.success");
             String is_uploaded = sessionBean.getLocaleBundle().getString("general.verb.is_uploaded");
-            FacesMessage message = new FacesMessage(success, fileUserStopwords.getFileName() + " " + is_uploaded + ".");
-            FacesContext.getCurrentInstance().addMessage(null, message);
-
+            String message = fileUserStopwords.getFileName() + " " + is_uploaded + ".";
+            addMessage(FacesMessage.SEVERITY_INFO, success, message);
         }
     }
 
@@ -549,7 +542,7 @@ public class CowoBean implements Serializable {
         path = path + subfolder;
 
         if (RemoteLocal.isLocal()) {
-            path = SingletonBean.getPATHLOCALE() + "user_created_files";
+            path = SingletonBean.getRootOfProject() + "user_created_files";
         }
 
         BufferedWriter bw = Files.newBufferedWriter(Path.of(path + vosviewerJsonFileName), StandardCharsets.UTF_8);
@@ -587,7 +580,7 @@ public class CowoBean implements Serializable {
         path = path + subfolder;
 
         if (RemoteLocal.isLocal()) {
-            path = SingletonBean.getPATHLOCALE() + "user_created_files";
+            path = SingletonBean.getRootOfProject() + "user_created_files";
         }
 
         File file = new File(path + gephistoGexfFileName);

@@ -61,9 +61,7 @@ public class CardTestBean implements Serializable {
     private String organicResultFRExplanation = "";
     private String organicResultENExplanation = "";
 
-    private static String baseURI;
-
-    private Properties privateProperties;
+    private final Properties privateProperties;
 
     private Boolean showFRExplanation = false;
     private Boolean showENExplanation = false;
@@ -74,15 +72,11 @@ public class CardTestBean implements Serializable {
     @Inject
     SessionBean sessionBean;
 
-    @Inject
-    ActiveLocale activeLocale;
-
     public CardTestBean() {
         if (sessionBean == null) {
             sessionBean = new SessionBean();
         }
         privateProperties = SingletonBean.getPrivateProperties();
-        baseURI = "http://localhost:" + privateProperties.getProperty("nocode_api_port") + "/api/";
     }
 
     public String getUmigonTestInputFR() {
@@ -110,7 +104,7 @@ public class CardTestBean implements Serializable {
                 .addParameter("explanation", "on")
                 .addParameter("shorter", "true")
                 .addParameter("output-format", "bytes")
-                .addParameter("explanation-lang", activeLocale.getLanguageTag())
+                .addParameter("explanation-lang", sessionBean.getCurrentLocale().toLanguageTag())
                 .toUri();
 
         HttpRequest request = HttpRequest.newBuilder()
@@ -162,7 +156,7 @@ public class CardTestBean implements Serializable {
                 .addParameter("explanation", "on")
                 .addParameter("shorter", "true")
                 .addParameter("output-format", "bytes")
-                .addParameter("explanation-lang", activeLocale.getLanguageTag())
+                .addParameter("explanation-lang", sessionBean.getCurrentLocale().toLanguageTag())
                 .toUri();
 
         HttpRequest request = HttpRequest.newBuilder()
@@ -219,7 +213,7 @@ public class CardTestBean implements Serializable {
                 .addParameter("explanation", "on")
                 .addParameter("shorter", "true")
                 .addParameter("output-format", "bytes")
-                .addParameter("explanation-lang", activeLocale.getLanguageTag())
+                .addParameter("explanation-lang", sessionBean.getCurrentLocale().toLanguageTag())
                 .toUri();
 
         HttpRequest request = HttpRequest.newBuilder()
@@ -274,7 +268,7 @@ public class CardTestBean implements Serializable {
                 .addParameter("explanation", "on")
                 .addParameter("shorter", "true")
                 .addParameter("output-format", "bytes")
-                .addParameter("explanation-lang", activeLocale.getLanguageTag())
+                .addParameter("explanation-lang", sessionBean.getCurrentLocale().toLanguageTag())
                 .toUri();
 
         HttpRequest request = HttpRequest.newBuilder()
@@ -323,7 +317,7 @@ public class CardTestBean implements Serializable {
                 .addParameter("explanation", "on")
                 .addParameter("shorter", "true")
                 .addParameter("output-format", "bytes")
-                .addParameter("explanation-lang", activeLocale.getLanguageTag())
+                .addParameter("explanation-lang", sessionBean.getCurrentLocale().toLanguageTag())
                 .toUri();
 
         HttpRequest request = HttpRequest.newBuilder().uri(uri).build();

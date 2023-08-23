@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package net.clementlevallois.nocodeapp.web.front.functions;
 
 import io.mikael.urlbuilder.UrlBuilder;
@@ -46,7 +41,6 @@ import net.clementlevallois.functions.model.Occurrence;
 import net.clementlevallois.importers.model.CellRecord;
 import net.clementlevallois.importers.model.SheetModel;
 import net.clementlevallois.nocodeapp.web.front.utils.Converters;
-import org.omnifaces.util.Faces;
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
 
@@ -63,7 +57,6 @@ public class PdfMatcherBean implements Serializable {
     private Boolean runButtonDisabled = true;
     private StreamedContent fileToSave;
     private Boolean renderSeeResultsButton = false;
-    private String sessionId;
     private String typeOfContext = "surroundingWords";
     private int nbWords = 5;
     private int nbLines = 2;
@@ -86,7 +79,6 @@ public class PdfMatcherBean implements Serializable {
 
     @PostConstruct
     void init() {
-        sessionId = Faces.getSessionId();
         sessionBean.setFunction("pdfmatcher");
         results = new ConcurrentHashMap();
     }

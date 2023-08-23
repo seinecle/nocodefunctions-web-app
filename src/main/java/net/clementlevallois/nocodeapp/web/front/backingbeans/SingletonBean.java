@@ -5,11 +5,6 @@
  */
 package net.clementlevallois.nocodeapp.web.front.backingbeans;
 
-//import com.github.scribejava.core.model.OAuth2AccessToken;
-//import com.github.scribejava.core.pkce.PKCE;
-//import com.github.scribejava.core.pkce.PKCECodeChallengeMethod;
-//import com.twitter.clientlib.TwitterCredentialsOAuth2;
-//import com.twitter.clientlib.auth.TwitterOAuth20Service;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -27,7 +22,6 @@ import org.omnifaces.cdi.Startup;
 @ApplicationScoped
 public class SingletonBean {
 
-    private final static String PATHLOCALE = "net.clementlevallois.nocodeapp.web.front.i18n";
     private static Properties privateProperties;
     private final static String PATHLOCALDEV = "C:\\Users\\levallois\\open\\nocode-app-web-front\\";
     private final static String PATHREMOTEDEV = "/home/waouh/nocodeapp-web/";
@@ -44,7 +38,6 @@ public class SingletonBean {
             privateProperties = new Properties();
             privateProperties.load(is);
 
-
         } catch (UnknownHostException ex) {
             System.out.println("ex:" + ex.getMessage());
         } catch (FileNotFoundException ex) {
@@ -59,11 +52,12 @@ public class SingletonBean {
         return privateProperties;
     }
 
-    public static String getPATHLOCALE() {
-        return PATHLOCALE;
-    }
-    
-    public static String getExternalFolderForInternationalizationFiles(){
+    public static String getExternalFolderForInternationalizationFiles() {
         return rootProject + "i18n/";
     }
+
+    public static String getRootOfProject() {
+        return rootProject;
+    }
+
 }

@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package net.clementlevallois.nocodeapp.web.front.importdata;
 
 import io.mikael.urlbuilder.UrlBuilder;
@@ -64,8 +59,6 @@ public class DataImportBean implements Serializable {
 
     private List<FileUploaded> filesUploaded = new ArrayList();
 
-    private String gsheeturl;
-
     private Boolean renderHeadersCheckBox = false;
     private Boolean readButtonDisabled = true;
     private Boolean renderProgressBar = false;
@@ -96,9 +89,7 @@ public class DataImportBean implements Serializable {
         TXT,
         CSV,
         XLSX,
-        PDF,
-        TWITTER,
-        GS
+        PDF
     }
 
     public DataImportBean() {
@@ -172,8 +163,6 @@ public class DataImportBean implements Serializable {
         service.create(sessionBean.getLocaleBundle().getString("general.message.finished_reading_data"));
 
         filesUploaded = new ArrayList();
-        gsheeturl = null;
-
         renderCloseOverlay = true;
         return "";
     }
@@ -434,14 +423,6 @@ public class DataImportBean implements Serializable {
         }
         String[] fields = url.split("/");
         return fields[fields.length - 2];
-    }
-
-    public String getGsheeturl() {
-        return gsheeturl;
-    }
-
-    public void setGsheeturl(String gsheeturl) {
-        this.gsheeturl = gsheeturl;
     }
 
     public Boolean getRenderHeadersCheckBox() {

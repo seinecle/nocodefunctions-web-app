@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package net.clementlevallois.nocodeapp.web.front.functions;
 
 import io.mikael.urlbuilder.UrlBuilder;
@@ -35,7 +30,6 @@ import jakarta.inject.Named;
 import java.io.IOException;
 import java.io.InputStream;
 import net.clementlevallois.importers.model.DataFormatConverter;
-import net.clementlevallois.nocodeapp.web.front.backingbeans.ActiveLocale;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SingletonBean;
 import net.clementlevallois.nocodeapp.web.front.importdata.DataImportBean;
@@ -75,9 +69,6 @@ public class OrganicBean implements Serializable {
 
     @Inject
     DataImportBean inputData;
-
-    @Inject
-    ActiveLocale activeLocale;
 
     public OrganicBean() {
     }
@@ -152,7 +143,7 @@ public class OrganicBean implements Serializable {
                 sb.append("&shorter=true");
                 sb.append("&owner=").append(SingletonBean.getPrivateProperties().getProperty("pwdOwner"));
                 sb.append("&output-format=bytes");
-                sb.append("&explanation-lang=").append(activeLocale.getLanguageTag());
+                sb.append("&explanation-lang=").append(sessionBean.getCurrentLocale().toLanguageTag());
                 String uriAsString = sb.toString();
 
                 URI uri = new URI(uriAsString);

@@ -27,7 +27,6 @@ public class I18nStaticFilesResourceBundle extends ResourceBundle {
     @Override
     public Object handleGetObject(String key) {
         return getCurrentInstance().getObject(key);
-
     }
 
     @Override
@@ -55,6 +54,5 @@ public class I18nStaticFilesResourceBundle extends ResourceBundle {
             Logger.getLogger(I18nStaticFilesResourceBundle.class.getName()).log(Level.SEVERE, null, ex);
         }
         return null;
-
     }
 }

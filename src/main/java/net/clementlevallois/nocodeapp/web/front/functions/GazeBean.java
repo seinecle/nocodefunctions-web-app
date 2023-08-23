@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package net.clementlevallois.nocodeapp.web.front.functions;
 
 import io.mikael.urlbuilder.UrlBuilder;
@@ -43,6 +38,7 @@ import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.json.JsonWriter;
+import java.util.Properties;
 import net.clementlevallois.importers.model.CellRecord;
 import net.clementlevallois.importers.model.SheetModel;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
@@ -79,7 +75,9 @@ public class GazeBean implements Serializable {
     private Boolean shareGephistoPublicly;
     private boolean applyPMI = false;
 
-    String gexf;
+    private final Properties privateProperties;
+
+    private String gexf;
 
     @Inject
     NotificationService service;
@@ -95,6 +93,7 @@ public class GazeBean implements Serializable {
             sessionBean = new SessionBean();
         }
         sessionBean.setFunction("gaze");
+        privateProperties = SingletonBean.getPrivateProperties();
     }
 
     public void onTabChange(String sheetName) {
@@ -253,7 +252,13 @@ public class GazeBean implements Serializable {
 
         HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(jsonString.getBytes(StandardCharsets.UTF_8));
 
-        URI uri = new URI("http://localhost:7002/api/gaze/cooc");
+        URI uri = UrlBuilder
+                .empty()
+                .withScheme("http")
+                .withPort(Integer.valueOf(privateProperties.getProperty("nocode_api_port")))
+                .withHost("localhost")
+                .withPath("api/gaze/cooc")
+                .toUri();
 
         request = HttpRequest.newBuilder()
                 .POST(bodyPublisher)
@@ -282,7 +287,7 @@ public class GazeBean implements Serializable {
         uri = UrlBuilder
                 .empty()
                 .withScheme("http")
-                .withPort(7002)
+                .withPort(Integer.valueOf(privateProperties.getProperty("nocode_api_port")))
                 .withHost("localhost")
                 .withPath("api/graphops/topnodes")
                 .addParameter("nbNodes", "30")
@@ -303,7 +308,7 @@ public class GazeBean implements Serializable {
             } else {
                 System.out.println("gaze results by the API was not a 200 code");
                 String error = sessionBean.getLocaleBundle().getString("general.nouns.error");
-                    addMessage(FacesMessage.SEVERITY_WARN, "💔", error);
+                addMessage(FacesMessage.SEVERITY_WARN, "💔", error);
             }
         }
         );
@@ -345,7 +350,13 @@ public class GazeBean implements Serializable {
 
         HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(jsonString.getBytes(StandardCharsets.UTF_8));
 
-        URI uri = new URI("http://localhost:7002/api/gaze/sim");
+        URI uri = UrlBuilder
+                .empty()
+                .withScheme("http")
+                .withPort(Integer.valueOf(privateProperties.getProperty("nocode_api_port")))
+                .withHost("localhost")
+                .withPath("api/gaze/sim")
+                .toUri();
 
         request = HttpRequest.newBuilder()
                 .POST(bodyPublisher)
@@ -374,7 +385,7 @@ public class GazeBean implements Serializable {
         uri = UrlBuilder
                 .empty()
                 .withScheme("http")
-                .withPort(7002)
+                .withPort(Integer.valueOf(privateProperties.getProperty("nocode_api_port")))
                 .withHost("localhost")
                 .withPath("api/graphops/topnodes")
                 .addParameter("nbNodes", "30")
@@ -414,7 +425,7 @@ public class GazeBean implements Serializable {
         URI uri = UrlBuilder
                 .empty()
                 .withScheme("http")
-                .withPort(7002)
+                .withPort(Integer.valueOf(privateProperties.getProperty("nocode_api_port")))
                 .withHost("localhost")
                 .withPath("api/convert2vv")
                 .addParameter("item", "Term")
@@ -454,7 +465,7 @@ public class GazeBean implements Serializable {
         path = path + subfolder;
 
         if (RemoteLocal.isLocal()) {
-            path = SingletonBean.getPATHLOCALE() + "user_created_files";
+            path = SingletonBean.getRootOfProject() + "user_created_files";
         }
 
         try (BufferedWriter bw = Files.newBufferedWriter(Path.of(path + vosviewerJsonFileName), StandardCharsets.UTF_8)) {
@@ -489,7 +500,7 @@ public class GazeBean implements Serializable {
         path = path + subfolder;
 
         if (RemoteLocal.isLocal()) {
-            path = SingletonBean.getPATHLOCALE() + "user_created_files";
+            path = SingletonBean.getRootOfProject() + "user_created_files";
         }
 
         File file = new File(path + gephistoGexfFileName);
@@ -591,5 +602,4 @@ public class GazeBean implements Serializable {
     public void setMinSharedTargets(Integer minSharedTargets) {
         this.minSharedTargets = minSharedTargets;
     }
-
 }
