@@ -44,7 +44,7 @@ public class SessionBean implements Serializable {
 
     @PostConstruct
     public void init() {
-        currentLocale = FacesContext.getCurrentInstance().getViewRoot().getLocale();
+        currentLocale = FacesContext.getCurrentInstance().getExternalContext().getRequestLocale();
         final HttpServletRequest request = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
         if (request != null) {
             userAgent = request.getHeader("user-agent");

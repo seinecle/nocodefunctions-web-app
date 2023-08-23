@@ -6,7 +6,7 @@
     xmlns:o="http://omnifaces.org/ui"
     xmlns:p="http://primefaces.org/ui"
     xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
-    <f:view locale="#{activeLocale.current}">
+    <f:view locale="#{activeLocale.currentLocale}">
         <h:head>
             <title>#{text['cowo.cowo.title']}</title>
             <link rel="apple-touch-icon" sizes="180x180" href="#{resource['images/favicons/apple-touch-icon.png']}"/>
@@ -44,7 +44,7 @@
                                 <f:selectItems
                                     value="#{cowoBean.available}" var="l"
                                     itemValue="#{l.toLanguageTag()}"
-                                    itemLabel="#{l.getDisplayLanguage(activeLocale.current)}"/>
+                                    itemLabel="#{l.getDisplayLanguage(activeLocale.currentLocale)}"/>
                                 <p:ajax event="change" process="@this"/>
                             </p:selectOneListbox>
                             <div>

@@ -37,6 +37,7 @@ public class NoCacheFilter implements Filter {
             
             chain.doFilter(request, response);
         } catch (IOException | ServletException ex) {
+            System.out.println("exception: "+ ex.getMessage());
             Logger.getLogger(NoCacheFilter.class.getName()).log(Level.SEVERE, null, "*** error in filter ***");
         }
     }

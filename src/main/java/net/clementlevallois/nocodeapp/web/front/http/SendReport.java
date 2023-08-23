@@ -169,8 +169,7 @@ public class SendReport extends Thread {
             url = new URL(baseURL + endPoint + "?" + paramsString);
             if (testLocalOnWindows && !middleWareRunningOnWindows) {
                 System.out.println("report not sent on function counter because we are local on Windows but middleware not deployed locally");
-                System.out.println("testLocalOnWindows: " + testLocalOnWindows);
-                System.out.println("middleWareRunningOnWindows: " + middleWareRunningOnWindows);
+                return;
             }
 
             HttpURLConnection con = (HttpURLConnection) url.openConnection();

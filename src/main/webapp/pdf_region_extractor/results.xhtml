@@ -5,7 +5,7 @@
     xmlns:f="jakarta.faces.core"
     xmlns:p="http://primefaces.org/ui"
     xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
-    <f:view locale="#{activeLocale.current}">
+    <f:view locale="#{activeLocale.currentLocale}">
         <h:head>
             <title>#{text['pdfregionextractor.results.title']}</title>
             <link rel="apple-touch-icon" sizes="180x180" href="#{resource['images/favicons/apple-touch-icon.png']}"/>
@@ -20,7 +20,7 @@
             <link rel="shortcut icon" type="image/x-icon" href="#{resource['images/favicons/favicon.ico']}"/>
 
             <meta name="robots" content="noindex"/>
-            <h:outputScript name="js/vivagraph.js" />
+            <h:outputScript name="js/vivagraph.min.js" />
             <h:outputScript name="js/graph.js" />
         </h:head>
 

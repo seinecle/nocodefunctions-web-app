@@ -35,10 +35,12 @@ public class ActiveLocale implements Serializable {
     @Inject
     SessionBean sessionBean;
 
+    public ActiveLocale() {
+    }
+
     @PostConstruct
     public void init() {
         currentLocale = FacesContext.getCurrentInstance().getExternalContext().getRequestLocale();
-        sessionBean.setCurrentLocale(currentLocale);
     }
 
     public Locale getCurrentLocale() {
