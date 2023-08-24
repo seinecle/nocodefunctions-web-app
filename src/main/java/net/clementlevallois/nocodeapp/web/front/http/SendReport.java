@@ -1,11 +1,16 @@
 package net.clementlevallois.nocodeapp.web.front.http;
 
+import io.mikael.urlbuilder.UrlBuilder;
+import io.mikael.urlbuilder.util.UrlParameterMultimap;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.HttpURLConnection;
-import java.net.URL;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SingletonBean;
 
 /**
@@ -29,10 +34,10 @@ public class SendReport extends Thread {
     String suggestion = "";
     String freeCommentError = "";
     String freeCommentSuggestion = "";
-    String url = "";
     String locale = "";
+    String feedbackURL = "";
     boolean testLocalOnWindows = false;
-    boolean middleWareRunningOnWindows = false;
+    boolean middleWareRunningOnWindows = true;
 
     public SendReport() {
     }
@@ -71,7 +76,7 @@ public class SendReport extends Thread {
         this.suggestion = suggestion;
         this.freeCommentError = freeCommentError;
         this.freeCommentSuggestion = freeCommentSuggestion;
-        this.url = url;
+        this.feedbackURL = url;
         this.email = email;
         this.locale = locale;
         this.TYPE = "sendFeedback";
@@ -90,98 +95,110 @@ public class SendReport extends Thread {
 
     @Override
     public void run() {
-        String baseURL;
-        String endPoint = null;
-        Map<String, String> params = new HashMap();
-        if (System.getProperty("os.name").toLowerCase().contains("win")) {
-            baseURL = SingletonBean.getPrivateProperties().getProperty("middleware_local_baseurl");
-            testLocalOnWindows = true;
-        } else {
-            baseURL = SingletonBean.getPrivateProperties().getProperty("middleware_remote_baseurl");
-            testLocalOnWindows = false;
-        }
-        if (TYPE.equals("error")) {
-            endPoint = "sendUmigonReport";
-            params.put("key", errorReport);
-        }
-        if (TYPE.equals("sendFeedback")) {
-            endPoint = "sendUmigonReport";
-            StringBuilder sb = new StringBuilder();
-            sb.append("url: ").append(url);
-            sb.append(" | ").append("locale: ").append(locale);
-            if (!sourceLang.isBlank()) {
-                sb.append(" | ").append("faulty phrase: ").append(sourceLang);
-            }
-            if (!suggestion.isBlank()) {
-                sb.append(" | ").append("suggestion for better translation: ").append(suggestion);
-            }
-            if (!freeCommentError.isBlank()) {
-                sb.append(" | ").append("free comment on error detected: ").append(freeCommentError);
-            }
-            if (!email.isBlank()) {
-                sb.append(" | ").append("email: ").append(email);
-            }
-            if (!freeCommentSuggestion.isBlank()) {
-                sb.append(" | ").append("free comment on new feature suggestion: ").append(freeCommentSuggestion);
-            }
-            params.put("key", sb.toString());
-        }
-        if (TYPE.equals("analytics")) {
-            endPoint = "sendEvent";
-            params.put("event", event);
-            params.put("useragent", userAgent);
-        }
-
-        if (TYPE.equals("stopwords")) {
-            endPoint = "sendUmigonReport";
-            params.put("key", stopwords);
-        }
-
-        if (TYPE.equals("sendDataKeycode")) {
-            endPoint = "sendDataKeycode";
-            params.put("email", email);
-            params.put("keycode", keycode);
-            params.put("description", description);
-        }
-
-        if (TYPE.equals("sendAnnotatorCredentials")) {
-            endPoint = "sendAnnotatorCredentials";
-            params.put("emailAnnotator", email);
-            params.put("pass", pass);
-
-            // this is to obfuscate the correct keycode.
-            // When the keycode is parsed back in the app, the 3 last characters are removed
-            params.put("keycode", keycode + "2ie");
-            params.put("description", description);
-            params.put("emailDesigner", emailDesigner);
-            params.put("annotationTypeOfTask", annotationTypeOfTask);
-        }
-
-        if (TYPE.equals("sendTaskDesignerCredentials")) {
-            endPoint = "sendTaskDesignerCredentials";
-            params.put("pass", pass);
-            params.put("email", email);
-        }
-
-        URL url;
+        URI uri = null;
         try {
-            String paramsString = ParameterStringBuilder.getParamsString(params);
-            url = new URL(baseURL + endPoint + "?" + paramsString);
+            System.out.println("function launched: " + event);
+            String scheme;
+            String host;
+            int port;
+            if (System.getProperty("os.name").toLowerCase().contains("win")) {
+                scheme = "http";
+                host = SingletonBean.getPrivateProperties().getProperty("middleware_local_host");
+                port = Integer.parseInt(SingletonBean.getPrivateProperties().getProperty("middleware_local_port"));
+                testLocalOnWindows = true;
+            } else {
+                scheme = "https";
+                host = SingletonBean.getPrivateProperties().getProperty("middleware_remote_host");
+                port = Integer.parseInt(SingletonBean.getPrivateProperties().getProperty("middleware_remote_port"));
+                testLocalOnWindows = false;
+            }
             if (testLocalOnWindows && !middleWareRunningOnWindows) {
                 System.out.println("report not sent on function counter because we are local on Windows but middleware not deployed locally");
                 return;
             }
+            String endPoint = null;
 
-            HttpURLConnection con = (HttpURLConnection) url.openConnection();
-            con.setRequestMethod("GET");
-            con.setRequestProperty("Accept-Charset", "UTF-8");
-            con.getResponseCode();
-            System.out.println("function launched: " + event);
-        } catch (UnsupportedEncodingException ex) {
-            ex.printStackTrace();
-        } catch (IOException ex) {
-            ex.printStackTrace();
+            Map<String, String> params = new HashMap();
+            if (TYPE.equals("error")) {
+                endPoint = "sendUmigonReport";
+                params.put("key", errorReport);
+            }
+            if (TYPE.equals("sendFeedback")) {
+                endPoint = "sendUmigonReport";
+                StringBuilder sb = new StringBuilder();
+                sb.append(" | ").append("url: ").append(feedbackURL);
+                sb.append(" | ").append("locale: ").append(locale);
+                if (!sourceLang.isBlank()) {
+                    sb.append(" | ").append("faulty phrase: ").append(sourceLang);
+                }
+                if (!suggestion.isBlank()) {
+                    sb.append(" | ").append("suggestion for better translation: ").append(suggestion);
+                }
+                if (!freeCommentError.isBlank()) {
+                    sb.append(" | ").append("free comment on error detected: ").append(freeCommentError);
+                }
+                if (!email.isBlank()) {
+                    sb.append(" | ").append("email: ").append(email);
+                }
+                if (!freeCommentSuggestion.isBlank()) {
+                    sb.append(" | ").append("free comment on new feature suggestion: ").append(freeCommentSuggestion);
+                }
+                params.put("key", sb.toString());
+            }
+            if (TYPE.equals("analytics")) {
+                endPoint = "sendEvent";
+                params.put("event", event);
+                params.put("useragent", userAgent);
+            }
+
+            if (TYPE.equals("stopwords")) {
+                endPoint = "sendUmigonReport";
+                params.put("key", stopwords);
+            }
+
+            if (TYPE.equals("sendDataKeycode")) {
+                endPoint = "sendDataKeycode";
+                params.put("email", email);
+                params.put("keycode", keycode);
+                params.put("description", description);
+            }
+
+            if (TYPE.equals("sendAnnotatorCredentials")) {
+                endPoint = "sendAnnotatorCredentials";
+                params.put("emailAnnotator", email);
+                params.put("pass", pass);
+
+                // this is to obfuscate the correct keycode.
+                // When the keycode is parsed back in the app, the 3 last characters are removed
+                params.put("keycode", keycode + "2ie");
+                params.put("description", description);
+                params.put("emailDesigner", emailDesigner);
+                params.put("annotationTypeOfTask", annotationTypeOfTask);
+            }
+
+            if (TYPE.equals("sendTaskDesignerCredentials")) {
+                endPoint = "sendTaskDesignerCredentials";
+                params.put("pass", pass);
+                params.put("email", email);
+            }
+
+            UrlBuilder urlBuilder = UrlBuilder.empty().withScheme(scheme).withHost(host).withPort(port).withPath(endPoint);
+            UrlParameterMultimap paramsList = UrlParameterMultimap.newMultimap();
+
+            for (Map.Entry<String, String> entry : params.entrySet()) {
+                paramsList.add(entry.getKey(), entry.getValue());
+            }
+
+            uri = urlBuilder.withParameters(paramsList).toUri();
+            HttpRequest request = HttpRequest.newBuilder().uri(uri).build();
+            HttpClient client = HttpClient.newHttpClient();
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        } catch (IOException | InterruptedException ex) {
+            Logger.getLogger(SendReport.class.getName()).log(Level.SEVERE, null, ex);
+            System.out.println("error sending report to this url:");
+            if (uri != null) {
+                System.out.println(uri.toString());
+            }
         }
     }
-
 }

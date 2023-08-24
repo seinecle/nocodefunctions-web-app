@@ -35,7 +35,6 @@ public class SessionBean implements Serializable {
     private String noRobot;
     private Locale currentLocale;
 
-//    private OAuth2AccessToken twitterOAuth2AccessToken;
     @Inject
     SingletonBean singletonBean;
 
