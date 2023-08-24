@@ -56,10 +56,6 @@
             <p:spacer height="10"/>
             <p:panel>
                 <h:form target="_blank">
-
-                    <p:commandLink action="#{twitterImportBean.navigateBackToSearch()}" value="#{text['general.message.go_back_do_search_twitter']}" rendered="#{dataImportBean.source == 'TWITTER'}"/>
-                    <br/>
-                    <br/>
                     <p:commandButton
                         value="#{text['general.verbs.download_results']}"
                         ajax="false"
