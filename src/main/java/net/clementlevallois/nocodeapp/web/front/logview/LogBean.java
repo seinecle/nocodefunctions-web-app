@@ -7,6 +7,7 @@ import jakarta.enterprise.context.SessionScoped;
 import jakarta.enterprise.event.Observes;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
+import java.util.ArrayList;
 import org.omnifaces.cdi.Push;
 import org.omnifaces.cdi.PushContext;
 
@@ -21,15 +22,12 @@ public class LogBean implements Serializable {
     private List<Notification> notifications;
 
     @Inject
-    private NotificationService service;
-
-    @Inject
     @Push
     private PushContext push;
 
     @PostConstruct
     public void load() {
-        notifications = service.list();
+        notifications = new ArrayList();
     }
 
     public void onNewNotification(@Observes Notification newNotification) {

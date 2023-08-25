@@ -37,7 +37,7 @@ public class SendReport extends Thread {
     String locale = "";
     String feedbackURL = "";
     boolean testLocalOnWindows = false;
-    boolean middleWareRunningOnWindows = true;
+    boolean middleWareRunningOnWindows = false;
 
     public SendReport() {
     }

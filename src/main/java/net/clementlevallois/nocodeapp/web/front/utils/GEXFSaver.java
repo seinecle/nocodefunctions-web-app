@@ -13,7 +13,6 @@ import org.primefaces.model.StreamedContent;
 public class GEXFSaver {
 
     public static StreamedContent exportGexfAsStreamedFile(String gexf, String resultFileNameWithoutExtension) {
-
         byte[] readAllBytes = gexf.getBytes(StandardCharsets.UTF_8);
         InputStream is = new ByteArrayInputStream(readAllBytes);
         StreamedContent file = DefaultStreamedContent.builder()
@@ -21,7 +20,6 @@ public class GEXFSaver {
                 .contentType("application/gexf+xml")
                 .stream(() -> is)
                 .build();
-
         return file;
     }
 }

@@ -19,15 +19,6 @@ public class NotificationService {
     public void create(String message) {
         Notification newNotification = new Notification();
         newNotification.setMessage(message);
-        if (beanManager != null) {
-            beanManager.getEvent().fire(newNotification);
-        }else{
-            System.out.println("bean manager is null");
-        }
+        beanManager.getEvent().fire(newNotification);
     }
-
-    public List<Notification> list() {
-        return new ArrayList();
-    }
-
 }
