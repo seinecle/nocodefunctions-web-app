@@ -50,8 +50,8 @@ public class SessionBean implements Serializable {
         } else {
             userAgent = "unknown-user-agent";
         }
-        I18nStaticFilesResourceBundle dbb = new I18nStaticFilesResourceBundle();
-        localeBundle = dbb.simpleMethodToGetResourceBundle(currentLocale);
+        I18nStaticFilesResourceBundle staticFilesResourceBundle = new I18nStaticFilesResourceBundle();
+        localeBundle = staticFilesResourceBundle.simpleMethodToGetResourceBundle(currentLocale);
     }
 
     ;

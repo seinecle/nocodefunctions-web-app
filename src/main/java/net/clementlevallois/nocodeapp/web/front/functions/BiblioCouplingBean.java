@@ -45,7 +45,6 @@ import net.clementlevallois.nocodeapp.web.front.importdata.DataImportBean;
 import net.clementlevallois.nocodeapp.web.front.utils.GEXFSaver;
 import net.clementlevallois.nocodeapp.web.front.logview.NotificationService;
 import net.clementlevallois.nocodeapp.web.front.utils.Converters;
-import org.omnifaces.util.Faces;
 import org.primefaces.model.StreamedContent;
 
 /**
@@ -325,7 +324,8 @@ public class BiblioCouplingBean implements Serializable {
 
         String path = RemoteLocal.isLocal() ? "" : "html/vosviewer/data/";
         String subfolder;
-        vosviewerJsonFileName = "vosviewer_" + Faces.getSessionId().substring(0, 20) + ".json";
+        String sessionId = FacesContext.getCurrentInstance().getExternalContext().getSessionId(true);
+        vosviewerJsonFileName = "vosviewer_" + sessionId.substring(0, 20) + ".json";
         if (shareVVPublicly) {
             subfolder = "public/";
         } else {
@@ -359,7 +359,8 @@ public class BiblioCouplingBean implements Serializable {
 
         String path = RemoteLocal.isLocal() ? "" : "gephisto/data/";
         String subfolder;
-        gephistoGexfFileName = "gephisto_" + Faces.getSessionId().substring(0, 20) + ".gexf";
+        String sessionId = FacesContext.getCurrentInstance().getExternalContext().getSessionId(true);
+        gephistoGexfFileName = "gephisto_" + sessionId.substring(0, 20) + ".gexf";
 
         if (shareGephistoPublicly) {
             subfolder = "public/";

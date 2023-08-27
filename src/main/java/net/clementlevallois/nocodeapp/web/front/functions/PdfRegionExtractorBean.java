@@ -38,7 +38,6 @@ import net.clementlevallois.nocodeapp.web.front.backingbeans.SingletonBean;
 import net.clementlevallois.nocodeapp.web.front.importdata.DataImportBean;
 import net.clementlevallois.nocodeapp.web.front.logview.NotificationService;
 import net.clementlevallois.nocodeapp.web.front.utils.Converters;
-import org.omnifaces.util.Faces;
 import org.primefaces.model.CroppedImage;
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
@@ -57,7 +56,6 @@ public class PdfRegionExtractorBean implements Serializable {
     private Boolean runButtonDisabled = true;
     private StreamedContent fileToSave;
     private Boolean renderSeeResultsButton = false;
-    private String sessionId;
     private CroppedImage[] selectedRegions;
     private boolean allPages;
     private boolean selectPage;
@@ -83,7 +81,6 @@ public class PdfRegionExtractorBean implements Serializable {
 
     @PostConstruct
     void init() {
-        sessionId = Faces.getSessionId();
         sessionBean.setFunction("pdf_region_extractor");
         counterImages = 0;
     }

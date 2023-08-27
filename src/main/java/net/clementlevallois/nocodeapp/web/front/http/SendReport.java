@@ -9,8 +9,6 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SingletonBean;
 
 /**
@@ -182,7 +180,11 @@ public class SendReport extends Thread {
                 params.put("email", email);
             }
 
-            UrlBuilder urlBuilder = UrlBuilder.empty().withScheme(scheme).withHost(host).withPort(port).withPath(endPoint);
+            UrlBuilder urlBuilder = UrlBuilder.empty()
+                    .withScheme(scheme)
+                    .withHost(host)
+                    .withPort(port)
+                    .withPath(endPoint);
             UrlParameterMultimap paramsList = UrlParameterMultimap.newMultimap();
 
             for (Map.Entry<String, String> entry : params.entrySet()) {
@@ -194,7 +196,6 @@ public class SendReport extends Thread {
             HttpClient client = HttpClient.newHttpClient();
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
         } catch (IOException | InterruptedException ex) {
-            Logger.getLogger(SendReport.class.getName()).log(Level.SEVERE, null, ex);
             System.out.println("error sending report to this url:");
             if (uri != null) {
                 System.out.println(uri.toString());

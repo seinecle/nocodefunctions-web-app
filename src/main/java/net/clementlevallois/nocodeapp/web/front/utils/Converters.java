@@ -2,8 +2,6 @@ package net.clementlevallois.nocodeapp.web.front.utils;
 
 import java.io.IOException;
 import java.io.StringWriter;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import jakarta.json.Json;
 import jakarta.json.JsonObject;
 import java.io.ByteArrayOutputStream;
@@ -22,7 +20,7 @@ public class Converters {
             jsonWriter.writeObject(jsonObject);
             output = stringWriter.toString();
         } catch (IOException ex) {
-            Logger.getLogger(Converters.class.getName()).log(Level.SEVERE, null, ex);
+            System.out.println("exception when turning json to string: "+ ex.getMessage());
         }
         return output;
     }

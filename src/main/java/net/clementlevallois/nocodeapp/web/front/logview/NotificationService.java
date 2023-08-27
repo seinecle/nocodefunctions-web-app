@@ -1,7 +1,5 @@
 package net.clementlevallois.nocodeapp.web.front.logview;
 
-import java.util.ArrayList;
-import java.util.List;
 import jakarta.ejb.Stateless;
 import jakarta.enterprise.inject.spi.BeanManager;
 import jakarta.inject.Inject;

@@ -54,7 +54,7 @@ import net.clementlevallois.nocodeapp.web.front.utils.GEXFSaver;
 import net.clementlevallois.nocodeapp.web.front.logview.NotificationService;
 import net.clementlevallois.nocodeapp.web.front.utils.Converters;
 import net.clementlevallois.utils.TextCleaningOps;
-import org.omnifaces.util.Faces;
+//import org.omnifaces.util.Faces;
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
 import org.primefaces.model.file.UploadedFile;
@@ -225,7 +225,7 @@ public class CowoBean implements Serializable {
                     .empty()
                     .withScheme("http")
                     .withHost("localhost")
-                    .withPort((Integer.valueOf(privateProperties.getProperty("nocode_api_port"))))
+                    .withPort(Integer.valueOf(privateProperties.getProperty("nocode_api_port")))
                     .withPath("api/cowo")
                     .toUri();
 
@@ -503,7 +503,7 @@ public class CowoBean implements Serializable {
         URI uri = UrlBuilder
                 .empty()
                 .withScheme("http")
-                .withPort(7002)
+                .withPort(Integer.valueOf(privateProperties.getProperty("nocode_api_port")))
                 .withHost("localhost")
                 .withPath("api/convert2vv")
                 .addParameter("item", "Term")
@@ -533,7 +533,8 @@ public class CowoBean implements Serializable {
         combinedFuture.join();
         String path = RemoteLocal.isLocal() ? "" : "html/vosviewer/data/";
         String subfolder;
-        vosviewerJsonFileName = "vosviewer_" + Faces.getSessionId().substring(0, 20) + ".json";
+        String sessionId = FacesContext.getCurrentInstance().getExternalContext().getSessionId(true);
+        vosviewerJsonFileName = "vosviewer_" + sessionId.substring(0, 20) + ".json";
         if (shareVVPublicly) {
             subfolder = "public/";
         } else {
@@ -570,7 +571,8 @@ public class CowoBean implements Serializable {
 
         String path = RemoteLocal.isLocal() ? "" : "gephisto/data/";
         String subfolder;
-        gephistoGexfFileName = "gephisto_" + Faces.getSessionId().substring(0, 20) + ".gexf";
+        String sessionId = FacesContext.getCurrentInstance().getExternalContext().getSessionId(true);
+        gephistoGexfFileName = "gephisto_" + sessionId.substring(0, 20) + ".gexf";
 
         if (shareGephistoPublicly) {
             subfolder = "public/";

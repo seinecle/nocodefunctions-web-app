@@ -27,7 +27,6 @@ import jakarta.inject.Named;
 import jakarta.servlet.annotation.MultipartConfig;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.http.RemoteLocal;
-import org.omnifaces.util.Faces;
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
@@ -158,7 +157,8 @@ public class ConverterBean implements Serializable {
 
         String path = RemoteLocal.isLocal() ? "C:\\Users\\levallois\\open\\nocode-app-functions\\gexf-vosviewer-converter\\testswebapp\\" : "html/vosviewer/data/";
         String subfolder;
-        String vosviewerJsonFileName = "vosviewer_" + Faces.getSessionId().substring(0, 20) + ".json";
+        String sessionId = FacesContext.getCurrentInstance().getExternalContext().getSessionId(true);
+        String vosviewerJsonFileName = "vosviewer_" + sessionId.substring(0, 20) + ".json";
         if (shareVVPublicly) {
             subfolder = "public/";
         } else {

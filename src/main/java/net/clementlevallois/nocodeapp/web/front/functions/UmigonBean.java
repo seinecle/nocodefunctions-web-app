@@ -4,10 +4,7 @@ import io.mikael.urlbuilder.UrlBuilder;
 import java.io.ByteArrayInputStream;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -22,13 +19,13 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.SessionScoped;
 import jakarta.faces.context.FacesContext;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Properties;
 import net.clementlevallois.importers.model.DataFormatConverter;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SingletonBean;
@@ -60,6 +57,7 @@ public class UmigonBean implements Serializable {
     private Boolean renderSeeResultsButton = false;
     private List<Document> filteredDocuments;
     private Integer maxCapacity = 10_000;
+    private final Properties privateProperties;
 
     @Inject
     NotificationService service;
@@ -71,16 +69,12 @@ public class UmigonBean implements Serializable {
     DataImportBean inputData;
 
     public UmigonBean() {
-    }
-
-    @PostConstruct
-    private void init() {
         sessionBean.setFunction("umigon");
         String positive_tone = sessionBean.getLocaleBundle().getString("general.nouns.sentiment_positive");
         String negative_tone = sessionBean.getLocaleBundle().getString("general.nouns.sentiment_negative");
         String neutral_tone = sessionBean.getLocaleBundle().getString("general.nouns.sentiment_neutral");
-
         sentiments = new String[]{positive_tone, negative_tone, neutral_tone};
+        privateProperties = SingletonBean.getPrivateProperties();
     }
 
     public Integer getProgress() {
@@ -135,19 +129,21 @@ public class UmigonBean implements Serializable {
                 doc.setText(entry.getValue());
                 doc.setId(id);
 
-                StringBuilder sb = new StringBuilder();
-                sb.append("http://localhost:7002/api/sentimentForAText");
-                sb.append("?text-lang=").append(selectedLanguage);
-                sb.append("&id=").append(doc.getId());
-                sb.append("&text=").append(URLEncoder.encode(entry.getValue(), StandardCharsets.UTF_8.toString()));
-                sb.append("&explanation=on");
-                sb.append("&shorter=true");
-                sb.append("&owner=").append(SingletonBean.getPrivateProperties().getProperty("pwdOwner"));
-                sb.append("&output-format=bytes");
-                sb.append("&explanation-lang=").append(sessionBean.getCurrentLocale().toLanguageTag());
-                String uriAsString = sb.toString();
-
-                URI uri = new URI(uriAsString);
+                URI uri = UrlBuilder
+                        .empty()
+                        .withScheme("http")
+                        .withPort(Integer.valueOf(privateProperties.getProperty("nocode_api_port")))
+                        .withHost("localhost")
+                        .withPath("api/sentimentForAText")
+                        .addParameter("text-lang", selectedLanguage)
+                        .addParameter("id", doc.getId())
+                        .addParameter("text", entry.getValue())
+                        .addParameter("explanation", "on")
+                        .addParameter("shorter", "true")
+                        .addParameter("owner", SingletonBean.getPrivateProperties().getProperty("pwdOwner"))
+                        .addParameter("output-format", "bytes")
+                        .addParameter("explanation-lang", sessionBean.getCurrentLocale().toLanguageTag())
+                        .toUri();
 
                 request = HttpRequest.newBuilder()
                         .uri(uri)
@@ -161,7 +157,7 @@ public class UmigonBean implements Serializable {
                     }
                     if (body.length >= 100 && !new String(body, StandardCharsets.UTF_8).toLowerCase().startsWith("internal") && !new String(body, StandardCharsets.UTF_8).toLowerCase().startsWith("not found")) {
                         try (
-                                 ByteArrayInputStream bis = new ByteArrayInputStream(body);  ObjectInputStream ois = new ObjectInputStream(bis)) {
+                                ByteArrayInputStream bis = new ByteArrayInputStream(body); ObjectInputStream ois = new ObjectInputStream(bis)) {
                             Document docReturn = (Document) ois.readObject();
                             tempResults.put(Integer.valueOf(docReturn.getId()), docReturn);
                         } catch (Exception ex) {
@@ -183,10 +179,6 @@ public class UmigonBean implements Serializable {
             CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(futures.toArray((new CompletableFuture[0])));
             combinedFuture.join();
 
-        } catch (URISyntaxException exception) {
-            System.out.println("error!!");
-        } catch (UnsupportedEncodingException ex) {
-            System.out.println("encoding ex");
         } catch (InterruptedException ex) {
             System.out.println("ex:" + ex.getMessage());
         }
@@ -330,7 +322,7 @@ public class UmigonBean implements Serializable {
             URI uri = UrlBuilder
                     .empty()
                     .withScheme("http")
-                    .withPort(7003)
+                    .withPort(Integer.valueOf(privateProperties.getProperty("nocode_import_port")))
                     .withHost("localhost")
                     .withPath("api/export/xlsx/umigon")
                     .addParameter("lang", lang)
