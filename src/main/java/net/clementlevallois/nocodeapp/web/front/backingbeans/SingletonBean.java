@@ -37,7 +37,7 @@ public class SingletonBean {
             InputStream is = new FileInputStream(rootProject + "private/private.properties");
             privateProperties = new Properties();
             privateProperties.load(is);
-
+            is.close();
         } catch (UnknownHostException ex) {
             System.out.println("ex:" + ex.getMessage());
         } catch (FileNotFoundException ex) {

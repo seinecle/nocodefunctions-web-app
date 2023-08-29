@@ -5,6 +5,7 @@ package net.clementlevallois.nocodeapp.web.front.i18n;
 
 import jakarta.faces.context.FacesContext;
 import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -47,10 +48,13 @@ public class I18nStaticFilesResourceBundle extends ResourceBundle {
         try {
             File i8nFolderAsFile = new File(SingletonBean.getExternalFolderForInternationalizationFiles());
             URL[] urls = {i8nFolderAsFile.toURI().toURL()};
-            ClassLoader loader = new URLClassLoader(urls);
+            URLClassLoader loader = new URLClassLoader(urls);
             rb = ResourceBundle.getBundle("text", locale, loader);
+            loader.close();
             return rb;
         } catch (MalformedURLException ex) {
+            Logger.getLogger(I18nStaticFilesResourceBundle.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
             Logger.getLogger(I18nStaticFilesResourceBundle.class.getName()).log(Level.SEVERE, null, ex);
         }
         return null;

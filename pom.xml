@@ -76,8 +76,8 @@
         </dependency>
         <dependency>
             <groupId>net.clementlevallois.functions</groupId>
-            <artifactId>umigon-model</artifactId>
-            <version>0.12</version>
+            <artifactId>umigon-model-classification</artifactId>
+            <version>0.10</version>
         </dependency>
         <dependency>
             <groupId>net.clementlevallois.io</groupId>

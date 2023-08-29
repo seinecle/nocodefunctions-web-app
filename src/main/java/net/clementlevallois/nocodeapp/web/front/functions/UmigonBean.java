@@ -1,6 +1,7 @@
 package net.clementlevallois.nocodeapp.web.front.functions;
 
 import io.mikael.urlbuilder.UrlBuilder;
+import jakarta.annotation.PostConstruct;
 import java.io.ByteArrayInputStream;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
@@ -33,7 +34,7 @@ import net.clementlevallois.nocodeapp.web.front.importdata.DataImportBean;
 import net.clementlevallois.nocodeapp.web.front.http.SendReport;
 import net.clementlevallois.nocodeapp.web.front.logview.NotificationService;
 import net.clementlevallois.nocodeapp.web.front.utils.Converters;
-import net.clementlevallois.umigon.model.Document;
+import net.clementlevallois.umigon.model.classification.Document;
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
 
@@ -57,7 +58,7 @@ public class UmigonBean implements Serializable {
     private Boolean renderSeeResultsButton = false;
     private List<Document> filteredDocuments;
     private Integer maxCapacity = 10_000;
-    private final Properties privateProperties;
+    private Properties privateProperties;
 
     @Inject
     NotificationService service;
@@ -69,12 +70,17 @@ public class UmigonBean implements Serializable {
     DataImportBean inputData;
 
     public UmigonBean() {
+    }
+
+    @PostConstruct
+    public void init() {
         sessionBean.setFunction("umigon");
         String positive_tone = sessionBean.getLocaleBundle().getString("general.nouns.sentiment_positive");
         String negative_tone = sessionBean.getLocaleBundle().getString("general.nouns.sentiment_negative");
         String neutral_tone = sessionBean.getLocaleBundle().getString("general.nouns.sentiment_neutral");
         sentiments = new String[]{positive_tone, negative_tone, neutral_tone};
         privateProperties = SingletonBean.getPrivateProperties();
+
     }
 
     public Integer getProgress() {
@@ -149,29 +155,33 @@ public class UmigonBean implements Serializable {
                         .uri(uri)
                         .build();
 
-                CompletableFuture<Void> future = client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()).thenAccept(resp -> {
-                    byte[] body = resp.body();
-                    Float situation = (countTreated++ * 100 / (float) maxRecords);
-                    if (situation.intValue() > progress) {
-                        progress = situation.intValue();
-                    }
-                    if (body.length >= 100 && !new String(body, StandardCharsets.UTF_8).toLowerCase().startsWith("internal") && !new String(body, StandardCharsets.UTF_8).toLowerCase().startsWith("not found")) {
-                        try (
-                                ByteArrayInputStream bis = new ByteArrayInputStream(body); ObjectInputStream ois = new ObjectInputStream(bis)) {
-                            Document docReturn = (Document) ois.readObject();
-                            tempResults.put(Integer.valueOf(docReturn.getId()), docReturn);
-                        } catch (Exception ex) {
-                            System.out.println("error in body:");
-                            System.out.println(new String(body, StandardCharsets.UTF_8));
-                            Logger.getLogger(UmigonBean.class.getName()).log(Level.SEVERE, null, ex);
+                CompletableFuture<Void> future = client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray())
+                        .thenAccept(resp -> {
+                            byte[] body = resp.body();
+                            Float situation = (countTreated++ * 100 / (float) maxRecords);
+                            if (situation.intValue() > progress) {
+                                progress = situation.intValue();
+                            }
+                            if (body.length >= 100 && !new String(body, StandardCharsets.UTF_8).toLowerCase().startsWith("internal") && !new String(body, StandardCharsets.UTF_8).toLowerCase().startsWith("not found")) {
+                                try (
+                                        ByteArrayInputStream bis = new ByteArrayInputStream(body); ObjectInputStream ois = new ObjectInputStream(bis)) {
+                                    Document docReturn = (Document) ois.readObject();
+                                    tempResults.put(Integer.valueOf(docReturn.getId()), docReturn);
+                                } catch (Exception ex) {
+                                    System.out.println("error in body:");
+                                    System.out.println(new String(body, StandardCharsets.UTF_8));
+                                    Logger.getLogger(UmigonBean.class.getName()).log(Level.SEVERE, null, ex);
+                                }
+                            }
                         }
-                    }
-                }
-                );
+                ).exceptionally(exception -> {
+                  System.err.println("exception: " + exception);
+                  return null;
+              });
                 futures.add(future);
                 // this is because we need to slow down a bit the requests sending too many thros a
                 // java.util.concurrent.CompletionException: java.io.IOException: too many concurrent streams
-                Thread.sleep(2);
+                Thread.sleep(8);
             }
             this.progress = 40;
             service.create(sessionBean.getLocaleBundle().getString("general.message.almost_done"));
