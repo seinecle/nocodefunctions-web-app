@@ -1,13 +1,7 @@
 package net.clementlevallois.nocodeapp.web.front.functions;
 
 import io.mikael.urlbuilder.UrlBuilder;
-import java.io.BufferedWriter;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.Serializable;
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -16,8 +10,6 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -43,7 +35,8 @@ import net.clementlevallois.importers.model.CellRecord;
 import net.clementlevallois.importers.model.SheetModel;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SingletonBean;
-import net.clementlevallois.nocodeapp.web.front.http.RemoteLocal;
+import net.clementlevallois.nocodeapp.web.front.exportdata.ExportToGephisto;
+import net.clementlevallois.nocodeapp.web.front.exportdata.ExportToVosViewer;
 import net.clementlevallois.nocodeapp.web.front.importdata.DataImportBean;
 import net.clementlevallois.nocodeapp.web.front.utils.GEXFSaver;
 import net.clementlevallois.nocodeapp.web.front.logview.NotificationService;
@@ -67,10 +60,7 @@ public class GazeBean implements Serializable {
     private String edgesAsJson;
     private int minFreqNode = 1000_000;
     private int maxFreqNode = 0;
-    private String graphAsJsonVosViewer;
-    private String vosviewerJsonFileName;
     private Boolean shareVVPublicly;
-    private String gephistoGexfFileName;
     private Boolean shareGephistoPublicly;
     private boolean applyPMI = false;
 
@@ -148,7 +138,7 @@ public class GazeBean implements Serializable {
                 lines.remove(0);
             }
 
-            callCooc(lines);
+            boolean returnCallCooc = callCooc(lines);
             progress = 100;
             service.create(sessionBean.getLocaleBundle().getString("general.message.analysis_complete"));
             runButtonDisabled = true;
@@ -210,20 +200,20 @@ public class GazeBean implements Serializable {
                 return "";
             }
 
-            callSim(sourcesAndTargets);
+            boolean callSimReturned = callSim(sourcesAndTargets);
             progress = 100;
             service.create(sessionBean.getLocaleBundle().getString("general.message.analysis_complete"));
             runButtonDisabled = true;
 
             return "/" + sessionBean.getFunction() + "/results.xhtml?faces-redirect=true";
-        } catch (Exception ex) {
+        } catch (NumberFormatException ex) {
             Logger.getLogger(CowoBean.class.getName()).log(Level.SEVERE, null, ex);
             return "";
         }
 
     }
 
-    public void callCooc(Map<Integer, Multiset<String>> inputLines) throws Exception {
+    public boolean callCooc(Map<Integer, Multiset<String>> inputLines) throws Exception {
 
         HttpRequest request;
         HttpClient client = HttpClient.newHttpClient();
@@ -264,20 +254,14 @@ public class GazeBean implements Serializable {
                 .uri(uri)
                 .build();
 
-        CompletableFuture<Void> future = client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()).thenAccept(resp -> {
-            byte[] body = resp.body();
-            gexf = new String(body, StandardCharsets.UTF_8);
-        }
-        );
-        futures.add(future);
-
-        CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(futures.toArray((new CompletableFuture[0])));
-        combinedFuture.join();
+        HttpResponse<byte[]> resp = client.send(request, HttpResponse.BodyHandlers.ofByteArray());
+        byte[] body = resp.body();
+        gexf = new String(body, StandardCharsets.UTF_8);
 
         if (gexf == null) {
             service.create(sessionBean.getLocaleBundle().getString("general.message.internal_server_error"));
             runButtonDisabled = true;
-            return;
+            return false;
         }
         progress = 80;
 
@@ -297,227 +281,140 @@ public class GazeBean implements Serializable {
                 .uri(uri)
                 .build();
 
-        future = client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()).thenAccept(resp -> {
-            if (resp.statusCode() == 200) {
-                byte[] body = resp.body();
-                String jsonResult = new String(body, StandardCharsets.UTF_8);
-                JsonObject jsonObject = Json.createReader(new StringReader(jsonResult)).readObject();
-                nodesAsJson = Converters.turnJsonObjectToString(jsonObject.getJsonObject("nodes"));
-                edgesAsJson = Converters.turnJsonObjectToString(jsonObject.getJsonObject("edges"));
-            } else {
-                System.out.println("gaze results by the API was not a 200 code");
-                String error = sessionBean.getLocaleBundle().getString("general.nouns.error");
-                addMessage(FacesMessage.SEVERITY_WARN, "💔", error);
-            }
-        }
-        );
-        futures.add(future);
-
-        combinedFuture = CompletableFuture.allOf(futures.toArray((new CompletableFuture[0])));
-        combinedFuture.join();
-    }
-
-    public void callSim(Map<String, Set<String>> sourcesAndTargets) throws Exception {
-
-        HttpRequest request;
-        HttpClient client = HttpClient.newHttpClient();
-        Set<CompletableFuture> futures = new HashSet();
-        JsonObjectBuilder overallObject = Json.createObjectBuilder();
-
-        JsonObjectBuilder linesBuilder = Json.createObjectBuilder();
-        for (Map.Entry<String, Set<String>> entryLines : sourcesAndTargets.entrySet()) {
-            JsonArrayBuilder createArrayBuilder = Json.createArrayBuilder();
-            Set<String> targets = entryLines.getValue();
-            for (String target : targets) {
-                createArrayBuilder.add(target);
-            }
-            linesBuilder.add(entryLines.getKey(), createArrayBuilder);
-        }
-
-        JsonObjectBuilder parametersBuilder = Json.createObjectBuilder();
-        parametersBuilder.add("minSharedTarget", minSharedTargets);
-
-        overallObject.add("lines", linesBuilder);
-        overallObject.add("parameters", parametersBuilder);
-
-        JsonObject build = overallObject.build();
-        StringWriter sw = new StringWriter(128);
-        try (JsonWriter jw = Json.createWriter(sw)) {
-            jw.write(build);
-        }
-        String jsonString = sw.toString();
-
-        HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(jsonString.getBytes(StandardCharsets.UTF_8));
-
-        URI uri = UrlBuilder
-                .empty()
-                .withScheme("http")
-                .withPort(Integer.valueOf(privateProperties.getProperty("nocode_api_port")))
-                .withHost("localhost")
-                .withPath("api/gaze/sim")
-                .toUri();
-
-        request = HttpRequest.newBuilder()
-                .POST(bodyPublisher)
-                .uri(uri)
-                .build();
-
-        CompletableFuture<Void> future = client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()).thenAccept(resp -> {
-            byte[] body = resp.body();
-            gexf = new String(body, StandardCharsets.UTF_8);
-        }
-        );
-        futures.add(future);
-
-        CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(futures.toArray((new CompletableFuture[0])));
-        combinedFuture.join();
-
-        if (gexf == null) {
-            service.create(sessionBean.getLocaleBundle().getString("general.message.internal_server_error"));
-            runButtonDisabled = true;
-            return;
-        }
-        progress = 80;
-
-        bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(gexf.getBytes(StandardCharsets.UTF_8));
-
-        uri = UrlBuilder
-                .empty()
-                .withScheme("http")
-                .withPort(Integer.valueOf(privateProperties.getProperty("nocode_api_port")))
-                .withHost("localhost")
-                .withPath("api/graphops/topnodes")
-                .addParameter("nbNodes", "30")
-                .toUri();
-
-        request = HttpRequest.newBuilder()
-                .POST(bodyPublisher)
-                .uri(uri)
-                .build();
-
-        future = client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()).thenAccept(resp -> {
-            byte[] body = resp.body();
+        resp = client.send(request, HttpResponse.BodyHandlers.ofByteArray());
+        if (resp.statusCode() == 200) {
+            body = resp.body();
             String jsonResult = new String(body, StandardCharsets.UTF_8);
             JsonObject jsonObject = Json.createReader(new StringReader(jsonResult)).readObject();
             nodesAsJson = Converters.turnJsonObjectToString(jsonObject.getJsonObject("nodes"));
             edgesAsJson = Converters.turnJsonObjectToString(jsonObject.getJsonObject("edges"));
+        } else {
+            System.out.println("gaze results by the API was not a 200 code");
+            String error = sessionBean.getLocaleBundle().getString("general.nouns.error");
+            addMessage(FacesMessage.SEVERITY_WARN, "💔", error);
+            return false;
         }
-        );
-        futures.add(future);
-
-        combinedFuture = CompletableFuture.allOf(futures.toArray((new CompletableFuture[0])));
-        combinedFuture.join();
+        return true;
     }
 
-    public void gotoVV() throws IOException {
-        if (gexf == null) {
-            System.out.println("gm object was null so gotoVV method exited");
-            return;
-        }
+    public boolean callSim(Map<String, Set<String>> sourcesAndTargets) {
 
-        HttpRequest request;
-        HttpClient client = HttpClient.newHttpClient();
-        Set<CompletableFuture> futures = new HashSet();
+        try {
 
-        HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(gexf.getBytes(StandardCharsets.UTF_8));
+            HttpRequest request;
+            HttpClient client = HttpClient.newHttpClient();
+            JsonObjectBuilder overallObject = Json.createObjectBuilder();
 
-        URI uri = UrlBuilder
-                .empty()
-                .withScheme("http")
-                .withPort(Integer.valueOf(privateProperties.getProperty("nocode_api_port")))
-                .withHost("localhost")
-                .withPath("api/convert2vv")
-                .addParameter("item", "Term")
-                .addParameter("items", "Terms")
-                .addParameter("link", "Co-occurrence link")
-                .addParameter("links", "Co-occurrence links")
-                .addParameter("linkStrength", "Number of co-occurrences")
-                .addParameter("totalLinkStrength", "Total number of co-occurrences")
-                .addParameter("descriptionData", "Made with nocodefunctions.com")
-                .toUri();
-
-        request = HttpRequest.newBuilder()
-                .POST(bodyPublisher)
-                .uri(uri)
-                .build();
-
-        CompletableFuture<Void> future = client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()).thenAccept(
-                resp -> {
-                    byte[] body = resp.body();
-                    graphAsJsonVosViewer = new String(body, StandardCharsets.UTF_8);
+            JsonObjectBuilder linesBuilder = Json.createObjectBuilder();
+            for (Map.Entry<String, Set<String>> entryLines : sourcesAndTargets.entrySet()) {
+                JsonArrayBuilder createArrayBuilder = Json.createArrayBuilder();
+                Set<String> targets = entryLines.getValue();
+                for (String target : targets) {
+                    createArrayBuilder.add(target);
                 }
-        );
+                linesBuilder.add(entryLines.getKey(), createArrayBuilder);
+            }
 
-        futures.add(future);
+            JsonObjectBuilder parametersBuilder = Json.createObjectBuilder();
+            parametersBuilder.add("minSharedTarget", minSharedTargets);
 
-        CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(futures.toArray((new CompletableFuture[0])));
-        combinedFuture.join();
+            overallObject.add("lines", linesBuilder);
+            overallObject.add("parameters", parametersBuilder);
 
-        String path = RemoteLocal.isLocal() ? "" : "html/vosviewer/data/";
-        String subfolder;
-        String sessionId = FacesContext.getCurrentInstance().getExternalContext().getSessionId(true);
-        vosviewerJsonFileName = "vosviewer_" + sessionId.substring(0, 20) + ".json";
-        if (shareVVPublicly) {
-            subfolder = "public/";
-        } else {
-            subfolder = "private/";
+            JsonObject build = overallObject.build();
+            StringWriter sw = new StringWriter(128);
+            try (JsonWriter jw = Json.createWriter(sw)) {
+                jw.write(build);
+            }
+            String jsonString = sw.toString();
+
+            HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(jsonString.getBytes(StandardCharsets.UTF_8));
+
+            URI uri = UrlBuilder
+                    .empty()
+                    .withScheme("http")
+                    .withHost("localhost")
+                    .withPort((Integer.valueOf(privateProperties.getProperty("nocode_api_port"))))
+                    .withPath("api/gaze/sim")
+                    .toUri();
+
+            request = HttpRequest.newBuilder()
+                    .POST(bodyPublisher)
+                    .uri(uri)
+                    .build();
+            HttpResponse<byte[]> resp = client.send(request, HttpResponse.BodyHandlers.ofByteArray());
+            byte[] body = resp.body();
+            if (resp.statusCode() != 200) {
+                service.create(sessionBean.getLocaleBundle().getString("general.message.internal_server_error"));
+                runButtonDisabled = true;
+                return false;
+            }
+            gexf = new String(body, StandardCharsets.UTF_8);
+            this.progress = 80;
+
+            if (gexf == null) {
+                service.create(sessionBean.getLocaleBundle().getString("general.message.internal_server_error"));
+                runButtonDisabled = true;
+                return false;
+            }
+            progress = 80;
+
+            bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(gexf.getBytes(StandardCharsets.UTF_8));
+
+            uri = UrlBuilder
+                    .empty()
+                    .withScheme("http")
+                    .withPort(7002)
+                    .withHost("localhost")
+                    .withPath("api/graphops/topnodes")
+                    .addParameter("nbNodes", "30")
+                    .toUri();
+
+            request = HttpRequest.newBuilder()
+                    .POST(bodyPublisher)
+                    .uri(uri)
+                    .build();
+
+            resp = client.send(request, HttpResponse.BodyHandlers.ofByteArray());
+            body = resp.body();
+            if (resp.statusCode() != 200) {
+                service.create(sessionBean.getLocaleBundle().getString("general.message.internal_server_error"));
+                System.out.println("top nodes returned by the API was not a 200 code");
+                runButtonDisabled = true;
+                return false;
+            }
+            String jsonResult = new String(body, StandardCharsets.UTF_8);
+            JsonObject jsonObject = Json.createReader(new StringReader(jsonResult)).readObject();
+            nodesAsJson = Converters.turnJsonObjectToString(jsonObject.getJsonObject("nodes"));
+            edgesAsJson = Converters.turnJsonObjectToString(jsonObject.getJsonObject("edges"));
+
+        } catch (IOException | InterruptedException ex) {
+            System.out.println("exception when getting top nodes: " + ex);
+            return false;
         }
-        path = path + subfolder;
-
-        if (RemoteLocal.isLocal()) {
-            path = SingletonBean.getRootOfProject() + "user_created_files";
-        }
-
-        try (BufferedWriter bw = Files.newBufferedWriter(Path.of(path + vosviewerJsonFileName), StandardCharsets.UTF_8)) {
-            bw.write(graphAsJsonVosViewer);
-        }
-
-        ExternalContext externalContext = FacesContext.getCurrentInstance().getExternalContext();
-        String domain;
-        if (RemoteLocal.isTest()) {
-            domain = "https://test.nocodefunctions.com";
-        } else {
-            domain = "https://nocodefunctions.com";
-        }
-        String urlVV = domain + "/html/vosviewer/index.html?json=data/" + subfolder + vosviewerJsonFileName;
-        externalContext.redirect(urlVV);
+        return true;
     }
 
-    public void gotoGephisto() throws IOException {
-
-        byte[] readAllBytes = gexf.getBytes();
-        InputStream inputStreamToSave = new ByteArrayInputStream(readAllBytes);
-
-        String path = RemoteLocal.isLocal() ? "" : "gephisto/data/";
-        String subfolder;
-        String sessionId = FacesContext.getCurrentInstance().getExternalContext().getSessionId(true);
-        gephistoGexfFileName = "gephisto_" + sessionId.substring(0, 20) + ".gexf";
-
-        if (shareGephistoPublicly) {
-            subfolder = "public/";
-        } else {
-            subfolder = "private/";
+    public void gotoVV() {
+        String linkToVosViewer = ExportToVosViewer.exportAndReturnLinkFromGexf(gexf, shareVVPublicly, privateProperties);
+        if (linkToVosViewer != null && !linkToVosViewer.isBlank()) {
+            try {
+                ExternalContext externalContext = FacesContext.getCurrentInstance().getExternalContext();
+                externalContext.redirect(linkToVosViewer);
+            } catch (IOException ex) {
+                System.out.println("error in ops for export to vv");
+            }
         }
-        path = path + subfolder;
+    }
 
-        if (RemoteLocal.isLocal()) {
-            path = SingletonBean.getRootOfProject() + "user_created_files";
-        }
-
-        File file = new File(path + gephistoGexfFileName);
-        try (OutputStream output = new FileOutputStream(file, false)) {
-            inputStreamToSave.transferTo(output);
-        }
-
-        String urlGephisto;
-        if (RemoteLocal.isTest()) {
-            urlGephisto = "https://test.nocodefunctions.com/gephisto/index.html?gexf-file=" + subfolder + gephistoGexfFileName;
-
-        } else {
-            urlGephisto = "https://nocodefunctions.com/gephisto/index.html?gexf-file=" + subfolder + gephistoGexfFileName;
-        }
+    public void gotoGephisto() {
+        String urlToGephisto = ExportToGephisto.exportAndReturnLink(gexf, shareGephistoPublicly);
         ExternalContext externalContext = FacesContext.getCurrentInstance().getExternalContext();
-        externalContext.redirect(urlGephisto);
+        try {
+            externalContext.redirect(urlToGephisto);
+        } catch (IOException ex) {
+            System.out.println("error in redirect to Gephisto");
+        }
     }
 
     public StreamedContent getFileToSave() {
@@ -570,14 +467,6 @@ public class GazeBean implements Serializable {
 
     public void setShareVVPublicly(Boolean shareVVPublicly) {
         this.shareVVPublicly = shareVVPublicly;
-    }
-
-    public String getGephistoGexfFileName() {
-        return gephistoGexfFileName;
-    }
-
-    public void setGephistoGexfFileName(String gephistoGexfFileName) {
-        this.gephistoGexfFileName = gephistoGexfFileName;
     }
 
     public Boolean getShareGephistoPublicly() {

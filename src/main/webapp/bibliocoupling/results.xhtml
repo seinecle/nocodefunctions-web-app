@@ -55,7 +55,11 @@
             <p:spacer height="20"/>
             <p:panel>
                 <h:form>
-                    <p:remoteCommand name="onload" action="#{biblioCouplingBean.execGraph(20)}" oncomplete="main('#{biblioCouplingBean.nodesAsJson}','#{biblioCouplingBean.edgesAsJson}','#{biblioCouplingBean.minFreqNode}','#{biblioCouplingBean.maxFreqNode}');" autoRun="true" />
+                    <p:remoteCommand
+                        name="onload"
+                        action="#{biblioCouplingBean.execGraph(20)}"
+                        oncomplete="main('#{biblioCouplingBean.nodesAsJson}','#{biblioCouplingBean.edgesAsJson}','#{biblioCouplingBean.minFreqNode}','#{biblioCouplingBean.maxFreqNode}');"
+                        autoRun="true" />
                 </h:form>
                 <h:form target="_blank">
                     <div class="grid">
@@ -86,7 +90,9 @@
                                 styleClass="p-mr-2"/>
                             <br/>
                             <br/>
-                            <p:selectBooleanCheckbox value="#{biblioCouplingBean.shareGephistoPublicly}" itemLabel="#{text['general.message.make_viz_public_question']}"/>
+                            <p:selectBooleanCheckbox
+                                value="#{biblioCouplingBean.shareGephistoPublicly}"
+                                itemLabel="#{text['general.message.make_viz_public_question']}"/>
                             <br/>
                             <br/>
                             <p:outputLabel escape="false" value="#{text['general.message.make_viz_public_details']}"/>
@@ -101,11 +107,16 @@
                             <p:commandButton
                                 value="#{text['general.message.visualize_with_vosviewer']}"
                                 action="#{biblioCouplingBean.gotoVV()}"
+                                ajax="false"
                                 icon="pi pi-external-link"
                                 styleClass="p-mr-2"/>
                             <br/>
                             <br/>
-                            <p:selectBooleanCheckbox value="#{biblioCouplingBean.shareVVPublicly}" itemLabel="#{text['general.message.make_viz_public_question']}"/>
+                            <p:selectBooleanCheckbox
+                                value="#{biblioCouplingBean.shareVVPublicly}"
+                                itemLabel="#{text['general.message.make_viz_public_question']}">
+                                <p:ajax/>
+                            </p:selectBooleanCheckbox>
                             <br/>
                             <br/>
                             <p:outputLabel escape="false" value="#{text['general.message.make_viz_public_details']}"/>

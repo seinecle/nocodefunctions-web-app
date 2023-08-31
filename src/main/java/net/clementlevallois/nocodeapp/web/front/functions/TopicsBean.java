@@ -17,14 +17,11 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 import java.util.TreeMap;
-import java.util.concurrent.CompletableFuture;
 import static java.util.stream.Collectors.toList;
 import jakarta.enterprise.context.SessionScoped;
 import jakarta.faces.application.FacesMessage;
@@ -130,7 +127,6 @@ public class TopicsBean implements Serializable {
         progress = 0;
         HttpRequest request;
         HttpClient client;
-        Set<CompletableFuture> futures;
         try {
             sessionBean.sendFunctionPageReport();
             service.create(sessionBean.getLocaleBundle().getString("general.message.starting_analysis"));
@@ -155,7 +151,6 @@ public class TopicsBean implements Serializable {
             progress = 20;
 
             client = HttpClient.newHttpClient();
-            futures = new HashSet();
             JsonObjectBuilder overallObject = Json.createObjectBuilder();
 
             JsonObjectBuilder linesBuilder = Json.createObjectBuilder();
@@ -212,21 +207,15 @@ public class TopicsBean implements Serializable {
                     .uri(uri)
                     .build();
 
-            CompletableFuture<Void> future = client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()).thenAccept(resp -> {
-                byte[] body = resp.body();
-                if (resp.statusCode() == 200) {
-                    jsonResultAsString = new String(body, StandardCharsets.UTF_8);
-                } else {
-                    System.out.println("topic returned by the API was not a 200 code");
-                    String errorMessage = new String(body, StandardCharsets.UTF_8);
-                    addMessage(FacesMessage.SEVERITY_WARN, "💔", errorMessage);
-                }
+            HttpResponse<byte[]> resp = client.send(request, HttpResponse.BodyHandlers.ofByteArray());
+            byte[] body = resp.body();
+            if (resp.statusCode() == 200) {
+                jsonResultAsString = new String(body, StandardCharsets.UTF_8);
+            } else {
+                System.out.println("topic returned by the API was not a 200 code");
+                String errorMessage = new String(body, StandardCharsets.UTF_8);
+                addMessage(FacesMessage.SEVERITY_WARN, "💔", errorMessage);
             }
-            );
-            futures.add(future);
-
-            CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(futures.toArray((new CompletableFuture[0])));
-            combinedFuture.join();
 
             if (jsonResultAsString == null) {
                 service.create(sessionBean.getLocaleBundle().getString("general.message.internal_server_error"));
@@ -280,7 +269,6 @@ public class TopicsBean implements Serializable {
             if (keywordsPerTopic.isEmpty()) {
                 return null;
             }
-            futures = new HashSet();
             byte[] topicsAsArray = Converters.byteArraySerializerForAnyObject(jsonResultAsString);
 
             HttpRequest.BodyPublisher bodyPublisherTopics = HttpRequest.BodyPublishers.ofByteArray(topicsAsArray);
@@ -299,20 +287,14 @@ public class TopicsBean implements Serializable {
                     .uri(uriExportTopicsToExcel)
                     .build();
 
-            CompletableFuture<Void> futureTopicsExport = client.sendAsync(requestExportTopicsToExcel, HttpResponse.BodyHandlers.ofByteArray()).thenAccept(resp -> {
-                byte[] body = resp.body();
-                InputStream is = new ByteArrayInputStream(body);
-                excelFileToSave = DefaultStreamedContent.builder()
-                        .name("results_topics.xlsx")
-                        .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-                        .stream(() -> is)
-                        .build();
-            }
-            );
-            futures.add(futureTopicsExport);
-
-            combinedFuture = CompletableFuture.allOf(futures.toArray((new CompletableFuture[0])));
-            combinedFuture.join();
+            resp = client.send(requestExportTopicsToExcel, HttpResponse.BodyHandlers.ofByteArray());
+            body = resp.body();
+            InputStream is = new ByteArrayInputStream(body);
+            excelFileToSave = DefaultStreamedContent.builder()
+                    .name("results_topics.xlsx")
+                    .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                    .stream(() -> is)
+                    .build();
 
             progress = 100;
 
@@ -320,7 +302,7 @@ public class TopicsBean implements Serializable {
             renderSeeResultsButton = true;
             runButtonDisabled = true;
 
-        } catch (IOException | NumberFormatException ex) {
+        } catch (IOException | NumberFormatException | InterruptedException ex) {
             System.out.println("ex:" + ex.getMessage());
         }
         return "/" + sessionBean.getFunction() + "/results.xhtml?faces-redirect=true";
@@ -471,7 +453,6 @@ public class TopicsBean implements Serializable {
         }
         Collections.sort(available, new TopicsBean.LocaleComparator());
         return available;
-
     }
 
     public class LocaleComparator implements Comparator<Locale> {
@@ -482,7 +463,5 @@ public class TopicsBean implements Serializable {
         public int compare(Locale firstLocale, Locale secondLocale) {
             return firstLocale.getDisplayName(requestLocale).compareTo(secondLocale.getDisplayName(requestLocale));
         }
-
     }
-
 }

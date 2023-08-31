@@ -13,20 +13,21 @@ function main(nodes, edges, mincount, maxcount) {
     // Step 2. We add nodes and edges to the graph:
     var graphics = Viva.Graph.View.svgGraphics(),
             nodeSize = 24;
-
+    
+    
     const jsonNodes = JSON.parse(nodes);
     const jsonEdges = JSON.parse(edges);
 
     for (var key in jsonNodes) {
         if (jsonNodes.hasOwnProperty(key)) {
-//            console.log(key + "(node id) -> " + jsonNodes[key]);
-            graph.addNode(key, jsonNodes[key]);
+            console.log(key + " (node id) -> " + jsonNodes[key]);
+            graph.addNode(key, key);
         }
     }
 
     for (var key in jsonEdges) {
         if (jsonEdges.hasOwnProperty(key)) {
-//            console.log(key + " (edge id) -> " + jsonEdges[key]);
+            console.log(key + " (edge id) -> " + jsonEdges[key]);
             const edge = jsonEdges[key];
             let source;
             let target;

@@ -56,7 +56,11 @@
             <p:spacer height="20"/>
             <p:panel>
                 <h:form>
-                    <p:remoteCommand name="onload" action="#{cowoBean.execGraph(20)}" oncomplete="main('#{cowoBean.nodesAsJson}','#{cowoBean.edgesAsJson}','#{cowoBean.minFreqNode}','#{cowoBean.maxFreqNode}');" autoRun="true" />
+                    <p:remoteCommand
+                        name="onload"
+                        action="#{cowoBean.execGraph(20)}"
+                        oncomplete="main('#{cowoBean.nodesAsJson}','#{cowoBean.edgesAsJson}','#{cowoBean.minFreqNode}','#{cowoBean.maxFreqNode}');"
+                        autoRun="true" />
                 </h:form>
                 <p:spacer height="20"/>
                 <h:form target="_blank">

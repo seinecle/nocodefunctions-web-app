@@ -33,18 +33,26 @@
 
             <div class="grid" >
                 <div class="col-12 md:9 lg:col-9">
+                    <h:form id="form">
 
-                    <!--RUN ANALYSIS BUTTON-->
-                    <p:commandButton value="#{text['general.verbs.compute']}" widgetVar="cowoButton" action="#{biblioCouplingBean.runBiblioCouplingAnalysis}" onclick="PF('pbAjaxLong').start();PF('cowoButton').disable()" styleClass="btn btn-primary"/>
-                    <br/>
-                    <br/>
-                    <p:spacer height="20"/>
-                    <!--PROGRESS BAR FOR RUN ANALYSIS-->
-                    <p:progressBar id="pb" widgetVar="pbAjaxLong" ajax="true" value="#{biblioCouplingBean.progress}"
-                                   labelTemplate="{value}%" styleClass="p-mt-3" global="false" interval="500">
-                        <p:ajax event="complete" update=":header:messages"/>
+                        <!--RUN ANALYSIS BUTTON-->
+                        <p:commandButton value="#{text['general.verbs.compute']}" widgetVar="cowoButton" action="#{biblioCouplingBean.runBiblioCouplingAnalysis}" onclick="PF('pbAjaxLong').start();PF('cowoButton').disable()" styleClass="btn btn-primary"/>
+                        <br/>
+                        <br/>
+                        <p:spacer height="20"/>
+                        <!--PROGRESS BAR FOR RUN ANALYSIS-->
+                        <p:progressBar id="pb" widgetVar="pbAjaxLong" ajax="true" value="#{biblioCouplingBean.progress}"
+                                       labelTemplate="{value}%" styleClass="p-mt-3" global="false" interval="500">
+                            <p:ajax event="complete" update=":header:messages"/>
 
-                    </p:progressBar>
+                        </p:progressBar>
+                        <div>
+                            <p:spacer height="20"/>
+                        </div>
+                        <br/>
+                        <br/>
+                        <p:commandButton id="button" value="#{text['general.verbs.download_results']}" action="#{biblioCouplingBean.goSeeResults}" rendered="#{biblioCouplingBean.renderResultsButton}"/>
+                    </h:form>
                 </div>
                 <div class="col-3 flex-grow-1">
                     <p:panel header="Log">

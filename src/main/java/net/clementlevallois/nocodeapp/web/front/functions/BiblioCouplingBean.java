@@ -1,21 +1,14 @@
 package net.clementlevallois.nocodeapp.web.front.functions;
 
 import io.mikael.urlbuilder.UrlBuilder;
-import java.io.BufferedWriter;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileOutputStream;
+import io.mikael.urlbuilder.util.RuntimeURISyntaxException;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.Serializable;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -40,11 +33,14 @@ import java.util.concurrent.ConcurrentHashMap;
 import net.clementlevallois.importers.model.DataFormatConverter;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SingletonBean;
+import net.clementlevallois.nocodeapp.web.front.exportdata.ExportToGephisto;
+import net.clementlevallois.nocodeapp.web.front.exportdata.ExportToVosViewer;
 import net.clementlevallois.nocodeapp.web.front.http.RemoteLocal;
 import net.clementlevallois.nocodeapp.web.front.importdata.DataImportBean;
 import net.clementlevallois.nocodeapp.web.front.utils.GEXFSaver;
 import net.clementlevallois.nocodeapp.web.front.logview.NotificationService;
 import net.clementlevallois.nocodeapp.web.front.utils.Converters;
+import org.primefaces.PrimeFaces;
 import org.primefaces.model.StreamedContent;
 
 /**
@@ -62,10 +58,7 @@ public class BiblioCouplingBean implements Serializable {
     private String edgesAsJson;
     private int minFreqNode = 1000_000;
     private int maxFreqNode = 0;
-    private String graphAsJsonVosViewer;
-    private String vosviewerJsonFileName;
     private Boolean shareVVPublicly;
-    private String gephistoGexfFileName;
     private Boolean shareGephistoPublicly;
     private int maxSources = 300;
     private final Properties privateProperties;
@@ -73,6 +66,7 @@ public class BiblioCouplingBean implements Serializable {
     private int minSharedTargets;
     private Set<String> pubErrors;
     private String field;
+    private boolean renderResultsButton = false;
 
     private int countTreated = 0;
 
@@ -98,6 +92,7 @@ public class BiblioCouplingBean implements Serializable {
     public String runBiblioCouplingAnalysis() {
         try {
             progress = 0;
+            renderResultsButton = false;
             pubErrors = new HashSet();
             sessionBean.sendFunctionPageReport();
             service.create(sessionBean.getLocaleBundle().getString("general.message.starting_analysis"));
@@ -158,6 +153,9 @@ public class BiblioCouplingBean implements Serializable {
                             System.out.println("API biblio coupling returned an error:");
                             System.out.println(result);
                         }
+                    }).exceptionally(exception -> {
+                        System.err.println("exception: " + exception);
+                        return null;
                     });
                     futures.add(future);
                     // this is because we need to slow down a bit the requests sending too many throws a
@@ -175,218 +173,155 @@ public class BiblioCouplingBean implements Serializable {
             service.create("🏁" + sessionBean.getLocaleBundle().getString("bibliocoupling.info.openalexdataretrieved"));
             service.create("💻" + sessionBean.getLocaleBundle().getString("bibliocoupling.info.startsim"));
 
-            callSim(sourcesAndTargets);
+            boolean callSimReturned = callSim(sourcesAndTargets);
             this.progress = 100;
+            renderResultsButton = true;
+            PrimeFaces.current().ajax().update("form");
 
             return "/" + sessionBean.getFunction() + "/results.xhtml?faces-redirect=true";
-        } catch (Exception ex) {
+        } catch (RuntimeURISyntaxException | NumberFormatException ex) {
             Logger.getLogger(CowoBean.class.getName()).log(Level.SEVERE, null, ex);
             return "";
         }
     }
 
-    public void callSim(Map<String, Set<String>> sourcesAndTargets) throws Exception {
+    public String goSeeResults() {
+        return "/" + sessionBean.getFunction() + "/results.xhtml?faces-redirect=true";
+    }
 
-        HttpRequest request;
-        HttpClient client = HttpClient.newHttpClient();
-        Set<CompletableFuture> futures = new HashSet();
-        JsonObjectBuilder overallObject = Json.createObjectBuilder();
+    public boolean callSim(Map<String, Set<String>> sourcesAndTargets) {
 
-        JsonObjectBuilder linesBuilder = Json.createObjectBuilder();
-        for (Map.Entry<String, Set<String>> entryLines : sourcesAndTargets.entrySet()) {
-            JsonArrayBuilder createArrayBuilder = Json.createArrayBuilder();
-            Set<String> targets = entryLines.getValue();
-            for (String target : targets) {
-                createArrayBuilder.add(target);
+        try {
+
+            HttpRequest request;
+            HttpClient client = HttpClient.newHttpClient();
+            JsonObjectBuilder overallObject = Json.createObjectBuilder();
+
+            JsonObjectBuilder linesBuilder = Json.createObjectBuilder();
+            for (Map.Entry<String, Set<String>> entryLines : sourcesAndTargets.entrySet()) {
+                JsonArrayBuilder createArrayBuilder = Json.createArrayBuilder();
+                Set<String> targets = entryLines.getValue();
+                for (String target : targets) {
+                    createArrayBuilder.add(target);
+                }
+                linesBuilder.add(entryLines.getKey(), createArrayBuilder);
             }
-            linesBuilder.add(entryLines.getKey(), createArrayBuilder);
-        }
 
-        JsonObjectBuilder parametersBuilder = Json.createObjectBuilder();
-        parametersBuilder.add("minSharedTarget", minSharedTargets);
+            JsonObjectBuilder parametersBuilder = Json.createObjectBuilder();
+            parametersBuilder.add("minSharedTarget", minSharedTargets);
 
-        overallObject.add("lines", linesBuilder);
-        overallObject.add("parameters", parametersBuilder);
+            overallObject.add("lines", linesBuilder);
+            overallObject.add("parameters", parametersBuilder);
 
-        JsonObject build = overallObject.build();
-        StringWriter sw = new StringWriter(128);
-        try (JsonWriter jw = Json.createWriter(sw)) {
-            jw.write(build);
-        }
-        String jsonString = sw.toString();
+            JsonObject build = overallObject.build();
+            StringWriter sw = new StringWriter(128);
+            try (JsonWriter jw = Json.createWriter(sw)) {
+                jw.write(build);
+            }
+            String jsonString = sw.toString();
 
-        HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(jsonString.getBytes(StandardCharsets.UTF_8));
+            HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(jsonString.getBytes(StandardCharsets.UTF_8));
 
-        URI uri = UrlBuilder
-                .empty()
-                .withScheme("http")
-                .withHost("localhost")
-                .withPort((Integer.valueOf(privateProperties.getProperty("nocode_api_port"))))
-                .withPath("api/gaze/sim")
-                .toUri();
+            URI uri = UrlBuilder
+                    .empty()
+                    .withScheme("http")
+                    .withHost("localhost")
+                    .withPort((Integer.valueOf(privateProperties.getProperty("nocode_api_port"))))
+                    .withPath("api/gaze/sim")
+                    .toUri();
 
-        request = HttpRequest.newBuilder()
-                .POST(bodyPublisher)
-                .uri(uri)
-                .build();
-
-        CompletableFuture<Void> future = client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()).thenAccept(resp -> {
+            request = HttpRequest.newBuilder()
+                    .POST(bodyPublisher)
+                    .uri(uri)
+                    .build();
+            HttpResponse<byte[]> resp = client.send(request, HttpResponse.BodyHandlers.ofByteArray());
             byte[] body = resp.body();
+            if (resp.statusCode() != 200) {
+                String errorMessage = sessionBean.getLocaleBundle().getString("general.message.internal_server_error");
+                service.create(errorMessage);
+                System.out.println(errorMessage);
+                runButtonDisabled = true;
+                return false;
+            }
             gexf = new String(body, StandardCharsets.UTF_8);
-        }
-        );
-        futures.add(future);
+            this.progress = 80;
 
-        CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(futures.toArray((new CompletableFuture[0])));
-        combinedFuture.join();
-        this.progress = 80;
+            if (gexf == null) {
+                String errorMessage = sessionBean.getLocaleBundle().getString("general.message.internal_server_error");
+                service.create(errorMessage);
+                System.out.println("gexf was null in sim call for biblio coupling");
+                runButtonDisabled = true;
+                return false;
+            }
+            progress = 80;
 
-        if (gexf == null) {
-            service.create(sessionBean.getLocaleBundle().getString("general.message.internal_server_error"));
-            runButtonDisabled = true;
-            return;
-        }
-        progress = 80;
+            bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(gexf.getBytes(StandardCharsets.UTF_8));
 
-        bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(gexf.getBytes(StandardCharsets.UTF_8));
+            uri = UrlBuilder
+                    .empty()
+                    .withScheme("http")
+                    .withPort(7002)
+                    .withHost("localhost")
+                    .withPath("api/graphops/topnodes")
+                    .addParameter("nbNodes", "30")
+                    .toUri();
 
-        uri = UrlBuilder
-                .empty()
-                .withScheme("http")
-                .withPort(7002)
-                .withHost("localhost")
-                .withPath("api/graphops/topnodes")
-                .addParameter("nbNodes", "30")
-                .toUri();
+            request = HttpRequest.newBuilder()
+                    .POST(bodyPublisher)
+                    .uri(uri)
+                    .build();
 
-        request = HttpRequest.newBuilder()
-                .POST(bodyPublisher)
-                .uri(uri)
-                .build();
-
-        future = client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()).thenAccept(resp -> {
-            byte[] body = resp.body();
+            resp = client.send(request, HttpResponse.BodyHandlers.ofByteArray());
+            body = resp.body();
+            if (resp.statusCode() != 200) {
+                String errorMessage = sessionBean.getLocaleBundle().getString("general.message.internal_server_error");
+                service.create(errorMessage);
+                System.out.println("top nodes did not return a 200 code for biblio coupling");
+                runButtonDisabled = true;
+                return false;
+            }
             String jsonResult = new String(body, StandardCharsets.UTF_8);
             JsonObject jsonObject = Json.createReader(new StringReader(jsonResult)).readObject();
             nodesAsJson = Converters.turnJsonObjectToString(jsonObject.getJsonObject("nodes"));
             edgesAsJson = Converters.turnJsonObjectToString(jsonObject.getJsonObject("edges"));
-        }
-        );
-        futures.add(future);
 
-        combinedFuture = CompletableFuture.allOf(futures.toArray((new CompletableFuture[0])));
-        combinedFuture.join();
+        } catch (IOException | InterruptedException ex) {
+            System.out.println("exception when getting top nodes: " + ex);
+            return false;
+        }
+        return true;
     }
 
-    public void gotoVV() throws IOException {
-        if (gexf == null) {
-            System.out.println("gm object was null so gotoVV method exited");
-            return;
+    private void redirectAfterCompletion() {
+        try {
+            ExternalContext externalContext
+                    = FacesContext.getCurrentInstance().getExternalContext();
+            externalContext.redirect("/" + sessionBean.getFunction() + "/results.xhtml?faces-redirect=true");
+        } catch (IOException ex) {
+            Logger.getLogger(BiblioCouplingBean.class.getName()).log(Level.SEVERE, null, ex);
         }
-
-        HttpRequest request;
-        HttpClient client = HttpClient.newHttpClient();
-        Set<CompletableFuture> futures = new HashSet();
-
-        HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(gexf.getBytes(StandardCharsets.UTF_8));
-
-        URI uri = UrlBuilder
-                .empty()
-                .withScheme("http")
-                .withPort(7002)
-                .withHost("localhost")
-                .withPath("api/convert2vv")
-                .addParameter("item", "Term")
-                .addParameter("items", "Terms")
-                .addParameter("link", "Co-occurrence link")
-                .addParameter("links", "Co-occurrence links")
-                .addParameter("linkStrength", "Number of co-occurrences")
-                .addParameter("totalLinkStrength", "Total number of co-occurrences")
-                .addParameter("descriptionData", "Made with nocodefunctions.com")
-                .toUri();
-
-        request = HttpRequest.newBuilder()
-                .POST(bodyPublisher)
-                .uri(uri)
-                .build();
-
-        CompletableFuture<Void> future = client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()).thenAccept(
-                resp -> {
-                    byte[] body = resp.body();
-                    graphAsJsonVosViewer = new String(body, StandardCharsets.UTF_8);
-                }
-        );
-
-        futures.add(future);
-
-        CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(futures.toArray((new CompletableFuture[0])));
-        combinedFuture.join();
-
-        String path = RemoteLocal.isLocal() ? "" : "html/vosviewer/data/";
-        String subfolder;
-        String sessionId = FacesContext.getCurrentInstance().getExternalContext().getSessionId(true);
-        vosviewerJsonFileName = "vosviewer_" + sessionId.substring(0, 20) + ".json";
-        if (shareVVPublicly) {
-            subfolder = "public/";
-        } else {
-            subfolder = "private/";
-        }
-        path = path + subfolder;
-
-        if (RemoteLocal.isLocal()) {
-            path = SingletonBean.getRootOfProject() + "user_created_files";
-        }
-
-        try (BufferedWriter bw = Files.newBufferedWriter(Path.of(path + vosviewerJsonFileName), StandardCharsets.UTF_8)) {
-            bw.write(graphAsJsonVosViewer);
-        }
-
-        ExternalContext externalContext = FacesContext.getCurrentInstance().getExternalContext();
-        String domain;
-        if (RemoteLocal.isTest()) {
-            domain = "https://test.nocodefunctions.com";
-        } else {
-            domain = "https://nocodefunctions.com";
-        }
-        String urlVV = domain + "/html/vosviewer/index.html?json=data/" + subfolder + vosviewerJsonFileName;
-        externalContext.redirect(urlVV);
     }
 
-    public void gotoGephisto() throws IOException {
-
-        byte[] readAllBytes = gexf.getBytes();
-        InputStream inputStreamToSave = new ByteArrayInputStream(readAllBytes);
-
-        String path = RemoteLocal.isLocal() ? "" : "gephisto/data/";
-        String subfolder;
-        String sessionId = FacesContext.getCurrentInstance().getExternalContext().getSessionId(true);
-        gephistoGexfFileName = "gephisto_" + sessionId.substring(0, 20) + ".gexf";
-
-        if (shareGephistoPublicly) {
-            subfolder = "public/";
-        } else {
-            subfolder = "private/";
+    public void gotoVV() {
+        String linkToVosViewer = ExportToVosViewer.exportAndReturnLinkFromGexf(gexf, shareVVPublicly, privateProperties);
+        if (linkToVosViewer != null && !linkToVosViewer.isBlank()) {
+            try {
+                ExternalContext externalContext = FacesContext.getCurrentInstance().getExternalContext();
+                externalContext.redirect(linkToVosViewer);
+            } catch (IOException ex) {
+                System.out.println("error in ops for export to vv");
+            }
         }
-        path = path + subfolder;
+    }
 
-        if (RemoteLocal.isLocal()) {
-            path = SingletonBean.getRootOfProject() + "user_created_files";
-        }
-
-        File file = new File(path + gephistoGexfFileName);
-        try (OutputStream output = new FileOutputStream(file, false)) {
-            inputStreamToSave.transferTo(output);
-        }
-
-        String urlGephisto;
-        if (RemoteLocal.isTest()) {
-            urlGephisto = "https://test.nocodefunctions.com/gephisto/index.html?gexf-file=" + subfolder + gephistoGexfFileName;
-
-        } else {
-            urlGephisto = "https://nocodefunctions.com/gephisto/index.html?gexf-file=" + subfolder + gephistoGexfFileName;
-        }
+    public void gotoGephisto() {
+        String urlToGephisto = ExportToGephisto.exportAndReturnLink(gexf, shareGephistoPublicly);
         ExternalContext externalContext = FacesContext.getCurrentInstance().getExternalContext();
-        externalContext.redirect(urlGephisto);
+        try {
+            externalContext.redirect(urlToGephisto);
+        } catch (IOException ex) {
+            System.out.println("error in redirect to Gephisto");
+        }
     }
 
     public StreamedContent getFileToSave() {
@@ -441,14 +376,6 @@ public class BiblioCouplingBean implements Serializable {
         this.shareVVPublicly = shareVVPublicly;
     }
 
-    public String getGephistoGexfFileName() {
-        return gephistoGexfFileName;
-    }
-
-    public void setGephistoGexfFileName(String gephistoGexfFileName) {
-        this.gephistoGexfFileName = gephistoGexfFileName;
-    }
-
     public Boolean getShareGephistoPublicly() {
         return shareGephistoPublicly;
     }
@@ -487,6 +414,14 @@ public class BiblioCouplingBean implements Serializable {
 
     public void setField(String field) {
         this.field = field;
+    }
+
+    public boolean isRenderResultsButton() {
+        return renderResultsButton;
+    }
+
+    public void setRenderResultsButton(boolean renderResultsButton) {
+        this.renderResultsButton = renderResultsButton;
     }
     
     

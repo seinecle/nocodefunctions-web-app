@@ -2,14 +2,8 @@ package net.clementlevallois.nocodeapp.web.front.functions;
 
 import io.mikael.urlbuilder.UrlBuilder;
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.io.Serializable;
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -18,8 +12,6 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -48,13 +40,13 @@ import java.util.Properties;
 import net.clementlevallois.importers.model.DataFormatConverter;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SingletonBean;
-import net.clementlevallois.nocodeapp.web.front.http.RemoteLocal;
+import net.clementlevallois.nocodeapp.web.front.exportdata.ExportToGephisto;
+import net.clementlevallois.nocodeapp.web.front.exportdata.ExportToVosViewer;
 import net.clementlevallois.nocodeapp.web.front.importdata.DataImportBean;
 import net.clementlevallois.nocodeapp.web.front.utils.GEXFSaver;
 import net.clementlevallois.nocodeapp.web.front.logview.NotificationService;
 import net.clementlevallois.nocodeapp.web.front.utils.Converters;
 import net.clementlevallois.utils.TextCleaningOps;
-//import org.omnifaces.util.Faces;
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
 import org.primefaces.model.file.UploadedFile;
@@ -89,11 +81,8 @@ public class CowoBean implements Serializable {
     private boolean lemmatize = true;
     private boolean usePMI = false;
     private UploadedFile fileUserStopwords;
-    private String vosviewerJsonFileName;
-    private String graphAsJsonVosViewer;
     private String gexf;
     private Boolean shareVVPublicly;
-    private String gephistoGexfFileName;
     private Boolean shareGephistoPublicly;
     private Integer minCharNumber = 4;
     private Map<Integer, String> mapOfLines;
@@ -137,7 +126,7 @@ public class CowoBean implements Serializable {
         return "";
     }
 
-    public String runAnalysis() {
+    public String runAnalysis() throws InterruptedException {
         progress = 0;
 
         HttpRequest request;
@@ -234,22 +223,16 @@ public class CowoBean implements Serializable {
                     .uri(uri)
                     .build();
             client = HttpClient.newHttpClient();
-            CompletableFuture<Void> future = client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()).thenAccept(resp -> {
-                byte[] body = resp.body();
-                if (resp.statusCode() == 200) {
-                    gexf = new String(body, StandardCharsets.UTF_8);
-                } else {
-                    System.out.println("cowo returned by the API was not a 200 code");
-                    String errorMessage = new String(body, StandardCharsets.UTF_8);
-                    service.create(errorMessage);
-                    addMessage(FacesMessage.SEVERITY_WARN, "💔", errorMessage);
-                }
+            HttpResponse<byte[]> resp = client.send(request, HttpResponse.BodyHandlers.ofByteArray());
+            byte[] body = resp.body();
+            if (resp.statusCode() == 200) {
+                gexf = new String(body, StandardCharsets.UTF_8);
+            } else {
+                System.out.println("cowo returned by the API was not a 200 code");
+                String errorMessage = new String(body, StandardCharsets.UTF_8);
+                service.create(errorMessage);
+                addMessage(FacesMessage.SEVERITY_WARN, "💔", errorMessage);
             }
-            );
-            futures.add(future);
-
-            CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(futures.toArray((new CompletableFuture[0])));
-            combinedFuture.join();
             executor.shutdown();
             service.create(sessionBean.getLocaleBundle().getString("general.message.last_ops_creating_network"));
             progress = 60;
@@ -260,7 +243,6 @@ public class CowoBean implements Serializable {
                 runButtonDisabled = true;
                 return "";
             }
-            futures = new HashSet();
 
             bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(gexf.getBytes(StandardCharsets.UTF_8));
 
@@ -278,25 +260,20 @@ public class CowoBean implements Serializable {
                     .uri(uri)
                     .build();
 
-            future = client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()).thenAccept(resp -> {
-                if (resp.statusCode() == 200) {
-                    byte[] body = resp.body();
-                    String jsonResult = new String(body, StandardCharsets.UTF_8);
-                    JsonObject jsonObject = Json.createReader(new StringReader(jsonResult)).readObject();
-                    nodesAsJson = Converters.turnJsonObjectToString(jsonObject.getJsonObject("nodes"));
-                    edgesAsJson = Converters.turnJsonObjectToString(jsonObject.getJsonObject("edges"));
-                } else {
-                    System.out.println("top nodes returned by the API was not a 200 code");
-                    String error = sessionBean.getLocaleBundle().getString("general.nouns.error");
-                    service.create(error);
-                    addMessage(FacesMessage.SEVERITY_WARN, "💔", error);
-                }
+            resp = client.send(request, HttpResponse.BodyHandlers.ofByteArray());
+            body = resp.body();
+            if (resp.statusCode() != 200) {
+                System.out.println("top nodes returned by the API was not a 200 code");
+                String error = sessionBean.getLocaleBundle().getString("general.nouns.error");
+                service.create(error);
+                addMessage(FacesMessage.SEVERITY_WARN, "💔", error);
+                runButtonDisabled = true;
+            } else {
+                String jsonResult = new String(body, StandardCharsets.UTF_8);
+                JsonObject jsonObject = Json.createReader(new StringReader(jsonResult)).readObject();
+                nodesAsJson = Converters.turnJsonObjectToString(jsonObject.getJsonObject("nodes"));
+                edgesAsJson = Converters.turnJsonObjectToString(jsonObject.getJsonObject("edges"));
             }
-            );
-            futures.add(future);
-
-            combinedFuture = CompletableFuture.allOf(futures.toArray((new CompletableFuture[0])));
-            combinedFuture.join();
 
         } catch (IOException | NumberFormatException ex) {
             System.out.println("ex:" + ex.getMessage());
@@ -488,117 +465,26 @@ public class CowoBean implements Serializable {
         this.lemmatize = lemmatize;
     }
 
-    public void gotoVV() throws IOException {
-        if (gexf == null) {
-            System.out.println("gm object was null so gotoVV method exited");
-            return;
+    public void gotoVV() {
+        String linkToVosViewer = ExportToVosViewer.exportAndReturnLinkFromGexf(gexf, shareVVPublicly, privateProperties);
+        if (linkToVosViewer != null && !linkToVosViewer.isBlank()) {
+            try {
+                ExternalContext externalContext = FacesContext.getCurrentInstance().getExternalContext();
+                externalContext.redirect(linkToVosViewer);
+            } catch (IOException ex) {
+                System.out.println("error in ops for export to vv");
+            }
         }
-
-        HttpRequest request;
-        HttpClient client = HttpClient.newHttpClient();
-        Set<CompletableFuture> futures = new HashSet();
-
-        HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(gexf.getBytes(StandardCharsets.UTF_8));
-
-        URI uri = UrlBuilder
-                .empty()
-                .withScheme("http")
-                .withPort(Integer.valueOf(privateProperties.getProperty("nocode_api_port")))
-                .withHost("localhost")
-                .withPath("api/convert2vv")
-                .addParameter("item", "Term")
-                .addParameter("items", "Terms")
-                .addParameter("link", "Co-occurrence link")
-                .addParameter("links", "Co-occurrence links")
-                .addParameter("linkStrength", "Number of co-occurrences")
-                .addParameter("totalLinkStrength", "Total number of co-occurrences")
-                .addParameter("descriptionData", "Made with nocodefunctions.com")
-                .toUri();
-
-        request = HttpRequest.newBuilder()
-                .POST(bodyPublisher)
-                .uri(uri)
-                .build();
-
-        CompletableFuture<Void> future = client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()).thenAccept(
-                resp -> {
-                    byte[] body = resp.body();
-                    graphAsJsonVosViewer = new String(body, StandardCharsets.UTF_8);
-                }
-        );
-
-        futures.add(future);
-
-        CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(futures.toArray((new CompletableFuture[0])));
-        combinedFuture.join();
-        String path = RemoteLocal.isLocal() ? "" : "html/vosviewer/data/";
-        String subfolder;
-        String sessionId = FacesContext.getCurrentInstance().getExternalContext().getSessionId(true);
-        vosviewerJsonFileName = "vosviewer_" + sessionId.substring(0, 20) + ".json";
-        if (shareVVPublicly) {
-            subfolder = "public/";
-        } else {
-            subfolder = "private/";
-        }
-        path = path + subfolder;
-
-        if (RemoteLocal.isLocal()) {
-            path = SingletonBean.getRootOfProject() + "user_created_files";
-        }
-
-        BufferedWriter bw = Files.newBufferedWriter(Path.of(path + vosviewerJsonFileName), StandardCharsets.UTF_8);
-        bw.write(graphAsJsonVosViewer);
-        bw.close();
-
-        ExternalContext externalContext = FacesContext.getCurrentInstance().getExternalContext();
-        String urlVV;
-        if (RemoteLocal.isTest()) {
-            urlVV = "https://test.nocodefunctions.com/html/vosviewer/index.html?json=data/" + subfolder + vosviewerJsonFileName;
-
-        } else {
-            urlVV = "https://nocodefunctions.com/html/vosviewer/index.html?json=data/" + subfolder + vosviewerJsonFileName;
-        }
-        externalContext.redirect(urlVV);
     }
 
-    public void gotoGephisto() throws IOException {
-        if (gexf == null) {
-            System.out.println("gm object was null so gotoGephisto method exited");
-            return;
-        }
-        byte[] readAllBytes = gexf.getBytes();
-        InputStream inputStreamToSave = new ByteArrayInputStream(readAllBytes);
-
-        String path = RemoteLocal.isLocal() ? "" : "gephisto/data/";
-        String subfolder;
-        String sessionId = FacesContext.getCurrentInstance().getExternalContext().getSessionId(true);
-        gephistoGexfFileName = "gephisto_" + sessionId.substring(0, 20) + ".gexf";
-
-        if (shareGephistoPublicly) {
-            subfolder = "public/";
-        } else {
-            subfolder = "private/";
-        }
-        path = path + subfolder;
-
-        if (RemoteLocal.isLocal()) {
-            path = SingletonBean.getRootOfProject() + "user_created_files";
-        }
-
-        File file = new File(path + gephistoGexfFileName);
-        try (OutputStream output = new FileOutputStream(file, false)) {
-            inputStreamToSave.transferTo(output);
-        }
-
-        String urlGephisto;
-        if (RemoteLocal.isTest()) {
-            urlGephisto = "https://test.nocodefunctions.com/gephisto/index.html?gexf-file=" + subfolder + gephistoGexfFileName;
-
-        } else {
-            urlGephisto = "https://nocodefunctions.com/gephisto/index.html?gexf-file=" + subfolder + gephistoGexfFileName;
-        }
+    public void gotoGephisto() {
+        String urlToGephisto = ExportToGephisto.exportAndReturnLink(gexf, shareGephistoPublicly);
         ExternalContext externalContext = FacesContext.getCurrentInstance().getExternalContext();
-        externalContext.redirect(urlGephisto);
+        try {
+            externalContext.redirect(urlToGephisto);
+        } catch (IOException ex) {
+            System.out.println("error in redirect to Gephisto");
+        }
     }
 
     public List<Locale> getAvailable() {

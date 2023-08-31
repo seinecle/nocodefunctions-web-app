@@ -5,6 +5,7 @@
  */
 package net.clementlevallois.nocodeapp.web.front.backingbeans;
 
+import jakarta.ejb.Singleton;
 import jakarta.ejb.Startup;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -12,14 +13,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.UnknownHostException;
 import java.util.Properties;
-import jakarta.enterprise.context.ApplicationScoped;
 
 /**
  *
  * @author LEVALLOIS
  */
 @Startup
-@ApplicationScoped
+@Singleton
 public class SingletonBean {
 
     private static Properties privateProperties;

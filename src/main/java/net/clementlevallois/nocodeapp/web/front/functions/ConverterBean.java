@@ -1,9 +1,7 @@
 package net.clementlevallois.nocodeapp.web.front.functions;
 
 import io.mikael.urlbuilder.UrlBuilder;
-import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
@@ -11,12 +9,6 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.concurrent.CompletableFuture;
 import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.SessionScoped;
 import jakarta.faces.application.FacesMessage;
@@ -26,7 +18,8 @@ import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import jakarta.servlet.annotation.MultipartConfig;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
-import net.clementlevallois.nocodeapp.web.front.http.RemoteLocal;
+import net.clementlevallois.nocodeapp.web.front.backingbeans.SingletonBean;
+import net.clementlevallois.nocodeapp.web.front.exportdata.ExportToVosViewer;
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
@@ -50,7 +43,6 @@ public class ConverterBean implements Serializable {
     private String uploadButtonMessage;
     private boolean renderGephiWarning = true;
 
-    private String graphAsJsonVosViewer;
     private byte[] gexfAsByteArray;
     private boolean shareVVPublicly;
 
@@ -99,86 +91,16 @@ public class ConverterBean implements Serializable {
         return "";
     }
 
-    public void gotoVV() throws IOException {
-        if (uploadedFile == null) {
-            System.out.println("no file found for conversion to vv");
-            return;
+    public void gotoVV() {
+        String linkToVosViewer = ExportToVosViewer.exportAndReturnLinkFromUploadedFile(uploadedFile, shareVVPublicly, SingletonBean.getPrivateProperties(), item, link, linkStrength);
+        if (linkToVosViewer != null && !linkToVosViewer.isBlank()) {
+            try {
+                ExternalContext externalContext = FacesContext.getCurrentInstance().getExternalContext();
+                externalContext.redirect(linkToVosViewer);
+            } catch (IOException ex) {
+                System.out.println("error in ops for export to vv");
+            }
         }
-
-        HttpRequest request;
-        HttpClient client = HttpClient.newHttpClient();
-        Set<CompletableFuture> futures = new HashSet();
-
-        HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(is.readAllBytes());
-
-        URI uri = UrlBuilder
-                .empty()
-                .withScheme("http")
-                .withPort(7002)
-                .withHost("localhost")
-                .withPath("api/convert2vv")
-                .addParameter("item", item)
-                .addParameter("items", "")
-                .addParameter("link", link)
-                .addParameter("links", "")
-                .addParameter("linkStrength", linkStrength)
-                .addParameter("descriptionData", "")
-                .addParameter("totalLinkStrength", "")
-                .toUri();
-
-        request = HttpRequest.newBuilder()
-                .POST(bodyPublisher)
-                .uri(uri)
-                .build();
-
-        CompletableFuture<Void> future = client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()).thenAccept(
-                resp -> {
-                    if (resp.statusCode() == 200) {
-                        byte[] body = resp.body();
-                        graphAsJsonVosViewer = new String(body, StandardCharsets.UTF_8);
-                    } else {
-                        graphAsJsonVosViewer = null;
-                    }
-                }
-        );
-
-        futures.add(future);
-
-        CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(futures.toArray((new CompletableFuture[0])));
-        combinedFuture.join();
-
-        if (graphAsJsonVosViewer == null) {
-            System.out.println("graphAsJsonVosViewer returned by the API was not a 200 code");
-            String error = sessionBean.getLocaleBundle().getString("general.nouns.error");
-            FacesMessage message = new FacesMessage(error, error);
-            FacesContext.getCurrentInstance().addMessage(null, message);
-            return;
-        }
-
-        String path = RemoteLocal.isLocal() ? "C:\\Users\\levallois\\open\\nocode-app-functions\\gexf-vosviewer-converter\\testswebapp\\" : "html/vosviewer/data/";
-        String subfolder;
-        String sessionId = FacesContext.getCurrentInstance().getExternalContext().getSessionId(true);
-        String vosviewerJsonFileName = "vosviewer_" + sessionId.substring(0, 20) + ".json";
-        if (shareVVPublicly) {
-            subfolder = "public/";
-        } else {
-            subfolder = "private/";
-        }
-
-        path = path + subfolder;
-
-        try (BufferedWriter bw = Files.newBufferedWriter(Path.of(path + vosviewerJsonFileName), StandardCharsets.UTF_8)) {
-            bw.write(graphAsJsonVosViewer);
-        }
-
-        ExternalContext externalContext = FacesContext.getCurrentInstance().getExternalContext();
-        String urlVV;
-        if (RemoteLocal.isTest()) {
-            urlVV = "https://test.nocodefunctions.com/html/vosviewer/index.html?json=data/" + subfolder + vosviewerJsonFileName;
-        } else {
-            urlVV = "https://nocodefunctions.com/html/vosviewer/index.html?json=data/" + subfolder + vosviewerJsonFileName;
-        }
-        externalContext.redirect(urlVV);
     }
 
     public String getOption() {
@@ -245,7 +167,7 @@ public class ConverterBean implements Serializable {
         this.renderGephiWarning = renderGephiWarning;
     }
 
-    public StreamedContent getFileToSave() throws FileNotFoundException {
+    public StreamedContent getFileToSave() {
         StreamedContent fileStream = null;
         try {
             if (is == null) {
@@ -255,7 +177,6 @@ public class ConverterBean implements Serializable {
 
             HttpRequest request;
             HttpClient client = HttpClient.newHttpClient();
-            Set<CompletableFuture> futures = new HashSet();
 
             HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(is.readAllBytes());
 
@@ -272,20 +193,12 @@ public class ConverterBean implements Serializable {
                     .uri(uri)
                     .build();
 
-            CompletableFuture<Void> future = client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()).thenAccept(
-                    resp -> {
-                        if (resp.statusCode() == 200) {
-                            gexfAsByteArray = resp.body();
-                        } else {
-                            gexfAsByteArray = null;
-                        }
-                    }
-            );
-
-            futures.add(future);
-
-            CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(futures.toArray((new CompletableFuture[0])));
-            combinedFuture.join();
+            HttpResponse<byte[]> resp = client.send(request, HttpResponse.BodyHandlers.ofByteArray());
+            if (resp.statusCode() == 200) {
+                gexfAsByteArray = resp.body();
+            } else {
+                gexfAsByteArray = null;
+            }
 
             if (gexfAsByteArray == null) {
                 System.out.println("gexfAsByteArray returned by the API was not a 200 code");
@@ -302,7 +215,7 @@ public class ConverterBean implements Serializable {
                     .stream(() -> inputStreamToSave)
                     .build();
 
-        } catch (IOException ex) {
+        } catch (IOException | InterruptedException ex) {
             System.out.println("ex:" + ex.getMessage());
         }
         return fileStream;

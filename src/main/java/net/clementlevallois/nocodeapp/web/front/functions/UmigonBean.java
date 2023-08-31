@@ -174,10 +174,10 @@ public class UmigonBean implements Serializable {
                                 }
                             }
                         }
-                ).exceptionally(exception -> {
-                  System.err.println("exception: " + exception);
-                  return null;
-              });
+                        ).exceptionally(exception -> {
+                            System.err.println("exception: " + exception);
+                            return null;
+                        });
                 futures.add(future);
                 // this is because we need to slow down a bit the requests sending too many thros a
                 // java.util.concurrent.CompletionException: java.io.IOException: too many concurrent streams
@@ -323,7 +323,6 @@ public class UmigonBean implements Serializable {
         try {
             HttpRequest request;
             HttpClient client = HttpClient.newHttpClient();
-            Set<CompletableFuture> futures = new HashSet();
             byte[] documentsAsByteArray = Converters.byteArraySerializerForAnyObject(results);
             HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(documentsAsByteArray);
 
@@ -343,21 +342,15 @@ public class UmigonBean implements Serializable {
                     .uri(uri)
                     .build();
 
-            CompletableFuture<Void> future = client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()).thenAccept(resp -> {
-                byte[] body = resp.body();
-                InputStream is = new ByteArrayInputStream(body);
-                fileToSave = DefaultStreamedContent.builder()
-                        .name("results.xlsx")
-                        .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-                        .stream(() -> is)
-                        .build();
-            }
-            );
-            futures.add(future);
-
-            CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(futures.toArray((new CompletableFuture[0])));
-            combinedFuture.join();
-        } catch (IOException ex) {
+            HttpResponse<byte[]> resp = client.send(request, HttpResponse.BodyHandlers.ofByteArray());
+            byte[] body = resp.body();
+            InputStream is = new ByteArrayInputStream(body);
+            fileToSave = DefaultStreamedContent.builder()
+                    .name("results.xlsx")
+                    .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                    .stream(() -> is)
+                    .build();
+        } catch (IOException | InterruptedException ex) {
             Logger.getLogger(UmigonBean.class.getName()).log(Level.SEVERE, null, ex);
         }
         return fileToSave;
