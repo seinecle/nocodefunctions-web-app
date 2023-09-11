@@ -17,16 +17,12 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.concurrent.CompletableFuture;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import net.clementlevallois.importers.model.CellRecord;
 import net.clementlevallois.importers.model.SheetModel;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.importdata.DataImportBean;
-
 import net.clementlevallois.nocodeapp.web.front.logview.NotificationService;
 import net.clementlevallois.nocodeapp.web.front.utils.Converters;
 import org.primefaces.model.DefaultStreamedContent;
@@ -137,7 +133,6 @@ public class HighlighterBean implements Serializable {
 
             HttpRequest request;
             HttpClient client = HttpClient.newHttpClient();
-            Set<CompletableFuture> futures = new HashSet();
             byte[] documentsAsByteArray = Converters.byteArraySerializerForAnyObject(results);
             HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(documentsAsByteArray);
 
@@ -154,23 +149,18 @@ public class HighlighterBean implements Serializable {
                     .uri(uri)
                     .build();
 
-            CompletableFuture<Void> future = client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()).thenAccept(resp -> {
-                byte[] body = resp.body();
-                InputStream is = new ByteArrayInputStream(body);
-                fileToSave = DefaultStreamedContent.builder()
-                        .name("results.xlsx")
-                        .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-                        .stream(() -> is)
-                        .build();
-            }
-            );
-            futures.add(future);
+            HttpResponse<byte[]> resp = client.send(request, HttpResponse.BodyHandlers.ofByteArray());
+            byte[] body = resp.body();
+            InputStream is = new ByteArrayInputStream(body);
+            fileToSave = DefaultStreamedContent.builder()
+                    .name("results.xlsx")
+                    .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                    .stream(() -> is)
+                    .build();
 
-            CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(futures.toArray((new CompletableFuture[0])));
-            combinedFuture.join();
             service.create(sessionBean.getLocaleBundle().getString("general.message.analysis_complete"));
 
-        } catch (IOException ex) {
+        } catch (IOException | InterruptedException ex) {
             Logger.getLogger(HighlighterBean.class.getName()).log(Level.SEVERE, null, ex);
         }
     }

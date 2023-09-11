@@ -35,7 +35,6 @@ import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SingletonBean;
 import net.clementlevallois.nocodeapp.web.front.exportdata.ExportToGephisto;
 import net.clementlevallois.nocodeapp.web.front.exportdata.ExportToVosViewer;
-import net.clementlevallois.nocodeapp.web.front.http.RemoteLocal;
 import net.clementlevallois.nocodeapp.web.front.importdata.DataImportBean;
 import net.clementlevallois.nocodeapp.web.front.utils.GEXFSaver;
 import net.clementlevallois.nocodeapp.web.front.logview.NotificationService;
@@ -292,15 +291,6 @@ public class BiblioCouplingBean implements Serializable {
         return true;
     }
 
-    private void redirectAfterCompletion() {
-        try {
-            ExternalContext externalContext
-                    = FacesContext.getCurrentInstance().getExternalContext();
-            externalContext.redirect("/" + sessionBean.getFunction() + "/results.xhtml?faces-redirect=true");
-        } catch (IOException ex) {
-            Logger.getLogger(BiblioCouplingBean.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
 
     public void gotoVV() {
         String linkToVosViewer = ExportToVosViewer.exportAndReturnLinkFromGexf(gexf, shareVVPublicly, privateProperties);
@@ -423,7 +413,4 @@ public class BiblioCouplingBean implements Serializable {
     public void setRenderResultsButton(boolean renderResultsButton) {
         this.renderResultsButton = renderResultsButton;
     }
-    
-    
-
 }

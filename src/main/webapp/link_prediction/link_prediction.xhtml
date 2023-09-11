@@ -102,7 +102,8 @@
                         listener="#{linkPredictionBean.handleFileUpload}"
                         allowTypes="/(\.|\/)(gexf)$/"
                         update="launchButtons"
-                        chooseIcon="ui-icon-person">                                
+                        chooseIcon="ui-icon-person"
+                        style="min-width: 15em;">                                
                     </p:fileUpload>
                     <p:spacer width="10"/>
                     <p:outputLabel
@@ -127,8 +128,14 @@
                 <p:panel id = "launch_predictions">
                     <h:graphicImage name="images/round_2_orange.png" width="20" height="20" style="vertical-align: middle;"/>
                     <p:spacer width="5"/>
-                    <p:commandButton value="#{text['link_prediction.predict_new_links']}" ajax="false" onclick="PrimeFaces.monitorDownload(start, stop);"
-                                     icon="pi pi-arrow-down" styleClass="p-mr-2" update="resultsTable">
+                    <p:commandButton
+                        value="#{text['link_prediction.predict_new_links']}"
+                        ajax="false"
+                        onclick="PrimeFaces.monitorDownload(start, stop);"
+                        icon="pi pi-arrow-down"
+                        styleClass="p-mr-2"
+                        update="resultsTable"
+                        style="min-width: 15em;">
                         <p:fileDownload value="#{linkPredictionBean.fileToSave}"/>
                     </p:commandButton>
                     <br/>
@@ -142,7 +149,7 @@
                     <p:spacer height="20" width="10"/>            
                 </div>
                 <p:panel>
-                    <h3>#{text['link_prediction.list_predicted_links']}"</h3>
+                    <h3>#{text['link_prediction.list_predicted_links']}</h3>
                     <p:dataTable id ="resultsTable" var="item" value="#{linkPredictionBean.topPredictions}" widgetVar="resultsTable" paginator="true" rows ="50">
                         <p:column headerText="#{text['general.nouns.node_source']}" >
                             <h:outputText value="id: #{item.sourceId} - #{text['general.nouns.label']}: #{item.sourceLabel}" />

@@ -131,7 +131,6 @@ public class CowoBean implements Serializable {
 
         HttpRequest request;
         HttpClient client = null;
-        Set<CompletableFuture> futures = null;
 
         if (usePMI) {
             typeCorrection = "pmi";
@@ -185,9 +184,6 @@ public class CowoBean implements Serializable {
                     userSuppliedStopwordsBuilder.add(String.valueOf(index++), stopword);
                 }
             }
-
-            futures = new HashSet();
-
             overallObject.add("lines", linesBuilder);
             overallObject.add("lang", selectedLanguage);
             overallObject.add("userSuppliedStopwords", userSuppliedStopwordsBuilder);
