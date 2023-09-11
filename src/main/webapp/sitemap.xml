@@ -40,7 +40,7 @@
   <priority>1.00</priority>
 </url>
 <url>
-  <loc>https://nocodefunctions.com/pdf_region_text_extractor_tool/pdf_region_text_extractor_tool.html</loc>
+  <loc>https://nocodefunctions.com/pdf_region_extractor/pdf_region_text_extractor_tool.html</loc>
   <priority>1.00</priority>
 </url>
 <url>
@@ -56,9 +56,27 @@
   <priority>1.00</priority>
 </url>
 <url>
+  <loc>https://nocodefunctions.com/bibliocoupling/bibliographic_coupling_tool.html</loc>
+  <priority>1.00</priority>
+</url>
+<url>
   <loc>https://nocodefunctions.com/html/privacy_policy.html</loc>
   <priority>0.60</priority>
 </url>
-
-
+<url>
+  <loc>https://nocodefunctions.com/who.html</loc>
+  <priority>1.00</priority>
+</url>
+<url>
+  <loc>https://nocodefunctions.com/why.html</loc>
+  <priority>1.00</priority>
+</url>
+<url>
+  <loc>https://nocodefunctions.com/acknowledgements.html</loc>
+  <priority>1.00</priority>
+</url>
+<url>
+  <loc>https://nocodefunctions.com/support.html</loc>
+  <priority>1.00</priority>
+</url>
 </urlset>
