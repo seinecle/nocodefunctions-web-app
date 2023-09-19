@@ -229,7 +229,7 @@ public class TopicsBean implements Serializable {
             keywordsPerTopic = new TreeMap();
             topicsPerLine = new TreeMap();
             JsonReader jsonReader = Json.createReader(new StringReader(jsonResultAsString));
-            JsonObject jsonObject = null;
+            JsonObject jsonObject;
             try {
                 jsonObject = jsonReader.readObject();
             } catch (JsonParsingException jsonEx) {

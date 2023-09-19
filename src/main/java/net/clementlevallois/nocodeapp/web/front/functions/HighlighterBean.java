@@ -144,7 +144,7 @@ public class HighlighterBean implements Serializable {
             URI uri = UrlBuilder
                     .empty()
                     .withScheme("http")
-                    .withPort(7003)
+                    .withPort(Integer.valueOf(privateProperties.getProperty("nocode_import_port")))
                     .withHost("localhost")
                     .withPath("api/export/xlsx/highlighter")
                     .toUri();

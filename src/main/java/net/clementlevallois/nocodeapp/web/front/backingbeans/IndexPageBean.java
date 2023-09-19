@@ -21,7 +21,7 @@ public class IndexPageBean implements Serializable {
 
     public void navigateToPricing() throws IOException {
         ExternalContext ec = FacesContext.getCurrentInstance().getExternalContext();
-        ec.redirect(RemoteLocal.getDomain() + "index.html#Pricing");
+        ec.redirect(RemoteLocal.getDomain() + "/index.html#Pricing");
     }
 
 }

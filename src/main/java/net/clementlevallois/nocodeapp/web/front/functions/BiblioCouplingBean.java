@@ -259,7 +259,7 @@ public class BiblioCouplingBean implements Serializable {
             uri = UrlBuilder
                     .empty()
                     .withScheme("http")
-                    .withPort(7002)
+                    .withPort((Integer.valueOf(privateProperties.getProperty("nocode_api_port"))))
                     .withHost("localhost")
                     .withPath("api/graphops/topnodes")
                     .addParameter("nbNodes", "30")

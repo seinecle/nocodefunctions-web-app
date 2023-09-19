@@ -45,6 +45,9 @@ public class SingletonBean {
     }
 
     public static Properties getPrivateProperties() {
+        if (privateProperties == null){
+            new SingletonBean();
+        }
         return privateProperties;
     }
 

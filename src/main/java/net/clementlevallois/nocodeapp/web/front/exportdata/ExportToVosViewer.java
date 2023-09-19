@@ -89,7 +89,7 @@ public class ExportToVosViewer {
             URI uri = UrlBuilder
                     .empty()
                     .withScheme("http")
-                    .withPort(7002)
+                    .withPort(Integer.valueOf(privateProperties.getProperty("nocode_api_port")))
                     .withHost("localhost")
                     .withPath("api/convert2vv")
                     .addParameter("item", item)
@@ -153,7 +153,5 @@ public class ExportToVosViewer {
         }
         String urlVV = domain + "/html/vosviewer/index.html?json=data/" + subfolder + vosviewerJsonFileName;
         return urlVV;
-
     }
-
 }

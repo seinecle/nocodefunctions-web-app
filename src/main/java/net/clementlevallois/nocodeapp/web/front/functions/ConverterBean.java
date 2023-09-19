@@ -17,6 +17,7 @@ import jakarta.faces.context.FacesContext;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import jakarta.servlet.annotation.MultipartConfig;
+import java.util.Properties;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SingletonBean;
 import net.clementlevallois.nocodeapp.web.front.exportdata.ExportToVosViewer;
@@ -47,6 +48,7 @@ public class ConverterBean implements Serializable {
     private boolean shareVVPublicly;
 
     private StreamedContent fileToSave;
+    private final Properties privateProperties;
 
     @Inject
     SessionBean sessionBean;
@@ -56,6 +58,7 @@ public class ConverterBean implements Serializable {
             sessionBean = new SessionBean();
         }
         sessionBean.setFunction("networkconverter");
+        privateProperties = SingletonBean.getPrivateProperties();
     }
 
     @PostConstruct
@@ -183,7 +186,7 @@ public class ConverterBean implements Serializable {
             URI uri = UrlBuilder
                     .empty()
                     .withScheme("http")
-                    .withPort(7002)
+                    .withPort((Integer.valueOf(privateProperties.getProperty("nocode_api_port"))))
                     .withHost("localhost")
                     .withPath("api/convert2gexf")
                     .toUri();
