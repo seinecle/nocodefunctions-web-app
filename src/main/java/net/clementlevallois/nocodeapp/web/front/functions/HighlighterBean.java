@@ -17,11 +17,13 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import net.clementlevallois.importers.model.CellRecord;
 import net.clementlevallois.importers.model.SheetModel;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
+import net.clementlevallois.nocodeapp.web.front.backingbeans.SingletonBean;
 import net.clementlevallois.nocodeapp.web.front.importdata.DataImportBean;
 import net.clementlevallois.nocodeapp.web.front.logview.NotificationService;
 import net.clementlevallois.nocodeapp.web.front.utils.Converters;
@@ -48,10 +50,13 @@ public class HighlighterBean implements Serializable {
 
     private String colorText = "ffffff";
     private String colorBackground = "e81e5b";
+    private final Properties privateProperties;
+
 
     private StreamedContent fileToSave;
 
     public HighlighterBean() {
+        privateProperties = SingletonBean.getPrivateProperties();
     }
 
     public void onload() {

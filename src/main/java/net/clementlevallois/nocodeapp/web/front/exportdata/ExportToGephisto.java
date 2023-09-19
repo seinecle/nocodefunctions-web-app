@@ -3,8 +3,6 @@
  */
 package net.clementlevallois.nocodeapp.web.front.exportdata;
 
-import jakarta.faces.context.ExternalContext;
-import jakarta.faces.context.FacesContext;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;

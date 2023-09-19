@@ -276,7 +276,7 @@ public class TopicsBean implements Serializable {
             URI uriExportTopicsToExcel = UrlBuilder
                     .empty()
                     .withScheme("http")
-                    .withPort(7003)
+                    .withPort(Integer.valueOf(privateProperties.getProperty("nocode_import_port")))
                     .withHost("localhost")
                     .withPath("api/export/xlsx/topics")
                     .addParameter("nbTerms", "10")

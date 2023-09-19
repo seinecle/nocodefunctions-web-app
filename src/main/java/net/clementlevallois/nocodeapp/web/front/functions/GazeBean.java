@@ -16,7 +16,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jakarta.enterprise.context.SessionScoped;
@@ -217,7 +216,6 @@ public class GazeBean implements Serializable {
 
         HttpRequest request;
         HttpClient client = HttpClient.newHttpClient();
-        Set<CompletableFuture> futures = new HashSet();
         JsonObjectBuilder overallObject = Json.createObjectBuilder();
 
         JsonObjectBuilder linesBuilder = Json.createObjectBuilder();
@@ -364,7 +362,7 @@ public class GazeBean implements Serializable {
             uri = UrlBuilder
                     .empty()
                     .withScheme("http")
-                    .withPort(7002)
+                    .withPort(Integer.valueOf(privateProperties.getProperty("nocode_api_port")))
                     .withHost("localhost")
                     .withPath("api/graphops/topnodes")
                     .addParameter("nbNodes", "30")

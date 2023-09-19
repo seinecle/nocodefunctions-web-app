@@ -4,8 +4,6 @@
 package net.clementlevallois.nocodeapp.web.front.exportdata;
 
 import io.mikael.urlbuilder.UrlBuilder;
-import jakarta.faces.context.ExternalContext;
-import jakarta.faces.context.FacesContext;
 import jakarta.json.Json;
 import java.io.BufferedWriter;
 import java.io.IOException;

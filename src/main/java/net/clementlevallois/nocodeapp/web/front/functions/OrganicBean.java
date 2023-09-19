@@ -4,10 +4,7 @@ import io.mikael.urlbuilder.UrlBuilder;
 import java.io.ByteArrayInputStream;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -29,6 +26,7 @@ import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Properties;
 import net.clementlevallois.importers.model.DataFormatConverter;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SingletonBean;
@@ -70,7 +68,10 @@ public class OrganicBean implements Serializable {
     @Inject
     DataImportBean inputData;
 
+    private final Properties privateProperties;
+    
     public OrganicBean() {
+        privateProperties = SingletonBean.getPrivateProperties();
     }
 
     @PostConstruct
@@ -78,7 +79,6 @@ public class OrganicBean implements Serializable {
         sessionBean.setFunction("organic");
         String promoted_tone = sessionBean.getLocaleBundle().getString("organic.general.soundspromoted");
         String neutral_tone = sessionBean.getLocaleBundle().getString("organic.general.soundsorganic");
-
         tones = new String[]{promoted_tone, neutral_tone};
     }
 
@@ -133,21 +133,22 @@ public class OrganicBean implements Serializable {
                 String id = String.valueOf(entry.getKey());
                 doc.setText(entry.getValue());
                 doc.setId(id);
-
-                StringBuilder sb = new StringBuilder();
-                sb.append("http://localhost:7002/api/organicForAText");
-                sb.append("?text-lang=").append(selectedLanguage);
-                sb.append("&id=").append(doc.getId());
-                sb.append("&text=").append(URLEncoder.encode(entry.getValue(), StandardCharsets.UTF_8.toString()));
-                sb.append("&explanation=on");
-                sb.append("&shorter=true");
-                sb.append("&owner=").append(SingletonBean.getPrivateProperties().getProperty("pwdOwner"));
-                sb.append("&output-format=bytes");
-                sb.append("&explanation-lang=").append(sessionBean.getCurrentLocale().toLanguageTag());
-                String uriAsString = sb.toString();
-
-                URI uri = new URI(uriAsString);
-
+                URI uri = UrlBuilder
+                        .empty()
+                        .withScheme("http")
+                        .withPort(Integer.valueOf(privateProperties.getProperty("nocode_api_port")))
+                        .withHost("localhost")
+                        .withPath("api/organicForAText")
+                        .addParameter("text-lang", selectedLanguage)
+                        .addParameter("id", doc.getId())
+                        .addParameter("text", entry.getValue())
+                        .addParameter("explanation", "on")
+                        .addParameter("shorter", "true")
+                        .addParameter("owner", privateProperties.getProperty("pwdOwner"))
+                        .addParameter("output-format", "bytes")
+                        .addParameter("explanation-lang", sessionBean.getCurrentLocale().toLanguageTag())
+                        .toUri();
+                
                 request = HttpRequest.newBuilder()
                         .uri(uri)
                         .build();
@@ -171,9 +172,9 @@ public class OrganicBean implements Serializable {
                     }
                 }
                 ).exceptionally(exception -> {
-                            System.err.println("exception: " + exception);
-                            return null;
-                        });
+                    System.err.println("exception: " + exception);
+                    return null;
+                });
                 futures.add(future);
                 // this is because we need to slow down a bit the requests sending too many thros a
                 // java.util.concurrent.CompletionException: java.io.IOException: too many concurrent streams
@@ -185,10 +186,6 @@ public class OrganicBean implements Serializable {
             CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(futures.toArray((new CompletableFuture[0])));
             combinedFuture.join();
 
-        } catch (URISyntaxException exception) {
-            System.out.println("error!!");
-        } catch (UnsupportedEncodingException ex) {
-            System.out.println("encoding ex");
         } catch (InterruptedException ex) {
             System.out.println("ex:" + ex.getMessage());
         }
@@ -331,7 +328,7 @@ public class OrganicBean implements Serializable {
             URI uri = UrlBuilder
                     .empty()
                     .withScheme("http")
-                    .withPort(7003)
+                    .withPort(Integer.valueOf(privateProperties.getProperty("nocode_import_port")))
                     .withHost("localhost")
                     .withPath("api/export/xlsx/organic")
                     .addParameter("lang", lang)

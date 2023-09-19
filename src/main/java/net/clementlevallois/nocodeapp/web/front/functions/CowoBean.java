@@ -15,12 +15,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -245,7 +242,7 @@ public class CowoBean implements Serializable {
             uri = UrlBuilder
                     .empty()
                     .withScheme("http")
-                    .withPort(7002)
+                    .withPort(Integer.valueOf(privateProperties.getProperty("nocode_api_port")))
                     .withHost("localhost")
                     .withPath("api/graphops/topnodes")
                     .addParameter("nbNodes", "30")

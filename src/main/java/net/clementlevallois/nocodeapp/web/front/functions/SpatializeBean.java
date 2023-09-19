@@ -20,9 +20,11 @@ import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import jakarta.servlet.annotation.MultipartConfig;
 import java.time.Duration;
+import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
+import net.clementlevallois.nocodeapp.web.front.backingbeans.SingletonBean;
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
@@ -49,6 +51,8 @@ public class SpatializeBean implements Serializable {
     private float progressFloat = 0f;
     private Integer durationInSeconds = 20;
 
+    private final Properties privateProperties;
+
     @Inject
     SessionBean sessionBean;
 
@@ -57,6 +61,7 @@ public class SpatializeBean implements Serializable {
             sessionBean = new SessionBean();
         }
         sessionBean.setFunction("spatialize");
+        privateProperties = SingletonBean.getPrivateProperties();
     }
 
     public String logout() {
@@ -142,7 +147,7 @@ public class SpatializeBean implements Serializable {
             URI uri = UrlBuilder
                     .empty()
                     .withScheme("http")
-                    .withPort(7002)
+                    .withPort(Integer.valueOf(privateProperties.getProperty("nocode_api_port")))
                     .withHost("localhost")
                     .withPath("api/spatialization")
                     .addParameter("durationInSeconds", String.valueOf(durationInSeconds))

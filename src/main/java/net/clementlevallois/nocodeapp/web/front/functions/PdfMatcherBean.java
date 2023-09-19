@@ -33,6 +33,7 @@ import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.json.JsonWriter;
 import java.io.InputStream;
+import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.importdata.DataImportBean;
@@ -40,6 +41,7 @@ import net.clementlevallois.nocodeapp.web.front.logview.NotificationService;
 import net.clementlevallois.functions.model.Occurrence;
 import net.clementlevallois.importers.model.CellRecord;
 import net.clementlevallois.importers.model.SheetModel;
+import net.clementlevallois.nocodeapp.web.front.backingbeans.SingletonBean;
 import net.clementlevallois.nocodeapp.web.front.utils.Converters;
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
@@ -64,7 +66,8 @@ public class PdfMatcherBean implements Serializable {
     private String searchedTerm;
     ConcurrentHashMap<String, List<Occurrence>> results = new ConcurrentHashMap();
     List<Match> resultsForDisplay = new ArrayList();
-
+    private final Properties privateProperties;
+    
     @Inject
     NotificationService service;
 
@@ -75,7 +78,7 @@ public class PdfMatcherBean implements Serializable {
     DataImportBean inputData;
 
     public PdfMatcherBean() {
-    }
+        privateProperties = SingletonBean.getPrivateProperties();    }
 
     @PostConstruct
     void init() {
@@ -135,7 +138,13 @@ public class PdfMatcherBean implements Serializable {
         Set<CompletableFuture> futures = new HashSet();
         results = new ConcurrentHashMap();
         BodyPublisher bodyPublisher;
-        URI uri = new URI("http://localhost:7002/api/pdfmatcher/");
+        URI uri = UrlBuilder
+                    .empty()
+                    .withScheme("http")
+                    .withPort((Integer.valueOf(privateProperties.getProperty("nocode_api_port"))))
+                    .withHost("localhost")
+                    .withPath("api/pdfmatcher")
+                    .toUri();
 
         for (SheetModel oneDoc : dataInSheets) {
 
@@ -262,7 +271,7 @@ public class PdfMatcherBean implements Serializable {
             URI uri = UrlBuilder
                     .empty()
                     .withScheme("http")
-                    .withPort(7003)
+                    .withPort(Integer.valueOf(privateProperties.getProperty("nocode_import_port")))
                     .withHost("localhost")
                     .withPath("api/export/xlsx/pdfmatches")
                     .toUri();

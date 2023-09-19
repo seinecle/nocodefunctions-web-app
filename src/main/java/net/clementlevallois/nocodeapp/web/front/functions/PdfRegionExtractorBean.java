@@ -66,7 +66,7 @@ public class PdfRegionExtractorBean implements Serializable {
     private float proportionHeight;
     private int counterImages = 0;
     private ConcurrentHashMap<String, SheetModel> results = new ConcurrentHashMap();
-
+    private final Properties privateProperties;
     @Inject
     NotificationService service;
 
@@ -77,6 +77,7 @@ public class PdfRegionExtractorBean implements Serializable {
     DataImportBean inputData;
 
     public PdfRegionExtractorBean() {
+        privateProperties = SingletonBean.getPrivateProperties();
     }
 
     @PostConstruct
@@ -168,10 +169,6 @@ public class PdfRegionExtractorBean implements Serializable {
     public String extract() throws FileNotFoundException, IOException {
         fillInCoordinates();
         counterImages = 0;
-        Properties props = SingletonBean.getPrivateProperties();
-
-        String port = props.getProperty("nocode_import_port");
-        Integer portAsInteger = Integer.valueOf(port);
 
         sessionBean.sendFunctionPageReport();
         service.create(sessionBean.getLocaleBundle().getString("general.message.starting_analysis"));
@@ -185,7 +182,7 @@ public class PdfRegionExtractorBean implements Serializable {
         URI uri = UrlBuilder
                 .empty()
                 .withScheme("http")
-                .withPort(portAsInteger)
+                .withPort(Integer.valueOf(privateProperties.getProperty("nocode_api_port")))
                 .withHost("localhost")
                 .withPath("api/import/pdf/extract-region")
                 .toUri();
@@ -256,7 +253,7 @@ public class PdfRegionExtractorBean implements Serializable {
             URI uri = UrlBuilder
                     .empty()
                     .withScheme("http")
-                    .withPort(7003)
+                    .withPort(Integer.valueOf(privateProperties.getProperty("nocode_import_port")))
                     .withHost("localhost")
                     .withPath("api/export/xlsx/pdf_region_extractor")
                     .addParameter("file name", lang)
