@@ -51,7 +51,11 @@
                         </div>
                         <br/>
                         <br/>
-                        <p:commandButton id="button" value="#{text['general.verbs.download_results']}" action="#{biblioCouplingBean.goSeeResults}" rendered="#{biblioCouplingBean.renderResultsButton}"/>
+                        <p:commandButton
+                            id="button"
+                            value="#{text['general.verbs.download_results']}"
+                            action="#{biblioCouplingBean.goSeeResults}"
+                            rendered="#{biblioCouplingBean.renderResultsButton}"/>
                     </h:form>
                 </div>
                 <div class="col-3 flex-grow-1">
