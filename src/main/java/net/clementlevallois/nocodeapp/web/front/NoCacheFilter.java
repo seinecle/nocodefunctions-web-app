@@ -1,6 +1,3 @@
-/*
- * author: Clément Levallois
- */
 package net.clementlevallois.nocodeapp.web.front;
 
 import java.io.IOException;
