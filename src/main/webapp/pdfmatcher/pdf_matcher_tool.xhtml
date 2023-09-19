@@ -83,14 +83,19 @@
                         <f:facet name="legend">
                             <h3>#{text['pdfmatcher.tool.type_of_context']}</h3>
                         </f:facet>
-                        <p:spacer height="5" width="10"/>            
+                        <p:spacer height="5" width="10"/>
                         <i><p:outputLabel escape="false" value="#{text['pdfmatcher.tool.type_of_context_description']}"/></i>
-                        <p:spacer height="5" width="10"/>            
+                        <div>
+                            <p:spacer height="10" width="10"/>            
+                        </div>
                         <p:selectOneRadio id="console" value="#{pdfMatcherBean.typeOfContext}">
                             <f:selectItem itemLabel="#{text['pdfmatcher.tool.surrounding_lines']}" itemValue="surroundingLines"/>
                             <f:selectItem itemLabel="#{text['pdfmatcher.tool.surrounding_words']}" itemValue="surroundingWords"/>
                             <p:ajax update="lines words"/>
                         </p:selectOneRadio>
+                        <div>
+                            <p:spacer height="10" width="10"/>            
+                        </div>
                         <p:outputPanel id="lines">
                             <h2>
                                 <p:spinner value="#{pdfMatcherBean.nbLines}" min="0" max="5" rendered="#{pdfMatcherBean.typeOfContext == 'surroundingLines'}" />
