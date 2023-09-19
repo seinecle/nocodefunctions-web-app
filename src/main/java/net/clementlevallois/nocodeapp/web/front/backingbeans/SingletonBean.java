@@ -7,6 +7,7 @@ package net.clementlevallois.nocodeapp.web.front.backingbeans;
 
 import jakarta.ejb.Singleton;
 import jakarta.ejb.Startup;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -53,7 +54,7 @@ public class SingletonBean {
     }
 
     public static String getExternalFolderForInternationalizationFiles() {
-        return rootProject + "i18n/";
+        return rootProject + "i18n" + File.separator + "src" + File.separator + "main" + File.separator + "resources" + File.separator;
     }
 
     public static String getRootOfProject() {
