@@ -36,8 +36,8 @@ import net.clementlevallois.nocodeapp.web.front.backingbeans.SingletonBean;
 import net.clementlevallois.nocodeapp.web.front.exportdata.ExportToGephisto;
 import net.clementlevallois.nocodeapp.web.front.exportdata.ExportToVosViewer;
 import net.clementlevallois.nocodeapp.web.front.importdata.DataImportBean;
+import net.clementlevallois.nocodeapp.web.front.logview.LogBean;
 import net.clementlevallois.nocodeapp.web.front.utils.GEXFSaver;
-import net.clementlevallois.nocodeapp.web.front.logview.NotificationService;
 import net.clementlevallois.nocodeapp.web.front.utils.Converters;
 import org.primefaces.PrimeFaces;
 import org.primefaces.model.StreamedContent;
@@ -72,7 +72,7 @@ public class BiblioCouplingBean implements Serializable {
     String gexf;
 
     @Inject
-    NotificationService service;
+    LogBean logBean;
 
     @Inject
     DataImportBean dataImportBean;
@@ -94,7 +94,7 @@ public class BiblioCouplingBean implements Serializable {
             renderResultsButton = false;
             pubErrors = new HashSet();
             sessionBean.sendFunctionPageReport();
-            service.create(sessionBean.getLocaleBundle().getString("general.message.starting_analysis"));
+            logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.starting_analysis"));
             DataFormatConverter dataFormatConverter = new DataFormatConverter();
             Map<Integer, String> mapOfLines = dataFormatConverter.convertToMapOfLines(dataImportBean.getBulkData(), dataImportBean.getDataInSheets(), dataImportBean.getSelectedSheetName(), dataImportBean.getSelectedColumnIndex(), dataImportBean.getHasHeaders());
 
@@ -104,7 +104,7 @@ public class BiblioCouplingBean implements Serializable {
             HttpClient client = HttpClient.newHttpClient();
             Set<CompletableFuture> futures = new HashSet();
             int i = 1;
-            service.create("🎢" + sessionBean.getLocaleBundle().getString("bibliocoupling.info.startopenalexdataretrieval"));
+            logBean.addOneNotificationFromString("🎢" + sessionBean.getLocaleBundle().getString("bibliocoupling.info.startopenalexdataretrieval"));
             try {
                 for (Map.Entry<Integer, String> entry : mapOfLines.entrySet()) {
                     if (i++ > maxSources) {
@@ -169,8 +169,8 @@ public class BiblioCouplingBean implements Serializable {
             } catch (InterruptedException ex) {
                 System.out.println("ex:" + ex.getMessage());
             }
-            service.create("🏁" + sessionBean.getLocaleBundle().getString("bibliocoupling.info.openalexdataretrieved"));
-            service.create("💻" + sessionBean.getLocaleBundle().getString("bibliocoupling.info.startsim"));
+            logBean.addOneNotificationFromString("🏁" + sessionBean.getLocaleBundle().getString("bibliocoupling.info.openalexdataretrieved"));
+            logBean.addOneNotificationFromString("💻" + sessionBean.getLocaleBundle().getString("bibliocoupling.info.startsim"));
 
             boolean callSimReturned = callSim(sourcesAndTargets);
             this.progress = 100;
@@ -237,7 +237,7 @@ public class BiblioCouplingBean implements Serializable {
             byte[] body = resp.body();
             if (resp.statusCode() != 200) {
                 String errorMessage = sessionBean.getLocaleBundle().getString("general.message.internal_server_error");
-                service.create(errorMessage);
+                logBean.addOneNotificationFromString(errorMessage);
                 System.out.println(errorMessage);
                 runButtonDisabled = true;
                 return false;
@@ -247,7 +247,7 @@ public class BiblioCouplingBean implements Serializable {
 
             if (gexf == null) {
                 String errorMessage = sessionBean.getLocaleBundle().getString("general.message.internal_server_error");
-                service.create(errorMessage);
+                logBean.addOneNotificationFromString(errorMessage);
                 System.out.println("gexf was null in sim call for biblio coupling");
                 runButtonDisabled = true;
                 return false;
@@ -274,7 +274,7 @@ public class BiblioCouplingBean implements Serializable {
             body = resp.body();
             if (resp.statusCode() != 200) {
                 String errorMessage = sessionBean.getLocaleBundle().getString("general.message.internal_server_error");
-                service.create(errorMessage);
+                logBean.addOneNotificationFromString(errorMessage);
                 System.out.println("top nodes did not return a 200 code for biblio coupling");
                 runButtonDisabled = true;
                 return false;

@@ -2,14 +2,10 @@ package net.clementlevallois.nocodeapp.web.front.logview;
 
 import java.io.Serializable;
 import java.util.List;
-import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.SessionScoped;
-import jakarta.enterprise.event.Observes;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import java.util.ArrayList;
-import org.omnifaces.cdi.Push;
-import org.omnifaces.cdi.PushContext;
 
 /**
  *
@@ -19,24 +15,24 @@ import org.omnifaces.cdi.PushContext;
 @SessionScoped
 public class LogBean implements Serializable {
 
-    private List<Notification> notifications;
+    private final List<Notification> notifications;
 
     @Inject
-    @Push
-    private PushContext push;
+    @jakarta.faces.push.Push
+    private jakarta.faces.push.PushContext push;
 
-    @PostConstruct
-    public void load() {
+    public LogBean() {
         notifications = new ArrayList();
     }
 
-    public void onNewNotification(@Observes Notification newNotification) {
-        notifications.add(0, newNotification);
-        push.send("updateNotifications");
+    public void addOneNotificationFromString(String notificationAsString) {
+        Notification notification = new Notification();
+        notification.setMessage(notificationAsString);
+        notifications.add(0, notification);
+        push.send(notificationAsString);
     }
 
     public List<Notification> getNotifications() {
         return notifications;
     }
-
 }

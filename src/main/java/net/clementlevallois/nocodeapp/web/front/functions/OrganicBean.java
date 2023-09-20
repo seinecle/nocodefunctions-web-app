@@ -32,7 +32,7 @@ import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SingletonBean;
 import net.clementlevallois.nocodeapp.web.front.importdata.DataImportBean;
 import net.clementlevallois.nocodeapp.web.front.http.SendReport;
-import net.clementlevallois.nocodeapp.web.front.logview.NotificationService;
+import net.clementlevallois.nocodeapp.web.front.logview.LogBean;
 import net.clementlevallois.nocodeapp.web.front.utils.Converters;
 import net.clementlevallois.umigon.model.classification.Document;
 import org.primefaces.model.DefaultStreamedContent;
@@ -60,7 +60,7 @@ public class OrganicBean implements Serializable {
     private Integer maxCapacity = 10_000;
 
     @Inject
-    NotificationService service;
+    LogBean logBean;
 
     @Inject
     SessionBean sessionBean;
@@ -111,7 +111,7 @@ public class OrganicBean implements Serializable {
             selectedLanguage = "en";
         }
         sessionBean.sendFunctionPageReport();
-        service.create(sessionBean.getLocaleBundle().getString("general.message.starting_analysis"));
+        logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.starting_analysis"));
         DataFormatConverter dataFormatConverter = new DataFormatConverter();
         Map<Integer, String> mapOfLines = dataFormatConverter.convertToMapOfLines(inputData.getBulkData(), inputData.getDataInSheets(), inputData.getSelectedSheetName(), inputData.getSelectedColumnIndex(), inputData.getHasHeaders());
 
@@ -181,7 +181,7 @@ public class OrganicBean implements Serializable {
                 Thread.sleep(2);
             }
             this.progress = 40;
-            service.create(sessionBean.getLocaleBundle().getString("general.message.almost_done"));
+            logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.almost_done"));
 
             CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(futures.toArray((new CompletableFuture[0])));
             combinedFuture.join();
@@ -200,7 +200,7 @@ public class OrganicBean implements Serializable {
 
         this.progress = 100;
 
-        service.create(sessionBean.getLocaleBundle().getString("general.message.analysis_complete"));
+        logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.analysis_complete"));
         renderSeeResultsButton = true;
         runButtonDisabled = true;
 

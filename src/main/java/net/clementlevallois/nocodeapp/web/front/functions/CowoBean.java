@@ -40,8 +40,8 @@ import net.clementlevallois.nocodeapp.web.front.backingbeans.SingletonBean;
 import net.clementlevallois.nocodeapp.web.front.exportdata.ExportToGephisto;
 import net.clementlevallois.nocodeapp.web.front.exportdata.ExportToVosViewer;
 import net.clementlevallois.nocodeapp.web.front.importdata.DataImportBean;
+import net.clementlevallois.nocodeapp.web.front.logview.LogBean;
 import net.clementlevallois.nocodeapp.web.front.utils.GEXFSaver;
-import net.clementlevallois.nocodeapp.web.front.logview.NotificationService;
 import net.clementlevallois.nocodeapp.web.front.utils.Converters;
 import net.clementlevallois.utils.TextCleaningOps;
 import org.primefaces.model.DefaultStreamedContent;
@@ -86,7 +86,7 @@ public class CowoBean implements Serializable {
     private final Properties privateProperties;
 
     @Inject
-    NotificationService service;
+    LogBean logBean;
 
     @Inject
     DataImportBean inputData;
@@ -135,12 +135,12 @@ public class CowoBean implements Serializable {
 
         try {
             sessionBean.sendFunctionPageReport();
-            service.create(sessionBean.getLocaleBundle().getString("general.message.starting_analysis"));
+            logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.starting_analysis"));
             DataFormatConverter dataFormatConverter = new DataFormatConverter();
             mapOfLines = dataFormatConverter.convertToMapOfLines(inputData.getBulkData(), inputData.getDataInSheets(), inputData.getSelectedSheetName(), inputData.getSelectedColumnIndex(), inputData.getHasHeaders());
 
             if (mapOfLines == null || mapOfLines.isEmpty()) {
-                service.create(sessionBean.getLocaleBundle().getString("general.message.data_not_found"));
+                logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.data_not_found"));
                 return "";
             }
 
@@ -148,14 +148,14 @@ public class CowoBean implements Serializable {
                 selectedLanguage = "en";
             }
             progress = 10;
-            service.create(sessionBean.getLocaleBundle().getString("general.message.removing_punctuation_and_cleaning"));
+            logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.removing_punctuation_and_cleaning"));
 
             mapOfLines = TextCleaningOps.doAllCleaningOps(mapOfLines, removeNonAsciiCharacters);
             mapOfLines = TextCleaningOps.putInLowerCase(mapOfLines);
 
             progress = 15;
 
-            service.create(sessionBean.getLocaleBundle().getString("general.message.finding_key_terms"));
+            logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.finding_key_terms"));
             progress = 20;
             Runnable incrementProgress = () -> {
                 progress = progress + 1;
@@ -223,15 +223,15 @@ public class CowoBean implements Serializable {
             } else {
                 System.out.println("cowo returned by the API was not a 200 code");
                 String errorMessage = new String(body, StandardCharsets.UTF_8);
-                service.create(errorMessage);
+                logBean.addOneNotificationFromString(errorMessage);
                 addMessage(FacesMessage.SEVERITY_WARN, "💔", errorMessage);
             }
             executor.shutdown();
-            service.create(sessionBean.getLocaleBundle().getString("general.message.last_ops_creating_network"));
+            logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.last_ops_creating_network"));
             progress = 60;
 
             if (gexf == null) {
-                service.create(sessionBean.getLocaleBundle().getString("general.message.internal_server_error"));
+                logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.internal_server_error"));
                 renderSeeResultsButton = true;
                 runButtonDisabled = true;
                 return "";
@@ -258,7 +258,7 @@ public class CowoBean implements Serializable {
             if (resp.statusCode() != 200) {
                 System.out.println("top nodes returned by the API was not a 200 code");
                 String error = sessionBean.getLocaleBundle().getString("general.nouns.error");
-                service.create(error);
+                logBean.addOneNotificationFromString(error);
                 addMessage(FacesMessage.SEVERITY_WARN, "💔", error);
                 runButtonDisabled = true;
             } else {

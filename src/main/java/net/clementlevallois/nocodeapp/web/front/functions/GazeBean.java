@@ -37,8 +37,8 @@ import net.clementlevallois.nocodeapp.web.front.backingbeans.SingletonBean;
 import net.clementlevallois.nocodeapp.web.front.exportdata.ExportToGephisto;
 import net.clementlevallois.nocodeapp.web.front.exportdata.ExportToVosViewer;
 import net.clementlevallois.nocodeapp.web.front.importdata.DataImportBean;
+import net.clementlevallois.nocodeapp.web.front.logview.LogBean;
 import net.clementlevallois.nocodeapp.web.front.utils.GEXFSaver;
-import net.clementlevallois.nocodeapp.web.front.logview.NotificationService;
 import net.clementlevallois.nocodeapp.web.front.utils.Converters;
 import net.clementlevallois.utils.Multiset;
 import org.primefaces.model.StreamedContent;
@@ -68,7 +68,7 @@ public class GazeBean implements Serializable {
     private String gexf;
 
     @Inject
-    NotificationService service;
+    LogBean logBean;
 
     @Inject
     DataImportBean dataImportBean;
@@ -101,7 +101,7 @@ public class GazeBean implements Serializable {
         try {
             progress = 0;
             sessionBean.sendFunctionPageReport();
-            service.create(sessionBean.getLocaleBundle().getString("general.message.starting_analysis"));
+            logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.starting_analysis"));
             List<SheetModel> dataInSheets = dataImportBean.getDataInSheets();
             SheetModel sheetWithData = null;
             for (SheetModel sm : dataInSheets) {
@@ -111,7 +111,7 @@ public class GazeBean implements Serializable {
                 }
             }
             if (sheetWithData == null) {
-                service.create(sessionBean.getLocaleBundle().getString("general.message.data_not_found") + " (1)");
+                logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.data_not_found") + " (1)");
                 return "";
             }
             Map<Integer, List<CellRecord>> mapOfCellRecordsPerRow = sheetWithData.getRowIndexToCellRecords();
@@ -129,7 +129,7 @@ public class GazeBean implements Serializable {
                 lines.put(i++, multiset);
             }
             if (lines.isEmpty()) {
-                service.create(sessionBean.getLocaleBundle().getString("general.message.data_not_found") + " (2)");
+                logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.data_not_found") + " (2)");
                 return "";
             }
 
@@ -139,7 +139,7 @@ public class GazeBean implements Serializable {
 
             boolean returnCallCooc = callCooc(lines);
             progress = 100;
-            service.create(sessionBean.getLocaleBundle().getString("general.message.analysis_complete"));
+            logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.analysis_complete"));
             runButtonDisabled = true;
 
             return "/" + sessionBean.getFunction() + "/results.xhtml?faces-redirect=true";
@@ -153,7 +153,7 @@ public class GazeBean implements Serializable {
     public String runSimAnalysis(String sourceColIndex, String sheetName) {
         try {
             sessionBean.sendFunctionPageReport();
-            service.create(sessionBean.getLocaleBundle().getString("general.message.starting_analysis"));
+            logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.starting_analysis"));
             List<SheetModel> dataInSheets = dataImportBean.getDataInSheets();
             SheetModel sheetWithData = null;
             for (SheetModel sm : dataInSheets) {
@@ -163,7 +163,7 @@ public class GazeBean implements Serializable {
                 }
             }
             if (sheetWithData == null) {
-                service.create(sessionBean.getLocaleBundle().getString("general.message.data_not_found") + " (1)");
+                logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.data_not_found") + " (1)");
                 return "";
             }
             Map<Integer, List<CellRecord>> mapOfCellRecordsPerRow = sheetWithData.getRowIndexToCellRecords();
@@ -195,13 +195,13 @@ public class GazeBean implements Serializable {
                 }
             }
             if (sourcesAndTargets.isEmpty()) {
-                service.create(sessionBean.getLocaleBundle().getString("general.message.data_not_found") + " (2)");
+                logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.data_not_found") + " (2)");
                 return "";
             }
 
             boolean callSimReturned = callSim(sourcesAndTargets);
             progress = 100;
-            service.create(sessionBean.getLocaleBundle().getString("general.message.analysis_complete"));
+            logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.analysis_complete"));
             runButtonDisabled = true;
 
             return "/" + sessionBean.getFunction() + "/results.xhtml?faces-redirect=true";
@@ -257,7 +257,7 @@ public class GazeBean implements Serializable {
         gexf = new String(body, StandardCharsets.UTF_8);
 
         if (gexf == null) {
-            service.create(sessionBean.getLocaleBundle().getString("general.message.internal_server_error"));
+            logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.internal_server_error"));
             runButtonDisabled = true;
             return false;
         }
@@ -343,7 +343,7 @@ public class GazeBean implements Serializable {
             HttpResponse<byte[]> resp = client.send(request, HttpResponse.BodyHandlers.ofByteArray());
             byte[] body = resp.body();
             if (resp.statusCode() != 200) {
-                service.create(sessionBean.getLocaleBundle().getString("general.message.internal_server_error"));
+                logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.internal_server_error"));
                 runButtonDisabled = true;
                 return false;
             }
@@ -351,7 +351,7 @@ public class GazeBean implements Serializable {
             this.progress = 80;
 
             if (gexf == null) {
-                service.create(sessionBean.getLocaleBundle().getString("general.message.internal_server_error"));
+                logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.internal_server_error"));
                 runButtonDisabled = true;
                 return false;
             }
@@ -376,7 +376,7 @@ public class GazeBean implements Serializable {
             resp = client.send(request, HttpResponse.BodyHandlers.ofByteArray());
             body = resp.body();
             if (resp.statusCode() != 200) {
-                service.create(sessionBean.getLocaleBundle().getString("general.message.internal_server_error"));
+                logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.internal_server_error"));
                 System.out.println("top nodes returned by the API was not a 200 code");
                 runButtonDisabled = true;
                 return false;

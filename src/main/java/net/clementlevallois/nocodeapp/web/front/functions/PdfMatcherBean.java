@@ -37,11 +37,11 @@ import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.importdata.DataImportBean;
-import net.clementlevallois.nocodeapp.web.front.logview.NotificationService;
 import net.clementlevallois.functions.model.Occurrence;
 import net.clementlevallois.importers.model.CellRecord;
 import net.clementlevallois.importers.model.SheetModel;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SingletonBean;
+import net.clementlevallois.nocodeapp.web.front.logview.LogBean;
 import net.clementlevallois.nocodeapp.web.front.utils.Converters;
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
@@ -69,7 +69,7 @@ public class PdfMatcherBean implements Serializable {
     private final Properties privateProperties;
     
     @Inject
-    NotificationService service;
+    LogBean logBean;
 
     @Inject
     SessionBean sessionBean;
@@ -131,7 +131,7 @@ public class PdfMatcherBean implements Serializable {
         String startOfPage = sessionBean.getLocaleBundle().getString("pdfmatcher.tool.start_of_page");
 
         sessionBean.sendFunctionPageReport();
-        service.create(sessionBean.getLocaleBundle().getString("general.message.starting_analysis"));
+        logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.starting_analysis"));
         List<SheetModel> dataInSheets = inputData.getDataInSheets();
         HttpRequest request;
         HttpClient client = HttpClient.newHttpClient();
@@ -209,7 +209,7 @@ public class PdfMatcherBean implements Serializable {
         }
 
         this.progress = 40;
-        service.create(sessionBean.getLocaleBundle().getString("general.message.almost_done"));
+        logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.almost_done"));
 
         CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(futures.toArray((new CompletableFuture[0])));
         combinedFuture.join();
@@ -231,7 +231,7 @@ public class PdfMatcherBean implements Serializable {
 
         this.progress = 100;
 
-        service.create(sessionBean.getLocaleBundle().getString("general.message.analysis_complete"));
+        logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.analysis_complete"));
         renderSeeResultsButton = true;
         runButtonDisabled = true;
 

@@ -15,7 +15,7 @@ import jakarta.faces.context.FacesContext;
 import jakarta.inject.Named;
 import jakarta.servlet.http.HttpServletRequest;
 import net.clementlevallois.nocodeapp.web.front.http.SendReport;
-import net.clementlevallois.nocodeapp.web.front.logview.NotificationService;
+import net.clementlevallois.nocodeapp.web.front.logview.LogBean;
 
 @Named
 @SessionScoped
@@ -35,7 +35,7 @@ public class FeedbackBean implements Serializable {
     SessionBean sessionBean;
 
     @Inject
-    NotificationService service;
+    LogBean logBean;
 
 
     @PostConstruct
@@ -56,7 +56,7 @@ public class FeedbackBean implements Serializable {
         send.initFeedback(url, current.getDisplayName(), sourceLang, suggestion, freeCommentError, freeCommentSuggestion, email);
         send.start();
 
-        service.create(sessionBean.getLocaleBundle().getString("general.message.feedback_sent"));
+        logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.feedback_sent"));
         addMessage(FacesMessage.SEVERITY_INFO, "👍🏼", sessionBean.getLocaleBundle().getString("general.message.feedback_sent"));
         }
     }

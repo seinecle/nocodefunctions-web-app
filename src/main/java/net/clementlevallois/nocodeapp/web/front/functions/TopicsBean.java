@@ -40,7 +40,7 @@ import net.clementlevallois.importers.model.DataFormatConverter;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SingletonBean;
 import net.clementlevallois.nocodeapp.web.front.importdata.DataImportBean;
-import net.clementlevallois.nocodeapp.web.front.logview.NotificationService;
+import net.clementlevallois.nocodeapp.web.front.logview.LogBean;
 import net.clementlevallois.nocodeapp.web.front.utils.Converters;
 import net.clementlevallois.nocodeapp.web.front.utils.GEXFSaver;
 import net.clementlevallois.utils.Multiset;
@@ -86,7 +86,7 @@ public class TopicsBean implements Serializable {
     private Map<Integer, String> mapOfLines;
 
     @Inject
-    NotificationService service;
+    LogBean logBean;
 
     @Inject
     DataImportBean dataImportBean;
@@ -129,12 +129,12 @@ public class TopicsBean implements Serializable {
         HttpClient client;
         try {
             sessionBean.sendFunctionPageReport();
-            service.create(sessionBean.getLocaleBundle().getString("general.message.starting_analysis"));
+            logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.starting_analysis"));
             DataFormatConverter dataFormatConverter = new DataFormatConverter();
             mapOfLines = dataFormatConverter.convertToMapOfLines(dataImportBean.getBulkData(), dataImportBean.getDataInSheets(), dataImportBean.getSelectedSheetName(), dataImportBean.getSelectedColumnIndex(), dataImportBean.getHasHeaders());
 
             if (mapOfLines == null || mapOfLines.isEmpty()) {
-                service.create(sessionBean.getLocaleBundle().getString("general.message.data_not_found"));
+                logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.data_not_found"));
                 return "";
             }
 
@@ -142,12 +142,12 @@ public class TopicsBean implements Serializable {
                 selectedLanguage = "en";
             }
             progress = 10;
-            service.create(sessionBean.getLocaleBundle().getString("general.message.removing_punctuation_and_cleaning"));
+            logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.removing_punctuation_and_cleaning"));
 
             mapOfLines = TextCleaningOps.doAllCleaningOps(mapOfLines, removeNonAsciiCharacters);
             mapOfLines = TextCleaningOps.putInLowerCase(mapOfLines);
 
-            service.create(sessionBean.getLocaleBundle().getString("general.message.finding_key_terms"));
+            logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.finding_key_terms"));
             progress = 20;
 
             client = HttpClient.newHttpClient();
@@ -218,12 +218,12 @@ public class TopicsBean implements Serializable {
             }
 
             if (jsonResultAsString == null) {
-                service.create(sessionBean.getLocaleBundle().getString("general.message.internal_server_error"));
+                logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.internal_server_error"));
                 renderSeeResultsButton = true;
                 runButtonDisabled = true;
                 return "";
             }
-            service.create(sessionBean.getLocaleBundle().getString("general.message.last_ops_creating_network"));
+            logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.last_ops_creating_network"));
             progress = 60;
 
             keywordsPerTopic = new TreeMap();
@@ -234,7 +234,7 @@ public class TopicsBean implements Serializable {
                 jsonObject = jsonReader.readObject();
             } catch (JsonParsingException jsonEx) {
                 System.out.println("error: the json we received is not formatted as json");
-                service.create(sessionBean.getLocaleBundle().getString("general.message.internal_server_error"));
+                logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.internal_server_error"));
                 renderSeeResultsButton = true;
                 runButtonDisabled = true;
                 return "";
@@ -298,7 +298,7 @@ public class TopicsBean implements Serializable {
 
             progress = 100;
 
-            service.create(sessionBean.getLocaleBundle().getString("general.message.analysis_complete"));
+            logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.analysis_complete"));
             renderSeeResultsButton = true;
             runButtonDisabled = true;
 

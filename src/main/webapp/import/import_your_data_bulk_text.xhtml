@@ -3,7 +3,7 @@
     xmlns="http://www.w3.org/1999/xhtml"
     xmlns:h="jakarta.faces.html"
     xmlns:f="jakarta.faces.core"
-    xmlns:o="http://omnifaces.org/ui"
+    
     xmlns:p="http://primefaces.org/ui"
     xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
     <f:view locale="#{activeLocale.currentLocale}">
@@ -178,10 +178,9 @@
                                     <h:column>#{notification.message}</h:column>
                                 </h:dataTable>
                                 <h:form>
-                                    <!--wrong error from netbeans, do not add onmessage in o:socket when there is a f:ajax inside-->
-                                    <o:socket channel="push" scope="session">
-                                        <f:ajax event="updateNotifications"/>
-                                    </o:socket>
+                                <f:websocket channel="push"  scope="session">
+                                    <f:ajax event="updateNotifications" render=":notifications" />
+                                </f:websocket>
                                 </h:form>
                             </p:scrollPanel>
                         </p:panel>

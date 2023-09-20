@@ -31,12 +31,14 @@ import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Properties;
 import java.util.UUID;
 import net.clementlevallois.importers.model.ImagesPerFile;
 import net.clementlevallois.importers.model.SheetModel;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
+import net.clementlevallois.nocodeapp.web.front.backingbeans.SingletonBean;
 import net.clementlevallois.nocodeapp.web.front.functions.UmigonBean;
-import net.clementlevallois.nocodeapp.web.front.logview.NotificationService;
+import net.clementlevallois.nocodeapp.web.front.logview.LogBean;
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
 
@@ -44,13 +46,13 @@ import org.primefaces.model.StreamedContent;
  *
  * @author LEVALLOIS
  */
-@Named(value = "dataImportBean")
+@Named
 @SessionScoped
 @MultipartConfig
 public class DataImportBean implements Serializable {
 
     @Inject
-    NotificationService service;
+    LogBean logBean;
 
     @Inject
     SessionBean sessionBean;
@@ -84,6 +86,7 @@ public class DataImportBean implements Serializable {
     private String currentFunction;
 
     private int tabIndex;
+    private final Properties privateProperties;
 
     public enum Source {
         TXT,
@@ -95,6 +98,7 @@ public class DataImportBean implements Serializable {
     public DataImportBean() {
         dataInSheets = new ArrayList();
         pdfsToBeExtracted = new HashMap();
+        privateProperties = SingletonBean.getPrivateProperties();
     }
 
     public void addMessage(FacesMessage.Severity severity, String summary, String detail) {
@@ -112,7 +116,7 @@ public class DataImportBean implements Serializable {
         pdfsToBeExtracted = new HashMap();
         progress = 0;
         if (filesUploaded.isEmpty()) {
-            service.create(sessionBean.getLocaleBundle().getString("general.message.no_file_upload_again"));
+            logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.no_file_upload_again"));
             addMessage(FacesMessage.SEVERITY_WARN, "💔", sessionBean.getLocaleBundle().getString("general.message.no_file_upload_again"));
             return "";
         }
@@ -138,10 +142,10 @@ public class DataImportBean implements Serializable {
             } else if (f.getFileName().endsWith("pdf")) {
                 source = Source.PDF;
             } else {
-                service.create(sessionBean.getLocaleBundle().getString("back.import.file_successful_upload.opening") + f.getFileName() + sessionBean.getLocaleBundle().getString("back.import.file_extension_not_recognized"));
+                logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("back.import.file_successful_upload.opening") + f.getFileName() + sessionBean.getLocaleBundle().getString("back.import.file_extension_not_recognized"));
                 continue;
             }
-            service.create(sessionBean.getLocaleBundle().getString("general.message.reading_file") + f.getFileName());
+            logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.reading_file") + f.getFileName());
             switch (source) {
                 case XLSX -> {
                     readExcelFile(f);
@@ -160,7 +164,7 @@ public class DataImportBean implements Serializable {
         }
         executor.shutdown();
         progress = 100;
-        service.create(sessionBean.getLocaleBundle().getString("general.message.finished_reading_data"));
+        logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.finished_reading_data"));
 
         filesUploaded = new ArrayList();
         renderCloseOverlay = true;
@@ -180,7 +184,7 @@ public class DataImportBean implements Serializable {
         URI uri = UrlBuilder
                 .empty()
                 .withScheme("http")
-                .withPort(7003)
+                .withPort(Integer.valueOf(privateProperties.getProperty("nocode_import_port")))
                 .withHost("localhost")
                 .withPath("api/import/txt")
                 .addParameter("fileName", f.getFileName())
@@ -206,7 +210,7 @@ public class DataImportBean implements Serializable {
                         System.out.println("return of txt reader by the API was not a 200 code");
                         String errorMessage = new String(body, StandardCharsets.UTF_8);
                         System.out.println(errorMessage);
-                        service.create(errorMessage);
+                        logBean.addOneNotificationFromString(errorMessage);
                         addMessage(FacesMessage.SEVERITY_WARN, "💔", errorMessage);
                     }
 
@@ -237,7 +241,7 @@ public class DataImportBean implements Serializable {
             uri = UrlBuilder
                     .empty()
                     .withScheme("http")
-                    .withPort(7003)
+                    .withPort(Integer.valueOf(privateProperties.getProperty("nocode_import_port")))
                     .withHost("localhost")
                     .withPath("api/import/pdf/return-png")
                     .addParameter("fileName", f.getFileName())
@@ -248,7 +252,7 @@ public class DataImportBean implements Serializable {
             uri = UrlBuilder
                     .empty()
                     .withScheme("http")
-                    .withPort(7003)
+                    .withPort(Integer.valueOf(privateProperties.getProperty("nocode_import_port")))
                     .withHost("localhost")
                     .withPath("api/import/pdf")
                     .addParameter("fileName", f.getFileName())
@@ -283,7 +287,7 @@ public class DataImportBean implements Serializable {
                         System.out.println("return of pdf reader by the API was not a 200 code");
                         String errorMessage = new String(body, StandardCharsets.UTF_8);
                         System.out.println(errorMessage);
-                        service.create(errorMessage);
+                        logBean.addOneNotificationFromString(errorMessage);
                         addMessage(FacesMessage.SEVERITY_WARN, "💔", errorMessage);
 
                     }
@@ -311,7 +315,7 @@ public class DataImportBean implements Serializable {
         URI uri = UrlBuilder
                 .empty()
                 .withScheme("http")
-                .withPort(7003)
+                .withPort(Integer.valueOf(privateProperties.getProperty("nocode_import_port")))
                 .withHost("localhost")
                 .withPath("api/import/csv")
                 .addParameter("fileName", f.getFileName())
@@ -339,7 +343,7 @@ public class DataImportBean implements Serializable {
                         System.out.println("return of csv reader by the API was not a 200 code");
                         String errorMessage = new String(body, StandardCharsets.UTF_8);
                         System.out.println(errorMessage);
-                        service.create(errorMessage);
+                        logBean.addOneNotificationFromString(errorMessage);
                         addMessage(FacesMessage.SEVERITY_WARN, "💔", errorMessage);
                     }
                 }
@@ -361,7 +365,7 @@ public class DataImportBean implements Serializable {
         URI uri = UrlBuilder
                 .empty()
                 .withScheme("http")
-                .withPort(7003)
+                .withPort(Integer.valueOf(privateProperties.getProperty("nocode_import_port")))
                 .withHost("localhost")
                 .withPath("api/import/xlsx")
                 .addParameter("gaze_option", gaze_option)
@@ -479,13 +483,13 @@ public class DataImportBean implements Serializable {
     public String launchAnalysisForTwoColumnsDataset() {
         bulkData = false;
         if (!twoColumnsColOneSelected || !twoColumnsColTwoSelected) {
-            service.create(sessionBean.getLocaleBundle().getString("back.import.two_columns_needed"));
+            logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("back.import.two_columns_needed"));
             addMessage(FacesMessage.SEVERITY_WARN, "😳", sessionBean.getLocaleBundle().getString("back.import.two_columns_needed"));
             return "";
         }
 
         if (countOfSelectedColOne != 1 || countOfSelectedColTwo != 1) {
-            service.create(sessionBean.getLocaleBundle().getString("back.import.select_one_column_per_type"));
+            logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("back.import.select_one_column_per_type"));
             addMessage(FacesMessage.SEVERITY_WARN, "😳", sessionBean.getLocaleBundle().getString("back.import.select_one_column_per_type"));
             return "";
         }

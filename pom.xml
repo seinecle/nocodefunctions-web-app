@@ -91,11 +91,6 @@
             <classifier>jakarta</classifier>
         </dependency>
         <dependency>
-            <groupId>org.omnifaces</groupId>
-            <artifactId>omnifaces</artifactId>
-            <version>4.2</version>
-        </dependency>
-        <dependency>
             <groupId>jakarta.platform</groupId>
             <artifactId>jakarta.jakartaee-web-api</artifactId>
             <version>${jakartaee}</version>

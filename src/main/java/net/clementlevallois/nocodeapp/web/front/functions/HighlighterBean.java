@@ -25,7 +25,7 @@ import net.clementlevallois.importers.model.SheetModel;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SingletonBean;
 import net.clementlevallois.nocodeapp.web.front.importdata.DataImportBean;
-import net.clementlevallois.nocodeapp.web.front.logview.NotificationService;
+import net.clementlevallois.nocodeapp.web.front.logview.LogBean;
 import net.clementlevallois.nocodeapp.web.front.utils.Converters;
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
@@ -40,7 +40,7 @@ import org.primefaces.model.StreamedContent;
 public class HighlighterBean implements Serializable {
 
     @Inject
-    NotificationService service;
+    LogBean logBean;
 
     @Inject
     DataImportBean inputData;
@@ -91,7 +91,7 @@ public class HighlighterBean implements Serializable {
             String sheetName = inputData.getSelectedSheetName();
             String termCol = inputData.getTwoColumnsIndexForColOne();
             String contextCol = inputData.getTwoColumnsIndexForColTwo();
-            service.create(sessionBean.getLocaleBundle().getString("general.message.starting_analysis"));
+            logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.starting_analysis"));
             List<SheetModel> dataInSheets = inputData.getDataInSheets();
             SheetModel sheetWithData = null;
             for (SheetModel sm : dataInSheets) {
@@ -101,7 +101,7 @@ public class HighlighterBean implements Serializable {
                 }
             }
             if (sheetWithData == null) {
-                service.create(sessionBean.getLocaleBundle().getString("general.message.data_not_found") + " (1)");
+                logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.data_not_found") + " (1)");
                 return;
             }
             Map<Integer, List<CellRecord>> mapOfCellRecordsPerRow = sheetWithData.getRowIndexToCellRecords();
@@ -163,7 +163,7 @@ public class HighlighterBean implements Serializable {
                     .stream(() -> is)
                     .build();
 
-            service.create(sessionBean.getLocaleBundle().getString("general.message.analysis_complete"));
+            logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.analysis_complete"));
 
         } catch (IOException | InterruptedException ex) {
             Logger.getLogger(HighlighterBean.class.getName()).log(Level.SEVERE, null, ex);

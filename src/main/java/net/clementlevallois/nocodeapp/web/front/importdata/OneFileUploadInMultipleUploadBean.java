@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
-import net.clementlevallois.nocodeapp.web.front.logview.NotificationService;
+import net.clementlevallois.nocodeapp.web.front.logview.LogBean;
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.file.UploadedFile;
 
@@ -15,7 +15,7 @@ import org.primefaces.model.file.UploadedFile;
  *
  * @author LEVALLOIS
  */
-@Named(value = "oneFileUploadInMultipleUploadBean")
+@Named
 @RequestScoped
 public class OneFileUploadInMultipleUploadBean {
 
@@ -23,7 +23,7 @@ public class OneFileUploadInMultipleUploadBean {
     DataImportBean dataImportBean;
 
     @Inject
-    NotificationService service;
+    LogBean logBean;
 
     @Inject
     SessionBean sessionBean;
@@ -38,7 +38,7 @@ public class OneFileUploadInMultipleUploadBean {
             String currentFunction = sessionBean.getFunction();
             FileUploaded oneFile = new FileUploaded(f.getInputStream(), f.getFileName());
 
-            service.create(sessionBean.getLocaleBundle().getString("back.import.file_successful_upload.opening") + oneFile.getFileName() + sessionBean.getLocaleBundle().getString("back.import.file_successful_upload.closing"));
+            logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("back.import.file_successful_upload.opening") + oneFile.getFileName() + sessionBean.getLocaleBundle().getString("back.import.file_successful_upload.closing"));
 
             dataImportBean.getFilesUploaded().add(oneFile);
             dataImportBean.setReadButtonDisabled(Boolean.FALSE);

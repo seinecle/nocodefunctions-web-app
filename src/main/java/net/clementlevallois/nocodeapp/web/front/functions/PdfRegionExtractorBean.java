@@ -36,7 +36,7 @@ import net.clementlevallois.importers.model.SheetModel;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SingletonBean;
 import net.clementlevallois.nocodeapp.web.front.importdata.DataImportBean;
-import net.clementlevallois.nocodeapp.web.front.logview.NotificationService;
+import net.clementlevallois.nocodeapp.web.front.logview.LogBean;
 import net.clementlevallois.nocodeapp.web.front.utils.Converters;
 import org.primefaces.model.CroppedImage;
 import org.primefaces.model.DefaultStreamedContent;
@@ -67,8 +67,9 @@ public class PdfRegionExtractorBean implements Serializable {
     private int counterImages = 0;
     private ConcurrentHashMap<String, SheetModel> results = new ConcurrentHashMap();
     private final Properties privateProperties;
+    
     @Inject
-    NotificationService service;
+    LogBean logBean;
 
     @Inject
     SessionBean sessionBean;
@@ -171,7 +172,7 @@ public class PdfRegionExtractorBean implements Serializable {
         counterImages = 0;
 
         sessionBean.sendFunctionPageReport();
-        service.create(sessionBean.getLocaleBundle().getString("general.message.starting_analysis"));
+        logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.starting_analysis"));
         Map<String, String> pdfs = inputData.getPdfsToBeExtracted();
         HttpRequest request;
         HttpClient client = HttpClient.newHttpClient();
@@ -231,7 +232,7 @@ public class PdfRegionExtractorBean implements Serializable {
         }
 
         this.progress = 40;
-        service.create(sessionBean.getLocaleBundle().getString("general.message.almost_done"));
+        logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.almost_done"));
 
         CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(futures.toArray((new CompletableFuture[0])));
         combinedFuture.join();

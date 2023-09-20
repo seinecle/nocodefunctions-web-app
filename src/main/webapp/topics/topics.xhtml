@@ -3,7 +3,7 @@
     xmlns="http://www.w3.org/1999/xhtml"
     xmlns:h="jakarta.faces.html"
     xmlns:f="jakarta.faces.core"
-    xmlns:o="http://omnifaces.org/ui"
+    
     xmlns:p="http://primefaces.org/ui"
     xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
     <f:view locale="#{activeLocale.currentLocale}">
@@ -30,7 +30,7 @@
             </p:panel>
             <p:spacer height="20"/>
             <div class="grid" >
-                    <div class="col-12 md:9 lg:col-9">
+                <div class="col-12 md:9 lg:col-9">
                     <p:panel>
                         <p:outputLabel value="#{text['topics.topics.parameter_precision.explanation']}" escape="false"/>
 
@@ -78,7 +78,7 @@
                                         </p:spinner>
                                         <p:slider for="spinner1" minValue="0" maxValue="10" step="1"/>
 
-                                        
+
                                         <p:divider align="left">
                                             <div class="p-d-inline-flex p-ai-center">
                                                 <i class="pi pi-chart-bar p-mr-2"/>
@@ -105,7 +105,7 @@
                                         <div>
                                             <p:spacer width="30" height="20"/>
                                         </div>
-                                        
+
                                         <p:divider align="left">
                                             <div class="p-d-inline-flex p-ai-center">
                                                 <i class="pi pi-chart-bar p-mr-2"/>
@@ -119,9 +119,9 @@
                                         <div>
                                             <p:spacer width="30" height="20"/>
                                         </div>
-                                        
 
-                                        
+
+
                                         <p:divider align="left">
                                             <div class="p-d-inline-flex p-ai-center">
                                                 <i class="pi pi-chart-bar p-mr-2"/>
@@ -184,10 +184,9 @@
                                 <h:column>#{notification.message}</h:column>
                             </h:dataTable>
                             <h:form>
-                                <!--wrong error from netbeans, do not add onmessage in o:socket when there is a f:ajax inside-->
-                                <o:socket channel="push" scope="session">
+                                <f:websocket channel="push"  scope="session">
                                     <f:ajax event="updateNotifications" render=":notifications" />
-                                </o:socket>
+                                </f:websocket>
                             </h:form>
                         </p:scrollPanel>
                     </p:panel>
