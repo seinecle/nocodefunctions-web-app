@@ -14,7 +14,6 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -394,7 +393,7 @@ public class CowoBean implements Serializable {
         this.fileUserStopwords = file;
     }
 
-    public void uploadFile() {
+    public void uploadStopWordFile() {
         if (fileUserStopwords != null && fileUserStopwords.getFileName() != null) {
             String success = sessionBean.getLocaleBundle().getString("general.nouns.success");
             String is_uploaded = sessionBean.getLocaleBundle().getString("general.verb.is_uploaded");

@@ -16,7 +16,6 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -388,7 +387,7 @@ public class TopicsBean implements Serializable {
         this.fileUserStopwords = file;
     }
 
-    public void uploadFile() {
+    public void uploadStopWordFile() {
         if (fileUserStopwords != null) {
             String success = sessionBean.getLocaleBundle().getString("general.nouns.success");
             String is_uploaded = sessionBean.getLocaleBundle().getString("general.verb.is_uploaded");
