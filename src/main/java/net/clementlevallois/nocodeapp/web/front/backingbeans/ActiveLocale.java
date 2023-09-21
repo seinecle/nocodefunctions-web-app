@@ -103,7 +103,7 @@ public class ActiveLocale implements Serializable {
             }
         }
         List<Locale> sortedList = available.stream()
-                .sorted(new ActiveLocale.LocaleComparator())
+                .sorted(new LocaleComparator(currentLocale))
                 .collect(Collectors.toList());
         available = new ArrayList();
         available.addAll(sortedList);
@@ -112,17 +112,5 @@ public class ActiveLocale implements Serializable {
         }
         available.add(requestLocale);
         return available;
-    }
-
-    public class LocaleComparator implements Comparator<Locale> {
-
-        @Override
-        public int compare(Locale firstLocale, Locale secondLocale) {
-            if (firstLocale == null || secondLocale == null || currentLocale == null) {
-                return -1;
-            }
-            return firstLocale.getDisplayName(currentLocale).compareTo(secondLocale.getDisplayName(currentLocale));
-        }
-
     }
 }

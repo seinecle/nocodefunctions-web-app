@@ -37,6 +37,7 @@ import jakarta.json.stream.JsonParsingException;
 import jakarta.servlet.annotation.MultipartConfig;
 import java.util.Properties;
 import net.clementlevallois.importers.model.DataFormatConverter;
+import net.clementlevallois.nocodeapp.web.front.backingbeans.LocaleComparator;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SingletonBean;
 import net.clementlevallois.nocodeapp.web.front.importdata.DataImportBean;
@@ -451,17 +452,8 @@ public class TopicsBean implements Serializable {
         for (String tag : availableStopwordLists) {
             available.add(Locale.forLanguageTag(tag));
         }
-        Collections.sort(available, new TopicsBean.LocaleComparator());
-        return available;
-    }
-
-    public class LocaleComparator implements Comparator<Locale> {
-
         Locale requestLocale = FacesContext.getCurrentInstance().getExternalContext().getRequestLocale();
-
-        @Override
-        public int compare(Locale firstLocale, Locale secondLocale) {
-            return firstLocale.getDisplayName(requestLocale).compareTo(secondLocale.getDisplayName(requestLocale));
-        }
+        Collections.sort(available, new LocaleComparator(requestLocale));
+        return available;
     }
 }
