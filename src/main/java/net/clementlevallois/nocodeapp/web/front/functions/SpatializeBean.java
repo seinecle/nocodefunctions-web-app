@@ -40,7 +40,7 @@ import org.primefaces.model.file.UploadedFile;
 public class SpatializeBean implements Serializable {
 
     private UploadedFile uploadedFile;
-    private InputStream is;
+    private byte[] uploadedFileAsByteArray;
     private boolean displayDownloadButton = false;
 
     private byte[] gexfAsByteArrayResult;
@@ -97,7 +97,7 @@ public class SpatializeBean implements Serializable {
         FacesContext.getCurrentInstance().addMessage(null, message);
         uploadedFile = event.getFile();
         try {
-            is = uploadedFile.getInputStream();
+            uploadedFileAsByteArray = uploadedFile.getInputStream().readAllBytes();
         } catch (IOException ex) {
             System.out.println("ex:" + ex.getMessage());
         }
@@ -129,78 +129,65 @@ public class SpatializeBean implements Serializable {
     }
 
     public void layout() {
-        try {
-            if (is == null) {
-                String error = sessionBean.getLocaleBundle().getString("general.nouns.error");
-                String details = sessionBean.getLocaleBundle().getString("general.message.data_not_found");
-                FacesMessage message = new FacesMessage(error, details);
-                FacesContext.getCurrentInstance().addMessage(null, message);
-                return;
-            }
-
-            HttpRequest request;
-            HttpClient client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(120)).build();
-            Set<CompletableFuture> futures = new HashSet();
-
-            HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(is.readAllBytes());
-
-            URI uri = UrlBuilder
-                    .empty()
-                    .withScheme("http")
-                    .withPort(Integer.valueOf(privateProperties.getProperty("nocode_api_port")))
-                    .withHost("localhost")
-                    .withPath("api/spatialization")
-                    .addParameter("durationInSeconds", String.valueOf(durationInSeconds))
-                    .toUri();
-
-            request = HttpRequest.newBuilder()
-                    .POST(bodyPublisher)
-                    .uri(uri)
-                    .build();
-
-            Runnable progressBarIncrement = () -> {
-                while (gexfAsByteArrayResult == null) {
-                    // 90 not 100 to make sure we count down a bit more slowly than the ideal value, just in case
-                    float increment = ((float) 90 / (float) durationInSeconds);
-                    progressFloat += increment;
-                    progress = Math.round(progressFloat);
-                    try {
-                        Thread.sleep(1000L);
-                    } catch (InterruptedException ex) {
-                        Logger.getLogger(SpatializeBean.class.getName()).log(Level.SEVERE, null, ex);
-                    }
+        if (uploadedFileAsByteArray == null) {
+            String error = sessionBean.getLocaleBundle().getString("general.nouns.error");
+            String details = sessionBean.getLocaleBundle().getString("general.message.data_not_found");
+            FacesMessage message = new FacesMessage(error, details);
+            FacesContext.getCurrentInstance().addMessage(null, message);
+            return;
+        }
+        HttpRequest request;
+        HttpClient client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(120)).build();
+        Set<CompletableFuture> futures = new HashSet();
+        HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(uploadedFileAsByteArray);
+        URI uri = UrlBuilder
+                .empty()
+                .withScheme("http")
+                .withPort(Integer.valueOf(privateProperties.getProperty("nocode_api_port")))
+                .withHost("localhost")
+                .withPath("api/spatialization")
+                .addParameter("durationInSeconds", String.valueOf(durationInSeconds))
+                .toUri();
+        request = HttpRequest.newBuilder()
+                .POST(bodyPublisher)
+                .uri(uri)
+                .build();
+        Runnable progressBarIncrement = () -> {
+            while (gexfAsByteArrayResult == null) {
+                // 90 not 100 to make sure we count down a bit more slowly than the ideal value, just in case
+                float increment = ((float) 90 / (float) durationInSeconds);
+                progressFloat += increment;
+                progress = Math.round(progressFloat);
+                try {
+                    Thread.sleep(1000L);
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(SpatializeBean.class.getName()).log(Level.SEVERE, null, ex);
                 }
-            };
-            Thread t = new Thread(progressBarIncrement);
-            t.start();
-
-            CompletableFuture<Void> future = client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray())
-                    .thenAccept(
-                            resp -> {
-                                if (resp.statusCode() == 200) {
-                                    gexfAsByteArrayResult = resp.body();
-                                    displayDownloadButton = true;
-                                    progress = 100;
-                                    progressFloat = 100f;
-                                } else {
-                                    gexfAsByteArrayResult = null;
-                                }
-                            }
-                    );
-
-            futures.add(future);
-
-            CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(futures.toArray((new CompletableFuture[0])));
-            combinedFuture.join();
-
-            if (gexfAsByteArrayResult == null) {
-                System.out.println("gexfAsByteArray returned by the API was not a 200 code");
-                String error = sessionBean.getLocaleBundle().getString("general.nouns.error");
-                FacesMessage message = new FacesMessage(error, error);
-                FacesContext.getCurrentInstance().addMessage(null, message);
             }
-        } catch (IOException ex) {
-            Logger.getLogger(SpatializeBean.class.getName()).log(Level.SEVERE, null, ex);
+        };
+        Thread t = new Thread(progressBarIncrement);
+        t.start();
+        CompletableFuture<Void> future = client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray())
+                .thenAccept(
+                        resp -> {
+                            if (resp.statusCode() == 200) {
+                                gexfAsByteArrayResult = resp.body();
+                                displayDownloadButton = true;
+                                progress = 100;
+                                progressFloat = 100f;
+                            } else {
+                                gexfAsByteArrayResult = null;
+                            }
+                        }
+                );
+        futures.add(future);
+        CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(futures.toArray((new CompletableFuture[0])));
+        combinedFuture.join();
+        if (gexfAsByteArrayResult == null) {
+            System.out.println("gexfAsByteArray returned by the API was not a 200 code");
+            String error = sessionBean.getLocaleBundle().getString("general.nouns.error");
+            FacesMessage message = new FacesMessage(error, error);
+            FacesContext.getCurrentInstance().addMessage(null, message);
         }
 
     }

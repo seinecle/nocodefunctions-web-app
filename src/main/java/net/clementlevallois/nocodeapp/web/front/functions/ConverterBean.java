@@ -40,7 +40,7 @@ public class ConverterBean implements Serializable {
     private String item = "item_name";
     private String link = "link_name";
     private String linkStrength = "link strength name";
-    private InputStream is;
+    private byte[] inputFileAsByteArray;
     private String uploadButtonMessage;
     private boolean renderGephiWarning = true;
 
@@ -87,7 +87,7 @@ public class ConverterBean implements Serializable {
         FacesContext.getCurrentInstance().addMessage(null, message);
         uploadedFile = event.getFile();
         try {
-            is = uploadedFile.getInputStream();
+            inputFileAsByteArray = uploadedFile.getInputStream().readAllBytes();
         } catch (IOException ex) {
             System.out.println("ex:" + ex.getMessage());
         }
@@ -173,7 +173,7 @@ public class ConverterBean implements Serializable {
     public StreamedContent getFileToSave() {
         StreamedContent fileStream = null;
         try {
-            if (is == null) {
+            if (inputFileAsByteArray == null) {
                 System.out.println("no file found for conversion to gephi");
                 return null;
             }
@@ -181,7 +181,7 @@ public class ConverterBean implements Serializable {
             HttpRequest request;
             HttpClient client = HttpClient.newHttpClient();
 
-            HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(is.readAllBytes());
+            HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(inputFileAsByteArray);
 
             URI uri = UrlBuilder
                     .empty()

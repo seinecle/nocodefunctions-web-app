@@ -27,35 +27,31 @@ public class ExportToGephisto {
         try {
 
             byte[] readAllBytes = gexf.getBytes();
-            InputStream inputStreamToSave = new ByteArrayInputStream(readAllBytes);
-
-            String path = RemoteLocal.isLocal() ? "" : "gephisto/data/";
-            String subfolder;
-            long nextLong = ThreadLocalRandom.current().nextLong();
-            String gephistoGexfFileName = "gephisto_" + String.valueOf(nextLong) + ".gexf";
-
-            if (shareGephistoPublicly) {
-                subfolder = "public/";
-            } else {
-                subfolder = "private/";
-            }
-            path = path + subfolder;
-
-            if (RemoteLocal.isLocal()) {
-                path = SingletonBean.getRootOfProject() + "user_created_files";
-            }
-
-            File file = new File(path + gephistoGexfFileName);
-            try (OutputStream output = new FileOutputStream(file, false)) {
-                inputStreamToSave.transferTo(output);
-            }
-
             String urlGephisto;
-            if (RemoteLocal.isTest()) {
-                urlGephisto = "https://test.nocodefunctions.com/gephisto/index.html?gexf-file=" + subfolder + gephistoGexfFileName;
-
-            } else {
-                urlGephisto = "https://nocodefunctions.com/gephisto/index.html?gexf-file=" + subfolder + gephistoGexfFileName;
+            try (InputStream inputStreamToSave = new ByteArrayInputStream(readAllBytes)) {
+                String path = RemoteLocal.isLocal() ? "" : "gephisto/data/";
+                String subfolder;
+                long nextLong = ThreadLocalRandom.current().nextLong();
+                String gephistoGexfFileName = "gephisto_" + String.valueOf(nextLong) + ".gexf";
+                if (shareGephistoPublicly) {
+                    subfolder = "public/";
+                } else {
+                    subfolder = "private/";
+                }
+                path = path + subfolder;
+                if (RemoteLocal.isLocal()) {
+                    path = SingletonBean.getRootOfProject() + "user_created_files";
+                }
+                File file = new File(path + gephistoGexfFileName);
+                try (OutputStream output = new FileOutputStream(file, false)) {
+                    inputStreamToSave.transferTo(output);
+                }
+                if (RemoteLocal.isTest()) {
+                    urlGephisto = "https://test.nocodefunctions.com/gephisto/index.html?gexf-file=" + subfolder + gephistoGexfFileName;
+                    
+                } else {
+                    urlGephisto = "https://nocodefunctions.com/gephisto/index.html?gexf-file=" + subfolder + gephistoGexfFileName;
+                }
             }
             return urlGephisto;
         } catch (IOException ex) {

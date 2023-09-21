@@ -81,10 +81,11 @@ public class ExportToVosViewer {
             String graphAsJsonVosViewer;
             HttpRequest request;
             HttpClient client = HttpClient.newHttpClient();
-            
+
             InputStream is = uploadedFile.getInputStream();
 
             HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(is.readAllBytes());
+            is.close();
 
             URI uri = UrlBuilder
                     .empty()

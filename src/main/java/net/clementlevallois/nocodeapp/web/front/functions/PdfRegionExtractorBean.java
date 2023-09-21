@@ -67,7 +67,7 @@ public class PdfRegionExtractorBean implements Serializable {
     private int counterImages = 0;
     private ConcurrentHashMap<String, SheetModel> results = new ConcurrentHashMap();
     private final Properties privateProperties;
-    
+
     @Inject
     LogBean logBean;
 
@@ -104,36 +104,40 @@ public class PdfRegionExtractorBean implements Serializable {
         }
     }
 
-    public String goToPdfUpload() throws IOException {
+    public String goToPdfUpload() {
         return "/import/import_your_pdf_choose_region.xhtml?function=pdf_region_extractor&amp;faces-redirect=true";
     }
 
-    public void fillInCoordinates() throws IOException {
-        byte[] firstImage = inputData.getImagesPerFiles().get(0).getImages()[0];
-        InputStream in = new ByteArrayInputStream(firstImage);
-        BufferedImage buf = ImageIO.read(in);
-        int heightImage = buf.getHeight();
-        int widthImage = buf.getWidth();
-        CroppedImage selectedRegion;
-        if (allPages) {
-            selectedRegion = selectedRegions[0];
-        } else {
-            selectedRegion = selectedRegions[selectedPage];
-        }
-        if (selectedRegion == null) {
-            System.out.println("selected region is null");
-            return;
-        }
-        int leftCornerX = selectedRegion.getLeft();
-        int leftCornerY = selectedRegion.getTop();
-        int height = selectedRegion.getHeight();
-        int width = selectedRegion.getWidth();
+    public void fillInCoordinates() {
+        try {
+            byte[] firstImage = inputData.getImagesPerFiles().get(0).getImages()[0];
+            InputStream is = new ByteArrayInputStream(firstImage);
+            BufferedImage buf = ImageIO.read(is);
+            int heightImage = buf.getHeight();
+            int widthImage = buf.getWidth();
+            CroppedImage selectedRegion;
+            if (allPages) {
+                selectedRegion = selectedRegions[0];
+            } else {
+                selectedRegion = selectedRegions[selectedPage];
+            }
+            if (selectedRegion == null) {
+                System.out.println("selected region is null");
+                return;
+            }
+            int leftCornerX = selectedRegion.getLeft();
+            int leftCornerY = selectedRegion.getTop();
+            int height = selectedRegion.getHeight();
+            int width = selectedRegion.getWidth();
 
-        proportionTopLeftX = (float) leftCornerX / (float) widthImage;
-        proportionTopLeftY = (float) leftCornerY / (float) heightImage;
-        proportionWidth = (float) width / (float) widthImage;
-        proportionHeight = (float) height / (float) heightImage;
-
+            proportionTopLeftX = (float) leftCornerX / (float) widthImage;
+            proportionTopLeftY = (float) leftCornerY / (float) heightImage;
+            proportionWidth = (float) width / (float) widthImage;
+            proportionHeight = (float) height / (float) heightImage;
+            is.close();
+        } catch (IOException ex) {
+            Logger.getLogger(PdfRegionExtractorBean.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     public CroppedImage getSelectedRegion() {
@@ -267,13 +271,18 @@ public class PdfRegionExtractorBean implements Serializable {
                     .build();
 
             CompletableFuture<Void> future = client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()).thenAccept(resp -> {
-                byte[] body = resp.body();
-                InputStream is = new ByteArrayInputStream(body);
-                fileToSave = DefaultStreamedContent.builder()
-                        .name("results.xlsx")
-                        .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-                        .stream(() -> is)
-                        .build();
+                try {
+                    byte[] body = resp.body();
+                    try (InputStream is = new ByteArrayInputStream(body)) {
+                        fileToSave = DefaultStreamedContent.builder()
+                                .name("results.xlsx")
+                                .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                                .stream(() -> is)
+                                .build();
+                    }
+                } catch (IOException ex) {
+                    Logger.getLogger(PdfRegionExtractorBean.class.getName()).log(Level.SEVERE, null, ex);
+                }
             }
             );
             futures.add(future);
@@ -331,11 +340,10 @@ public class PdfRegionExtractorBean implements Serializable {
     public void setSelectPage(boolean selectPage) {
         FacesContext context = FacesContext.getCurrentInstance();
         String index = context.getExternalContext().getRequestParameterMap().get("rowIndex3");
-        if (index == null) {
-            return;
+        if (index != null) {
+            selectedPage = Integer.parseInt(index);
+            this.selectPage = selectPage;
         }
-        selectedPage = Integer.parseInt(index);
-        this.selectPage = selectPage;
     }
 
     public Boolean getRenderProgressBar() {

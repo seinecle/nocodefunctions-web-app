@@ -164,6 +164,7 @@ public class HighlighterBean implements Serializable {
                     .build();
 
             logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.analysis_complete"));
+            is.close();
 
         } catch (IOException | InterruptedException ex) {
             Logger.getLogger(HighlighterBean.class.getName()).log(Level.SEVERE, null, ex);

@@ -347,6 +347,7 @@ public class OrganicBean implements Serializable {
                     .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
                     .stream(() -> is)
                     .build();
+            is.close();
         } catch (IOException | InterruptedException ex) {
             Logger.getLogger(UmigonBean.class.getName()).log(Level.SEVERE, null, ex);
         }

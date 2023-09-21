@@ -289,6 +289,7 @@ public class PdfMatcherBean implements Serializable {
                         .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
                         .stream(() -> is)
                         .build();
+                is.close();
             }
             );
             futures.add(future);

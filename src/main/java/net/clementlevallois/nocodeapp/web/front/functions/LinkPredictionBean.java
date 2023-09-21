@@ -46,7 +46,7 @@ import net.clementlevallois.nocodeapp.web.front.backingbeans.SingletonBean;
 public class LinkPredictionBean implements Serializable {
 
     private UploadedFile uploadedFile;
-    private InputStream is;
+    private byte[] uploadedFileAsByteArray;
     private String uploadButtonMessage;
     private boolean renderGephiWarning = true;
     private int nbPredictions = 1;
@@ -89,7 +89,7 @@ public class LinkPredictionBean implements Serializable {
         FacesContext.getCurrentInstance().addMessage(null, message);
         uploadedFile = event.getFile();
         try {
-            is = uploadedFile.getInputStream();
+            uploadedFileAsByteArray = uploadedFile.getInputStream().readAllBytes();
         } catch (IOException ex) {
             System.out.println("ex:" + ex.getMessage());
         }
@@ -98,75 +98,60 @@ public class LinkPredictionBean implements Serializable {
     }
 
     public Integer showPredictions() {
-        try {
-            if (uploadedFile == null) {
-                System.out.println("no file found for link prediction");
-                return 0;
-            }
-            sessionBean.sendFunctionPageReport();
-            HttpRequest request;
-            HttpClient client = HttpClient.newHttpClient();
-            Set<CompletableFuture> futures = new HashSet();
-            HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(is.readAllBytes());
-
-            URI uri = UrlBuilder
-                    .empty()
-                    .withScheme("http")
-                    .withPort((Integer.valueOf(privateProperties.getProperty("nocode_api_port"))))
-                    .withHost("localhost")
-                    .withPath("api/linkprediction")
-                    .addParameter("nb_predictions", String.valueOf(nbPredictions))
-                    .toUri();
-
-            request = HttpRequest.newBuilder()
-                    .POST(bodyPublisher)
-                    .uri(uri)
-                    .build();
-
-            CompletableFuture<Void> future = client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()).thenAccept(resp -> {
-                byte[] body = resp.body();
-                String jsonResultsAsString = new String(body, StandardCharsets.UTF_8);
-                try (JsonReader reader = Json.createReader(new StringReader(jsonResultsAsString))) {
-                    jsonObjectReturned = reader.readObject();
-                } catch (JsonParsingException jsonEx) {
-                    System.out.println("error: the json we received from link prediction is not formatted as json");
-                }
-            }
-            );
-            futures.add(future);
-
-            CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(futures.toArray((new CompletableFuture[0])));
-            combinedFuture.join();
-
-            if (jsonObjectReturned == null) {
+        if (uploadedFile == null) {
+            System.out.println("no file found for link prediction");
+            return 0;
+        }
+        sessionBean.sendFunctionPageReport();
+        HttpRequest request;
+        HttpClient client = HttpClient.newHttpClient();
+        Set<CompletableFuture> futures = new HashSet();
+        HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(uploadedFileAsByteArray);
+        URI uri = UrlBuilder
+                .empty()
+                .withScheme("http")
+                .withPort((Integer.valueOf(privateProperties.getProperty("nocode_api_port"))))
+                .withHost("localhost")
+                .withPath("api/linkprediction")
+                .addParameter("nb_predictions", String.valueOf(nbPredictions))
+                .toUri();
+        request = HttpRequest.newBuilder()
+                .POST(bodyPublisher)
+                .uri(uri)
+                .build();
+        CompletableFuture<Void> future = client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()).thenAccept(resp -> {
+            byte[] body = resp.body();
+            String jsonResultsAsString = new String(body, StandardCharsets.UTF_8);
+            try (JsonReader reader = Json.createReader(new StringReader(jsonResultsAsString))) {
+                jsonObjectReturned = reader.readObject();
+            } catch (JsonParsingException jsonEx) {
                 System.out.println("error: the json we received from link prediction is not formatted as json");
-                return -1;
-
             }
-
-            JsonObject predictions = jsonObjectReturned.getJsonObject("predictions");
-            augmentedGexf = jsonObjectReturned.getString("gexf augmented");
-
-            List<String> orderedListOfPredictions = predictions.keySet().stream().sorted().collect(Collectors.toList());
-
-            topPredictions = new ArrayList();
-
-            for (String predictionKey : orderedListOfPredictions) {
-                JsonObject predictionJson = predictions.getJsonObject(predictionKey);
-                Prediction prediction = new Prediction();
-                prediction.setSourceId(predictionJson.getString("source node id"));
-                prediction.setSourceLabel(predictionJson.getString("source node label"));
-                prediction.setSourceDegree(predictionJson.getInt("source node degree"));
-                prediction.setTargetId(predictionJson.getString("target node id"));
-                prediction.setTargetLabel(predictionJson.getString("target node label"));
-                prediction.setTargetDegree(predictionJson.getInt("target node degree"));
-                prediction.setPredictionValue(predictionJson.getInt("prediction value"));
-                topPredictions.add(prediction);
-            }
-
-        } catch (IOException ex) {
-            System.out.println("exception when getting json with predictions and augmented gexf:");
-            System.out.println(ex.getMessage());
+        }
+        );
+        futures.add(future);
+        CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(futures.toArray((new CompletableFuture[0])));
+        combinedFuture.join();
+        if (jsonObjectReturned == null) {
+            System.out.println("error: the json we received from link prediction is not formatted as json");
+            return -1;
+            
+        }
+        JsonObject predictions = jsonObjectReturned.getJsonObject("predictions");
+        augmentedGexf = jsonObjectReturned.getString("gexf augmented");
+        List<String> orderedListOfPredictions = predictions.keySet().stream().sorted().collect(Collectors.toList());
+        topPredictions = new ArrayList();
+        for (String predictionKey : orderedListOfPredictions) {
+            JsonObject predictionJson = predictions.getJsonObject(predictionKey);
+            Prediction prediction = new Prediction();
+            prediction.setSourceId(predictionJson.getString("source node id"));
+            prediction.setSourceLabel(predictionJson.getString("source node label"));
+            prediction.setSourceDegree(predictionJson.getInt("source node degree"));
+            prediction.setTargetId(predictionJson.getString("target node id"));
+            prediction.setTargetLabel(predictionJson.getString("target node label"));
+            prediction.setTargetDegree(predictionJson.getInt("target node degree"));
+            prediction.setPredictionValue(predictionJson.getInt("prediction value"));
+            topPredictions.add(prediction);
         }
         return 1;
     }

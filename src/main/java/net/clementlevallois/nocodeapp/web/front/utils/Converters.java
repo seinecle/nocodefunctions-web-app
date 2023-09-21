@@ -26,11 +26,15 @@ public class Converters {
     }
 
     public static byte[] byteArraySerializerForAnyObject(Object o) throws IOException {
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        ObjectOutputStream oos = new ObjectOutputStream(bos);
-        oos.writeObject(o);
-        oos.flush();
-        byte[] data = bos.toByteArray();
+        ObjectOutputStream oos;
+        byte[] data;
+        try (ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
+            oos = new ObjectOutputStream(bos);
+            oos.writeObject(o);
+            oos.flush();
+            data = bos.toByteArray();
+        }
+        oos.close();
         return data;
     }
 }
