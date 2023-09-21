@@ -20,7 +20,6 @@ public class CustomExternalContext extends ExternalContextWrapper {
         // this adds an s to ws when we are in production on linux, where https applie
         //but if we are locally on windows, with http, nothing to add and just return.
         String property = System.getProperty("os.name");
-        System.out.println("OS: " + property);
         if (!property.toLowerCase().contains("inux")) {
             return super.encodeWebsocketURL(url);
         } else {
