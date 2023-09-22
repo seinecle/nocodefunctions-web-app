@@ -48,9 +48,9 @@ public class I18nStaticFilesResourceBundle extends ResourceBundle {
         try {
             File i8nFolderAsFile = new File(SingletonBean.getExternalFolderForInternationalizationFiles());
             URL[] urls = {i8nFolderAsFile.toURI().toURL()};
-            URLClassLoader loader = new URLClassLoader(urls);
-            rb = ResourceBundle.getBundle("text", locale, loader);
-            loader.close();
+            try (URLClassLoader loader = new URLClassLoader(urls)) {
+                rb = ResourceBundle.getBundle("text", locale, loader);
+            }
             return rb;
         } catch (MalformedURLException ex) {
             Logger.getLogger(I18nStaticFilesResourceBundle.class.getName()).log(Level.SEVERE, null, ex);

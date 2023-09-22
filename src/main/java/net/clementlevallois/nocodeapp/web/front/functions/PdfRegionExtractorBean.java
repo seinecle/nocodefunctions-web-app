@@ -95,15 +95,6 @@ public class PdfRegionExtractorBean implements Serializable {
         this.progress = progress;
     }
 
-    public void addMessage(FacesMessage.Severity severity, String summary, String detail) {
-        try {
-            FacesContext.getCurrentInstance().
-                    addMessage(null, new FacesMessage(severity, summary, detail));
-        } catch (NullPointerException e) {
-            System.out.println("FacesContext.getCurrentInstance was null. Detail: " + detail);
-        }
-    }
-
     public String goToPdfUpload() {
         return "/import/import_your_pdf_choose_region.xhtml?function=pdf_region_extractor&amp;faces-redirect=true";
     }
@@ -111,30 +102,30 @@ public class PdfRegionExtractorBean implements Serializable {
     public void fillInCoordinates() {
         try {
             byte[] firstImage = inputData.getImagesPerFiles().get(0).getImages()[0];
-            InputStream is = new ByteArrayInputStream(firstImage);
-            BufferedImage buf = ImageIO.read(is);
-            int heightImage = buf.getHeight();
-            int widthImage = buf.getWidth();
-            CroppedImage selectedRegion;
-            if (allPages) {
-                selectedRegion = selectedRegions[0];
-            } else {
-                selectedRegion = selectedRegions[selectedPage];
-            }
-            if (selectedRegion == null) {
-                System.out.println("selected region is null");
-                return;
-            }
-            int leftCornerX = selectedRegion.getLeft();
-            int leftCornerY = selectedRegion.getTop();
-            int height = selectedRegion.getHeight();
-            int width = selectedRegion.getWidth();
+            try (InputStream is = new ByteArrayInputStream(firstImage)) {
+                BufferedImage buf = ImageIO.read(is);
+                int heightImage = buf.getHeight();
+                int widthImage = buf.getWidth();
+                CroppedImage selectedRegion;
+                if (allPages) {
+                    selectedRegion = selectedRegions[0];
+                } else {
+                    selectedRegion = selectedRegions[selectedPage];
+                }
+                if (selectedRegion == null) {
+                    System.out.println("selected region is null");
+                    return;
+                }
+                int leftCornerX = selectedRegion.getLeft();
+                int leftCornerY = selectedRegion.getTop();
+                int height = selectedRegion.getHeight();
+                int width = selectedRegion.getWidth();
 
-            proportionTopLeftX = (float) leftCornerX / (float) widthImage;
-            proportionTopLeftY = (float) leftCornerY / (float) heightImage;
-            proportionWidth = (float) width / (float) widthImage;
-            proportionHeight = (float) height / (float) heightImage;
-            is.close();
+                proportionTopLeftX = (float) leftCornerX / (float) widthImage;
+                proportionTopLeftY = (float) leftCornerY / (float) heightImage;
+                proportionWidth = (float) width / (float) widthImage;
+                proportionHeight = (float) height / (float) heightImage;
+            }
         } catch (IOException ex) {
             Logger.getLogger(PdfRegionExtractorBean.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -249,7 +240,6 @@ public class PdfRegionExtractorBean implements Serializable {
         try {
             HttpRequest request;
             HttpClient client = HttpClient.newHttpClient();
-            Set<CompletableFuture> futures = new HashSet();
             byte[] documentsAsByteArray = Converters.byteArraySerializerForAnyObject(results);
             HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(documentsAsByteArray);
 
@@ -270,27 +260,23 @@ public class PdfRegionExtractorBean implements Serializable {
                     .uri(uri)
                     .build();
 
-            CompletableFuture<Void> future = client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()).thenAccept(resp -> {
-                try {
-                    byte[] body = resp.body();
-                    try (InputStream is = new ByteArrayInputStream(body)) {
-                        fileToSave = DefaultStreamedContent.builder()
-                                .name("results.xlsx")
-                                .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-                                .stream(() -> is)
-                                .build();
-                    }
-                } catch (IOException ex) {
-                    Logger.getLogger(PdfRegionExtractorBean.class.getName()).log(Level.SEVERE, null, ex);
+            HttpResponse<byte[]> resp = client.send(request, HttpResponse.BodyHandlers.ofByteArray());
+            try {
+                byte[] body = resp.body();
+                try (InputStream is = new ByteArrayInputStream(body)) {
+                    fileToSave = DefaultStreamedContent.builder()
+                            .name("results.xlsx")
+                            .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                            .stream(() -> is)
+                            .build();
                 }
+            } catch (IOException ex) {
+                Logger.getLogger(PdfRegionExtractorBean.class.getName()).log(Level.SEVERE, null, ex);
             }
-            );
-            futures.add(future);
-
-            CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(futures.toArray((new CompletableFuture[0])));
-            combinedFuture.join();
         } catch (IOException ex) {
             Logger.getLogger(UmigonBean.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InterruptedException ex) {
+            Logger.getLogger(PdfRegionExtractorBean.class.getName()).log(Level.SEVERE, null, ex);
         }
         return fileToSave;
     }

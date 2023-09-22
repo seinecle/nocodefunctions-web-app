@@ -102,15 +102,6 @@ public class TopicsBean implements Serializable {
         privateProperties = SingletonBean.getPrivateProperties();
     }
 
-    public void addMessage(FacesMessage.Severity severity, String summary, String detail) {
-        try {
-            FacesContext.getCurrentInstance().
-                    addMessage(null, new FacesMessage(severity, summary, detail));
-        } catch (NullPointerException e) {
-            System.out.println("FacesContext.getCurrentInstance was null. Detail: " + detail);
-        }
-    }
-
     public Integer getProgress() {
         return progress;
     }
@@ -214,7 +205,7 @@ public class TopicsBean implements Serializable {
             } else {
                 System.out.println("topic returned by the API was not a 200 code");
                 String errorMessage = new String(body, StandardCharsets.UTF_8);
-                addMessage(FacesMessage.SEVERITY_WARN, "💔", errorMessage);
+                sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "💔", errorMessage);
             }
 
             if (jsonResultAsString == null) {
@@ -391,7 +382,7 @@ public class TopicsBean implements Serializable {
         if (fileUserStopwords != null) {
             String success = sessionBean.getLocaleBundle().getString("general.nouns.success");
             String is_uploaded = sessionBean.getLocaleBundle().getString("general.verb.is_uploaded");
-            addMessage(FacesMessage.SEVERITY_INFO, success, fileUserStopwords.getFileName() + " " + is_uploaded + ".");
+            sessionBean.addMessage(FacesMessage.SEVERITY_INFO, success, fileUserStopwords.getFileName() + " " + is_uploaded + ".");
         }
     }
 

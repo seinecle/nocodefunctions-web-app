@@ -98,9 +98,6 @@ public class OrganicBean implements Serializable {
         this.maxCapacity = maxCapacity;
     }
 
-    public void onComplete() {
-    }
-
     public void cancel() {
         progress = null;
     }
@@ -341,13 +338,13 @@ public class OrganicBean implements Serializable {
 
             HttpResponse<byte[]> resp = client.send(request, HttpResponse.BodyHandlers.ofByteArray());
             byte[] body = resp.body();
-            InputStream is = new ByteArrayInputStream(body);
-            fileToSave = DefaultStreamedContent.builder()
-                    .name("results.xlsx")
-                    .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-                    .stream(() -> is)
-                    .build();
-            is.close();
+            try (InputStream is = new ByteArrayInputStream(body)) {
+                fileToSave = DefaultStreamedContent.builder()
+                        .name("results.xlsx")
+                        .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                        .stream(() -> is)
+                        .build();
+            }
         } catch (IOException | InterruptedException ex) {
             Logger.getLogger(UmigonBean.class.getName()).log(Level.SEVERE, null, ex);
         }

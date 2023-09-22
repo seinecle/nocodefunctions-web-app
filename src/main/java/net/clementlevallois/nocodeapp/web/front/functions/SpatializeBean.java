@@ -82,8 +82,7 @@ public class SpatializeBean implements Serializable {
             displayDownloadButton = false;
             String success = sessionBean.getLocaleBundle().getString("general.nouns.success");
             String is_uploaded = sessionBean.getLocaleBundle().getString("general.verb.is_uploaded");
-            FacesMessage message = new FacesMessage(success, uploadedFile.getFileName() + " " + is_uploaded + ".");
-            FacesContext.getCurrentInstance().addMessage(null, message);
+            sessionBean.addMessage(FacesMessage.SEVERITY_INFO, success, uploadedFile.getFileName() + " " + is_uploaded + ".");
         }
     }
 
@@ -93,8 +92,7 @@ public class SpatializeBean implements Serializable {
         sessionBean.sendFunctionPageReport();
         String success = sessionBean.getLocaleBundle().getString("general.nouns.success");
         String is_uploaded = sessionBean.getLocaleBundle().getString("general.verb.is_uploaded");
-        FacesMessage message = new FacesMessage(success, event.getFile().getFileName() + " " + is_uploaded + ".");
-        FacesContext.getCurrentInstance().addMessage(null, message);
+        sessionBean.addMessage(FacesMessage.SEVERITY_INFO, success, event.getFile().getFileName() + " " + is_uploaded + ".");
         uploadedFile = event.getFile();
         try {
             uploadedFileAsByteArray = uploadedFile.getInputStream().readAllBytes();
@@ -110,11 +108,8 @@ public class SpatializeBean implements Serializable {
         if (gexfAsByteArrayResult == null) {
             String error = sessionBean.getLocaleBundle().getString("general.nouns.error");
             String details = sessionBean.getLocaleBundle().getString("general.message.data_not_found");
-
-            FacesMessage message = new FacesMessage(error, details);
-            FacesContext.getCurrentInstance().addMessage(null, message);
+            sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, error, details);
             return null;
-
         }
         StreamedContent fileStream = null;
         InputStream inputStreamToSave = new ByteArrayInputStream(gexfAsByteArrayResult);
@@ -132,8 +127,7 @@ public class SpatializeBean implements Serializable {
         if (uploadedFileAsByteArray == null) {
             String error = sessionBean.getLocaleBundle().getString("general.nouns.error");
             String details = sessionBean.getLocaleBundle().getString("general.message.data_not_found");
-            FacesMessage message = new FacesMessage(error, details);
-            FacesContext.getCurrentInstance().addMessage(null, message);
+            sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, error, details);
             return;
         }
         HttpRequest request;
@@ -186,8 +180,7 @@ public class SpatializeBean implements Serializable {
         if (gexfAsByteArrayResult == null) {
             System.out.println("gexfAsByteArray returned by the API was not a 200 code");
             String error = sessionBean.getLocaleBundle().getString("general.nouns.error");
-            FacesMessage message = new FacesMessage(error, error);
-            FacesContext.getCurrentInstance().addMessage(null, message);
+            sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, error, error);
         }
 
     }

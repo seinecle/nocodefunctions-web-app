@@ -101,15 +101,6 @@ public class DataImportBean implements Serializable {
         privateProperties = SingletonBean.getPrivateProperties();
     }
 
-    public void addMessage(FacesMessage.Severity severity, String summary, String detail) {
-        try {
-            FacesContext.getCurrentInstance().
-                    addMessage(null, new FacesMessage(severity, summary, detail));
-        } catch (NullPointerException e) {
-            System.out.println("FacesContext.getCurrentInstance was null. Detail: " + detail);
-        }
-    }
-
     public String readData() throws IOException, URISyntaxException {
         currentFunction = sessionBean.getFunction();
         dataInSheets = new ArrayList();
@@ -117,7 +108,7 @@ public class DataImportBean implements Serializable {
         progress = 0;
         if (filesUploaded.isEmpty()) {
             logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.no_file_upload_again"));
-            addMessage(FacesMessage.SEVERITY_WARN, "💔", sessionBean.getLocaleBundle().getString("general.message.no_file_upload_again"));
+            sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "💔", sessionBean.getLocaleBundle().getString("general.message.no_file_upload_again"));
             return "";
         }
 
@@ -211,7 +202,7 @@ public class DataImportBean implements Serializable {
                         String errorMessage = new String(body, StandardCharsets.UTF_8);
                         System.out.println(errorMessage);
                         logBean.addOneNotificationFromString(errorMessage);
-                        addMessage(FacesMessage.SEVERITY_WARN, "💔", errorMessage);
+                        sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "💔", errorMessage);
                     }
 
                 }
@@ -288,7 +279,7 @@ public class DataImportBean implements Serializable {
                         String errorMessage = new String(body, StandardCharsets.UTF_8);
                         System.out.println(errorMessage);
                         logBean.addOneNotificationFromString(errorMessage);
-                        addMessage(FacesMessage.SEVERITY_WARN, "💔", errorMessage);
+                        sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "💔", errorMessage);
 
                     }
                 }
@@ -296,6 +287,7 @@ public class DataImportBean implements Serializable {
         futures.add(future);
         CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(futures.toArray((new CompletableFuture[0])));
         combinedFuture.join();
+        progress = 100;
     }
 
     private void readCsvFile(FileUploaded f, String functionName, String gazeOption) {
@@ -344,13 +336,14 @@ public class DataImportBean implements Serializable {
                         String errorMessage = new String(body, StandardCharsets.UTF_8);
                         System.out.println(errorMessage);
                         logBean.addOneNotificationFromString(errorMessage);
-                        addMessage(FacesMessage.SEVERITY_WARN, "💔", errorMessage);
+                        sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "💔", errorMessage);
                     }
                 }
         );
         futures.add(future);
         CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(futures.toArray((new CompletableFuture[0])));
         combinedFuture.join();
+        progress = 100;
     }
 
     private void readExcelFile(FileUploaded file) {
@@ -391,8 +384,7 @@ public class DataImportBean implements Serializable {
                 System.out.println("return of xlsx reader by the API was not a 200 code");
                 String errorMessage = new String(body, StandardCharsets.UTF_8);
                 System.out.println(errorMessage);
-                FacesMessage message = new FacesMessage(errorMessage, errorMessage);
-                FacesContext.getCurrentInstance().addMessage(null, message);
+                sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, errorMessage, errorMessage);
             }
 
         }
@@ -411,6 +403,7 @@ public class DataImportBean implements Serializable {
         if (!dataInSheets.isEmpty()) {
             setSelectedSheetName(dataInSheets.get(0).getName());
         }
+        progress = 100;
     }
 
     public void disableReadButton() {
@@ -484,19 +477,19 @@ public class DataImportBean implements Serializable {
         bulkData = false;
         if (!twoColumnsColOneSelected || !twoColumnsColTwoSelected) {
             logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("back.import.two_columns_needed"));
-            addMessage(FacesMessage.SEVERITY_WARN, "😳", sessionBean.getLocaleBundle().getString("back.import.two_columns_needed"));
+            sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "😳", sessionBean.getLocaleBundle().getString("back.import.two_columns_needed"));
             return "";
         }
 
         if (countOfSelectedColOne != 1 || countOfSelectedColTwo != 1) {
             logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("back.import.select_one_column_per_type"));
-            addMessage(FacesMessage.SEVERITY_WARN, "😳", sessionBean.getLocaleBundle().getString("back.import.select_one_column_per_type"));
+            sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "😳", sessionBean.getLocaleBundle().getString("back.import.select_one_column_per_type"));
             return "";
         }
 
         if (twoColumnsIndexForColOne.equals(twoColumnsIndexForColTwo)) {
             sessionBean.getLocaleBundle().getString("back.import.term_text_different_columns");
-            addMessage(FacesMessage.SEVERITY_WARN, "😳", sessionBean.getLocaleBundle().getString("back.import.term_text_different_columns"));
+            sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "😳", sessionBean.getLocaleBundle().getString("back.import.term_text_different_columns"));
             return "";
         }
 

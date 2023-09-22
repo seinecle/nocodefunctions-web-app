@@ -88,15 +88,6 @@ public class GazeBean implements Serializable {
         dataImportBean.setSelectedSheetName(sheetName);
     }
 
-    public void addMessage(FacesMessage.Severity severity, String summary, String detail) {
-        try {
-            FacesContext.getCurrentInstance().
-                    addMessage(null, new FacesMessage(severity, summary, detail));
-        } catch (NullPointerException e) {
-            System.out.println("FacesContext.getCurrentInstance was null. Detail: " + detail);
-        }
-    }
-
     public String runCoocAnalysis() {
         try {
             progress = 0;
@@ -213,7 +204,6 @@ public class GazeBean implements Serializable {
     }
 
     public boolean callCooc(Map<Integer, Multiset<String>> inputLines) throws Exception {
-
         HttpRequest request;
         HttpClient client = HttpClient.newHttpClient();
         JsonObjectBuilder overallObject = Json.createObjectBuilder();
@@ -289,16 +279,14 @@ public class GazeBean implements Serializable {
         } else {
             System.out.println("gaze results by the API was not a 200 code");
             String error = sessionBean.getLocaleBundle().getString("general.nouns.error");
-            addMessage(FacesMessage.SEVERITY_WARN, "💔", error);
+            sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "💔", error);
             return false;
         }
         return true;
     }
 
     public boolean callSim(Map<String, Set<String>> sourcesAndTargets) {
-
         try {
-
             HttpRequest request;
             HttpClient client = HttpClient.newHttpClient();
             JsonObjectBuilder overallObject = Json.createObjectBuilder();

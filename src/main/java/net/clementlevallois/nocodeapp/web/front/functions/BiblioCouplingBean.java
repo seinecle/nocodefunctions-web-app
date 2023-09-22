@@ -323,7 +323,6 @@ public class BiblioCouplingBean implements Serializable {
     }
 
     public void execGraph(int maxNodes) {
-
     }
 
     public String getNodesAsJson() {

@@ -83,8 +83,7 @@ public class ConverterBean implements Serializable {
         sessionBean.sendFunctionPageReport();
         String success = sessionBean.getLocaleBundle().getString("general.nouns.success");
         String is_uploaded = sessionBean.getLocaleBundle().getString("general.verb.is_uploaded");
-        FacesMessage message = new FacesMessage(success, event.getFile().getFileName() + " " + is_uploaded + ".");
-        FacesContext.getCurrentInstance().addMessage(null, message);
+        sessionBean.addMessage(FacesMessage.SEVERITY_INFO, success, event.getFile().getFileName() + " " + is_uploaded + ".");
         uploadedFile = event.getFile();
         try {
             inputFileAsByteArray = uploadedFile.getInputStream().readAllBytes();
@@ -206,8 +205,7 @@ public class ConverterBean implements Serializable {
             if (gexfAsByteArray == null) {
                 System.out.println("gexfAsByteArray returned by the API was not a 200 code");
                 String error = sessionBean.getLocaleBundle().getString("general.nouns.error");
-                FacesMessage message = new FacesMessage(error, error);
-                FacesContext.getCurrentInstance().addMessage(null, message);
+                sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, error, error);
                 return null;
             }
 
@@ -227,5 +225,4 @@ public class ConverterBean implements Serializable {
     public void setFileToSave(StreamedContent fileToSave) {
         this.fileToSave = fileToSave;
     }
-
 }

@@ -102,15 +102,6 @@ public class CowoBean implements Serializable {
         privateProperties = SingletonBean.getPrivateProperties();
     }
 
-    public void addMessage(FacesMessage.Severity severity, String summary, String detail) {
-        try {
-            FacesContext.getCurrentInstance().
-                    addMessage(null, new FacesMessage(severity, summary, detail));
-        } catch (NullPointerException e) {
-            System.out.println("FacesContext.getCurrentInstance was null. Detail: " + detail);
-        }
-    }
-
     public Integer getProgress() {
         return progress;
     }
@@ -224,7 +215,7 @@ public class CowoBean implements Serializable {
                 System.out.println("cowo returned by the API was not a 200 code");
                 String errorMessage = new String(body, StandardCharsets.UTF_8);
                 logBean.addOneNotificationFromString(errorMessage);
-                addMessage(FacesMessage.SEVERITY_WARN, "💔", errorMessage);
+                sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "💔", errorMessage);
             }
             executor.shutdown();
             logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.last_ops_creating_network"));
@@ -259,7 +250,7 @@ public class CowoBean implements Serializable {
                 System.out.println("top nodes returned by the API was not a 200 code");
                 String error = sessionBean.getLocaleBundle().getString("general.nouns.error");
                 logBean.addOneNotificationFromString(error);
-                addMessage(FacesMessage.SEVERITY_WARN, "💔", error);
+                sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "💔", error);
                 runButtonDisabled = true;
             } else {
                 String jsonResult = new String(body, StandardCharsets.UTF_8);
@@ -271,10 +262,8 @@ public class CowoBean implements Serializable {
         } catch (IOException | NumberFormatException ex) {
             System.out.println("ex:" + ex.getMessage());
         }
-
         return "/" + sessionBean.getFunction()
                 + "/results.xhtml?faces-redirect=true";
-
     }
 
     public Boolean getRenderSeeResultsButton() {
@@ -307,7 +296,7 @@ public class CowoBean implements Serializable {
     public StreamedContent getFileToSave() {
         if (gexf == null) {
             System.out.println("gexf was null in cowo function");
-            addMessage(FacesMessage.SEVERITY_WARN, "💔", sessionBean.getLocaleBundle().getString("general.message.internal_server_error"));
+            sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "💔", sessionBean.getLocaleBundle().getString("general.message.internal_server_error"));
             return new DefaultStreamedContent();
         }
         return GEXFSaver.exportGexfAsStreamedFile(gexf, "results");
@@ -398,7 +387,7 @@ public class CowoBean implements Serializable {
             String success = sessionBean.getLocaleBundle().getString("general.nouns.success");
             String is_uploaded = sessionBean.getLocaleBundle().getString("general.verb.is_uploaded");
             String message = fileUserStopwords.getFileName() + " " + is_uploaded + ".";
-            addMessage(FacesMessage.SEVERITY_INFO, success, message);
+            sessionBean.addMessage(FacesMessage.SEVERITY_INFO, success, message);
         }
     }
 

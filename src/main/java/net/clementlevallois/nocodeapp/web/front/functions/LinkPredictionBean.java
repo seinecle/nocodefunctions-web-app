@@ -85,8 +85,7 @@ public class LinkPredictionBean implements Serializable {
         success = false;
         String successMsg = sessionBean.getLocaleBundle().getString("general.nouns.success");
         String is_uploaded = sessionBean.getLocaleBundle().getString("general.verb.is_uploaded");
-        FacesMessage message = new FacesMessage(successMsg, event.getFile().getFileName() + " " + is_uploaded + ".");
-        FacesContext.getCurrentInstance().addMessage(null, message);
+        sessionBean.addMessage(FacesMessage.SEVERITY_INFO,successMsg, event.getFile().getFileName() + " " + is_uploaded + ".");
         uploadedFile = event.getFile();
         try {
             uploadedFileAsByteArray = uploadedFile.getInputStream().readAllBytes();

@@ -10,6 +10,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import net.clementlevallois.nocodeapp.web.front.http.RemoteLocal;
 import net.clementlevallois.nocodeapp.web.front.http.SendReport;
 import jakarta.annotation.PostConstruct;
+import jakarta.faces.application.FacesMessage;
 import jakarta.inject.Inject;
 import java.io.IOException;
 import net.clementlevallois.nocodeapp.web.front.i18n.I18nStaticFilesResourceBundle;
@@ -151,7 +152,14 @@ public class SessionBean implements Serializable {
     public void setCurrentLocale(Locale currentLocale) {
         this.currentLocale = currentLocale;
     }
-    
-    
+
+    public void addMessage(FacesMessage.Severity severity, String summary, String detail) {
+        try {
+            FacesContext.getCurrentInstance().
+                    addMessage(null, new FacesMessage(severity, summary, detail));
+        } catch (NullPointerException e) {
+            System.out.println("FacesContext.getCurrentInstance was null. Detail: " + detail);
+        }
+    }
 
 }

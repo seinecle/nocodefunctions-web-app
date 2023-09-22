@@ -156,15 +156,15 @@ public class HighlighterBean implements Serializable {
 
             HttpResponse<byte[]> resp = client.send(request, HttpResponse.BodyHandlers.ofByteArray());
             byte[] body = resp.body();
-            InputStream is = new ByteArrayInputStream(body);
-            fileToSave = DefaultStreamedContent.builder()
-                    .name("results.xlsx")
-                    .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-                    .stream(() -> is)
-                    .build();
-
-            logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.analysis_complete"));
-            is.close();
+            try (InputStream is = new ByteArrayInputStream(body)) {
+                fileToSave = DefaultStreamedContent.builder()
+                        .name("results.xlsx")
+                        .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                        .stream(() -> is)
+                        .build();
+                
+                logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.analysis_complete"));
+            }
 
         } catch (IOException | InterruptedException ex) {
             Logger.getLogger(HighlighterBean.class.getName()).log(Level.SEVERE, null, ex);

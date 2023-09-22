@@ -25,7 +25,6 @@ import java.util.logging.Logger;
 import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.SessionScoped;
 import jakarta.faces.application.FacesMessage;
-import jakarta.faces.context.FacesContext;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import jakarta.json.Json;
@@ -67,7 +66,7 @@ public class PdfMatcherBean implements Serializable {
     ConcurrentHashMap<String, List<Occurrence>> results = new ConcurrentHashMap();
     List<Match> resultsForDisplay = new ArrayList();
     private final Properties privateProperties;
-    
+
     @Inject
     LogBean logBean;
 
@@ -78,7 +77,8 @@ public class PdfMatcherBean implements Serializable {
     DataImportBean inputData;
 
     public PdfMatcherBean() {
-        privateProperties = SingletonBean.getPrivateProperties();    }
+        privateProperties = SingletonBean.getPrivateProperties();
+    }
 
     @PostConstruct
     void init() {
@@ -94,32 +94,20 @@ public class PdfMatcherBean implements Serializable {
         this.progress = progress;
     }
 
-    public void addMessage(FacesMessage.Severity severity, String summary, String detail) {
-        try {
-            FacesContext.getCurrentInstance().
-                    addMessage(null, new FacesMessage(severity, summary, detail));
-        } catch (NullPointerException e) {
-            System.out.println("FacesContext.getCurrentInstance was null. Detail: " + detail);
-        }
-    }
-
     public String goToPdfUpload() {
         searchedTerm = searchedTerm.replaceAll("\\R", "");
         long countDoubleQuotes = searchedTerm.codePoints().filter(ch -> ch == '"').count();
         long countOpeningBracket = searchedTerm.codePoints().filter(ch -> ch == '(').count();
         long countClosingBracket = searchedTerm.codePoints().filter(ch -> ch == ')').count();
         if ((countDoubleQuotes % 2) != 0) {
-            addMessage(FacesMessage.SEVERITY_WARN, "💔", sessionBean.getLocaleBundle().getString("pdfmatcher.tool.error.quotes"));
+            sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "💔", sessionBean.getLocaleBundle().getString("pdfmatcher.tool.error.quotes"));
             return "";
         }
         if (countOpeningBracket != countClosingBracket) {
-            addMessage(FacesMessage.SEVERITY_WARN, "💔", sessionBean.getLocaleBundle().getString("pdfmatcher.tool.error.parentheses"));
+            sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "💔", sessionBean.getLocaleBundle().getString("pdfmatcher.tool.error.parentheses"));
             return "";
         }
         return "/import/import_your_data_bulk_text.xhtml?function=pdfmatcher&amp;faces-redirect=true";
-    }
-
-    public void onComplete() {
     }
 
     public void cancel() {
@@ -139,12 +127,12 @@ public class PdfMatcherBean implements Serializable {
         results = new ConcurrentHashMap();
         BodyPublisher bodyPublisher;
         URI uri = UrlBuilder
-                    .empty()
-                    .withScheme("http")
-                    .withPort((Integer.valueOf(privateProperties.getProperty("nocode_api_port"))))
-                    .withHost("localhost")
-                    .withPath("api/pdfmatcher")
-                    .toUri();
+                .empty()
+                .withScheme("http")
+                .withPort((Integer.valueOf(privateProperties.getProperty("nocode_api_port"))))
+                .withHost("localhost")
+                .withPath("api/pdfmatcher")
+                .toUri();
 
         for (SheetModel oneDoc : dataInSheets) {
 
@@ -265,7 +253,6 @@ public class PdfMatcherBean implements Serializable {
             byte[] documentsAsByteArray = Converters.byteArraySerializerForAnyObject(results);
             HttpRequest request;
             HttpClient client = HttpClient.newHttpClient();
-            Set<CompletableFuture> futures = new HashSet();
             HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(documentsAsByteArray);
 
             URI uri = UrlBuilder
@@ -281,22 +268,20 @@ public class PdfMatcherBean implements Serializable {
                     .uri(uri)
                     .build();
 
-            CompletableFuture<Void> future = client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()).thenAccept(resp -> {
+            HttpResponse<byte[]> resp = client.send(request, HttpResponse.BodyHandlers.ofByteArray());
+            try {
                 byte[] body = resp.body();
-                InputStream is = new ByteArrayInputStream(body);
-                fileToSave = DefaultStreamedContent.builder()
-                        .name("results.xlsx")
-                        .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-                        .stream(() -> is)
-                        .build();
-                is.close();
+                try (InputStream is = new ByteArrayInputStream(body)) {
+                    fileToSave = DefaultStreamedContent.builder()
+                            .name("results.xlsx")
+                            .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                            .stream(() -> is)
+                            .build();
+                }
+            } catch (IOException ex) {
+                Logger.getLogger(PdfMatcherBean.class.getName()).log(Level.SEVERE, null, ex);
             }
-            );
-            futures.add(future);
-
-            CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(futures.toArray((new CompletableFuture[0])));
-            combinedFuture.join();
-        } catch (IOException ex) {
+        } catch (IOException | InterruptedException ex) {
             Logger.getLogger(PdfMatcherBean.class.getName()).log(Level.SEVERE, null, ex);
         }
         return fileToSave;
@@ -386,5 +371,4 @@ public class PdfMatcherBean implements Serializable {
     public void setNbLines(int nbLines) {
         this.nbLines = nbLines;
     }
-
 }
