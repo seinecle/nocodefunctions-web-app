@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.SessionScoped;
+import jakarta.faces.context.ExternalContext;
 import jakarta.faces.context.FacesContext;
 import jakarta.inject.Named;
 import java.io.IOException;
@@ -93,7 +94,13 @@ public class ActiveLocale implements Serializable {
         // 1. the visible item of the selection is the current language (makes intuitive sense to the user)
         // 2. English is placed in second next to the visible item (because it is a very common language)
         available = new ArrayList();
-        Locale requestLocale = FacesContext.getCurrentInstance().getExternalContext().getRequestLocale();
+        FacesContext currentInstance = FacesContext.getCurrentInstance();
+        Locale requestLocale;
+        if (currentInstance == null){
+            requestLocale = Locale.ENGLISH;
+        }else{
+            requestLocale = currentInstance.getExternalContext().getRequestLocale();
+        }
         for (Locale l : locales) {
             if (!l.getLanguage().equals(requestLocale.getLanguage()) & !l.getLanguage().equals("en")) {
                 available.add(l);

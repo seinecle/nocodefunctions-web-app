@@ -5,8 +5,9 @@ package net.clementlevallois.nocodeapp.web.front.tests;
 
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SingletonBean;
 import net.clementlevallois.nocodeapp.web.front.http.RemoteLocal;
-import org.junit.Assert;
-import org.junit.Test;
+import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.Test;
+
 
 /**
  *
@@ -17,7 +18,7 @@ public class URLGenerationClassesTest {
     @Test
     public void remoteLocalClassTest() {
         String domain = RemoteLocal.getDomain();
-        Assert.assertEquals("http://localhost:8080/jsf-app", domain);
+        assertThat(domain).isEqualTo("http://localhost:8080/jsf-app");
     }
 
     @Test
