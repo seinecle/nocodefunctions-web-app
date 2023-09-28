@@ -1,11 +1,11 @@
 <html 
-    lang="#{activeLocale.languageTag}"
+    lang="#{localeBean.languageTag}"
     xmlns="http://www.w3.org/1999/xhtml"
     xmlns:h="jakarta.faces.html"
     xmlns:f="jakarta.faces.core"
     xmlns:p="http://primefaces.org/ui"
     xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
-    <f:view locale="#{activeLocale.currentLocale}">
+    <f:view locale="#{aclocaleBeanurrentLocale}">
 
         <h:head>        <!-- Primary Meta Tags -->
             <title>#{text['organic.title']}</title>
@@ -61,7 +61,7 @@
                 <br/>
                 <p>#{text['general.message.try_it_just_click_on_link']}</p>
                 <span style="overflow-wrap: break-word;">
-                    <a href="#{sessionBean.hostFunctionsAPI()}/api/organicForAText?text-lang=en&amp;text=Buy our product now&amp;explanation=on&amp;output-format=html&amp;explanation-lang=#{activeLocale.languageTag}" target="_blank">
+                    <a href="#{sessionBean.hostFunctionsAPI()}/api/organicForAText?text-lang=en&amp;text=Buy our product now&amp;explanation=on&amp;output-format=html&amp;explanation-lang=#{aclocaleBeananguageTag}" target="_blank">
                         #{sessionBean.hostFunctionsAPI()}
                         <span style="color:blue">
                             /api/organicForAText?

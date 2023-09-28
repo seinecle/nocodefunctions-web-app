@@ -11,8 +11,8 @@
         
         <div class="flex justify-content-end flex-wrap">
             <div class="flex align-items-center justify-content-center">
-                <h:selectOneMenu value="#{activeLocale.languageTag}" onchange="submit()">
-                    <f:selectItems value="#{activeLocale.available}" var="l"
+                <h:selectOneMenu value="#{localeBean.languageTag}" onchange="submit()">
+                    <f:selectItems value="#{localeBean.availableLocales}" var="l"
                                    itemValue="#{l.toLanguageTag()}"
                                    itemLabel="#{l.getDisplayLanguage(l)} #{empty l.getDisplayCountry()?'':'('}#{l.getDisplayCountry(l)}#{empty l.getDisplayCountry()?'':')'}">
                     </f:selectItems>

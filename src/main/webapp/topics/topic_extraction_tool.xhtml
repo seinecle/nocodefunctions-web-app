@@ -1,11 +1,11 @@
 <html 
-    lang="#{activeLocale.languageTag}"
+    lang="#{localeBean.languageTag}"
     xmlns="http://www.w3.org/1999/xhtml"
     xmlns:h="jakarta.faces.html"
     xmlns:f="jakarta.faces.core"
     xmlns:p="http://primefaces.org/ui"
     xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
-    <f:view locale="#{activeLocale.currentLocale}">
+    <f:view locale="#{localeBean.currentLocale}">
 
         <h:head>        <!-- Primary Meta Tags -->
             <title>#{text['topics.topics_extraction_tool.title']}</title>
@@ -46,7 +46,7 @@
             <h:outputStylesheet name="css/primeflex.css" />
             <h:outputStylesheet name="css/custom.css" />
             <f:metadata>
-                <f:viewParam name="lang" value="#{activeLocale.languageTag}" />
+                <f:viewParam name="lang" value="#{localeBean.languageTag}" />
                 <f:viewParam name="function" value="#{sessionBean.function}" />
             </f:metadata>
             <p:panel>

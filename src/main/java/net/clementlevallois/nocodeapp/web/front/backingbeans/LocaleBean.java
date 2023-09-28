@@ -13,24 +13,23 @@ import java.util.stream.Collectors;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.SessionScoped;
-import jakarta.faces.context.ExternalContext;
 import jakarta.faces.context.FacesContext;
 import jakarta.inject.Named;
 import java.io.IOException;
 
 @Named
 @SessionScoped
-public class ActiveLocale implements Serializable {
+public class LocaleBean implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     private Locale currentLocale;
-    private List<Locale> available;
+    private List<Locale> availableLocales;
 
     @Inject
     SessionBean sessionBean;
 
-    public ActiveLocale() {
+    public LocaleBean() {
     }
 
     @PostConstruct
@@ -76,45 +75,50 @@ public class ActiveLocale implements Serializable {
         }
     }
 
-    public List<Locale> getAvailable() {
+    public List<Locale> getAvailableLocales() {
         List<Locale> locales = new ArrayList();
-        String[] availableLocale = new String[]{"PT-BR", "PT-PT", "AZ", "BE", "BN", "BS", "CA", "CO", "EO", "ET", "EU", "FI", "GL", "GU", "FY", "HA", "HE", "HI", "HMN", "HAW", "HR", "HU", "HT", "ID", "IG", "IS", "KA", "SQ", "AM", "AR", "HY", "CEB", "GA", "JA", "JV", "KN", "KK", "KM", "RW", "KO", "KU", "KY", "LV", "LT", "LB", "MK", "MG", "MS", "ML", "MT", "MI", "MR", "MN", "MY", "NE", "NO", "NY", "OR", "PS", "FA", "PL", "PT", "PA", "RO", "RU", "SM", "GD", "SR", "ST", "SN", "SD", "SI", "SK", "SL", "SO", "SU", "SW", "SV", "TL", "TG", "TA", "TR", "TT", "TE", "TH", "TK", "UK", "UR", "UG", "UZ", "VI", "CY", "XH", "YI", "YO", "ZU", "LO", "ZH-TW", "BG", "CS", "DA", "DE", "EL", "ES", "FR", "IT", "NL", "ZH"};
+        String[] availableLocaleAsStringArray = new String[]{"PT-BR", "PT-PT", "AZ", "BE", "BN", "BS", "CA", "CO", "EO", "ET", "EU", "FI", "GL", "GU", "FY", "HA", "HE", "HI", "HMN", "HAW", "HR", "HU", "HT", "ID", "IG", "IS", "KA", "SQ", "AM", "AR", "HY", "CEB", "GA", "JA", "JV", "KN", "KK", "KM", "RW", "KO", "KU", "KY", "LV", "LT", "LB", "MK", "MG", "MS", "ML", "MT", "MI", "MR", "MN", "MY", "NE", "NO", "NY", "OR", "PS", "FA", "PL", "PT", "PA", "RO", "RU", "SM", "GD", "SR", "ST", "SN", "SD", "SI", "SK", "SL", "SO", "SU", "SW", "SV", "TL", "TG", "TA", "TR", "TT", "TE", "TH", "TK", "UK", "UR", "UG", "UZ", "VI", "CY", "XH", "YI", "YO", "ZU", "LO", "ZH-TW", "BG", "CS", "DA", "DE", "EL", "ES", "FR", "IT", "NL", "ZH"};
 
-        for (String tag : availableLocale) {
+        for (String tag : availableLocaleAsStringArray) {
             if (tag.contains("-")) {
                 String[] tagParts = tag.split("-");
                 Locale oneLocaleWithRegion = new Locale.Builder().setLanguage(tagParts[0]).setRegion(tagParts[1]).build();
-                locales.add(oneLocaleWithRegion);
+                if (oneLocaleWithRegion != null) {
+                    locales.add(oneLocaleWithRegion);
+                }
             } else {
-                locales.add(Locale.forLanguageTag(tag.toLowerCase()));
+                Locale locale = Locale.forLanguageTag(tag.toLowerCase());
+                if (locale != null) {
+                    locales.add(locale);
+                }
             }
         }
 
         // this dance is to make sure that in the dropdown menu,
         // 1. the visible item of the selection is the current language (makes intuitive sense to the user)
         // 2. English is placed in second next to the visible item (because it is a very common language)
-        available = new ArrayList();
+        availableLocales = new ArrayList();
         FacesContext currentInstance = FacesContext.getCurrentInstance();
         Locale requestLocale;
-        if (currentInstance == null){
+        if (currentInstance == null) {
             requestLocale = Locale.ENGLISH;
-        }else{
+        } else {
             requestLocale = currentInstance.getExternalContext().getRequestLocale();
         }
         for (Locale l : locales) {
             if (!l.getLanguage().equals(requestLocale.getLanguage()) & !l.getLanguage().equals("en")) {
-                available.add(l);
+                availableLocales.add(l);
             }
         }
-        List<Locale> sortedList = available.stream()
+        List<Locale> sortedList = availableLocales.stream()
                 .sorted(new LocaleComparator(currentLocale))
                 .collect(Collectors.toList());
-        available = new ArrayList();
-        available.addAll(sortedList);
+        availableLocales = new ArrayList();
+        availableLocales.addAll(sortedList);
         if (!requestLocale.getLanguage().equals("en")) {
-            available.add(Locale.ENGLISH);
+            availableLocales.add(Locale.ENGLISH);
         }
-        available.add(requestLocale);
-        return available;
+        availableLocales.add(requestLocale);
+        return availableLocales;
     }
 }

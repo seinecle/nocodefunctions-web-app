@@ -5,7 +5,7 @@ package net.clementlevallois.nocodeapp.web.front.backingbeans.tests;
 
 import java.util.List;
 import java.util.Locale;
-import net.clementlevallois.nocodeapp.web.front.backingbeans.ActiveLocale;
+import net.clementlevallois.nocodeapp.web.front.backingbeans.LocaleBean;
 import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.Test;
 
@@ -13,12 +13,12 @@ import org.junit.jupiter.api.Test;
  *
  * @author LEVALLOIS
  */
-public class ActiveLocaleTest {
+public class LocaleBeanTest {
     
     @Test
     public void getAvailableReturnsAList(){
-        ActiveLocale activeLocale = new ActiveLocale();
-        List<Locale> available = activeLocale.getAvailable();
+        LocaleBean activeLocale = new LocaleBean();
+        List<Locale> available = activeLocale.getAvailableLocales();
         assertThat(available).size().isGreaterThan(100);
     }
     

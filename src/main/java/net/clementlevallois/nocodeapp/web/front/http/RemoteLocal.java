@@ -69,7 +69,7 @@ public class RemoteLocal {
     }
 
     public static boolean isLocal() {
-        return System.getProperty("test") == null || System.getProperty("test").isBlank();
+        return System.getProperty("os.name").toLowerCase().contains("win");
     }
 
     public static boolean isTest() {
