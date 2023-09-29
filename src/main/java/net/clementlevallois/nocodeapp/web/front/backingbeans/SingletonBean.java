@@ -52,10 +52,16 @@ public class SingletonBean {
     }
 
     public static String getExternalFolderForInternationalizationFiles() {
+        if (rootProject == null){
+            new SingletonBean();
+        }
         return rootProject + "i18n" + File.separator + "src" + File.separator + "main" + File.separator + "resources" + File.separator;
     }
 
     public static String getRootOfProject() {
+        if (rootProject == null){
+            new SingletonBean();
+        }
         return rootProject;
     }
 
