@@ -9,6 +9,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Path;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -25,30 +26,29 @@ public class ExportToGephisto {
     public static String exportAndReturnLink(String gexf, boolean shareGephistoPublicly) {
 
         try {
+            String urlGephisto = RemoteLocal.isLocal() ? "" : "gephisto/data/";
 
             byte[] readAllBytes = gexf.getBytes();
-            String urlGephisto;
             try (InputStream inputStreamToSave = new ByteArrayInputStream(readAllBytes)) {
-                String path = RemoteLocal.isLocal() ? "" : "gephisto/data/";
                 String subfolder;
                 long nextLong = ThreadLocalRandom.current().nextLong();
-                String gephistoGexfFileName = "gephisto_" + String.valueOf(nextLong) + ".gexf";
+                String gephistoGexfFileName = "gephisto_" + String.valueOf(Math.abs(nextLong)) + ".gexf";
                 if (shareGephistoPublicly) {
                     subfolder = "public/";
                 } else {
                     subfolder = "private/";
                 }
-                path = path + subfolder;
+                urlGephisto = urlGephisto + subfolder +  gephistoGexfFileName;
                 if (RemoteLocal.isLocal()) {
-                    path = SingletonBean.getRootOfProject() + "user_created_files";
+                    urlGephisto = Path.of(SingletonBean.getRootOfProject(), "user_created_files", gephistoGexfFileName).toString();
                 }
-                File file = new File(path + gephistoGexfFileName);
+                File file = new File(urlGephisto);
                 try (OutputStream output = new FileOutputStream(file, false)) {
                     inputStreamToSave.transferTo(output);
                 }
                 if (RemoteLocal.isTest()) {
                     urlGephisto = "https://test.nocodefunctions.com/gephisto/index.html?gexf-file=" + subfolder + gephistoGexfFileName;
-                    
+
                 } else {
                     urlGephisto = "https://nocodefunctions.com/gephisto/index.html?gexf-file=" + subfolder + gephistoGexfFileName;
                 }
