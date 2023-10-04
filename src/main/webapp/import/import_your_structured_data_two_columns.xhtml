@@ -84,13 +84,13 @@
                                         value="#{text['import_data.general.read_data']}"
                                         onclick="PF('pbAjaxLong').start()"
                                         action="#{dataImportBean.readData}"
-                                        update=":header:messages :tabs"/>
+                                        update=":notifications :tabs"/>
                                     <br/>
                                     <br/>
                                     <!--PROGRESS BAR FOR READ OPERATION-->
                                     <p:progressBar id="pb" widgetVar="pbAjaxLong" ajax="true" value="#{dataImportBean.progress}" rendered="#{dataImportBean.renderProgressBar}"
                                                    labelTemplate="{value}%" styleClass="p-mt-3" global="false" interval="500">
-                                        <p:ajax event="complete" update=":header:messages :tabs"/>
+                                        <p:ajax event="complete" update=":notifications :tabs"/>
                                     </p:progressBar>
                                 </p:outputPanel>
                             </p:outputPanel>
@@ -107,7 +107,7 @@
                                     value="#{text['general.verbs.compute']}"
                                     action="#{dataImportBean.launchAnalysisForTwoColumnsDataset()}"
                                     styleClass="p-mr-2"
-                                    update=":header:messages"/>
+                                    update=":notifications"/>
                             </h:form>
                         </p:outputPanel>
 

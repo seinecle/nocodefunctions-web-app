@@ -43,7 +43,7 @@
                                 <f:selectItems
                                     value="#{cowoBean.available}" var="l"
                                     itemValue="#{l.toLanguageTag()}"
-                                    itemLabel="#{l.getDisplayLanguage(actilocaleBeanrentLocale)}"/>
+                                    itemLabel="#{l.getDisplayLanguage(localeBean.currentLocale)}"/>
                                 <p:ajax event="change" process="@this"/>
                             </p:selectOneListbox>
                             <div>

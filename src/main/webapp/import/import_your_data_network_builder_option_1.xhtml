@@ -107,13 +107,13 @@
                                         value="#{text['import_data.general.read_data']}"
                                         onclick="PF('pbAjaxLong').start()"
                                         action="#{dataImportBean.readData}"
-                                        update=":tab :launch" />
+                                        update=":tab :launch :notifications" />
                                     <br/>
                                     <br/>
                                     <!--PROGRESS BAR FOR READ OPERATION-->
                                     <p:progressBar id="pb" widgetVar="pbAjaxLong" ajax="true" value="#{dataImportBean.progress}" rendered="#{dataImportBean.renderProgressBar}"
                                                    labelTemplate="{value}%" styleClass="p-mt-3" global="false" interval="500">
-                                        <p:ajax event="complete" update=":tab :launch"/>
+                                        <p:ajax event="complete" update=":tab :launch :notifications"/>
                                     </p:progressBar>
                                 </p:outputPanel>
                             </p:outputPanel>
@@ -129,7 +129,8 @@
                                     action="#{gazeBean.runCoocAnalysis}"
                                     onclick="PF('pbAjaxLong').start();PF('gazeLaunchButton').disable()"
                                     styleClass="btn btn-primary"
-                                    rendered="#{not empty dataImportBean.dataInSheets}"/>
+                                    rendered="#{not empty dataImportBean.dataInSheets}"
+                                    update=":notifications" />
                             </h:form>
                         </p:outputPanel>
 

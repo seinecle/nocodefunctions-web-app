@@ -57,7 +57,7 @@
                                 listener="#{oneFileUploadInMultipleUploadBean.handleFileUpload}"
                                 update=":notifications whenFileUploaded"
                                 allowTypes="/(\.|\/)(pdf)$/"
-                                fileLimit="100"                                    
+                                fileLimit="100"
                                 >
                             </p:fileUpload>
                             <br/>
@@ -92,7 +92,7 @@
                                         value="#{text['import_data.pdfregion.proceed']}"
                                         onclick="PF('pbAjaxLong').start()"
                                         action="#{pdfRegionExtractorBean.extract}"
-                                        update=":header:messages"/>
+                                        update=":notifications"/>
                                     <br/>
                                     <br/>
                                     <!--PROGRESS BAR FOR READ OPERATION-->

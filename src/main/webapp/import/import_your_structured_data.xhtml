@@ -83,7 +83,7 @@
                                         value="#{text['import_data.general.read_data']}"
                                         onclick="PF('pbAjaxLong').start()"
                                         action="#{dataImportBean.readData}"
-                                        update="pb :tab"/>
+                                        update="pb :tab :notifications"/>
                                     <br/>
                                     <br/>
                                     <!--PROGRESS BAR FOR READ OPERATION-->
@@ -97,7 +97,7 @@
                                         styleClass="p-mt-3"
                                         global="false"
                                         interval="500">
-                                        <p:ajax event="complete" update=":tab"/>
+                                        <p:ajax event="complete" update=":tab :notifications"/>
                                     </p:progressBar>
                                 </p:outputPanel>
                             </p:outputPanel>
