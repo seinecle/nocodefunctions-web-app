@@ -9,7 +9,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.HashMap;
 import java.util.Map;
-import net.clementlevallois.nocodeapp.web.front.backingbeans.SingletonBean;
+import net.clementlevallois.nocodeapp.web.front.utils.ApplicationProperties;
 
 /**
  *
@@ -101,13 +101,13 @@ public class SendReport extends Thread {
             int port;
             if (System.getProperty("os.name").toLowerCase().contains("win")) {
                 scheme = "http";
-                host = SingletonBean.getPrivateProperties().getProperty("middleware_local_host");
-                port = Integer.parseInt(SingletonBean.getPrivateProperties().getProperty("middleware_local_port"));
+                host = ApplicationProperties.getPrivateProperties().getProperty("middleware_local_host");
+                port = Integer.parseInt(ApplicationProperties.getPrivateProperties().getProperty("middleware_local_port"));
                 testLocalOnWindows = true;
             } else {
                 scheme = "https";
-                host = SingletonBean.getPrivateProperties().getProperty("middleware_remote_host");
-                port = Integer.parseInt(SingletonBean.getPrivateProperties().getProperty("middleware_remote_port"));
+                host = ApplicationProperties.getPrivateProperties().getProperty("middleware_remote_host");
+                port = Integer.parseInt(ApplicationProperties.getPrivateProperties().getProperty("middleware_remote_port"));
                 testLocalOnWindows = false;
             }
             if (testLocalOnWindows && !middleWareRunningOnWindows) {

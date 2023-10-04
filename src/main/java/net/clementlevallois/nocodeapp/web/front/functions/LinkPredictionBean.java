@@ -3,7 +3,6 @@ package net.clementlevallois.nocodeapp.web.front.functions;
 import io.mikael.urlbuilder.UrlBuilder;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.Serializable;
 import java.io.StringReader;
 import java.net.URI;
@@ -18,7 +17,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import jakarta.enterprise.context.SessionScoped;
 import jakarta.faces.application.FacesMessage;
-import jakarta.faces.context.FacesContext;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import jakarta.json.Json;
@@ -34,7 +32,7 @@ import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.StreamedContent;
 import org.primefaces.model.file.UploadedFile;
 import net.clementlevallois.functions.model.Prediction;
-import net.clementlevallois.nocodeapp.web.front.backingbeans.SingletonBean;
+import net.clementlevallois.nocodeapp.web.front.utils.ApplicationProperties;
 
 /**
  *
@@ -70,7 +68,7 @@ public class LinkPredictionBean implements Serializable {
             sessionBean = new SessionBean();
         }
         sessionBean.setFunction("linkprediction");
-        privateProperties = SingletonBean.getPrivateProperties();
+        privateProperties = ApplicationProperties.getPrivateProperties();
     }
 
     public UploadedFile getUploadedFile() {

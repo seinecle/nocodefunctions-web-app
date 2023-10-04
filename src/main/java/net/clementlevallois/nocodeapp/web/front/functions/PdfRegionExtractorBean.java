@@ -4,7 +4,6 @@ import io.mikael.urlbuilder.UrlBuilder;
 import java.io.Serializable;
 import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.SessionScoped;
-import jakarta.faces.application.FacesMessage;
 import jakarta.faces.context.FacesContext;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
@@ -34,9 +33,9 @@ import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 import net.clementlevallois.importers.model.SheetModel;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
-import net.clementlevallois.nocodeapp.web.front.backingbeans.SingletonBean;
 import net.clementlevallois.nocodeapp.web.front.importdata.DataImportBean;
 import net.clementlevallois.nocodeapp.web.front.logview.LogBean;
+import net.clementlevallois.nocodeapp.web.front.utils.ApplicationProperties;
 import net.clementlevallois.nocodeapp.web.front.utils.Converters;
 import org.primefaces.model.CroppedImage;
 import org.primefaces.model.DefaultStreamedContent;
@@ -78,7 +77,7 @@ public class PdfRegionExtractorBean implements Serializable {
     DataImportBean inputData;
 
     public PdfRegionExtractorBean() {
-        privateProperties = SingletonBean.getPrivateProperties();
+        privateProperties = ApplicationProperties.getPrivateProperties();
     }
 
     @PostConstruct

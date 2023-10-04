@@ -24,7 +24,7 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
-import net.clementlevallois.nocodeapp.web.front.backingbeans.SingletonBean;
+import net.clementlevallois.nocodeapp.web.front.utils.ApplicationProperties;
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
@@ -61,7 +61,7 @@ public class SpatializeBean implements Serializable {
             sessionBean = new SessionBean();
         }
         sessionBean.setFunction("spatialize");
-        privateProperties = SingletonBean.getPrivateProperties();
+        privateProperties = ApplicationProperties.getPrivateProperties();
     }
 
     public String logout() {

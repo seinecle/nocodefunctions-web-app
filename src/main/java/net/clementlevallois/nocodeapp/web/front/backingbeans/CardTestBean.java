@@ -20,6 +20,7 @@ import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
 import net.clementlevallois.nocodeapp.web.front.functions.UmigonBean;
 import net.clementlevallois.nocodeapp.web.front.http.SendReport;
+import net.clementlevallois.nocodeapp.web.front.utils.ApplicationProperties;
 import net.clementlevallois.umigon.model.classification.Document;
 
 /**
@@ -71,7 +72,7 @@ public class CardTestBean implements Serializable {
         if (sessionBean == null) {
             sessionBean = new SessionBean();
         }
-        privateProperties = SingletonBean.getPrivateProperties();
+        privateProperties = ApplicationProperties.getPrivateProperties();
     }
 
     public String getUmigonTestInputFR() {

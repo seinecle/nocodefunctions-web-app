@@ -29,10 +29,10 @@ import java.io.InputStream;
 import java.util.Properties;
 import net.clementlevallois.importers.model.DataFormatConverter;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
-import net.clementlevallois.nocodeapp.web.front.backingbeans.SingletonBean;
 import net.clementlevallois.nocodeapp.web.front.importdata.DataImportBean;
 import net.clementlevallois.nocodeapp.web.front.http.SendReport;
 import net.clementlevallois.nocodeapp.web.front.logview.LogBean;
+import net.clementlevallois.nocodeapp.web.front.utils.ApplicationProperties;
 import net.clementlevallois.nocodeapp.web.front.utils.Converters;
 import net.clementlevallois.umigon.model.classification.Document;
 import org.primefaces.model.DefaultStreamedContent;
@@ -71,7 +71,7 @@ public class OrganicBean implements Serializable {
     private final Properties privateProperties;
     
     public OrganicBean() {
-        privateProperties = SingletonBean.getPrivateProperties();
+        privateProperties = ApplicationProperties.getPrivateProperties();
     }
 
     @PostConstruct

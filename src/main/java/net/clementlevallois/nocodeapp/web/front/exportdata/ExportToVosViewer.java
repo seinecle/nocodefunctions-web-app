@@ -19,9 +19,9 @@ import java.util.Properties;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import net.clementlevallois.nocodeapp.web.front.backingbeans.SingletonBean;
 import net.clementlevallois.nocodeapp.web.front.functions.BiblioCouplingBean;
 import net.clementlevallois.nocodeapp.web.front.http.RemoteLocal;
+import net.clementlevallois.nocodeapp.web.front.utils.ApplicationProperties;
 import org.primefaces.model.file.UploadedFile;
 
 /**
@@ -72,7 +72,7 @@ public class ExportToVosViewer {
         return "";
     }
 
-    public static String exportAndReturnLinkFromUploadedFile(UploadedFile uploadedFile, boolean shareVVPublicly, Properties privateProperties, String item, String link, String linkStrength) {
+    public static String exportAndReturnLinkFromUploadedFile(UploadedFile uploadedFile, boolean shareVVPublicly, String item, String link, String linkStrength) {
         try {
             if (uploadedFile == null) {
                 System.out.println("no file found for conversion to vv");
@@ -90,7 +90,7 @@ public class ExportToVosViewer {
             URI uri = UrlBuilder
                     .empty()
                     .withScheme("http")
-                    .withPort(Integer.valueOf(privateProperties.getProperty("nocode_api_port")))
+                    .withPort(Integer.valueOf(ApplicationProperties.getPrivateProperties().getProperty("nocode_api_port")))
                     .withHost("localhost")
                     .withPath("api/convert2vv")
                     .addParameter("item", item)
@@ -125,34 +125,27 @@ public class ExportToVosViewer {
 
     private static String finishOpsFromGraphAsJson(String graphAsJsonVosViewer, boolean shareVVPublicly) {
         graphAsJsonVosViewer = Json.encodePointer(graphAsJsonVosViewer);
-
-        String path = RemoteLocal.isLocal() ? "" : "html/vosviewer/data/";
-        String subfolder;
         long nextLong = ThreadLocalRandom.current().nextLong();
         String vosviewerJsonFileName = "vosviewer_" + String.valueOf(nextLong) + ".json";
-        if (shareVVPublicly) {
-            subfolder = "public/";
-        } else {
-            subfolder = "private/";
-        }
-        path = path + subfolder;
 
-        if (RemoteLocal.isLocal()) {
-            path = SingletonBean.getRootOfProject() + "user_created_files";
-        }
-
-        try (BufferedWriter bw = Files.newBufferedWriter(Path.of(path, vosviewerJsonFileName), StandardCharsets.UTF_8)) {
-            bw.write(graphAsJsonVosViewer);
+        Path dir = shareVVPublicly ? ApplicationProperties.getUserGeneratedVosviewerPublicDirectoryFullPath() : ApplicationProperties.getUserGeneratedVosviewerPrivateDirectoryFullPath();
+        Path fullPathFileToWrite = dir.resolve(Path.of(vosviewerJsonFileName));
+        try {
+            Files.writeString(fullPathFileToWrite, graphAsJsonVosViewer, StandardCharsets.UTF_8);
         } catch (IOException ex) {
-            Logger.getLogger(BiblioCouplingBean.class.getName()).log(Level.SEVERE, null, ex);
+            System.out.println("error when writing user generated vv file to disk");
+            System.out.println("ex: " + ex);
         }
-        String domain;
-        if (RemoteLocal.isTest()) {
-            domain = "https://test.nocodefunctions.com";
-        } else {
-            domain = "https://nocodefunctions.com";
+        if (RemoteLocal.isLocal()) {
+            return fullPathFileToWrite.toString();
         }
-        String urlVV = domain + "/html/vosviewer/index.html?json=data/" + subfolder + vosviewerJsonFileName;
-        return urlVV;
+
+        
+        Path relativePathFromProjectRootToVosviewerFolder = ApplicationProperties.getRootProjectFullPath().relativize(ApplicationProperties.getVosviewerRootFullPath());
+        
+        String urlWithoutParamValue = RemoteLocal.getDomain() + "/" + relativePathFromProjectRootToVosviewerFolder + "/index.html?json=";
+        Path relativePathToVosviewerFile = ApplicationProperties.getVosviewerRootFullPath().relativize(fullPathFileToWrite);
+        String fullUrl = urlWithoutParamValue + relativePathToVosviewerFile;
+        return fullUrl;
     }
 }

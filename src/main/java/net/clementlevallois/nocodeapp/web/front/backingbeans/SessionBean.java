@@ -31,9 +31,6 @@ public class SessionBean implements Serializable {
     private String noRobot;
     private Locale currentLocale;
 
-    @Inject
-    SingletonBean singletonBean;
-
     public SessionBean() {
     }
 
@@ -135,14 +132,6 @@ public class SessionBean implements Serializable {
 
     public void setNoRobot(String noRobot) {
         this.noRobot = noRobot;
-    }
-
-    public SingletonBean getSingletonBean() {
-        return singletonBean;
-    }
-
-    public void setSingletonBean(SingletonBean singletonBean) {
-        this.singletonBean = singletonBean;
     }
 
     public Locale getCurrentLocale() {

@@ -39,8 +39,8 @@ import net.clementlevallois.nocodeapp.web.front.importdata.DataImportBean;
 import net.clementlevallois.functions.model.Occurrence;
 import net.clementlevallois.importers.model.CellRecord;
 import net.clementlevallois.importers.model.SheetModel;
-import net.clementlevallois.nocodeapp.web.front.backingbeans.SingletonBean;
 import net.clementlevallois.nocodeapp.web.front.logview.LogBean;
+import net.clementlevallois.nocodeapp.web.front.utils.ApplicationProperties;
 import net.clementlevallois.nocodeapp.web.front.utils.Converters;
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
@@ -77,7 +77,7 @@ public class PdfMatcherBean implements Serializable {
     DataImportBean inputData;
 
     public PdfMatcherBean() {
-        privateProperties = SingletonBean.getPrivateProperties();
+        privateProperties = ApplicationProperties.getPrivateProperties();
     }
 
     @PostConstruct

@@ -3,19 +3,13 @@
  */
 package net.clementlevallois.nocodeapp.web.front.exportdata;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import net.clementlevallois.nocodeapp.web.front.backingbeans.SingletonBean;
-import net.clementlevallois.nocodeapp.web.front.functions.BiblioCouplingBean;
 import net.clementlevallois.nocodeapp.web.front.http.RemoteLocal;
+import net.clementlevallois.nocodeapp.web.front.utils.ApplicationProperties;
 
 /**
  *
@@ -24,41 +18,27 @@ import net.clementlevallois.nocodeapp.web.front.http.RemoteLocal;
 public class ExportToGephisto {
 
     public static String exportAndReturnLink(String gexf, boolean shareGephistoPublicly) {
+        long nextLong = ThreadLocalRandom.current().nextLong();
+        String gephistoGexfFileName = "gephisto_" + String.valueOf(Math.abs(nextLong)) + ".gexf";
 
+        Path dir = shareGephistoPublicly ? ApplicationProperties.getUserGeneratedGephistoPublicDirectoryFullPath() : ApplicationProperties.getUserGeneratedGephistoPrivateDirectoryFullPath();
+        Path fullPathFileToWrite = dir.resolve(Path.of(gephistoGexfFileName));
         try {
-            String urlGephisto = RemoteLocal.isLocal() ? "" : "gephisto/data/";
-
-            byte[] readAllBytes = gexf.getBytes();
-            try (InputStream inputStreamToSave = new ByteArrayInputStream(readAllBytes)) {
-                String subfolder;
-                long nextLong = ThreadLocalRandom.current().nextLong();
-                String gephistoGexfFileName = "gephisto_" + String.valueOf(Math.abs(nextLong)) + ".gexf";
-                if (shareGephistoPublicly) {
-                    subfolder = "public/";
-                } else {
-                    subfolder = "private/";
-                }
-                urlGephisto = urlGephisto + subfolder +  gephistoGexfFileName;
-                if (RemoteLocal.isLocal()) {
-                    urlGephisto = Path.of(SingletonBean.getRootOfProject(), "user_created_files", gephistoGexfFileName).toString();
-                }
-                File file = new File(urlGephisto);
-                try (OutputStream output = new FileOutputStream(file, false)) {
-                    inputStreamToSave.transferTo(output);
-                }
-                if (RemoteLocal.isTest()) {
-                    urlGephisto = "https://test.nocodefunctions.com/gephisto/index.html?gexf-file=" + subfolder + gephistoGexfFileName;
-
-                } else {
-                    urlGephisto = "https://nocodefunctions.com/gephisto/index.html?gexf-file=" + subfolder + gephistoGexfFileName;
-                }
-            }
-            return urlGephisto;
+            Files.writeString(fullPathFileToWrite, gexf, StandardCharsets.UTF_8);
         } catch (IOException ex) {
-            Logger.getLogger(BiblioCouplingBean.class.getName()).log(Level.SEVERE, null, ex);
+            System.out.println("error when writing user generated gexf file to disk for export to Gephisto");
+            System.out.println("ex: " + ex);
         }
-        return "";
+        if (RemoteLocal.isLocal()) {
+            return fullPathFileToWrite.toString();
+        }
 
+        Path relativePathFromProjectRootToGephistoFolder = ApplicationProperties.getRootProjectFullPath().relativize(ApplicationProperties.getGephistoRootFullPath());
+
+        String urlWithoutParamValue = RemoteLocal.getDomain() + "/" + relativePathFromProjectRootToGephistoFolder + "/index.html?gexf-file=";
+        Path relativePathToGephistoFile = ApplicationProperties.getGephistoRootFullPath().relativize(fullPathFileToWrite);
+        String fullUrl = urlWithoutParamValue + relativePathToGephistoFile;
+        return fullUrl;
     }
 
 }

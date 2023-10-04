@@ -19,8 +19,8 @@ import jakarta.inject.Named;
 import jakarta.servlet.annotation.MultipartConfig;
 import java.util.Properties;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
-import net.clementlevallois.nocodeapp.web.front.backingbeans.SingletonBean;
 import net.clementlevallois.nocodeapp.web.front.exportdata.ExportToVosViewer;
+import net.clementlevallois.nocodeapp.web.front.utils.ApplicationProperties;
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
@@ -58,7 +58,7 @@ public class ConverterBean implements Serializable {
             sessionBean = new SessionBean();
         }
         sessionBean.setFunction("networkconverter");
-        privateProperties = SingletonBean.getPrivateProperties();
+        privateProperties = ApplicationProperties.getPrivateProperties();
     }
 
     @PostConstruct
@@ -94,7 +94,7 @@ public class ConverterBean implements Serializable {
     }
 
     public void gotoVV() {
-        String linkToVosViewer = ExportToVosViewer.exportAndReturnLinkFromUploadedFile(uploadedFile, shareVVPublicly, SingletonBean.getPrivateProperties(), item, link, linkStrength);
+        String linkToVosViewer = ExportToVosViewer.exportAndReturnLinkFromUploadedFile(uploadedFile, shareVVPublicly, item, link, linkStrength);
         if (linkToVosViewer != null && !linkToVosViewer.isBlank()) {
             try {
                 ExternalContext externalContext = FacesContext.getCurrentInstance().getExternalContext();

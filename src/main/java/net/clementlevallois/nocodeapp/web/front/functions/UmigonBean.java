@@ -29,10 +29,10 @@ import java.io.InputStream;
 import java.util.Properties;
 import net.clementlevallois.importers.model.DataFormatConverter;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
-import net.clementlevallois.nocodeapp.web.front.backingbeans.SingletonBean;
 import net.clementlevallois.nocodeapp.web.front.importdata.DataImportBean;
 import net.clementlevallois.nocodeapp.web.front.http.SendReport;
 import net.clementlevallois.nocodeapp.web.front.logview.LogBean;
+import net.clementlevallois.nocodeapp.web.front.utils.ApplicationProperties;
 import net.clementlevallois.nocodeapp.web.front.utils.Converters;
 import net.clementlevallois.umigon.model.classification.Document;
 import org.primefaces.model.DefaultStreamedContent;
@@ -79,7 +79,7 @@ public class UmigonBean implements Serializable {
         String negative_tone = sessionBean.getLocaleBundle().getString("general.nouns.sentiment_negative");
         String neutral_tone = sessionBean.getLocaleBundle().getString("general.nouns.sentiment_neutral");
         sentiments = new String[]{positive_tone, negative_tone, neutral_tone};
-        privateProperties = SingletonBean.getPrivateProperties();
+        privateProperties = ApplicationProperties.getPrivateProperties();
 
     }
 
@@ -146,7 +146,7 @@ public class UmigonBean implements Serializable {
                         .addParameter("text", entry.getValue())
                         .addParameter("explanation", "on")
                         .addParameter("shorter", "true")
-                        .addParameter("owner", SingletonBean.getPrivateProperties().getProperty("pwdOwner"))
+                        .addParameter("owner", privateProperties.getProperty("pwdOwner"))
                         .addParameter("output-format", "bytes")
                         .addParameter("explanation-lang", sessionBean.getCurrentLocale().toLanguageTag())
                         .toUri();

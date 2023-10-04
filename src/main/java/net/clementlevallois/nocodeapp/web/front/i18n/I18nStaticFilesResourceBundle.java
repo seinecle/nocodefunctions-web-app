@@ -14,7 +14,7 @@ import java.util.Locale;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import net.clementlevallois.nocodeapp.web.front.backingbeans.SingletonBean;
+import net.clementlevallois.nocodeapp.web.front.utils.ApplicationProperties;
 
 /**
  *
@@ -46,7 +46,7 @@ public class I18nStaticFilesResourceBundle extends ResourceBundle {
 
     public ResourceBundle simpleMethodToGetResourceBundle(Locale locale) {
         try {
-            File i8nFolderAsFile = new File(SingletonBean.getExternalFolderForInternationalizationFiles());
+            File i8nFolderAsFile = ApplicationProperties.getExternalFolderForInternationalizationFiles().toFile();
             URL[] urls = {i8nFolderAsFile.toURI().toURL()};
             try (URLClassLoader loader = new URLClassLoader(urls)) {
                 rb = ResourceBundle.getBundle("text", locale, loader);
