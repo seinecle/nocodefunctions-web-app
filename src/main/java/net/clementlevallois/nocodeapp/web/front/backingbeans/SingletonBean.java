@@ -16,13 +16,16 @@ public class SingletonBean {
 
     public SingletonBean() {
         ApplicationProperties.load();
+        setStage();
     }
     
-    public void setStage(){
+    private final void setStage(){
         if (RemoteLocal.isTest() || RemoteLocal.isLocal()){
             System.setProperty("projectStage", "Development");
+            System.out.println("project stage set to DEVELOPMENT");
         }else{
             System.setProperty("projectStage", "Production");            
+            System.out.println("project stage set to PRODUCTION");
         }
     }
 
