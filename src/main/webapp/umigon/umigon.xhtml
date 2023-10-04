@@ -3,10 +3,10 @@
     xmlns="http://www.w3.org/1999/xhtml"
     xmlns:h="jakarta.faces.html"
     xmlns:f="jakarta.faces.core"
-    
+
     xmlns:p="http://primefaces.org/ui"
     xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
-    <f:view locale="#{aclocaleBeanurrentLocale}">
+    <f:view locale="#{localeBean.currentLocale}">
 
         <h:head>
             <title>#{text['umigon.sentiment_analysis_tool.title']}</title>
@@ -48,7 +48,7 @@
                         #{text['general.message.language_of_text_to_analyze']}
                         <br/>
                         <br/>
-                        <h:form id="form3">
+                        <h:form>
                             <p:selectOneListbox id="lang" value="#{umigonBean.selectedLanguage}" style="width: 50px !important">
                                 <f:selectItem itemLabel="#{text['general.languages.english']}" itemValue="en"/>
                                 <f:selectItem itemLabel="#{text['general.languages.french']}" itemValue="fr"/>
@@ -62,20 +62,22 @@
                         <p:spacer height="20"/>
                     </div>
                     <p:panel>
-                        <!--RUN ANALYSIS BUTTON-->
-                        <p:commandButton
-                            value="#{text['general.verbs.compute']}"
-                            widgetVar="umigonButton" action="#{umigonBean.runAnalysis}"
-                            onclick="PF('pbAjaxLong').start();PF('umigonButton').disable()" 
-                            styleClass="btn btn-primary"/>
-                        <br/>
-                        <br/>
+                        <h:form>
+                            <!--RUN ANALYSIS BUTTON-->
+                            <p:commandButton
+                                value="#{text['general.verbs.compute']}"
+                                widgetVar="umigonButton" action="#{umigonBean.runAnalysis}"
+                                onclick="PF('pbAjaxLong').start();PF('umigonButton').disable()" 
+                                styleClass="btn btn-primary"/>
+                            <br/>
+                            <br/>
 
-                        <!--PROGRESS BAR FOR RUN ANALYSIS-->
-                        <p:progressBar id="pb" widgetVar="pbAjaxLong" ajax="true" value="#{umigonBean.progress}"
-                                       labelTemplate="{value}%" styleClass="p-mt-3" global="false" interval="500">
-                            <p:ajax event="complete" update=":header:messages"/>
-                        </p:progressBar>
+                            <!--PROGRESS BAR FOR RUN ANALYSIS-->
+                            <p:progressBar id="pb" widgetVar="pbAjaxLong" ajax="true" value="#{umigonBean.progress}"
+                                           labelTemplate="{value}%" styleClass="p-mt-3" global="false" interval="500">
+                                <p:ajax event="complete" update=":header:messages"/>
+                            </p:progressBar>
+                        </h:form>
                     </p:panel>
                 </div>
                 <div id="thirdcol" class="col-3 flex-grow-1">

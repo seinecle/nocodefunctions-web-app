@@ -5,7 +5,7 @@
     xmlns:f="jakarta.faces.core"
     xmlns:p="http://primefaces.org/ui"
     xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
-    <f:view locale="#{aclocaleBeanurrentLocale}">
+    <f:view locale="#{localeBean.currentLocale}">
         <h:head>
             <title>#{text['cowo.cowo.title']}</title>
             <link rel="apple-touch-icon" sizes="180x180" href="#{resource['images/favicons/apple-touch-icon.png']}"/>
@@ -179,16 +179,18 @@
 
                     </p:panel> 
                     <p:spacer width="10" height="50"/>
-                    <!--RUN ANALYSIS BUTTON-->
-                    <p:commandButton value="#{text['general.verbs.compute']}" widgetVar="cowoButton" action="#{cowoBean.runAnalysis}" onclick="PF('pbAjaxLong').start();PF('cowoButton').disable()" styleClass="btn btn-primary"/>
-                    <br/>
-                    <br/>
-                    <p:spacer height="20"/>
-                    <!--PROGRESS BAR FOR RUN ANALYSIS-->
-                    <p:progressBar id="pb" widgetVar="pbAjaxLong" ajax="true" value="#{cowoBean.progress}"
-                                   labelTemplate="{value}%" styleClass="p-mt-3" global="false" interval="500">
-                        <p:ajax event="complete" update=":header:messages"/>
-                    </p:progressBar>
+                    <h:form>
+                        <!--RUN ANALYSIS BUTTON-->
+                        <p:commandButton value="#{text['general.verbs.compute']}" widgetVar="cowoButton" action="#{cowoBean.runAnalysis}" onclick="PF('pbAjaxLong').start();PF('cowoButton').disable()" styleClass="btn btn-primary"/>
+                        <br/>
+                        <br/>
+                        <p:spacer height="20"/>
+                        <!--PROGRESS BAR FOR RUN ANALYSIS-->
+                        <p:progressBar id="pb" widgetVar="pbAjaxLong" ajax="true" value="#{cowoBean.progress}"
+                                       labelTemplate="{value}%" styleClass="p-mt-3" global="false" interval="500">
+                            <p:ajax event="complete" update=":header:messages"/>
+                        </p:progressBar>
+                    </h:form>
                 </div>
                 <div class="col-3 flex-grow-1">
                     <p:panel header="Log">

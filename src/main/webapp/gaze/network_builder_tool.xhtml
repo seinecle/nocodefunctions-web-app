@@ -6,7 +6,7 @@
     xmlns:f="jakarta.faces.core"
     xmlns:p="http://primefaces.org/ui"
     xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
-    <f:view locale="#{aclocaleBeanurrentLocale}">
+    <f:view locale="#{localeBean.currentLocale}">
 
         <h:head>        <!-- Primary Meta Tags -->
             <title>#{text['gaze.network_builder.title']}</title>
@@ -103,7 +103,6 @@
                     <p:accordionPanel widgetVar="basic" activeIndex="null">
                         <p:tab title="#{text['gaze.network_builder.if_you_need_more_parameters']}">
                             <p class="p-m-0">
-
                                 <p:divider align="left">
                                     <div class="p-d-inline-flex p-ai-center">
                                         <i class="pi pi-chart-bar p-mr-2"/>
