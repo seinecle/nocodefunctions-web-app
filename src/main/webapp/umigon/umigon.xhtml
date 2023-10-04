@@ -3,7 +3,6 @@
     xmlns="http://www.w3.org/1999/xhtml"
     xmlns:h="jakarta.faces.html"
     xmlns:f="jakarta.faces.core"
-
     xmlns:p="http://primefaces.org/ui"
     xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
     <f:view locale="#{localeBean.currentLocale}">
@@ -61,13 +60,15 @@
                     <div>
                         <p:spacer height="20"/>
                     </div>
-                    <p:panel>
-                        <h:form>
+                    <h:form>
+                        <p:panel>
                             <!--RUN ANALYSIS BUTTON-->
                             <p:commandButton
                                 value="#{text['general.verbs.compute']}"
-                                widgetVar="umigonButton" action="#{umigonBean.runAnalysis}"
-                                onclick="PF('pbAjaxLong').start();PF('umigonButton').disable()" 
+                                widgetVar="umigonButton"
+                                action="#{umigonBean.runAnalysis}"
+                                onclick="PF('pbAjaxLong').start();PF('umigonButton').disable()"
+                                update=":notifications"
                                 styleClass="btn btn-primary"/>
                             <br/>
                             <br/>
@@ -75,13 +76,13 @@
                             <!--PROGRESS BAR FOR RUN ANALYSIS-->
                             <p:progressBar id="pb" widgetVar="pbAjaxLong" ajax="true" value="#{umigonBean.progress}"
                                            labelTemplate="{value}%" styleClass="p-mt-3" global="false" interval="500">
-                                <p:ajax event="complete" update=":header:messages"/>
+                                <p:ajax event="complete" update=":notifications"/>
                             </p:progressBar>
-                        </h:form>
-                    </p:panel>
+                        </p:panel>
+                    </h:form>
                 </div>
                 <div id="thirdcol" class="col-3 flex-grow-1">
-                    <p:panel header="Log">
+                    <p:panel header="Log" id="log">
                         <p:scrollPanel id="scrollPanel" mode="native" style="height:100%">
                             <h:dataTable id="notifications" value="#{logBean.notifications}" var="notification">
                                 <h:column>#{notification.message}</h:column>

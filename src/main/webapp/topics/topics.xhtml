@@ -173,13 +173,14 @@
                             widgetVar="topicsButton"
                             action="#{topicsBean.runAnalysis}"
                             onclick="PF('pbAjaxLong').start();PF('topicsButton').disable()"
-                            styleClass="btn btn-primary"/>
+                            styleClass="btn btn-primary"
+                            update=":notifications"/>
                         <br/>
                         <br/>
                         <!--PROGRESS BAR FOR RUN ANALYSIS-->
                         <p:progressBar id="pb" widgetVar="pbAjaxLong" ajax="true" value="#{topicsBean.progress}"
                                        labelTemplate="{value}%" styleClass="p-mt-3" global="false" interval="500">
-                            <p:ajax event="complete" update=":header:messages"/>
+                            <p:ajax event="complete" update=":notifications"/>
                         </p:progressBar>
                     </h:form>
                 </div>

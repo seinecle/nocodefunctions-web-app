@@ -181,14 +181,19 @@
                     <p:spacer width="10" height="50"/>
                     <h:form>
                         <!--RUN ANALYSIS BUTTON-->
-                        <p:commandButton value="#{text['general.verbs.compute']}" widgetVar="cowoButton" action="#{cowoBean.runAnalysis}" onclick="PF('pbAjaxLong').start();PF('cowoButton').disable()" styleClass="btn btn-primary"/>
+                        <p:commandButton value="#{text['general.verbs.compute']}"
+                                         widgetVar="cowoButton"
+                                         action="#{cowoBean.runAnalysis}"
+                                         onclick="PF('pbAjaxLong').start();PF('cowoButton').disable()"
+                                         styleClass="btn btn-primary"
+                                         update=":notifications"/>
                         <br/>
                         <br/>
                         <p:spacer height="20"/>
                         <!--PROGRESS BAR FOR RUN ANALYSIS-->
                         <p:progressBar id="pb" widgetVar="pbAjaxLong" ajax="true" value="#{cowoBean.progress}"
                                        labelTemplate="{value}%" styleClass="p-mt-3" global="false" interval="500">
-                            <p:ajax event="complete" update=":header:messages"/>
+                            <p:ajax event="complete" update=":notifications"/>
                         </p:progressBar>
                     </h:form>
                 </div>
