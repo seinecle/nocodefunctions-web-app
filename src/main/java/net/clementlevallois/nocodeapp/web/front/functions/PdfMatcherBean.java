@@ -140,6 +140,9 @@ public class PdfMatcherBean implements Serializable {
             int i = 0;
             List<CellRecord> cellRecords = oneDoc.getColumnIndexToCellRecords().get(0);
             for (CellRecord cr : cellRecords) {
+                if (cr.getRawValue() == null || cr.getRawValue().isBlank()) {
+                    continue;
+                }
                 lines.put(i++, cr.getRawValue());
             }
 
@@ -147,6 +150,9 @@ public class PdfMatcherBean implements Serializable {
 
             JsonObjectBuilder linesBuilder = Json.createObjectBuilder();
             for (Map.Entry<Integer, String> entryLines : lines.entrySet()) {
+                if (entryLines.getKey() == null || entryLines.getValue() == null) {
+                    continue;
+                }
                 linesBuilder.add(String.valueOf(entryLines.getKey()), entryLines.getValue());
             }
 
