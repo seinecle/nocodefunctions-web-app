@@ -206,7 +206,7 @@ public class UmigonBean implements Serializable {
         logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.analysis_complete"));
         renderSeeResultsButton = true;
         runButtonDisabled = true;
-
+        
         return "/" + sessionBean.getFunction() + "/results.xhtml?faces-redirect=true";
     }
 
