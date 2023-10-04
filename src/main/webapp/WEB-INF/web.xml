@@ -5,7 +5,7 @@
          version="5.0">
     <context-param>
         <param-name>jakarta.faces.PROJECT_STAGE</param-name>
-        <param-value>Production</param-value>
+        <param-value>${projectStage}</param-value>
     </context-param>
     <context-param>
         <param-name>jakarta.faces.STATE_SAVING_METHOD</param-name>
