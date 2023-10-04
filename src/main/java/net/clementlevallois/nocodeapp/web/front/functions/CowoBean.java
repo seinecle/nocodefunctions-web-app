@@ -61,7 +61,6 @@ public class CowoBean implements Serializable {
     private Integer progress = 0;
     private Boolean runButtonDisabled = true;
     private StreamedContent fileToSave;
-    private Boolean renderSeeResultsButton = false;
     private String selectedLanguage;
     private String nodesAsJson;
     private String edgesAsJson;
@@ -223,7 +222,6 @@ public class CowoBean implements Serializable {
 
             if (gexf == null) {
                 logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.internal_server_error"));
-                renderSeeResultsButton = true;
                 runButtonDisabled = true;
                 return "";
             }
@@ -264,14 +262,6 @@ public class CowoBean implements Serializable {
         }
         return "/" + sessionBean.getFunction()
                 + "/results.xhtml?faces-redirect=true";
-    }
-
-    public Boolean getRenderSeeResultsButton() {
-        return renderSeeResultsButton;
-    }
-
-    public void setRenderSeeResultsButton(Boolean renderSeeResultsButton) {
-        this.renderSeeResultsButton = renderSeeResultsButton;
     }
 
     public String getSelectedLanguage() {

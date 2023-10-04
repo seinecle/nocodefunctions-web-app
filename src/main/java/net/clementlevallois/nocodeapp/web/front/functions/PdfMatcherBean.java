@@ -57,7 +57,6 @@ public class PdfMatcherBean implements Serializable {
     private Integer progress;
     private Boolean runButtonDisabled = true;
     private StreamedContent fileToSave;
-    private Boolean renderSeeResultsButton = false;
     private String typeOfContext = "surroundingWords";
     private int nbWords = 5;
     private int nbLines = 2;
@@ -226,18 +225,9 @@ public class PdfMatcherBean implements Serializable {
         this.progress = 100;
 
         logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.analysis_complete"));
-        renderSeeResultsButton = true;
         runButtonDisabled = true;
 
         return "/" + sessionBean.getFunction() + "/results.xhtml?faces-redirect=true";
-    }
-
-    public Boolean getRenderSeeResultsButton() {
-        return renderSeeResultsButton;
-    }
-
-    public void setRenderSeeResultsButton(Boolean renderSeeResultsButton) {
-        this.renderSeeResultsButton = renderSeeResultsButton;
     }
 
     public Boolean getRunButtonDisabled() {

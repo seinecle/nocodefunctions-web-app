@@ -68,7 +68,6 @@ public class TopicsBean implements Serializable {
     private StreamedContent excelFileToSave;
     private StreamedContent fileTopicsPerLineToSave;
     private StreamedContent gexfFile;
-    private Boolean renderSeeResultsButton = false;
     private String selectedLanguage;
     private int precision = 50;
     private int minCharNumber = 4;
@@ -210,7 +209,6 @@ public class TopicsBean implements Serializable {
 
             if (jsonResultAsString == null) {
                 logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.internal_server_error"));
-                renderSeeResultsButton = true;
                 runButtonDisabled = true;
                 return "";
             }
@@ -226,7 +224,6 @@ public class TopicsBean implements Serializable {
             } catch (JsonParsingException jsonEx) {
                 System.out.println("error: the json we received is not formatted as json");
                 logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.internal_server_error"));
-                renderSeeResultsButton = true;
                 runButtonDisabled = true;
                 return "";
             }
@@ -290,21 +287,12 @@ public class TopicsBean implements Serializable {
             progress = 100;
 
             logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.analysis_complete"));
-            renderSeeResultsButton = true;
             runButtonDisabled = true;
 
         } catch (IOException | NumberFormatException | InterruptedException ex) {
             System.out.println("ex:" + ex.getMessage());
         }
         return "/" + sessionBean.getFunction() + "/results.xhtml?faces-redirect=true";
-    }
-
-    public Boolean getRenderSeeResultsButton() {
-        return renderSeeResultsButton;
-    }
-
-    public void setRenderSeeResultsButton(Boolean renderSeeResultsButton) {
-        this.renderSeeResultsButton = renderSeeResultsButton;
     }
 
     public String getSelectedLanguage() {

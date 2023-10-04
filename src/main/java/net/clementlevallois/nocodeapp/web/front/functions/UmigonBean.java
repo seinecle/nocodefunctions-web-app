@@ -55,7 +55,6 @@ public class UmigonBean implements Serializable {
     private String selectedLanguage;
     private Boolean runButtonDisabled = true;
     private StreamedContent fileToSave;
-    private Boolean renderSeeResultsButton = false;
     private List<Document> filteredDocuments;
     private Integer maxCapacity = 10_000;
     private Properties privateProperties;
@@ -204,18 +203,9 @@ public class UmigonBean implements Serializable {
         this.progress = 100;
 
         logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.analysis_complete"));
-        renderSeeResultsButton = true;
         runButtonDisabled = true;
-        
+
         return "/" + sessionBean.getFunction() + "/results.xhtml?faces-redirect=true";
-    }
-
-    public Boolean getRenderSeeResultsButton() {
-        return renderSeeResultsButton;
-    }
-
-    public void setRenderSeeResultsButton(Boolean renderSeeResultsButton) {
-        this.renderSeeResultsButton = renderSeeResultsButton;
     }
 
     public List<Document> getResults() {
