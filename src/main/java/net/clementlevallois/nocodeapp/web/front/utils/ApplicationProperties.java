@@ -11,8 +11,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
@@ -102,7 +100,7 @@ public class ApplicationProperties {
             props = new Properties();
             props.load(is);
         } catch (IOException ex) {
-            Logger.getLogger(ApplicationProperties.class.getName()).log(Level.SEVERE, null, ex);
+            System.out.println("ex: " + ex);
             System.out.println("could not open the file for private properties");
             System.out.println("path is: " + privatePropsFilePath.toString());
             System.out.println("EXITING NOW because without these properties, the app can't function");
@@ -239,19 +237,20 @@ public class ApplicationProperties {
         }
         List<String> vars = null;
         String currentWorkingDirectory = System.getProperty("user.dir");
-        System.out.println("working dir: "+ currentWorkingDirectory);
+        System.out.println("working dir: " + currentWorkingDirectory);
         try {
             vars = Files.readAllLines(Path.of("sys.properties"), StandardCharsets.UTF_8);
+            for (String line : vars) {
+                if (line.startsWith("#")) {
+                    continue;
+                }
+                String[] fields = line.split("=");
+                System.setProperty(fields[0], fields[1]);
+            }
         } catch (IOException ex) {
             System.out.println("running on windows, could not find the file sys.properties containing all environment variablesl");
-            Logger.getLogger(ApplicationProperties.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        for (String line : vars) {
-            if (line.startsWith("#")){
-                continue;
-            }
-            String[] fields = line.split("=");
-            System.setProperty(fields[0], fields[1]);
+            System.out.println("EXITING NOW because without these properties, the app can't function");
+            System.out.println("ex: " + ex);
         }
     }
 }

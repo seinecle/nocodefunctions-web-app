@@ -29,7 +29,6 @@ public class LocaleBeanTest {
         sessionBean = Mockito.mock(SessionBean.class);
     }    
     
-    
     @Test
     public void setLanguageTag(){
         LocaleBean activeLocale = new LocaleBean();
