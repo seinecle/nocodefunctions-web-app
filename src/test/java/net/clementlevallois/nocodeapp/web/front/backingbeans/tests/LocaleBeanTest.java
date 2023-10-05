@@ -3,17 +3,40 @@
  */
 package net.clementlevallois.nocodeapp.web.front.backingbeans.tests;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.LocaleBean;
+import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
+import net.clementlevallois.nocodeapp.web.front.backingbeans.SingletonBean;
 import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 /**
  *
  * @author LEVALLOIS
  */
 public class LocaleBeanTest {
+
+    SingletonBean singletonBean;
+    SessionBean sessionBean;
+
+    @BeforeEach
+    public void mockEssentialBeans() throws IOException {
+        singletonBean = Mockito.mock(SingletonBean.class);
+        sessionBean = Mockito.mock(SessionBean.class);
+    }    
+    
+    
+    @Test
+    public void setLanguageTag(){
+        LocaleBean activeLocale = new LocaleBean();
+        activeLocale.setSessionBean(sessionBean);
+        activeLocale.setLanguageTag("it");
+        assertThat(activeLocale.getCurrentLocale()).isEqualTo(Locale.ITALIAN);
+    }
     
     @Test
     public void getAvailableReturnsAList(){

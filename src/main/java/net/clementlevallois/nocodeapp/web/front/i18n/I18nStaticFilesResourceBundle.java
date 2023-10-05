@@ -12,8 +12,6 @@ import java.net.URLClassLoader;
 import java.util.Enumeration;
 import java.util.Locale;
 import java.util.ResourceBundle;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import net.clementlevallois.nocodeapp.web.front.utils.ApplicationProperties;
 
 /**
@@ -36,7 +34,13 @@ public class I18nStaticFilesResourceBundle extends ResourceBundle {
     }
 
     public ResourceBundle getCurrentInstance() {
-        Locale locale = FacesContext.getCurrentInstance().getViewRoot().getLocale();
+        FacesContext currentInstance = FacesContext.getCurrentInstance();
+        Locale locale;
+        if (currentInstance != null) {
+            locale = currentInstance.getViewRoot().getLocale();
+        }else{
+            locale = Locale.ENGLISH;
+        }
         if (rb == null || !locale.equals(current)) {
             rb = simpleMethodToGetResourceBundle(locale);
             current = locale;
@@ -53,9 +57,11 @@ public class I18nStaticFilesResourceBundle extends ResourceBundle {
             }
             return rb;
         } catch (MalformedURLException ex) {
-            Logger.getLogger(I18nStaticFilesResourceBundle.class.getName()).log(Level.SEVERE, null, ex);
+            System.out.println("wrong file path or name when getting i18n bundle");
+            System.out.println("ex: "+ ex);
         } catch (IOException ex) {
-            Logger.getLogger(I18nStaticFilesResourceBundle.class.getName()).log(Level.SEVERE, null, ex);
+            System.out.println("io issue when getting i18n bundle");
+            System.out.println("ex: "+ ex);
         }
         return null;
     }

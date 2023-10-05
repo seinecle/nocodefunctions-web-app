@@ -10,12 +10,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
-
 import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.SessionScoped;
 import jakarta.faces.context.FacesContext;
 import jakarta.inject.Named;
-import java.io.IOException;
 
 @Named
 @SessionScoped
@@ -32,9 +30,18 @@ public class LocaleBean implements Serializable {
     public LocaleBean() {
     }
 
+    public void setSessionBean(SessionBean sessionBean) {
+        this.sessionBean = sessionBean;
+    }
+
     @PostConstruct
     public void init() {
-        currentLocale = FacesContext.getCurrentInstance().getExternalContext().getRequestLocale();
+        FacesContext currentInstance = FacesContext.getCurrentInstance();
+        if (currentInstance == null) {
+            currentLocale = Locale.ENGLISH;
+        } else {
+            currentLocale = FacesContext.getCurrentInstance().getExternalContext().getRequestLocale();
+        }
     }
 
     public Locale getCurrentLocale() {
@@ -45,8 +52,7 @@ public class LocaleBean implements Serializable {
         return currentLocale.toLanguageTag();
     }
 
-    public void setLanguageTag(String languageTag) throws IOException {
-
+    public void setLanguageTag(String languageTag) {
         String correctLangTag;
         if (languageTag == null) {
             System.out.println("language Tag param was null??");
@@ -64,13 +70,22 @@ public class LocaleBean implements Serializable {
 
         Locale newLocale = Locale.forLanguageTag(correctLangTag);
         if (currentLocale == null) {
-            currentLocale = FacesContext.getCurrentInstance().getViewRoot().getLocale();
+            FacesContext currentInstance = FacesContext.getCurrentInstance();
+            if (currentInstance == null) {
+                currentLocale = Locale.ENGLISH;
+            } else {
+                currentLocale = FacesContext.getCurrentInstance().getViewRoot().getLocale();
+
+            }
             sessionBean.setCurrentLocale(currentLocale);
         }
         if (!newLocale.equals(currentLocale)) {
             currentLocale = newLocale;
             sessionBean.setCurrentLocale(currentLocale);
-            FacesContext.getCurrentInstance().getViewRoot().setLocale(newLocale);
+            FacesContext currentInstance = FacesContext.getCurrentInstance();
+            if (currentInstance != null) {
+                currentInstance.getViewRoot().setLocale(newLocale);
+            }
             sessionBean.refreshLocaleBundle();
         }
     }

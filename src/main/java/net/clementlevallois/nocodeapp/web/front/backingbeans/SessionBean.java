@@ -108,7 +108,7 @@ public class SessionBean implements Serializable {
         return RemoteLocal.getHostFunctionsAPI();
     }
 
-    public void refreshLocaleBundle() throws IOException {
+    public void refreshLocaleBundle() {
         I18nStaticFilesResourceBundle dbb = new I18nStaticFilesResourceBundle();
         localeBundle = dbb.simpleMethodToGetResourceBundle(currentLocale);
     }
