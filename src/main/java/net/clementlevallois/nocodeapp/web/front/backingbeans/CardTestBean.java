@@ -64,7 +64,7 @@ public class CardTestBean implements Serializable {
     private Boolean showESExplanation = false;
     private Boolean showENExplanationOrganic = false;
     private Boolean showFRExplanationOrganic = false;
-    private Boolean isUnitTest = false;
+    private Boolean usePublicDomainName = false;
 
     @Inject
     SessionBean sessionBean;
@@ -94,7 +94,7 @@ public class CardTestBean implements Serializable {
             send.start();
 
             UrlBuilder urlBuilder = UrlBuilder.empty();
-            if (isUnitTest) {
+            if (usePublicDomainName) {
                 urlBuilder = urlBuilder.withScheme("https")
                         .withHost("nocodefunctions.com");
             } else {
@@ -160,7 +160,7 @@ public class CardTestBean implements Serializable {
             send.start();
 
             UrlBuilder urlBuilder = UrlBuilder.empty();
-            if (isUnitTest) {
+            if (usePublicDomainName) {
                 urlBuilder = urlBuilder.withScheme("https")
                         .withHost("nocodefunctions.com");
             } else {
@@ -168,7 +168,7 @@ public class CardTestBean implements Serializable {
                         .withHost("localhost")
                         .withPort((Integer.valueOf(privateProperties.getProperty("nocode_api_port"))));
             }
-            urlBuilder.withPath("api/organicForAText")
+            uri = urlBuilder.withPath("api/organicForAText")
                     .addParameter("text-lang", "fr")
                     .addParameter("explanation", "on")
                     .addParameter("shorter", "true")
@@ -230,7 +230,7 @@ public class CardTestBean implements Serializable {
             send.start();
 
             UrlBuilder urlBuilder = UrlBuilder.empty();
-            if (isUnitTest) {
+            if (usePublicDomainName) {
                 urlBuilder = urlBuilder.withScheme("https")
                         .withHost("nocodefunctions.com");
             } else {
@@ -238,7 +238,7 @@ public class CardTestBean implements Serializable {
                         .withHost("localhost")
                         .withPort((Integer.valueOf(privateProperties.getProperty("nocode_api_port"))));
             }
-            urlBuilder.withPath("api/organicForAText")
+            uri = urlBuilder.withPath("api/organicForAText")
                     .addParameter("text-lang", "en")
                     .addParameter("explanation", "on")
                     .addParameter("shorter", "true")
@@ -278,7 +278,7 @@ public class CardTestBean implements Serializable {
             renderSignalOrganicEN = true;
             reportResultENRendered = false;
         } catch (IOException | InterruptedException ex) {
-            System.out.println("connection to api not possible in organic test fr");
+            System.out.println("connection to api not possible in organic test en");
             if (uri == null) {
                 System.out.println("uri was not defined");
             } else {
@@ -289,18 +289,23 @@ public class CardTestBean implements Serializable {
     }
 
     public void runUmigonTestES() {
+        URI uri = null;
         try {
             showESExplanation = false;
             SendReport send = new SendReport();
             send.initAnalytics("test: umigon es", sessionBean.getUserAgent());
             send.start();
 
-            URI uri = UrlBuilder
-                    .empty()
-                    .withScheme("http")
-                    .withHost("localhost")
-                    .withPort((Integer.valueOf(privateProperties.getProperty("nocode_api_port"))))
-                    .withPath("api/sentimentForAText")
+            UrlBuilder urlBuilder = UrlBuilder.empty();
+            if (usePublicDomainName) {
+                urlBuilder = urlBuilder.withScheme("https")
+                        .withHost("nocodefunctions.com");
+            } else {
+                urlBuilder = urlBuilder.withScheme("http")
+                        .withHost("localhost")
+                        .withPort((Integer.valueOf(privateProperties.getProperty("nocode_api_port"))));
+            }
+            uri = urlBuilder.withPath("api/sentimentForAText")
                     .addParameter("text-lang", "es")
                     .addParameter("explanation", "on")
                     .addParameter("shorter", "true")
@@ -316,44 +321,60 @@ public class CardTestBean implements Serializable {
 
             HttpResponse<byte[]> response = client.send(request, HttpResponse.BodyHandlers.ofByteArray());
             byte[] body = response.body();
-            try (
-                    ByteArrayInputStream bis = new ByteArrayInputStream(body); ObjectInputStream ois = new ObjectInputStream(bis)) {
-                Document doc = (Document) ois.readObject();
-                umigonResultES = switch (doc.getCategoryCode()) {
-                    case "_12" ->
-                        "😔 " + doc.getCategoryLocalizedPlainText();
-                    case "_11" ->
-                        "🤗 " + doc.getCategoryLocalizedPlainText();
-                    default ->
-                        "😐 " + doc.getCategoryLocalizedPlainText();
-                };
-                umigonResultESExplanation = doc.getExplanationHtml();
+            if (response.statusCode() == 200) {
+                try (
+                        ByteArrayInputStream bis = new ByteArrayInputStream(body); ObjectInputStream ois = new ObjectInputStream(bis)) {
+                    Document doc = (Document) ois.readObject();
+                    umigonResultES = switch (doc.getCategoryCode()) {
+                        case "_12" ->
+                            "😔 " + doc.getCategoryLocalizedPlainText();
+                        case "_11" ->
+                            "🤗 " + doc.getCategoryLocalizedPlainText();
+                        default ->
+                            "😐 " + doc.getCategoryLocalizedPlainText();
+                    };
+                    umigonResultESExplanation = doc.getExplanationHtml();
 
-            } catch (IOException | ClassNotFoundException ex) {
-                Logger.getLogger(UmigonBean.class
-                        .getName()).log(Level.SEVERE, null, ex);
+                } catch (IOException | ClassNotFoundException ex) {
+                    Logger.getLogger(UmigonBean.class
+                            .getName()).log(Level.SEVERE, null, ex);
+                }
+            } else {
+                System.out.println("body of response to umigon es test was not readable");
+                System.out.println("body: " + new String(body));
+                return;
             }
 
             renderSignalES = true;
             reportResultESRendered = false;
         } catch (IOException | InterruptedException ex) {
-            Logger.getLogger(CardTestBean.class.getName()).log(Level.SEVERE, null, ex);
+            System.out.println("connection to api not possible in umigon test es");
+            if (uri == null) {
+                System.out.println("uri was not defined");
+            } else {
+                System.out.println("uri: " + uri.toString());
+            }
         }
     }
 
     public void runUmigonTestEN() {
+        URI uri = null;
         try {
             showENExplanation = false;
             SendReport send = new SendReport();
             send.initAnalytics("test: umigon en", sessionBean.getUserAgent());
             send.start();
 
-            URI uri = UrlBuilder
-                    .empty()
-                    .withScheme("http")
-                    .withHost("localhost")
-                    .withPort((Integer.valueOf(privateProperties.getProperty("nocode_api_port"))))
-                    .withPath("api/sentimentForAText")
+            UrlBuilder urlBuilder = UrlBuilder.empty();
+            if (usePublicDomainName) {
+                urlBuilder = urlBuilder.withScheme("https")
+                        .withHost("nocodefunctions.com");
+            } else {
+                urlBuilder = urlBuilder.withScheme("http")
+                        .withHost("localhost")
+                        .withPort((Integer.valueOf(privateProperties.getProperty("nocode_api_port"))));
+            }
+            uri = urlBuilder.withPath("api/sentimentForAText")
                     .addParameter("text-lang", "en")
                     .addParameter("text", umigonTestInputEN)
                     .addParameter("explanation", "on")
@@ -370,28 +391,39 @@ public class CardTestBean implements Serializable {
 
             HttpResponse<byte[]> response = client.send(request, HttpResponse.BodyHandlers.ofByteArray());
             byte[] body = response.body();
-            try (
-                    ByteArrayInputStream bis = new ByteArrayInputStream(body); ObjectInputStream ois = new ObjectInputStream(bis)) {
-                Document doc = (Document) ois.readObject();
-                umigonResultEN = switch (doc.getCategoryCode()) {
-                    case "_12" ->
-                        "😔 " + doc.getCategoryLocalizedPlainText();
-                    case "_11" ->
-                        "🤗 " + doc.getCategoryLocalizedPlainText();
-                    default ->
-                        "😐 " + doc.getCategoryLocalizedPlainText();
-                };
-                umigonResultENExplanation = doc.getExplanationHtml();
+            if (response.statusCode() == 200) {
+                try (
+                        ByteArrayInputStream bis = new ByteArrayInputStream(body); ObjectInputStream ois = new ObjectInputStream(bis)) {
+                    Document doc = (Document) ois.readObject();
+                    umigonResultEN = switch (doc.getCategoryCode()) {
+                        case "_12" ->
+                            "😔 " + doc.getCategoryLocalizedPlainText();
+                        case "_11" ->
+                            "🤗 " + doc.getCategoryLocalizedPlainText();
+                        default ->
+                            "😐 " + doc.getCategoryLocalizedPlainText();
+                    };
+                    umigonResultENExplanation = doc.getExplanationHtml();
 
-            } catch (Exception ex) {
-                Logger.getLogger(CardTestBean.class
-                        .getName()).log(Level.SEVERE, null, ex);
+                } catch (Exception ex) {
+                    Logger.getLogger(CardTestBean.class
+                            .getName()).log(Level.SEVERE, null, ex);
+                }
+            } else {
+                System.out.println("body of response to umigon en test was not readable");
+                System.out.println("body: " + new String(body));
+                return;
             }
 
             renderSignalEN = true;
             reportResultENRendered = false;
         } catch (IOException | InterruptedException ex) {
-            Logger.getLogger(CardTestBean.class.getName()).log(Level.SEVERE, null, ex);
+            System.out.println("connection to api not possible in umigon test en");
+            if (uri == null) {
+                System.out.println("uri was not defined");
+            } else {
+                System.out.println("uri: " + uri.toString());
+            }
         }
     }
 
@@ -672,8 +704,8 @@ public class CardTestBean implements Serializable {
         this.showFRExplanationOrganic = showFRExplanationOrganic;
     }
 
-    public void setIsUnitTest(Boolean isUnitTest) {
-        this.isUnitTest = isUnitTest;
+    public void setUsePublicDomainName(Boolean usePublicDomainName) {
+        this.usePublicDomainName = usePublicDomainName;
     }
 
 }

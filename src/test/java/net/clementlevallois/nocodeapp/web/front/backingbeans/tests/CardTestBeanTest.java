@@ -9,7 +9,6 @@ import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 /**
  *
@@ -26,19 +25,37 @@ public class CardTestBeanTest {
         sessionBean.init();
         cardTest = new CardTestBean();
         cardTest.setSessionBean(sessionBean);
-        cardTest.setIsUnitTest(Boolean.TRUE);
+        cardTest.setUsePublicDomainName(Boolean.TRUE);
     }
 
     @Test
     public void runUmigonTestFR() {
         cardTest.runUmigonTestFR();
-        assertThat(cardTest.getUmigonResultFR()).startsWith("🤗 ");
+        assertThat(cardTest.getUmigonResultFR()).startsWith("🤗 positive");
     }
 
     @Test
     public void runUmigonTestEN() {
         cardTest.runUmigonTestEN();
-        assertThat(cardTest.getUmigonResultFR()).startsWith("🤗 ");
+        assertThat(cardTest.getUmigonResultEN()).startsWith("🤗 positive");
+    }
+
+    @Test
+    public void runUmigonTestES() {
+        cardTest.runUmigonTestES();
+        assertThat(cardTest.getUmigonResultES()).startsWith("🤗 positive");
+    }
+
+    @Test
+    public void runOrganicTestEN() {
+        cardTest.runOrganicTestEN();
+        assertThat(cardTest.getOrganicResultEN()).startsWith("📢 commercial");
+    }
+
+    @Test
+    public void runOrganicTestFR() {
+        cardTest.runOrganicTestFR();
+        assertThat(cardTest.getOrganicResultFR()).startsWith("📢 commercial");
     }
 
 }
