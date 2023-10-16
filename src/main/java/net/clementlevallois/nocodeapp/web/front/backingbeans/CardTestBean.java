@@ -146,224 +146,253 @@ public class CardTestBean implements Serializable {
                 System.out.println("uri was not defined");
             } else {
                 System.out.println("uri: " + uri.toString());
-
             }
         }
 
     }
 
-    public void runOrganicTestFR() throws IOException, URISyntaxException, InterruptedException {
-        showFRExplanationOrganic = false;
-        SendReport send = new SendReport();
-        send.initAnalytics("test: organic fr", sessionBean.getUserAgent());
-        send.start();
+    public void runOrganicTestFR() {
+        URI uri = null;
+        try {
+            showFRExplanationOrganic = false;
+            SendReport send = new SendReport();
+            send.initAnalytics("test: organic fr", sessionBean.getUserAgent());
+            send.start();
 
-        URI uri = UrlBuilder
-                .empty()
-                .withScheme("http")
-                .withHost("localhost")
-                .withPort((Integer.valueOf(privateProperties.getProperty("nocode_api_port"))))
-                .withPath("api/organicForAText")
-                .addParameter("text-lang", "fr")
-                .addParameter("explanation", "on")
-                .addParameter("shorter", "true")
-                .addParameter("output-format", "bytes")
-                .addParameter("explanation-lang", sessionBean.getCurrentLocale().toLanguageTag())
-                .toUri();
-
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(uri)
-                .POST(HttpRequest.BodyPublishers.ofString(organicTestInputFR))
-                .build();
-        HttpClient client = HttpClient.newHttpClient();
-
-        HttpResponse<byte[]> response = client.send(request, HttpResponse.BodyHandlers.ofByteArray());
-        byte[] body = response.body();
-        if (response.statusCode() == 200) {
-            try (
-                    ByteArrayInputStream bis = new ByteArrayInputStream(body); ObjectInputStream ois = new ObjectInputStream(bis)) {
-                Document doc = (Document) ois.readObject();
-                switch (doc.getCategoryCode()) {
-                    case "_61":
-                        organicResultFR = "📢 " + doc.getCategoryLocalizedPlainText();
-                        break;
-                    case "_611":
-                        organicResultFR = "📢 " + doc.getCategoryLocalizedPlainText();
-                        break;
-                    default:
-                        organicResultFR = "🌿 " + doc.getCategoryLocalizedPlainText();
-                        break;
-                }
-                organicResultFRExplanation = doc.getExplanationHtml();
-
-            } catch (IOException | ClassNotFoundException ex) {
-                Logger.getLogger(UmigonBean.class.getName()).log(Level.SEVERE, null, ex);
+            UrlBuilder urlBuilder = UrlBuilder.empty();
+            if (isUnitTest) {
+                urlBuilder = urlBuilder.withScheme("https")
+                        .withHost("nocodefunctions.com");
+            } else {
+                urlBuilder = urlBuilder.withScheme("http")
+                        .withHost("localhost")
+                        .withPort((Integer.valueOf(privateProperties.getProperty("nocode_api_port"))));
             }
+            urlBuilder.withPath("api/organicForAText")
+                    .addParameter("text-lang", "fr")
+                    .addParameter("explanation", "on")
+                    .addParameter("shorter", "true")
+                    .addParameter("output-format", "bytes")
+                    .addParameter("explanation-lang", sessionBean.getCurrentLocale().toLanguageTag())
+                    .toUri();
 
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(uri)
+                    .POST(HttpRequest.BodyPublishers.ofString(organicTestInputFR))
+                    .build();
+            HttpClient client = HttpClient.newHttpClient();
+
+            HttpResponse<byte[]> response = client.send(request, HttpResponse.BodyHandlers.ofByteArray());
+            byte[] body = response.body();
+            if (response.statusCode() == 200) {
+                try (
+                        ByteArrayInputStream bis = new ByteArrayInputStream(body); ObjectInputStream ois = new ObjectInputStream(bis)) {
+                    Document doc = (Document) ois.readObject();
+                    organicResultFR = switch (doc.getCategoryCode()) {
+                        case "_61" ->
+                            "📢 " + doc.getCategoryLocalizedPlainText();
+                        case "_611" ->
+                            "📢 " + doc.getCategoryLocalizedPlainText();
+                        default ->
+                            "🌿 " + doc.getCategoryLocalizedPlainText();
+                    };
+                    organicResultFRExplanation = doc.getExplanationHtml();
+
+                } catch (IOException | ClassNotFoundException ex) {
+                    Logger.getLogger(UmigonBean.class.getName()).log(Level.SEVERE, null, ex);
+                }
+
+            } else {
+                System.out.println("body of response to organic fr test was not readable");
+                System.out.println("body: " + new String(body));
+                return;
+            }
             renderSignalOrganicFR = true;
             reportResultFRRendered = false;
-        } else {
-            String wrongResult = new String(body, StandardCharsets.UTF_8);
-            System.out.println("error in retrieving organic test in French: " + wrongResult);
+
+        } catch (IOException | InterruptedException ex) {
+            System.out.println("connection to api not possible in organic test fr");
+            if (uri == null) {
+                System.out.println("uri was not defined");
+            } else {
+                System.out.println("uri: " + uri.toString());
+            }
         }
 
     }
 
-    public void runOrganicTestEN() throws IOException, URISyntaxException, InterruptedException {
-        showENExplanationOrganic = false;
-        SendReport send = new SendReport();
-        send.initAnalytics("test: organic en", sessionBean.getUserAgent());
-        send.start();
+    public void runOrganicTestEN() {
+        URI uri = null;
+        try {
+            showENExplanationOrganic = false;
+            SendReport send = new SendReport();
+            send.initAnalytics("test: organic en", sessionBean.getUserAgent());
+            send.start();
 
-        URI uri = UrlBuilder
-                .empty()
-                .withScheme("http")
-                .withHost("localhost")
-                .withPort((Integer.valueOf(privateProperties.getProperty("nocode_api_port"))))
-                .withPath("api/organicForAText")
-                .addParameter("text-lang", "en")
-                .addParameter("explanation", "on")
-                .addParameter("shorter", "true")
-                .addParameter("output-format", "bytes")
-                .addParameter("explanation-lang", sessionBean.getCurrentLocale().toLanguageTag())
-                .toUri();
+            UrlBuilder urlBuilder = UrlBuilder.empty();
+            if (isUnitTest) {
+                urlBuilder = urlBuilder.withScheme("https")
+                        .withHost("nocodefunctions.com");
+            } else {
+                urlBuilder = urlBuilder.withScheme("http")
+                        .withHost("localhost")
+                        .withPort((Integer.valueOf(privateProperties.getProperty("nocode_api_port"))));
+            }
+            urlBuilder.withPath("api/organicForAText")
+                    .addParameter("text-lang", "en")
+                    .addParameter("explanation", "on")
+                    .addParameter("shorter", "true")
+                    .addParameter("output-format", "bytes")
+                    .addParameter("explanation-lang", sessionBean.getCurrentLocale().toLanguageTag())
+                    .toUri();
 
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(uri)
-                .POST(HttpRequest.BodyPublishers.ofString(organicTestInputEN))
-                .build();
-        HttpClient client = HttpClient.newHttpClient();
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(uri)
+                    .POST(HttpRequest.BodyPublishers.ofString(organicTestInputEN))
+                    .build();
+            HttpClient client = HttpClient.newHttpClient();
 
-        HttpResponse<byte[]> response = client.send(request, HttpResponse.BodyHandlers.ofByteArray());
-        byte[] body = response.body();
-        if (response.statusCode() == 200) {
+            HttpResponse<byte[]> response = client.send(request, HttpResponse.BodyHandlers.ofByteArray());
+            byte[] body = response.body();
+            if (response.statusCode() == 200) {
+                try (
+                        ByteArrayInputStream bis = new ByteArrayInputStream(body); ObjectInputStream ois = new ObjectInputStream(bis)) {
+                    Document doc = (Document) ois.readObject();
+                    organicResultEN = switch (doc.getCategoryCode()) {
+                        case "_61" ->
+                            "📢 " + doc.getCategoryLocalizedPlainText();
+                        case "_611" ->
+                            "📢 " + doc.getCategoryLocalizedPlainText();
+                        default ->
+                            "🌿 " + doc.getCategoryLocalizedPlainText();
+                    };
+                    organicResultENExplanation = doc.getExplanationHtml();
+                } catch (IOException | ClassNotFoundException ex) {
+                    Logger.getLogger(UmigonBean.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            } else {
+                System.out.println("body of response to organic en test was not readable");
+                System.out.println("body: " + new String(body));
+                return;
+            }
+            renderSignalOrganicEN = true;
+            reportResultENRendered = false;
+        } catch (IOException | InterruptedException ex) {
+            System.out.println("connection to api not possible in organic test fr");
+            if (uri == null) {
+                System.out.println("uri was not defined");
+            } else {
+                System.out.println("uri: " + uri.toString());
+            }
+        }
+
+    }
+
+    public void runUmigonTestES() {
+        try {
+            showESExplanation = false;
+            SendReport send = new SendReport();
+            send.initAnalytics("test: umigon es", sessionBean.getUserAgent());
+            send.start();
+
+            URI uri = UrlBuilder
+                    .empty()
+                    .withScheme("http")
+                    .withHost("localhost")
+                    .withPort((Integer.valueOf(privateProperties.getProperty("nocode_api_port"))))
+                    .withPath("api/sentimentForAText")
+                    .addParameter("text-lang", "es")
+                    .addParameter("explanation", "on")
+                    .addParameter("shorter", "true")
+                    .addParameter("output-format", "bytes")
+                    .addParameter("explanation-lang", sessionBean.getCurrentLocale().toLanguageTag())
+                    .toUri();
+
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(uri)
+                    .POST(HttpRequest.BodyPublishers.ofString(umigonTestInputES))
+                    .build();
+            HttpClient client = HttpClient.newHttpClient();
+
+            HttpResponse<byte[]> response = client.send(request, HttpResponse.BodyHandlers.ofByteArray());
+            byte[] body = response.body();
             try (
                     ByteArrayInputStream bis = new ByteArrayInputStream(body); ObjectInputStream ois = new ObjectInputStream(bis)) {
                 Document doc = (Document) ois.readObject();
-                switch (doc.getCategoryCode()) {
-                    case "_61":
-                        organicResultEN = "📢 " + doc.getCategoryLocalizedPlainText();
-                        break;
-                    case "_611":
-                        organicResultEN = "📢 " + doc.getCategoryLocalizedPlainText();
-                        break;
-                    default:
-                        organicResultEN = "🌿 " + doc.getCategoryLocalizedPlainText();
-                        break;
-                }
-                organicResultENExplanation = doc.getExplanationHtml();
-                renderSignalOrganicEN = true;
-                reportResultENRendered = false;
+                umigonResultES = switch (doc.getCategoryCode()) {
+                    case "_12" ->
+                        "😔 " + doc.getCategoryLocalizedPlainText();
+                    case "_11" ->
+                        "🤗 " + doc.getCategoryLocalizedPlainText();
+                    default ->
+                        "😐 " + doc.getCategoryLocalizedPlainText();
+                };
+                umigonResultESExplanation = doc.getExplanationHtml();
+
             } catch (IOException | ClassNotFoundException ex) {
-                Logger.getLogger(UmigonBean.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(UmigonBean.class
+                        .getName()).log(Level.SEVERE, null, ex);
             }
-        } else {
-            String wrongResult = new String(body, StandardCharsets.UTF_8);
-            System.out.println("error in retrieving organic test in English: " + wrongResult);
-        }
 
+            renderSignalES = true;
+            reportResultESRendered = false;
+        } catch (IOException | InterruptedException ex) {
+            Logger.getLogger(CardTestBean.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
-    public void runUmigonTestES() throws IOException, URISyntaxException, InterruptedException {
-        showESExplanation = false;
-        SendReport send = new SendReport();
-        send.initAnalytics("test: umigon es", sessionBean.getUserAgent());
-        send.start();
+    public void runUmigonTestEN() {
+        try {
+            showENExplanation = false;
+            SendReport send = new SendReport();
+            send.initAnalytics("test: umigon en", sessionBean.getUserAgent());
+            send.start();
 
-        URI uri = UrlBuilder
-                .empty()
-                .withScheme("http")
-                .withHost("localhost")
-                .withPort((Integer.valueOf(privateProperties.getProperty("nocode_api_port"))))
-                .withPath("api/sentimentForAText")
-                .addParameter("text-lang", "es")
-                .addParameter("explanation", "on")
-                .addParameter("shorter", "true")
-                .addParameter("output-format", "bytes")
-                .addParameter("explanation-lang", sessionBean.getCurrentLocale().toLanguageTag())
-                .toUri();
+            URI uri = UrlBuilder
+                    .empty()
+                    .withScheme("http")
+                    .withHost("localhost")
+                    .withPort((Integer.valueOf(privateProperties.getProperty("nocode_api_port"))))
+                    .withPath("api/sentimentForAText")
+                    .addParameter("text-lang", "en")
+                    .addParameter("text", umigonTestInputEN)
+                    .addParameter("explanation", "on")
+                    .addParameter("shorter", "true")
+                    .addParameter("output-format", "bytes")
+                    .addParameter("explanation-lang", sessionBean.getCurrentLocale().toLanguageTag())
+                    .toUri();
 
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(uri)
-                .POST(HttpRequest.BodyPublishers.ofString(umigonTestInputES))
-                .build();
-        HttpClient client = HttpClient.newHttpClient();
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(uri)
+                    .POST(HttpRequest.BodyPublishers.ofString(umigonTestInputEN))
+                    .build();
+            HttpClient client = HttpClient.newHttpClient();
 
-        HttpResponse<byte[]> response = client.send(request, HttpResponse.BodyHandlers.ofByteArray());
-        byte[] body = response.body();
-        try (
-                ByteArrayInputStream bis = new ByteArrayInputStream(body); ObjectInputStream ois = new ObjectInputStream(bis)) {
-            Document doc = (Document) ois.readObject();
-            umigonResultES = switch (doc.getCategoryCode()) {
-                case "_12" ->
-                    "😔 " + doc.getCategoryLocalizedPlainText();
-                case "_11" ->
-                    "🤗 " + doc.getCategoryLocalizedPlainText();
-                default ->
-                    "😐 " + doc.getCategoryLocalizedPlainText();
-            };
-            umigonResultESExplanation = doc.getExplanationHtml();
+            HttpResponse<byte[]> response = client.send(request, HttpResponse.BodyHandlers.ofByteArray());
+            byte[] body = response.body();
+            try (
+                    ByteArrayInputStream bis = new ByteArrayInputStream(body); ObjectInputStream ois = new ObjectInputStream(bis)) {
+                Document doc = (Document) ois.readObject();
+                umigonResultEN = switch (doc.getCategoryCode()) {
+                    case "_12" ->
+                        "😔 " + doc.getCategoryLocalizedPlainText();
+                    case "_11" ->
+                        "🤗 " + doc.getCategoryLocalizedPlainText();
+                    default ->
+                        "😐 " + doc.getCategoryLocalizedPlainText();
+                };
+                umigonResultENExplanation = doc.getExplanationHtml();
 
-        } catch (IOException | ClassNotFoundException ex) {
-            Logger.getLogger(UmigonBean.class
-                    .getName()).log(Level.SEVERE, null, ex);
-        }
-
-        renderSignalES = true;
-        reportResultESRendered = false;
-    }
-
-    public void runUmigonTestEN() throws UnsupportedEncodingException, URISyntaxException, IOException, InterruptedException {
-        showENExplanation = false;
-        SendReport send = new SendReport();
-        send.initAnalytics("test: umigon en", sessionBean.getUserAgent());
-        send.start();
-
-        URI uri = UrlBuilder
-                .empty()
-                .withScheme("http")
-                .withHost("localhost")
-                .withPort((Integer.valueOf(privateProperties.getProperty("nocode_api_port"))))
-                .withPath("api/sentimentForAText")
-                .addParameter("text-lang", "en")
-                .addParameter("text", umigonTestInputEN)
-                .addParameter("explanation", "on")
-                .addParameter("shorter", "true")
-                .addParameter("output-format", "bytes")
-                .addParameter("explanation-lang", sessionBean.getCurrentLocale().toLanguageTag())
-                .toUri();
-
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(uri)
-                .POST(HttpRequest.BodyPublishers.ofString(umigonTestInputEN))
-                .build();
-        HttpClient client = HttpClient.newHttpClient();
-
-        HttpResponse<byte[]> response = client.send(request, HttpResponse.BodyHandlers.ofByteArray());
-        byte[] body = response.body();
-        try (
-                ByteArrayInputStream bis = new ByteArrayInputStream(body); ObjectInputStream ois = new ObjectInputStream(bis)) {
-            Document doc = (Document) ois.readObject();
-            switch (doc.getCategoryCode()) {
-                case "_12":
-                    umigonResultEN = "😔 " + doc.getCategoryLocalizedPlainText();
-                    break;
-                case "_11":
-                    umigonResultEN = "🤗 " + doc.getCategoryLocalizedPlainText();
-                    break;
-                default:
-                    umigonResultEN = "😐 " + doc.getCategoryLocalizedPlainText();
-                    break;
+            } catch (Exception ex) {
+                Logger.getLogger(CardTestBean.class
+                        .getName()).log(Level.SEVERE, null, ex);
             }
-            umigonResultENExplanation = doc.getExplanationHtml();
 
-        } catch (Exception ex) {
-            Logger.getLogger(CardTestBean.class
-                    .getName()).log(Level.SEVERE, null, ex);
+            renderSignalEN = true;
+            reportResultENRendered = false;
+        } catch (IOException | InterruptedException ex) {
+            Logger.getLogger(CardTestBean.class.getName()).log(Level.SEVERE, null, ex);
         }
-
-        renderSignalEN = true;
-        reportResultENRendered = false;
     }
 
     public String getUmigonResultFR() {

@@ -35,4 +35,10 @@ public class CardTestBeanTest {
         assertThat(cardTest.getUmigonResultFR()).startsWith("🤗 ");
     }
 
+    @Test
+    public void runUmigonTestEN() {
+        cardTest.runUmigonTestEN();
+        assertThat(cardTest.getUmigonResultFR()).startsWith("🤗 ");
+    }
+
 }
