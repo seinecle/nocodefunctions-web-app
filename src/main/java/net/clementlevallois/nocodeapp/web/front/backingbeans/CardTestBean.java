@@ -64,15 +64,17 @@ public class CardTestBean implements Serializable {
     private Boolean showESExplanation = false;
     private Boolean showENExplanationOrganic = false;
     private Boolean showFRExplanationOrganic = false;
+    private Boolean isUnitTest = false;
 
     @Inject
     SessionBean sessionBean;
 
     public CardTestBean() {
-        if (sessionBean == null) {
-            sessionBean = new SessionBean();
-        }
         privateProperties = ApplicationProperties.getPrivateProperties();
+    }
+
+    public void setSessionBean(SessionBean sessionBean) {
+        this.sessionBean = sessionBean;
     }
 
     public String getUmigonTestInputFR() {
@@ -83,55 +85,70 @@ public class CardTestBean implements Serializable {
         this.umigonTestInputFR = umigonTestInputFR;
     }
 
-    public void runUmigonTestFR() throws IOException, URISyntaxException, InterruptedException {
-        showFRExplanation = false;
-        SendReport send = new SendReport();
-        send.initAnalytics("test: umigon fr", sessionBean.getUserAgent());
-        send.start();
+    public void runUmigonTestFR() {
+        URI uri = null;
+        try {
+            showFRExplanation = false;
+            SendReport send = new SendReport();
+            send.initAnalytics("test: umigon fr", sessionBean.getUserAgent());
+            send.start();
 
-        URI uri = UrlBuilder
-                .empty()
-                .withScheme("http")
-                .withHost("localhost")
-                .withPort((Integer.valueOf(privateProperties.getProperty("nocode_api_port"))))
-                .withPath("api/sentimentForAText")
-                .addParameter("text-lang", "fr")
-                .addParameter("text",umigonTestInputFR)
-                .addParameter("explanation", "on")
-                .addParameter("shorter", "true")
-                .addParameter("output-format", "bytes")
-                .addParameter("explanation-lang", sessionBean.getCurrentLocale().toLanguageTag())
-                .toUri();
-
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(uri)
-                .build();
-        HttpClient client = HttpClient.newHttpClient();
-
-        HttpResponse<byte[]> response = client.send(request, HttpResponse.BodyHandlers.ofByteArray());
-        byte[] body = response.body();
-        try (
-                ByteArrayInputStream bis = new ByteArrayInputStream(body); ObjectInputStream ois = new ObjectInputStream(bis)) {
-            Document doc = (Document) ois.readObject();
-            switch (doc.getCategoryCode()) {
-                case "_12":
-                    umigonResultFR = "😔 " + doc.getCategoryLocalizedPlainText();
-                    break;
-                case "_11":
-                    umigonResultFR = "🤗 " + doc.getCategoryLocalizedPlainText();
-                    break;
-                default:
-                    umigonResultFR = "😐 " + doc.getCategoryLocalizedPlainText();
-                    break;
+            UrlBuilder urlBuilder = UrlBuilder.empty();
+            if (isUnitTest) {
+                urlBuilder = urlBuilder.withScheme("https")
+                        .withHost("nocodefunctions.com");
+            } else {
+                urlBuilder = urlBuilder.withScheme("http")
+                        .withHost("localhost")
+                        .withPort((Integer.valueOf(privateProperties.getProperty("nocode_api_port"))));
             }
-            umigonResultFRExplanation = doc.getExplanationHtml();
+            uri = urlBuilder.withPath("api/sentimentForAText")
+                    .addParameter("text-lang", "fr")
+                    .addParameter("explanation", "on")
+                    .addParameter("shorter", "true")
+                    .addParameter("output-format", "bytes")
+                    .addParameter("explanation-lang", sessionBean.getCurrentLocale().toLanguageTag())
+                    .toUri();
 
-        } catch (IOException | ClassNotFoundException ex) {
-            Logger.getLogger(UmigonBean.class.getName()).log(Level.SEVERE, null, ex);
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(uri)
+                    .POST(HttpRequest.BodyPublishers.ofString(umigonTestInputFR))
+                    .build();
+            HttpClient client = HttpClient.newHttpClient();
+
+            HttpResponse<byte[]> response = client.send(request, HttpResponse.BodyHandlers.ofByteArray());
+            byte[] body = response.body();
+            try (
+                    ByteArrayInputStream bis = new ByteArrayInputStream(body); ObjectInputStream ois = new ObjectInputStream(bis)) {
+                Document doc = (Document) ois.readObject();
+                umigonResultFR = switch (doc.getCategoryCode()) {
+                    case "_12" ->
+                        "😔 " + doc.getCategoryLocalizedPlainText();
+                    case "_11" ->
+                        "🤗 " + doc.getCategoryLocalizedPlainText();
+                    default ->
+                        "😐 " + doc.getCategoryLocalizedPlainText();
+                };
+                umigonResultFRExplanation = doc.getExplanationHtml();
+
+            } catch (IOException | ClassNotFoundException ex) {
+                System.out.println("body of response to umigon fr test was not readable");
+                System.out.println("body: " + new String(body));
+                return;
+            }
+
+            renderSignalFR = true;
+            reportResultFRRendered = false;
+
+        } catch (IOException | InterruptedException ex) {
+            System.out.println("connection to api not possible in umigon test fr");
+            if (uri == null) {
+                System.out.println("uri was not defined");
+            } else {
+                System.out.println("uri: " + uri.toString());
+
+            }
         }
-
-        renderSignalFR = true;
-        reportResultFRRendered = false;
 
     }
 
@@ -148,7 +165,6 @@ public class CardTestBean implements Serializable {
                 .withPort((Integer.valueOf(privateProperties.getProperty("nocode_api_port"))))
                 .withPath("api/organicForAText")
                 .addParameter("text-lang", "fr")
-                .addParameter("text",organicTestInputFR)
                 .addParameter("explanation", "on")
                 .addParameter("shorter", "true")
                 .addParameter("output-format", "bytes")
@@ -157,6 +173,7 @@ public class CardTestBean implements Serializable {
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(uri)
+                .POST(HttpRequest.BodyPublishers.ofString(organicTestInputFR))
                 .build();
         HttpClient client = HttpClient.newHttpClient();
 
@@ -205,7 +222,6 @@ public class CardTestBean implements Serializable {
                 .withPort((Integer.valueOf(privateProperties.getProperty("nocode_api_port"))))
                 .withPath("api/organicForAText")
                 .addParameter("text-lang", "en")
-                .addParameter("text", organicTestInputEN)
                 .addParameter("explanation", "on")
                 .addParameter("shorter", "true")
                 .addParameter("output-format", "bytes")
@@ -214,6 +230,7 @@ public class CardTestBean implements Serializable {
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(uri)
+                .POST(HttpRequest.BodyPublishers.ofString(organicTestInputEN))
                 .build();
         HttpClient client = HttpClient.newHttpClient();
 
@@ -260,7 +277,6 @@ public class CardTestBean implements Serializable {
                 .withPort((Integer.valueOf(privateProperties.getProperty("nocode_api_port"))))
                 .withPath("api/sentimentForAText")
                 .addParameter("text-lang", "es")
-                .addParameter("text", umigonTestInputES)
                 .addParameter("explanation", "on")
                 .addParameter("shorter", "true")
                 .addParameter("output-format", "bytes")
@@ -269,6 +285,7 @@ public class CardTestBean implements Serializable {
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(uri)
+                .POST(HttpRequest.BodyPublishers.ofString(umigonTestInputES))
                 .build();
         HttpClient client = HttpClient.newHttpClient();
 
@@ -309,14 +326,17 @@ public class CardTestBean implements Serializable {
                 .withPort((Integer.valueOf(privateProperties.getProperty("nocode_api_port"))))
                 .withPath("api/sentimentForAText")
                 .addParameter("text-lang", "en")
-                .addParameter("text",umigonTestInputEN)
+                .addParameter("text", umigonTestInputEN)
                 .addParameter("explanation", "on")
                 .addParameter("shorter", "true")
                 .addParameter("output-format", "bytes")
                 .addParameter("explanation-lang", sessionBean.getCurrentLocale().toLanguageTag())
                 .toUri();
 
-        HttpRequest request = HttpRequest.newBuilder().uri(uri).build();
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(uri)
+                .POST(HttpRequest.BodyPublishers.ofString(umigonTestInputEN))
+                .build();
         HttpClient client = HttpClient.newHttpClient();
 
         HttpResponse<byte[]> response = client.send(request, HttpResponse.BodyHandlers.ofByteArray());
@@ -621,6 +641,10 @@ public class CardTestBean implements Serializable {
 
     public void setShowFRExplanationOrganic(Boolean showFRExplanationOrganic) {
         this.showFRExplanationOrganic = showFRExplanationOrganic;
+    }
+
+    public void setIsUnitTest(Boolean isUnitTest) {
+        this.isUnitTest = isUnitTest;
     }
 
 }

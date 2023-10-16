@@ -11,9 +11,8 @@ import net.clementlevallois.nocodeapp.web.front.http.RemoteLocal;
 import net.clementlevallois.nocodeapp.web.front.http.SendReport;
 import jakarta.annotation.PostConstruct;
 import jakarta.faces.application.FacesMessage;
-import jakarta.inject.Inject;
-import java.io.IOException;
 import net.clementlevallois.nocodeapp.web.front.i18n.I18nStaticFilesResourceBundle;
+import net.clementlevallois.nocodeapp.web.front.utils.ApplicationProperties;
 
 /**
  *
@@ -36,18 +35,21 @@ public class SessionBean implements Serializable {
 
     @PostConstruct
     public void init() {
-        currentLocale = FacesContext.getCurrentInstance().getExternalContext().getRequestLocale();
-        final HttpServletRequest request = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
-        if (request != null) {
-            userAgent = request.getHeader("user-agent");
-        } else {
+        if (ApplicationProperties.getPrivateProperties() == null) {
+            ApplicationProperties.load();
+        }
+        FacesContext currentInstance = FacesContext.getCurrentInstance();
+        if (currentInstance == null) {
+            currentLocale = Locale.ENGLISH;
             userAgent = "unknown-user-agent";
+        } else {
+            currentLocale = currentInstance.getExternalContext().getRequestLocale();
+            HttpServletRequest request = (HttpServletRequest) currentInstance.getExternalContext().getRequest();
+            userAgent = request.getHeader("user-agent");
         }
         I18nStaticFilesResourceBundle staticFilesResourceBundle = new I18nStaticFilesResourceBundle();
         localeBundle = staticFilesResourceBundle.simpleMethodToGetResourceBundle(currentLocale);
     }
-
-    ;
 
     public String getFunction() {
         return function;

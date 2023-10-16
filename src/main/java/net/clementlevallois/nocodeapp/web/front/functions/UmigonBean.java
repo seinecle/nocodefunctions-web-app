@@ -123,16 +123,18 @@ public class UmigonBean implements Serializable {
         HttpRequest request;
         HttpClient client = HttpClient.newHttpClient();
         Set<CompletableFuture> futures = new HashSet();
+        HttpRequest.BodyPublisher bodyPublisher;
         int i = 1;
         try {
             for (Map.Entry<Integer, String> entry : mapOfLines.entrySet()) {
                 if (i++ > maxCapacity) {
                     break;
                 }
-                Document doc = new Document();
+                if (entry.getValue() == null) {
+                    continue;
+                }
                 String id = String.valueOf(entry.getKey());
-                doc.setText(entry.getValue());
-                doc.setId(id);
+                String text = entry.getValue();
 
                 URI uri = UrlBuilder
                         .empty()
@@ -141,8 +143,7 @@ public class UmigonBean implements Serializable {
                         .withHost("localhost")
                         .withPath("api/sentimentForAText")
                         .addParameter("text-lang", selectedLanguage)
-                        .addParameter("id", doc.getId())
-                        .addParameter("text", entry.getValue())
+                        .addParameter("id", id)
                         .addParameter("explanation", "on")
                         .addParameter("shorter", "true")
                         .addParameter("owner", privateProperties.getProperty("pwdOwner"))
@@ -151,6 +152,7 @@ public class UmigonBean implements Serializable {
                         .toUri();
 
                 request = HttpRequest.newBuilder()
+                        .POST(HttpRequest.BodyPublishers.ofString(text))
                         .uri(uri)
                         .build();
 

@@ -20,12 +20,10 @@ import org.mockito.Mockito;
  */
 public class LocaleBeanTest {
 
-    SingletonBean singletonBean;
     SessionBean sessionBean;
 
     @BeforeEach
     public void mockEssentialBeans() throws IOException {
-        singletonBean = Mockito.mock(SingletonBean.class);
         sessionBean = Mockito.mock(SessionBean.class);
     }    
     
