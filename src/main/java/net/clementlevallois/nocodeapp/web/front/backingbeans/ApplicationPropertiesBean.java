@@ -25,28 +25,32 @@ import net.clementlevallois.nocodeapp.web.front.http.RemoteLocal;
 @Singleton
 public class ApplicationPropertiesBean {
 
-    private final Properties privateProperties;
-    private final Path rootProjectPath;
-    private final Path i18nStaticResourcesFullPath;
-    private final Path userGeneratedVosviewerPublicDirectoryFullPath;
-    private final Path userGeneratedVosviewerPrivateDirectoryFullPath;
-    private final Path userGeneratedGephistoPublicDirectoryFullPath;
-    private final Path userGeneratedGephistoPrivateDirectoryFullPath;
-    private final Path gephistoRootRelativePath;
-    private final Path vosviewerRootRelativePath;
-    private final Path gephistoRootFullPath;
-    private final Path vosviewerRootFullPath;
+    private Properties privateProperties;
+    private static Path rootProjectPath;
+    private static Path i18nStaticResourcesFullPath;
+    private Path userGeneratedVosviewerPublicDirectoryFullPath;
+    private Path userGeneratedVosviewerPrivateDirectoryFullPath;
+    private Path userGeneratedGephistoPublicDirectoryFullPath;
+    private Path userGeneratedGephistoPrivateDirectoryFullPath;
+    private Path gephistoRootRelativePath;
+    private Path vosviewerRootRelativePath;
+    private Path gephistoRootFullPath;
+    private Path vosviewerRootFullPath;
 
-    private final String ENV_VARIABLE_ROOTPROJECT = "root.project";
-    private final String ENV_VARIABLE_PROPERTIES_FILE = "properties.relative.path.and.filename";
-    private final String ENV_VARIABLE_I18N_DIR = "i18n.relative.path";
-    private final String ENV_VARIABLE_VOSVIEWER_DIR = "relative.path.vosviewer";
-    private final String ENV_VARIABLE_GEPHISTO_DIR = "relative.path.gephisto";
-    private final String ENV_VARIABLE_PUBLIC_DIR = "relative.path.public";
-    private final String ENV_VARIABLE_PRIVATE_DIR = "relative.path.private";
-    private final String ENV_VARIABLE_USER_CREATED_FILES_DIR = "relative.path.user.created.files";
+    private String ENV_VARIABLE_ROOTPROJECT = "root.project";
+    private String ENV_VARIABLE_PROPERTIES_FILE = "properties.relative.path.and.filename";
+    private static String ENV_VARIABLE_I18N_DIR = "i18n.relative.path";
+    private String ENV_VARIABLE_VOSVIEWER_DIR = "relative.path.vosviewer";
+    private String ENV_VARIABLE_GEPHISTO_DIR = "relative.path.gephisto";
+    private String ENV_VARIABLE_PUBLIC_DIR = "relative.path.public";
+    private String ENV_VARIABLE_PRIVATE_DIR = "relative.path.private";
+    private String ENV_VARIABLE_USER_CREATED_FILES_DIR = "relative.path.user.created.files";
 
     public ApplicationPropertiesBean() {
+        loadAll();
+    }
+    
+    private void loadAll(){
         loadEnvironmentVariablesOnWindows();
         rootProjectPath = loadRootProjectPath();
         privateProperties = loadPrivateProperties();
@@ -58,7 +62,7 @@ public class ApplicationPropertiesBean {
         gephistoRootRelativePath = loadGephistoRootRelativePath();
         vosviewerRootRelativePath = loadVosviewerRootRelativePath();
         vosviewerRootFullPath = loadVosviewerRootFullPath();
-        gephistoRootFullPath = loadGephistoRootFullPath();
+        gephistoRootFullPath = loadGephistoRootFullPath();        
     }
 
     private Path loadRootProjectPath() {
@@ -117,7 +121,7 @@ public class ApplicationPropertiesBean {
 
     }
 
-    private Path loadI18nStaticResourcesFullPath() {
+    private static Path loadI18nStaticResourcesFullPath() {
         Path i18nResourcesFullPath = null;
         String i18nStaticResourcesRelativePath = System.getProperty(ENV_VARIABLE_I18N_DIR);
         if (i18nStaticResourcesRelativePath == null || i18nStaticResourcesRelativePath.isBlank()) {
@@ -169,7 +173,7 @@ public class ApplicationPropertiesBean {
         }
     }
 
-    public Path getExternalFolderForInternationalizationFiles() {
+    public static Path getExternalFolderForInternationalizationFiles() {
         return i18nStaticResourcesFullPath;
     }
 

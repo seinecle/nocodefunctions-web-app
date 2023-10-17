@@ -13,19 +13,19 @@ import java.nio.file.Path;
 import java.util.Enumeration;
 import java.util.Locale;
 import java.util.ResourceBundle;
+import net.clementlevallois.nocodeapp.web.front.backingbeans.ApplicationPropertiesBean;
 
 /**
  *
  * @author LEVALLOIS
  */
+
 public class I18nStaticFilesResourceBundle extends ResourceBundle {
 
     private ResourceBundle rb;
     private Locale current;
-    private final Path externalFolderForInternationalizationFiles;
 
-    public I18nStaticFilesResourceBundle(Path externalFolderForInternationalizationFiles) {
-        this.externalFolderForInternationalizationFiles = externalFolderForInternationalizationFiles;
+    public I18nStaticFilesResourceBundle() {
     }
 
     @Override
@@ -55,7 +55,7 @@ public class I18nStaticFilesResourceBundle extends ResourceBundle {
 
     public ResourceBundle simpleMethodToGetResourceBundle(Locale locale) {
         try {
-            File i8nFolderAsFile = externalFolderForInternationalizationFiles.toFile();
+            File i8nFolderAsFile = ApplicationPropertiesBean.getExternalFolderForInternationalizationFiles().toFile();
             URL[] urls = {i8nFolderAsFile.toURI().toURL()};
             try (URLClassLoader loader = new URLClassLoader(urls)) {
                 rb = ResourceBundle.getBundle("text", locale, loader);

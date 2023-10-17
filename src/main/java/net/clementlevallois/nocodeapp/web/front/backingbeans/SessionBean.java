@@ -47,7 +47,7 @@ public class SessionBean implements Serializable {
             HttpServletRequest request = (HttpServletRequest) currentInstance.getExternalContext().getRequest();
             userAgent = request.getHeader("user-agent");
         }
-        I18nStaticFilesResourceBundle staticFilesResourceBundle = new I18nStaticFilesResourceBundle(applicationProperties.getExternalFolderForInternationalizationFiles());
+        I18nStaticFilesResourceBundle staticFilesResourceBundle = new I18nStaticFilesResourceBundle();
         localeBundle = staticFilesResourceBundle.simpleMethodToGetResourceBundle(currentLocale);
     }
 
@@ -115,7 +115,7 @@ public class SessionBean implements Serializable {
     }
 
     public void refreshLocaleBundle() {
-        I18nStaticFilesResourceBundle dbb = new I18nStaticFilesResourceBundle(applicationProperties.getExternalFolderForInternationalizationFiles());
+        I18nStaticFilesResourceBundle dbb = new I18nStaticFilesResourceBundle();
         localeBundle = dbb.simpleMethodToGetResourceBundle(currentLocale);
     }
 

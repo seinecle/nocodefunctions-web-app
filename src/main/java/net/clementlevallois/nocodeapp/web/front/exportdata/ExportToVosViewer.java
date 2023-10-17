@@ -64,7 +64,7 @@ public class ExportToVosViewer {
             String url = finishOpsFromGraphAsJson(graphAsJsonVosViewer, userGeneratedVosviewerDirectoryFullPath, relativePathFromProjectRootToVosviewerFolder, vosviewerRootFullPath);
             return url;
         } catch (InterruptedException | IOException ex) {
-            Logger.getLogger(BiblioCouplingBean.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(ExportToVosViewer.class.getName()).log(Level.SEVERE, null, ex);
         }
         return "";
     }

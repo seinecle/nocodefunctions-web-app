@@ -27,7 +27,7 @@ public class I18nStaticFilesResourceBundleTest {
 
     @Test
     public void remoteLocalClass() {
-        I18nStaticFilesResourceBundle bundleManager = new I18nStaticFilesResourceBundle(applicationProperties.getExternalFolderForInternationalizationFiles());
+        I18nStaticFilesResourceBundle bundleManager = new I18nStaticFilesResourceBundle();
         ResourceBundle bundle = bundleManager.simpleMethodToGetResourceBundle(Locale.forLanguageTag("fr"));
         boolean containsKey = bundle.containsKey("cowo.tool.argument1.details");
         assertThat(containsKey).isTrue();
