@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Locale;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.LocaleBean;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
-import net.clementlevallois.nocodeapp.web.front.backingbeans.SingletonBean;
 import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

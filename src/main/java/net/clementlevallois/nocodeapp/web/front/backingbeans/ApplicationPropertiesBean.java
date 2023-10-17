@@ -37,14 +37,14 @@ public class ApplicationPropertiesBean {
     private Path gephistoRootFullPath;
     private Path vosviewerRootFullPath;
 
-    private String ENV_VARIABLE_ROOTPROJECT = "root.project";
-    private String ENV_VARIABLE_PROPERTIES_FILE = "properties.relative.path.and.filename";
-    private static String ENV_VARIABLE_I18N_DIR = "i18n.relative.path";
-    private String ENV_VARIABLE_VOSVIEWER_DIR = "relative.path.vosviewer";
-    private String ENV_VARIABLE_GEPHISTO_DIR = "relative.path.gephisto";
-    private String ENV_VARIABLE_PUBLIC_DIR = "relative.path.public";
-    private String ENV_VARIABLE_PRIVATE_DIR = "relative.path.private";
-    private String ENV_VARIABLE_USER_CREATED_FILES_DIR = "relative.path.user.created.files";
+    private final String ENV_VARIABLE_ROOTPROJECT = "root.project";
+    private final String ENV_VARIABLE_PROPERTIES_FILE = "properties.relative.path.and.filename";
+    private static final String ENV_VARIABLE_I18N_DIR = "i18n.relative.path";
+    private final String ENV_VARIABLE_VOSVIEWER_DIR = "relative.path.vosviewer";
+    private final String ENV_VARIABLE_GEPHISTO_DIR = "relative.path.gephisto";
+    private final String ENV_VARIABLE_PUBLIC_DIR = "relative.path.public";
+    private final String ENV_VARIABLE_PRIVATE_DIR = "relative.path.private";
+    private final String ENV_VARIABLE_USER_CREATED_FILES_DIR = "relative.path.user.created.files";
 
     public ApplicationPropertiesBean() {
         loadAll();
