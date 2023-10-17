@@ -32,7 +32,7 @@ import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.importdata.DataImportBean;
 import net.clementlevallois.nocodeapp.web.front.http.SendReport;
 import net.clementlevallois.nocodeapp.web.front.logview.LogBean;
-import net.clementlevallois.nocodeapp.web.front.utils.ApplicationProperties;
+import net.clementlevallois.nocodeapp.web.front.backingbeans.ApplicationPropertiesBean;
 import net.clementlevallois.nocodeapp.web.front.utils.Converters;
 import net.clementlevallois.umigon.model.classification.Document;
 import org.primefaces.model.DefaultStreamedContent;
@@ -68,15 +68,19 @@ public class OrganicBean implements Serializable {
     @Inject
     DataImportBean inputData;
 
-    private final Properties privateProperties;
+    @Inject
+    ApplicationPropertiesBean applicationProperties;
+        
+    
+    private Properties privateProperties;
     
     public OrganicBean() {
-        privateProperties = ApplicationProperties.getPrivateProperties();
     }
 
     @PostConstruct
-    private void init() {
+    public void init() {
         sessionBean.setFunction("organic");
+        privateProperties = applicationProperties.getPrivateProperties();
         String promoted_tone = sessionBean.getLocaleBundle().getString("organic.general.soundspromoted");
         String neutral_tone = sessionBean.getLocaleBundle().getString("organic.general.soundsorganic");
         tones = new String[]{promoted_tone, neutral_tone};
@@ -262,7 +266,7 @@ public class OrganicBean implements Serializable {
             }
             docFound.setFlaggedAsFalseLabel(true);
         }
-        SendReport sender = new SendReport();
+        SendReport sender = new SendReport(applicationProperties.getMiddlewareHost(), applicationProperties.getMiddlewarePort());
         sender.initErrorReport(docFound.getText() + " - should not be " + docFound.getCategorizationResult().toString());
         sender.start();
         return "";

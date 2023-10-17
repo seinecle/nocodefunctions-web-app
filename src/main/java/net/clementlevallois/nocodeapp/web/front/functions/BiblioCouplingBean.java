@@ -2,6 +2,7 @@ package net.clementlevallois.nocodeapp.web.front.functions;
 
 import io.mikael.urlbuilder.UrlBuilder;
 import io.mikael.urlbuilder.util.RuntimeURISyntaxException;
+import jakarta.annotation.PostConstruct;
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.URI;
@@ -27,6 +28,7 @@ import jakarta.json.JsonObjectBuilder;
 import jakarta.json.JsonWriter;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
@@ -36,7 +38,7 @@ import net.clementlevallois.nocodeapp.web.front.exportdata.ExportToGephisto;
 import net.clementlevallois.nocodeapp.web.front.exportdata.ExportToVosViewer;
 import net.clementlevallois.nocodeapp.web.front.importdata.DataImportBean;
 import net.clementlevallois.nocodeapp.web.front.logview.LogBean;
-import net.clementlevallois.nocodeapp.web.front.utils.ApplicationProperties;
+import net.clementlevallois.nocodeapp.web.front.backingbeans.ApplicationPropertiesBean;
 import net.clementlevallois.nocodeapp.web.front.utils.GEXFSaver;
 import net.clementlevallois.nocodeapp.web.front.utils.Converters;
 import org.primefaces.PrimeFaces;
@@ -60,7 +62,7 @@ public class BiblioCouplingBean implements Serializable {
     private Boolean shareVVPublicly;
     private Boolean shareGephistoPublicly;
     private int maxSources = 300;
-    private final Properties privateProperties;
+    private Properties privateProperties;
     private ConcurrentHashMap<String, Set<String>> sourcesAndTargets;
     private int minSharedTargets;
     private Set<String> pubErrors;
@@ -80,13 +82,19 @@ public class BiblioCouplingBean implements Serializable {
     @Inject
     SessionBean sessionBean;
 
+    @Inject
+    ApplicationPropertiesBean applicationProperties;
+    
+    
     public BiblioCouplingBean() {
-        if (sessionBean == null) {
-            sessionBean = new SessionBean();
-        }
-        sessionBean.setFunction("bibliocoupling");
-        privateProperties = ApplicationProperties.getPrivateProperties();
     }
+    
+    @PostConstruct
+    public void init() {
+        sessionBean.setFunction("bibliocoupling");
+        privateProperties = applicationProperties.getPrivateProperties();
+    }
+    
 
     public String runBiblioCouplingAnalysis() {
         try {
@@ -293,7 +301,11 @@ public class BiblioCouplingBean implements Serializable {
 
 
     public void gotoVV() {
-        String linkToVosViewer = ExportToVosViewer.exportAndReturnLinkFromGexf(gexf, shareVVPublicly, privateProperties);
+       String apiPort = privateProperties.getProperty("nocode_api_port");
+        Path userGeneratedVosviewerDirectoryFullPath = applicationProperties.getUserGeneratedVosviewerDirectoryFullPath(shareVVPublicly);
+        Path relativePathFromProjectRootToVosviewerFolder = applicationProperties.getRelativePathFromProjectRootToVosviewerFolder();
+        Path vosviewerRootFullPath = applicationProperties.getVosviewerRootFullPath();
+        String linkToVosViewer = ExportToVosViewer.exportAndReturnLinkFromGexf(gexf, apiPort,userGeneratedVosviewerDirectoryFullPath,relativePathFromProjectRootToVosviewerFolder,vosviewerRootFullPath);
         if (linkToVosViewer != null && !linkToVosViewer.isBlank()) {
             try {
                 ExternalContext externalContext = FacesContext.getCurrentInstance().getExternalContext();
@@ -305,7 +317,10 @@ public class BiblioCouplingBean implements Serializable {
     }
 
     public void gotoGephisto() {
-        String urlToGephisto = ExportToGephisto.exportAndReturnLink(gexf, shareGephistoPublicly);
+        Path userGeneratedGephistoDirectoryFullPath = applicationProperties.getUserGeneratedGephistoDirectoryFullPath(shareGephistoPublicly);
+        Path relativePathFromProjectRootToGephistoFolder = applicationProperties.getRelativePathFromProjectRootToGephistoFolder();
+        Path gephistoRootFullPath = applicationProperties.getGephistoRootFullPath();
+        String urlToGephisto = ExportToGephisto.exportAndReturnLink(gexf, userGeneratedGephistoDirectoryFullPath, relativePathFromProjectRootToGephistoFolder, gephistoRootFullPath);
         ExternalContext externalContext = FacesContext.getCurrentInstance().getExternalContext();
         try {
             externalContext.redirect(urlToGephisto);

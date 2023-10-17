@@ -1,6 +1,7 @@
 package net.clementlevallois.nocodeapp.web.front.importdata;
 
 import io.mikael.urlbuilder.UrlBuilder;
+import jakarta.annotation.PostConstruct;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -38,7 +39,7 @@ import net.clementlevallois.importers.model.SheetModel;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.functions.UmigonBean;
 import net.clementlevallois.nocodeapp.web.front.logview.LogBean;
-import net.clementlevallois.nocodeapp.web.front.utils.ApplicationProperties;
+import net.clementlevallois.nocodeapp.web.front.backingbeans.ApplicationPropertiesBean;
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
 
@@ -56,6 +57,9 @@ public class DataImportBean implements Serializable {
 
     @Inject
     SessionBean sessionBean;
+
+    @Inject
+    ApplicationPropertiesBean applicationProperties;
 
     private Integer progress = 0;
 
@@ -86,7 +90,7 @@ public class DataImportBean implements Serializable {
     private String currentFunction;
 
     private int tabIndex;
-    private final Properties privateProperties;
+    private Properties privateProperties;
 
     public enum Source {
         TXT,
@@ -96,9 +100,13 @@ public class DataImportBean implements Serializable {
     }
 
     public DataImportBean() {
+    }
+
+    @PostConstruct
+    public void init() {
         dataInSheets = new ArrayList();
         pdfsToBeExtracted = new HashMap();
-        privateProperties = ApplicationProperties.getPrivateProperties();
+        privateProperties = applicationProperties.getPrivateProperties();
     }
 
     public String readData() throws IOException, URISyntaxException {

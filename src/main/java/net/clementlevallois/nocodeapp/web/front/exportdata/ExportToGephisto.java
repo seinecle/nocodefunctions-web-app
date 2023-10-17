@@ -9,20 +9,21 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.concurrent.ThreadLocalRandom;
 import net.clementlevallois.nocodeapp.web.front.http.RemoteLocal;
-import net.clementlevallois.nocodeapp.web.front.utils.ApplicationProperties;
 
 /**
  *
  * @author LEVALLOIS
  */
+
 public class ExportToGephisto {
 
-    public static String exportAndReturnLink(String gexf, boolean shareGephistoPublicly) {
+
+    
+    public static String exportAndReturnLink(String gexf, Path directoryToSaveFile, Path relativePathFromProjectRootToGephistoFolder, Path gephistoRootFullPath) {
         long nextLong = ThreadLocalRandom.current().nextLong();
         String gephistoGexfFileName = "gephisto_" + String.valueOf(Math.abs(nextLong)) + ".gexf";
 
-        Path dir = shareGephistoPublicly ? ApplicationProperties.getUserGeneratedGephistoPublicDirectoryFullPath() : ApplicationProperties.getUserGeneratedGephistoPrivateDirectoryFullPath();
-        Path fullPathFileToWrite = dir.resolve(Path.of(gephistoGexfFileName));
+        Path fullPathFileToWrite = directoryToSaveFile.resolve(Path.of(gephistoGexfFileName));
         try {
             Files.writeString(fullPathFileToWrite, gexf, StandardCharsets.UTF_8);
         } catch (IOException ex) {
@@ -33,10 +34,8 @@ public class ExportToGephisto {
             return fullPathFileToWrite.toString();
         }
 
-        Path relativePathFromProjectRootToGephistoFolder = ApplicationProperties.getRootProjectFullPath().relativize(ApplicationProperties.getGephistoRootFullPath());
-
         String urlWithoutParamValue = RemoteLocal.getDomain() + "/" + relativePathFromProjectRootToGephistoFolder + "/index.html?gexf-file=";
-        Path relativePathToGephistoFile = ApplicationProperties.getGephistoRootFullPath().relativize(fullPathFileToWrite);
+        Path relativePathToGephistoFile = gephistoRootFullPath.relativize(fullPathFileToWrite);
         String fullUrl = urlWithoutParamValue + relativePathToGephistoFile;
         return fullUrl;
     }

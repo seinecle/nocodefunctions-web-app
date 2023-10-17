@@ -9,10 +9,10 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.file.Path;
 import java.util.Enumeration;
 import java.util.Locale;
 import java.util.ResourceBundle;
-import net.clementlevallois.nocodeapp.web.front.utils.ApplicationProperties;
 
 /**
  *
@@ -20,8 +20,13 @@ import net.clementlevallois.nocodeapp.web.front.utils.ApplicationProperties;
  */
 public class I18nStaticFilesResourceBundle extends ResourceBundle {
 
-    ResourceBundle rb;
-    Locale current;
+    private ResourceBundle rb;
+    private Locale current;
+    private final Path externalFolderForInternationalizationFiles;
+
+    public I18nStaticFilesResourceBundle(Path externalFolderForInternationalizationFiles) {
+        this.externalFolderForInternationalizationFiles = externalFolderForInternationalizationFiles;
+    }
 
     @Override
     public Object handleGetObject(String key) {
@@ -50,7 +55,7 @@ public class I18nStaticFilesResourceBundle extends ResourceBundle {
 
     public ResourceBundle simpleMethodToGetResourceBundle(Locale locale) {
         try {
-            File i8nFolderAsFile = ApplicationProperties.getExternalFolderForInternationalizationFiles().toFile();
+            File i8nFolderAsFile = externalFolderForInternationalizationFiles.toFile();
             URL[] urls = {i8nFolderAsFile.toURI().toURL()};
             try (URLClassLoader loader = new URLClassLoader(urls)) {
                 rb = ResourceBundle.getBundle("text", locale, loader);

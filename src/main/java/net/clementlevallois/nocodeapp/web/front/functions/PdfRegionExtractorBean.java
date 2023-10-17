@@ -35,7 +35,7 @@ import net.clementlevallois.importers.model.SheetModel;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.importdata.DataImportBean;
 import net.clementlevallois.nocodeapp.web.front.logview.LogBean;
-import net.clementlevallois.nocodeapp.web.front.utils.ApplicationProperties;
+import net.clementlevallois.nocodeapp.web.front.backingbeans.ApplicationPropertiesBean;
 import net.clementlevallois.nocodeapp.web.front.utils.Converters;
 import org.primefaces.model.CroppedImage;
 import org.primefaces.model.DefaultStreamedContent;
@@ -65,7 +65,7 @@ public class PdfRegionExtractorBean implements Serializable {
     private float proportionHeight;
     private int counterImages = 0;
     private ConcurrentHashMap<String, SheetModel> results = new ConcurrentHashMap();
-    private final Properties privateProperties;
+    private Properties privateProperties;
 
     @Inject
     LogBean logBean;
@@ -76,13 +76,16 @@ public class PdfRegionExtractorBean implements Serializable {
     @Inject
     DataImportBean inputData;
 
+    @Inject
+    ApplicationPropertiesBean applicationProperties;
+        
     public PdfRegionExtractorBean() {
-        privateProperties = ApplicationProperties.getPrivateProperties();
     }
 
     @PostConstruct
-    void init() {
+    public void init() {
         sessionBean.setFunction("pdf_region_extractor");
+        privateProperties = applicationProperties.getPrivateProperties();
         counterImages = 0;
     }
 

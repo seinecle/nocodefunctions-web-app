@@ -1,6 +1,7 @@
 package net.clementlevallois.nocodeapp.web.front.functions;
 
 import io.mikael.urlbuilder.UrlBuilder;
+import jakarta.annotation.PostConstruct;
 import java.io.FileNotFoundException;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -25,7 +26,7 @@ import net.clementlevallois.importers.model.SheetModel;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.importdata.DataImportBean;
 import net.clementlevallois.nocodeapp.web.front.logview.LogBean;
-import net.clementlevallois.nocodeapp.web.front.utils.ApplicationProperties;
+import net.clementlevallois.nocodeapp.web.front.backingbeans.ApplicationPropertiesBean;
 import net.clementlevallois.nocodeapp.web.front.utils.Converters;
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
@@ -48,17 +49,27 @@ public class HighlighterBean implements Serializable {
     @Inject
     SessionBean sessionBean;
 
+    @Inject
+    ApplicationPropertiesBean applicationProperties;
+    
+    
     private String colorText = "ffffff";
     private String colorBackground = "e81e5b";
-    private final Properties privateProperties;
+    private Properties privateProperties;
 
 
     private StreamedContent fileToSave;
 
     public HighlighterBean() {
-        privateProperties = ApplicationProperties.getPrivateProperties();
     }
 
+    @PostConstruct
+    public void init() {
+        sessionBean.setFunction("highlighter");
+        privateProperties = applicationProperties.getPrivateProperties();
+    }
+    
+    
     public void onload() {
     }
 

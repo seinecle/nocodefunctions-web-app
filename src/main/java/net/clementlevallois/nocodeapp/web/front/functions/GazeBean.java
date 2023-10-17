@@ -1,6 +1,7 @@
 package net.clementlevallois.nocodeapp.web.front.functions;
 
 import io.mikael.urlbuilder.UrlBuilder;
+import jakarta.annotation.PostConstruct;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.StringReader;
@@ -29,6 +30,7 @@ import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.json.JsonWriter;
+import java.nio.file.Path;
 import java.util.Properties;
 import net.clementlevallois.importers.model.CellRecord;
 import net.clementlevallois.importers.model.SheetModel;
@@ -37,7 +39,7 @@ import net.clementlevallois.nocodeapp.web.front.exportdata.ExportToGephisto;
 import net.clementlevallois.nocodeapp.web.front.exportdata.ExportToVosViewer;
 import net.clementlevallois.nocodeapp.web.front.importdata.DataImportBean;
 import net.clementlevallois.nocodeapp.web.front.logview.LogBean;
-import net.clementlevallois.nocodeapp.web.front.utils.ApplicationProperties;
+import net.clementlevallois.nocodeapp.web.front.backingbeans.ApplicationPropertiesBean;
 import net.clementlevallois.nocodeapp.web.front.utils.GEXFSaver;
 import net.clementlevallois.nocodeapp.web.front.utils.Converters;
 import net.clementlevallois.utils.Multiset;
@@ -63,7 +65,7 @@ public class GazeBean implements Serializable {
     private Boolean shareGephistoPublicly;
     private boolean applyPMI = false;
 
-    private final Properties privateProperties;
+    private Properties privateProperties;
 
     private String gexf;
 
@@ -76,12 +78,18 @@ public class GazeBean implements Serializable {
     @Inject
     SessionBean sessionBean;
 
+    @Inject
+    ApplicationPropertiesBean applicationProperties;
+
     public GazeBean() {
-        if (sessionBean == null) {
-            sessionBean = new SessionBean();
-        }
         sessionBean.setFunction("gaze");
-        privateProperties = ApplicationProperties.getPrivateProperties();
+        privateProperties = applicationProperties.getPrivateProperties();
+    }
+
+    @PostConstruct
+    public void init() {
+        sessionBean.setFunction("networkconverter");
+        privateProperties = applicationProperties.getPrivateProperties();
     }
 
     public void onTabChange(String sheetName) {
@@ -382,7 +390,11 @@ public class GazeBean implements Serializable {
     }
 
     public void gotoVV() {
-        String linkToVosViewer = ExportToVosViewer.exportAndReturnLinkFromGexf(gexf, shareVVPublicly, privateProperties);
+        String apiPort = privateProperties.getProperty("nocode_api_port");
+        Path userGeneratedVosviewerDirectoryFullPath = applicationProperties.getUserGeneratedVosviewerDirectoryFullPath(shareVVPublicly);
+        Path relativePathFromProjectRootToVosviewerFolder = applicationProperties.getRelativePathFromProjectRootToVosviewerFolder();
+        Path vosviewerRootFullPath = applicationProperties.getVosviewerRootFullPath();
+        String linkToVosViewer = ExportToVosViewer.exportAndReturnLinkFromGexf(gexf, apiPort, userGeneratedVosviewerDirectoryFullPath, relativePathFromProjectRootToVosviewerFolder, vosviewerRootFullPath);
         if (linkToVosViewer != null && !linkToVosViewer.isBlank()) {
             try {
                 ExternalContext externalContext = FacesContext.getCurrentInstance().getExternalContext();
@@ -394,7 +406,10 @@ public class GazeBean implements Serializable {
     }
 
     public void gotoGephisto() {
-        String urlToGephisto = ExportToGephisto.exportAndReturnLink(gexf, shareGephistoPublicly);
+        Path userGeneratedGephistoDirectoryFullPath = applicationProperties.getUserGeneratedGephistoDirectoryFullPath(shareGephistoPublicly);
+        Path relativePathFromProjectRootToGephistoFolder = applicationProperties.getRelativePathFromProjectRootToGephistoFolder();
+        Path gephistoRootFullPath = applicationProperties.getGephistoRootFullPath();
+        String urlToGephisto = ExportToGephisto.exportAndReturnLink(gexf, userGeneratedGephistoDirectoryFullPath, relativePathFromProjectRootToGephistoFolder, gephistoRootFullPath);
         ExternalContext externalContext = FacesContext.getCurrentInstance().getExternalContext();
         try {
             externalContext.redirect(urlToGephisto);

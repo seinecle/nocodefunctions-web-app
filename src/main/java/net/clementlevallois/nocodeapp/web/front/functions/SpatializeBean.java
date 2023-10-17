@@ -1,6 +1,7 @@
 package net.clementlevallois.nocodeapp.web.front.functions;
 
 import io.mikael.urlbuilder.UrlBuilder;
+import jakarta.annotation.PostConstruct;
 import java.io.ByteArrayInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -24,7 +25,7 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
-import net.clementlevallois.nocodeapp.web.front.utils.ApplicationProperties;
+import net.clementlevallois.nocodeapp.web.front.backingbeans.ApplicationPropertiesBean;
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
@@ -51,19 +52,25 @@ public class SpatializeBean implements Serializable {
     private float progressFloat = 0f;
     private Integer durationInSeconds = 20;
 
-    private final Properties privateProperties;
+    private Properties privateProperties;
 
     @Inject
     SessionBean sessionBean;
 
+    @Inject
+    ApplicationPropertiesBean applicationProperties;
+            
+    
     public SpatializeBean() {
-        if (sessionBean == null) {
-            sessionBean = new SessionBean();
-        }
-        sessionBean.setFunction("spatialize");
-        privateProperties = ApplicationProperties.getPrivateProperties();
     }
 
+    @PostConstruct
+    public void init() {
+        sessionBean.setFunction("spatialize");
+        privateProperties = applicationProperties.getPrivateProperties();
+    }
+    
+    
     public String logout() {
         FacesContext.getCurrentInstance().getExternalContext().invalidateSession();
         return "/index?faces-redirect=true";

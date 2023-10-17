@@ -1,6 +1,7 @@
 package net.clementlevallois.nocodeapp.web.front.functions;
 
 import io.mikael.urlbuilder.UrlBuilder;
+import jakarta.annotation.PostConstruct;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -32,6 +33,7 @@ import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.json.JsonWriter;
 import jakarta.servlet.annotation.MultipartConfig;
+import java.nio.file.Path;
 import java.util.Properties;
 import net.clementlevallois.importers.model.DataFormatConverter;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.LocaleComparator;
@@ -40,7 +42,7 @@ import net.clementlevallois.nocodeapp.web.front.exportdata.ExportToGephisto;
 import net.clementlevallois.nocodeapp.web.front.exportdata.ExportToVosViewer;
 import net.clementlevallois.nocodeapp.web.front.importdata.DataImportBean;
 import net.clementlevallois.nocodeapp.web.front.logview.LogBean;
-import net.clementlevallois.nocodeapp.web.front.utils.ApplicationProperties;
+import net.clementlevallois.nocodeapp.web.front.backingbeans.ApplicationPropertiesBean;
 import net.clementlevallois.nocodeapp.web.front.utils.GEXFSaver;
 import net.clementlevallois.nocodeapp.web.front.utils.Converters;
 import net.clementlevallois.utils.TextCleaningOps;
@@ -82,7 +84,7 @@ public class CowoBean implements Serializable {
     private Boolean shareGephistoPublicly;
     private Integer minCharNumber = 4;
     private Map<Integer, String> mapOfLines;
-    private final Properties privateProperties;
+    private Properties privateProperties;
 
     @Inject
     LogBean logBean;
@@ -93,12 +95,16 @@ public class CowoBean implements Serializable {
     @Inject
     SessionBean sessionBean;
 
+    @Inject
+    ApplicationPropertiesBean applicationProperties;
+
     public CowoBean() {
-        if (sessionBean == null) {
-            sessionBean = new SessionBean();
-        }
+    }
+
+    @PostConstruct
+    public void init() {
         sessionBean.setFunction("cowo");
-        privateProperties = ApplicationProperties.getPrivateProperties();
+        privateProperties = applicationProperties.getPrivateProperties();
     }
 
     public Integer getProgress() {
@@ -438,7 +444,11 @@ public class CowoBean implements Serializable {
     }
 
     public void gotoVV() {
-        String linkToVosViewer = ExportToVosViewer.exportAndReturnLinkFromGexf(gexf, shareVVPublicly, privateProperties);
+        String apiPort = privateProperties.getProperty("nocode_api_port");
+        Path userGeneratedVosviewerDirectoryFullPath = applicationProperties.getUserGeneratedVosviewerDirectoryFullPath(shareVVPublicly);
+        Path relativePathFromProjectRootToVosviewerFolder = applicationProperties.getRelativePathFromProjectRootToVosviewerFolder();
+        Path vosviewerRootFullPath = applicationProperties.getVosviewerRootFullPath();
+        String linkToVosViewer = ExportToVosViewer.exportAndReturnLinkFromGexf(gexf, apiPort, userGeneratedVosviewerDirectoryFullPath, relativePathFromProjectRootToVosviewerFolder, vosviewerRootFullPath);
         if (linkToVosViewer != null && !linkToVosViewer.isBlank()) {
             try {
                 ExternalContext externalContext = FacesContext.getCurrentInstance().getExternalContext();
@@ -450,7 +460,10 @@ public class CowoBean implements Serializable {
     }
 
     public void gotoGephisto() {
-        String urlToGephisto = ExportToGephisto.exportAndReturnLink(gexf, shareGephistoPublicly);
+        Path userGeneratedGephistoDirectoryFullPath = applicationProperties.getUserGeneratedGephistoDirectoryFullPath(shareGephistoPublicly);
+        Path relativePathFromProjectRootToGephistoFolder = applicationProperties.getRelativePathFromProjectRootToGephistoFolder();
+        Path gephistoRootFullPath = applicationProperties.getGephistoRootFullPath();
+        String urlToGephisto = ExportToGephisto.exportAndReturnLink(gexf, userGeneratedGephistoDirectoryFullPath, relativePathFromProjectRootToGephistoFolder, gephistoRootFullPath);
         ExternalContext externalContext = FacesContext.getCurrentInstance().getExternalContext();
         try {
             externalContext.redirect(urlToGephisto);

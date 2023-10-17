@@ -1,17 +1,15 @@
 package net.clementlevallois.nocodeapp.web.front.backingbeans;
 
 import io.mikael.urlbuilder.UrlBuilder;
+import jakarta.annotation.PostConstruct;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -20,7 +18,6 @@ import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
 import net.clementlevallois.nocodeapp.web.front.functions.UmigonBean;
 import net.clementlevallois.nocodeapp.web.front.http.SendReport;
-import net.clementlevallois.nocodeapp.web.front.utils.ApplicationProperties;
 import net.clementlevallois.umigon.model.classification.Document;
 
 /**
@@ -57,7 +54,7 @@ public class CardTestBean implements Serializable {
     private String organicResultFRExplanation = "";
     private String organicResultENExplanation = "";
 
-    private final Properties privateProperties;
+    private Properties privateProperties;
 
     private Boolean showFRExplanation = false;
     private Boolean showENExplanation = false;
@@ -69,12 +66,23 @@ public class CardTestBean implements Serializable {
     @Inject
     SessionBean sessionBean;
 
+    @Inject
+    ApplicationPropertiesBean applicationProperties;
+
     public CardTestBean() {
-        privateProperties = ApplicationProperties.getPrivateProperties();
+    }
+
+    @PostConstruct
+    public void init() {
+        privateProperties = applicationProperties.getPrivateProperties();
     }
 
     public void setSessionBean(SessionBean sessionBean) {
         this.sessionBean = sessionBean;
+    }
+
+    public void setApplicationPropertiesBean(ApplicationPropertiesBean applicationPropertiesBean) {
+        this.applicationProperties = applicationPropertiesBean;
     }
 
     public String getUmigonTestInputFR() {
@@ -89,7 +97,7 @@ public class CardTestBean implements Serializable {
         URI uri = null;
         try {
             showFRExplanation = false;
-            SendReport send = new SendReport();
+            SendReport send = new SendReport(applicationProperties.getMiddlewareHost(), applicationProperties.getMiddlewarePort());
             send.initAnalytics("test: umigon fr", sessionBean.getUserAgent());
             send.start();
 
@@ -155,7 +163,7 @@ public class CardTestBean implements Serializable {
         URI uri = null;
         try {
             showFRExplanationOrganic = false;
-            SendReport send = new SendReport();
+            SendReport send = new SendReport(applicationProperties.getMiddlewareHost(), applicationProperties.getMiddlewarePort());
             send.initAnalytics("test: organic fr", sessionBean.getUserAgent());
             send.start();
 
@@ -225,7 +233,7 @@ public class CardTestBean implements Serializable {
         URI uri = null;
         try {
             showENExplanationOrganic = false;
-            SendReport send = new SendReport();
+            SendReport send = new SendReport(applicationProperties.getMiddlewareHost(), applicationProperties.getMiddlewarePort());
             send.initAnalytics("test: organic en", sessionBean.getUserAgent());
             send.start();
 
@@ -292,7 +300,7 @@ public class CardTestBean implements Serializable {
         URI uri = null;
         try {
             showESExplanation = false;
-            SendReport send = new SendReport();
+            SendReport send = new SendReport(applicationProperties.getMiddlewareHost(), applicationProperties.getMiddlewarePort());
             send.initAnalytics("test: umigon es", sessionBean.getUserAgent());
             send.start();
 
@@ -361,7 +369,7 @@ public class CardTestBean implements Serializable {
         URI uri = null;
         try {
             showENExplanation = false;
-            SendReport send = new SendReport();
+            SendReport send = new SendReport(applicationProperties.getMiddlewareHost(), applicationProperties.getMiddlewarePort());
             send.initAnalytics("test: umigon en", sessionBean.getUserAgent());
             send.start();
 
@@ -484,7 +492,7 @@ public class CardTestBean implements Serializable {
     }
 
     public String signalUmigonEN() {
-        SendReport sender = new SendReport();
+        SendReport sender = new SendReport(applicationProperties.getMiddlewareHost(), applicationProperties.getMiddlewarePort());
         sender.initErrorReport(umigonTestInputEN + " - should not be " + umigonResultEN);
         sender.start();
         reportResultENRendered = true;
@@ -493,7 +501,7 @@ public class CardTestBean implements Serializable {
     }
 
     public String signalUmigonFR() {
-        SendReport sender = new SendReport();
+        SendReport sender = new SendReport(applicationProperties.getMiddlewareHost(), applicationProperties.getMiddlewarePort());
         sender.initErrorReport(umigonTestInputFR + " - should not be " + umigonResultFR);
         sender.start();
         reportResultFRRendered = true;
@@ -502,7 +510,7 @@ public class CardTestBean implements Serializable {
     }
 
     public String signalUmigonES() {
-        SendReport sender = new SendReport();
+        SendReport sender = new SendReport(applicationProperties.getMiddlewareHost(), applicationProperties.getMiddlewarePort());
         sender.initErrorReport(umigonTestInputES + " - should not be " + umigonResultES);
         sender.start();
         reportResultESRendered = true;
@@ -511,7 +519,7 @@ public class CardTestBean implements Serializable {
     }
 
     public String signalOrganicEN() {
-        SendReport sender = new SendReport();
+        SendReport sender = new SendReport(applicationProperties.getMiddlewareHost(), applicationProperties.getMiddlewarePort());
         sender.initErrorReport(organicTestInputEN + " - should not be " + organicResultEN);
         sender.start();
         reportResultENOrganicRendered = true;
@@ -520,7 +528,7 @@ public class CardTestBean implements Serializable {
     }
 
     public String signalOrganicFR() {
-        SendReport sender = new SendReport();
+        SendReport sender = new SendReport(applicationProperties.getMiddlewareHost(), applicationProperties.getMiddlewarePort());
         sender.initErrorReport(organicTestInputFR + " - should not be " + organicResultFR);
         sender.start();
         reportResultFROrganicRendered = true;

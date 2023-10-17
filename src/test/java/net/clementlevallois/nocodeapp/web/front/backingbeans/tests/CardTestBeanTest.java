@@ -4,6 +4,7 @@
 package net.clementlevallois.nocodeapp.web.front.backingbeans.tests;
 
 import java.io.IOException;
+import net.clementlevallois.nocodeapp.web.front.backingbeans.ApplicationPropertiesBean;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.CardTestBean;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -18,13 +19,17 @@ public class CardTestBeanTest {
 
     private static SessionBean sessionBean;
     private static CardTestBean cardTest;
+    private static ApplicationPropertiesBean applicationProperties;
 
     @BeforeAll
     public static void mockEssentialBeans() throws IOException {
         sessionBean = new SessionBean();
+        applicationProperties = new ApplicationPropertiesBean();
+        sessionBean.setApplicationProperties(applicationProperties);
         sessionBean.init();
         cardTest = new CardTestBean();
         cardTest.setSessionBean(sessionBean);
+        cardTest.setApplicationPropertiesBean(applicationProperties);
         cardTest.setUsePublicDomainName(Boolean.TRUE);
     }
 

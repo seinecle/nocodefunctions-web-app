@@ -17,10 +17,11 @@ import jakarta.faces.context.FacesContext;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import jakarta.servlet.annotation.MultipartConfig;
+import java.nio.file.Path;
 import java.util.Properties;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.exportdata.ExportToVosViewer;
-import net.clementlevallois.nocodeapp.web.front.utils.ApplicationProperties;
+import net.clementlevallois.nocodeapp.web.front.backingbeans.ApplicationPropertiesBean;
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
@@ -48,21 +49,21 @@ public class ConverterBean implements Serializable {
     private boolean shareVVPublicly;
 
     private StreamedContent fileToSave;
-    private final Properties privateProperties;
+    private Properties privateProperties;
 
     @Inject
     SessionBean sessionBean;
 
+    @Inject
+    ApplicationPropertiesBean applicationProperties;
+
     public ConverterBean() {
-        if (sessionBean == null) {
-            sessionBean = new SessionBean();
-        }
-        sessionBean.setFunction("networkconverter");
-        privateProperties = ApplicationProperties.getPrivateProperties();
     }
 
     @PostConstruct
-    void init() {
+    public void init() {
+        sessionBean.setFunction("networkconverter");
+        privateProperties = applicationProperties.getPrivateProperties();
         uploadButtonMessage = sessionBean.getLocaleBundle().getString("general.message.choose_gexf_file");
     }
 
@@ -94,7 +95,11 @@ public class ConverterBean implements Serializable {
     }
 
     public void gotoVV() {
-        String linkToVosViewer = ExportToVosViewer.exportAndReturnLinkFromUploadedFile(uploadedFile, shareVVPublicly, item, link, linkStrength);
+        String apiPort = privateProperties.getProperty("nocode_api_port");
+        Path userGeneratedVosviewerDirectoryFullPath = applicationProperties.getUserGeneratedVosviewerDirectoryFullPath(shareVVPublicly);
+        Path relativePathFromProjectRootToVosviewerFolder = applicationProperties.getRelativePathFromProjectRootToVosviewerFolder();
+        Path vosviewerRootFullPath = applicationProperties.getVosviewerRootFullPath();
+        String linkToVosViewer = ExportToVosViewer.exportAndReturnLinkFromUploadedFile(uploadedFile, apiPort, item, link, linkStrength, userGeneratedVosviewerDirectoryFullPath, relativePathFromProjectRootToVosviewerFolder, vosviewerRootFullPath);
         if (linkToVosViewer != null && !linkToVosViewer.isBlank()) {
             try {
                 ExternalContext externalContext = FacesContext.getCurrentInstance().getExternalContext();

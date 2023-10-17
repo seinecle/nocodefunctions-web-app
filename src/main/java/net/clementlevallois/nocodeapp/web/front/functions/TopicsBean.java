@@ -1,6 +1,7 @@
 package net.clementlevallois.nocodeapp.web.front.functions;
 
 import io.mikael.urlbuilder.UrlBuilder;
+import jakarta.annotation.PostConstruct;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -40,7 +41,7 @@ import net.clementlevallois.nocodeapp.web.front.backingbeans.LocaleComparator;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.importdata.DataImportBean;
 import net.clementlevallois.nocodeapp.web.front.logview.LogBean;
-import net.clementlevallois.nocodeapp.web.front.utils.ApplicationProperties;
+import net.clementlevallois.nocodeapp.web.front.backingbeans.ApplicationPropertiesBean;
 import net.clementlevallois.nocodeapp.web.front.utils.Converters;
 import net.clementlevallois.nocodeapp.web.front.utils.GEXFSaver;
 import net.clementlevallois.utils.Multiset;
@@ -80,7 +81,7 @@ public class TopicsBean implements Serializable {
     private boolean removeNonAsciiCharacters = false;
     private UploadedFile fileUserStopwords;
 
-    private final Properties privateProperties;
+    private Properties privateProperties;
 
     private Map<Integer, String> mapOfLines;
 
@@ -93,14 +94,19 @@ public class TopicsBean implements Serializable {
     @Inject
     SessionBean sessionBean;
 
+    @Inject
+    ApplicationPropertiesBean applicationProperties;    
+    
     public TopicsBean() {
-        if (sessionBean == null) {
-            sessionBean = new SessionBean();
-        }
-        sessionBean.setFunction("topics");
-        privateProperties = ApplicationProperties.getPrivateProperties();
     }
 
+    @PostConstruct
+    public void init() {
+        sessionBean.setFunction("topics");
+        privateProperties = applicationProperties.getPrivateProperties();
+    }
+    
+    
     public Integer getProgress() {
         return progress;
     }

@@ -37,6 +37,8 @@ public class FeedbackBean implements Serializable {
     @Inject
     LogBean logBean;
 
+    @Inject
+    ApplicationPropertiesBean applicationProperties;
 
     @PostConstruct
     public void init() {
@@ -49,15 +51,15 @@ public class FeedbackBean implements Serializable {
     }
 
     public void sendFeedback() {
-        if (captcha != null && captcha.toLowerCase().trim().equals("paris")){
-        HttpServletRequest request = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
-        String url = request.getRequestURL().toString();
-        SendReport send = new SendReport();
-        send.initFeedback(url, current.getDisplayName(), sourceLang, suggestion, freeCommentError, freeCommentSuggestion, email);
-        send.start();
+        if (captcha != null && captcha.toLowerCase().trim().equals("paris")) {
+            HttpServletRequest request = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
+            String url = request.getRequestURL().toString();
+            SendReport send = new SendReport(applicationProperties.getMiddlewareHost(), applicationProperties.getMiddlewarePort());
+            send.initFeedback(url, current.getDisplayName(), sourceLang, suggestion, freeCommentError, freeCommentSuggestion, email);
+            send.start();
 
-        logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.feedback_sent"));
-        addMessage(FacesMessage.SEVERITY_INFO, "👍🏼", sessionBean.getLocaleBundle().getString("general.message.feedback_sent"));
+            logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.feedback_sent"));
+            addMessage(FacesMessage.SEVERITY_INFO, "👍🏼", sessionBean.getLocaleBundle().getString("general.message.feedback_sent"));
         }
     }
 

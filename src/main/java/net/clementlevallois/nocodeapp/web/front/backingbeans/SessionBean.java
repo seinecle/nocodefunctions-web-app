@@ -11,8 +11,8 @@ import net.clementlevallois.nocodeapp.web.front.http.RemoteLocal;
 import net.clementlevallois.nocodeapp.web.front.http.SendReport;
 import jakarta.annotation.PostConstruct;
 import jakarta.faces.application.FacesMessage;
+import jakarta.inject.Inject;
 import net.clementlevallois.nocodeapp.web.front.i18n.I18nStaticFilesResourceBundle;
-import net.clementlevallois.nocodeapp.web.front.utils.ApplicationProperties;
 
 /**
  *
@@ -30,14 +30,14 @@ public class SessionBean implements Serializable {
     private String noRobot;
     private Locale currentLocale;
 
+    @Inject
+    ApplicationPropertiesBean applicationProperties;
+
     public SessionBean() {
     }
 
     @PostConstruct
     public void init() {
-        if (ApplicationProperties.getPrivateProperties() == null) {
-            ApplicationProperties.load();
-        }
         FacesContext currentInstance = FacesContext.getCurrentInstance();
         if (currentInstance == null) {
             currentLocale = Locale.ENGLISH;
@@ -47,8 +47,12 @@ public class SessionBean implements Serializable {
             HttpServletRequest request = (HttpServletRequest) currentInstance.getExternalContext().getRequest();
             userAgent = request.getHeader("user-agent");
         }
-        I18nStaticFilesResourceBundle staticFilesResourceBundle = new I18nStaticFilesResourceBundle();
+        I18nStaticFilesResourceBundle staticFilesResourceBundle = new I18nStaticFilesResourceBundle(applicationProperties.getExternalFolderForInternationalizationFiles());
         localeBundle = staticFilesResourceBundle.simpleMethodToGetResourceBundle(currentLocale);
+    }
+
+    public void setApplicationProperties(ApplicationPropertiesBean applicationProperties) {
+        this.applicationProperties = applicationProperties;
     }
 
     public String getFunction() {
@@ -81,7 +85,7 @@ public class SessionBean implements Serializable {
     }
 
     public void sendFunctionPageReport() {
-        SendReport send = new SendReport();
+        SendReport send = new SendReport(applicationProperties.getMiddlewareHost(), applicationProperties.getMiddlewarePort());
         send.initAnalytics("function launched: " + this.function, userAgent);
         send.start();
     }
@@ -107,11 +111,11 @@ public class SessionBean implements Serializable {
     }
 
     public String hostFunctionsAPI() {
-        return RemoteLocal.getHostFunctionsAPI();
+        return applicationProperties.getHostFunctionsAPI();
     }
 
     public void refreshLocaleBundle() {
-        I18nStaticFilesResourceBundle dbb = new I18nStaticFilesResourceBundle();
+        I18nStaticFilesResourceBundle dbb = new I18nStaticFilesResourceBundle(applicationProperties.getExternalFolderForInternationalizationFiles());
         localeBundle = dbb.simpleMethodToGetResourceBundle(currentLocale);
     }
 

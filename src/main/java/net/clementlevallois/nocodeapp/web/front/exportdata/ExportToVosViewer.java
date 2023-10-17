@@ -5,7 +5,6 @@ package net.clementlevallois.nocodeapp.web.front.exportdata;
 
 import io.mikael.urlbuilder.UrlBuilder;
 import jakarta.json.Json;
-import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -15,13 +14,11 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Properties;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import net.clementlevallois.nocodeapp.web.front.functions.BiblioCouplingBean;
 import net.clementlevallois.nocodeapp.web.front.http.RemoteLocal;
-import net.clementlevallois.nocodeapp.web.front.utils.ApplicationProperties;
 import org.primefaces.model.file.UploadedFile;
 
 /**
@@ -30,7 +27,7 @@ import org.primefaces.model.file.UploadedFile;
  */
 public class ExportToVosViewer {
 
-    public static String exportAndReturnLinkFromGexf(String gexf, boolean shareVVPublicly, Properties privateProperties) {
+    public static String exportAndReturnLinkFromGexf(String gexf, String apiPort, Path userGeneratedVosviewerDirectoryFullPath, Path relativePathFromProjectRootToVosviewerFolder, Path vosviewerRootFullPath) {
         try {
             if (gexf == null) {
                 System.out.println("gm object was null so gotoVV method exited");
@@ -45,7 +42,7 @@ public class ExportToVosViewer {
             URI uri = UrlBuilder
                     .empty()
                     .withScheme("http")
-                    .withPort(Integer.valueOf(privateProperties.getProperty("nocode_api_port")))
+                    .withPort(Integer.valueOf(apiPort))
                     .withHost("localhost")
                     .withPath("api/convert2vv")
                     .addParameter("item", "Term")
@@ -64,7 +61,7 @@ public class ExportToVosViewer {
             HttpResponse<byte[]> resp = client.send(request, HttpResponse.BodyHandlers.ofByteArray());
             byte[] body = resp.body();
             String graphAsJsonVosViewer = new String(body, StandardCharsets.UTF_8);
-            String url = finishOpsFromGraphAsJson(graphAsJsonVosViewer, shareVVPublicly);
+            String url = finishOpsFromGraphAsJson(graphAsJsonVosViewer, userGeneratedVosviewerDirectoryFullPath, relativePathFromProjectRootToVosviewerFolder, vosviewerRootFullPath);
             return url;
         } catch (InterruptedException | IOException ex) {
             Logger.getLogger(BiblioCouplingBean.class.getName()).log(Level.SEVERE, null, ex);
@@ -72,7 +69,7 @@ public class ExportToVosViewer {
         return "";
     }
 
-    public static String exportAndReturnLinkFromUploadedFile(UploadedFile uploadedFile, boolean shareVVPublicly, String item, String link, String linkStrength) {
+    public static String exportAndReturnLinkFromUploadedFile(UploadedFile uploadedFile, String apiPort, String item, String link, String linkStrength, Path userGeneratedVosviewerDirectoryFullPath, Path relativePathFromProjectRootToVosviewerFolder, Path vosviewerRootFullPath) {
         try {
             if (uploadedFile == null) {
                 System.out.println("no file found for conversion to vv");
@@ -90,7 +87,7 @@ public class ExportToVosViewer {
             URI uri = UrlBuilder
                     .empty()
                     .withScheme("http")
-                    .withPort(Integer.valueOf(ApplicationProperties.getPrivateProperties().getProperty("nocode_api_port")))
+                    .withPort(Integer.valueOf(apiPort))
                     .withHost("localhost")
                     .withPath("api/convert2vv")
                     .addParameter("item", item)
@@ -114,7 +111,7 @@ public class ExportToVosViewer {
             } else {
                 graphAsJsonVosViewer = null;
             }
-            String url = finishOpsFromGraphAsJson(graphAsJsonVosViewer, shareVVPublicly);
+            String url = finishOpsFromGraphAsJson(graphAsJsonVosViewer, userGeneratedVosviewerDirectoryFullPath, relativePathFromProjectRootToVosviewerFolder, vosviewerRootFullPath);
             return url;
 
         } catch (IOException | InterruptedException ex) {
@@ -123,13 +120,12 @@ public class ExportToVosViewer {
         return "";
     }
 
-    private static String finishOpsFromGraphAsJson(String graphAsJsonVosViewer, boolean shareVVPublicly) {
+    private static String finishOpsFromGraphAsJson(String graphAsJsonVosViewer, Path userGeneratedVosviewerDirectoryFullPath, Path relativePathFromProjectRootToVosviewerFolder, Path vosviewerRootFullPath) {
         graphAsJsonVosViewer = Json.encodePointer(graphAsJsonVosViewer);
         long nextLong = ThreadLocalRandom.current().nextLong();
         String vosviewerJsonFileName = "vosviewer_" + String.valueOf(nextLong) + ".json";
 
-        Path dir = shareVVPublicly ? ApplicationProperties.getUserGeneratedVosviewerPublicDirectoryFullPath() : ApplicationProperties.getUserGeneratedVosviewerPrivateDirectoryFullPath();
-        Path fullPathFileToWrite = dir.resolve(Path.of(vosviewerJsonFileName));
+        Path fullPathFileToWrite = userGeneratedVosviewerDirectoryFullPath.resolve(Path.of(vosviewerJsonFileName));
         try {
             Files.writeString(fullPathFileToWrite, graphAsJsonVosViewer, StandardCharsets.UTF_8);
         } catch (IOException ex) {
@@ -140,11 +136,8 @@ public class ExportToVosViewer {
             return fullPathFileToWrite.toString();
         }
 
-        
-        Path relativePathFromProjectRootToVosviewerFolder = ApplicationProperties.getRootProjectFullPath().relativize(ApplicationProperties.getVosviewerRootFullPath());
-        
         String urlWithoutParamValue = RemoteLocal.getDomain() + "/" + relativePathFromProjectRootToVosviewerFolder + "/index.html?json=";
-        Path relativePathToVosviewerFile = ApplicationProperties.getVosviewerRootFullPath().relativize(fullPathFileToWrite);
+        Path relativePathToVosviewerFile = vosviewerRootFullPath.relativize(fullPathFileToWrite);
         String fullUrl = urlWithoutParamValue + relativePathToVosviewerFile;
         return fullUrl;
     }

@@ -9,7 +9,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.HashMap;
 import java.util.Map;
-import net.clementlevallois.nocodeapp.web.front.utils.ApplicationProperties;
+import net.clementlevallois.nocodeapp.web.front.backingbeans.ApplicationPropertiesBean;
 
 /**
  *
@@ -36,8 +36,12 @@ public class SendReport extends Thread {
     String feedbackURL = "";
     boolean testLocalOnWindows = false;
     boolean middleWareRunningOnWindows = false;
+    String middlewarePort;
+    String middlewareHost;
 
-    public SendReport() {
+    public SendReport(String middleWareHost, String middlewarePort) {
+        this.middlewareHost = middleWareHost;
+        this.middlewarePort = middlewarePort;
     }
 
     public void initAnalytics(String event, String userAgent) {
@@ -97,17 +101,11 @@ public class SendReport extends Thread {
         try {
             System.out.println("function launched: " + event);
             String scheme;
-            String host;
-            int port;
             if (System.getProperty("os.name").toLowerCase().contains("win")) {
                 scheme = "http";
-                host = ApplicationProperties.getPrivateProperties().getProperty("middleware_local_host");
-                port = Integer.parseInt(ApplicationProperties.getPrivateProperties().getProperty("middleware_local_port"));
                 testLocalOnWindows = true;
             } else {
                 scheme = "https";
-                host = ApplicationProperties.getPrivateProperties().getProperty("middleware_remote_host");
-                port = Integer.parseInt(ApplicationProperties.getPrivateProperties().getProperty("middleware_remote_port"));
                 testLocalOnWindows = false;
             }
             if (testLocalOnWindows && !middleWareRunningOnWindows) {
@@ -182,8 +180,8 @@ public class SendReport extends Thread {
 
             UrlBuilder urlBuilder = UrlBuilder.empty()
                     .withScheme(scheme)
-                    .withHost(host)
-                    .withPort(port)
+                    .withHost(middlewareHost)
+                    .withPort(Integer.valueOf(middlewarePort))
                     .withPath(endPoint);
             UrlParameterMultimap paramsList = UrlParameterMultimap.newMultimap();
 

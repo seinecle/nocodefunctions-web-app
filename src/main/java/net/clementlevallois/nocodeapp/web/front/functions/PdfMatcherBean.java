@@ -40,7 +40,7 @@ import net.clementlevallois.functions.model.Occurrence;
 import net.clementlevallois.importers.model.CellRecord;
 import net.clementlevallois.importers.model.SheetModel;
 import net.clementlevallois.nocodeapp.web.front.logview.LogBean;
-import net.clementlevallois.nocodeapp.web.front.utils.ApplicationProperties;
+import net.clementlevallois.nocodeapp.web.front.backingbeans.ApplicationPropertiesBean;
 import net.clementlevallois.nocodeapp.web.front.utils.Converters;
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
@@ -64,7 +64,7 @@ public class PdfMatcherBean implements Serializable {
     private String searchedTerm;
     ConcurrentHashMap<String, List<Occurrence>> results = new ConcurrentHashMap();
     List<Match> resultsForDisplay = new ArrayList();
-    private final Properties privateProperties;
+    private Properties privateProperties;
 
     @Inject
     LogBean logBean;
@@ -75,13 +75,16 @@ public class PdfMatcherBean implements Serializable {
     @Inject
     DataImportBean inputData;
 
+    @Inject
+    ApplicationPropertiesBean applicationProperties;
+        
     public PdfMatcherBean() {
-        privateProperties = ApplicationProperties.getPrivateProperties();
     }
 
     @PostConstruct
-    void init() {
+    public void init() {
         sessionBean.setFunction("pdfmatcher");
+        privateProperties = applicationProperties.getPrivateProperties();
         results = new ConcurrentHashMap();
     }
 

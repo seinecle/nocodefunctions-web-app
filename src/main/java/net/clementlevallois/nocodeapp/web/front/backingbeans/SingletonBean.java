@@ -3,7 +3,6 @@ package net.clementlevallois.nocodeapp.web.front.backingbeans;
 import jakarta.ejb.Singleton;
 import jakarta.ejb.Startup;
 import net.clementlevallois.nocodeapp.web.front.http.RemoteLocal;
-import net.clementlevallois.nocodeapp.web.front.utils.ApplicationProperties;
 
 /**
  *
@@ -15,11 +14,10 @@ public class SingletonBean {
 
 
     public SingletonBean() {
-        ApplicationProperties.load();
         setStage();
     }
     
-    private final void setStage(){
+    private void setStage(){
         if (RemoteLocal.isTest() || RemoteLocal.isLocal()){
             System.setProperty("projectStage", "Development");
             System.out.println("project stage set to DEVELOPMENT");
