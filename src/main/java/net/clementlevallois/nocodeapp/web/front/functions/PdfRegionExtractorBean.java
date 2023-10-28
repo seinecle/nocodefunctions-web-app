@@ -78,7 +78,7 @@ public class PdfRegionExtractorBean implements Serializable {
 
     @Inject
     ApplicationPropertiesBean applicationProperties;
-        
+
     public PdfRegionExtractorBean() {
     }
 
@@ -180,8 +180,9 @@ public class PdfRegionExtractorBean implements Serializable {
         URI uri = UrlBuilder
                 .empty()
                 .withScheme("http")
-                .withPort(Integer.valueOf(privateProperties.getProperty("nocode_api_port")))
+                .withPort(Integer.valueOf(privateProperties.getProperty("nocode_import_port")))
                 .withHost("localhost")
+                .addParameter("owner", privateProperties.getProperty("pwdOwner"))
                 .withPath("api/import/pdf/extract-region")
                 .toUri();
 
@@ -216,12 +217,18 @@ public class PdfRegionExtractorBean implements Serializable {
 
             CompletableFuture<Void> future = client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()).thenAccept(resp -> {
                 byte[] body = resp.body();
-                try (
-                        ByteArrayInputStream bis = new ByteArrayInputStream(body); ObjectInputStream ois = new ObjectInputStream(bis)) {
-                    SheetModel resultsAsSheet = (SheetModel) ois.readObject();
-                    results.put(resultsAsSheet.getName(), resultsAsSheet);
-                } catch (IOException | ClassNotFoundException ex) {
-                    Logger.getLogger(PdfMatcherBean.class.getName()).log(Level.SEVERE, null, ex);
+                if (resp.statusCode() == 200) {
+                    try (
+                            ByteArrayInputStream bis = new ByteArrayInputStream(body); ObjectInputStream ois = new ObjectInputStream(bis)) {
+                        SheetModel resultsAsSheet = (SheetModel) ois.readObject();
+                        results.put(resultsAsSheet.getName(), resultsAsSheet);
+                    } catch (IOException | ClassNotFoundException ex) {
+                        Logger.getLogger(PdfMatcherBean.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                } else {
+                    System.out.println("call to extract pdf region returned an error");
+                    System.out.println("status code is: " + resp.statusCode());
+                    System.out.println("body is: " + new String(resp.body()));
                 }
             }
             );

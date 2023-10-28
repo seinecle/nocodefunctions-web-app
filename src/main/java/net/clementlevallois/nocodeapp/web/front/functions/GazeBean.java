@@ -82,8 +82,6 @@ public class GazeBean implements Serializable {
     ApplicationPropertiesBean applicationProperties;
 
     public GazeBean() {
-        sessionBean.setFunction("gaze");
-        privateProperties = applicationProperties.getPrivateProperties();
     }
 
     @PostConstruct

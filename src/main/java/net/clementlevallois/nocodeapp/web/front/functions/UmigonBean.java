@@ -69,9 +69,8 @@ public class UmigonBean implements Serializable {
     DataImportBean inputData;
 
     @Inject
-    ApplicationPropertiesBean applicationProperties;    
-       
-    
+    ApplicationPropertiesBean applicationProperties;
+
     public UmigonBean() {
     }
 
@@ -167,16 +166,21 @@ public class UmigonBean implements Serializable {
                             if (situation.intValue() > progress) {
                                 progress = situation.intValue();
                             }
-                            if (body.length >= 100 && !new String(body, StandardCharsets.UTF_8).toLowerCase().startsWith("internal") && !new String(body, StandardCharsets.UTF_8).toLowerCase().startsWith("not found")) {
-                                try (
-                                        ByteArrayInputStream bis = new ByteArrayInputStream(body); ObjectInputStream ois = new ObjectInputStream(bis)) {
-                                    Document docReturn = (Document) ois.readObject();
-                                    tempResults.put(Integer.valueOf(docReturn.getId()), docReturn);
-                                } catch (Exception ex) {
-                                    System.out.println("error in body:");
-                                    System.out.println(new String(body, StandardCharsets.UTF_8));
-                                    Logger.getLogger(UmigonBean.class.getName()).log(Level.SEVERE, null, ex);
+                            if (resp.statusCode() == 200) {
+                                if (body.length >= 100 && !new String(body, StandardCharsets.UTF_8).toLowerCase().startsWith("internal") && !new String(body, StandardCharsets.UTF_8).toLowerCase().startsWith("not found")) {
+                                    try (
+                                            ByteArrayInputStream bis = new ByteArrayInputStream(body); ObjectInputStream ois = new ObjectInputStream(bis)) {
+                                        Document docReturn = (Document) ois.readObject();
+                                        tempResults.put(Integer.valueOf(docReturn.getId()), docReturn);
+                                    } catch (Exception ex) {
+                                        System.out.println("error in body:");
+                                        System.out.println(new String(body, StandardCharsets.UTF_8));
+                                        Logger.getLogger(UmigonBean.class.getName()).log(Level.SEVERE, null, ex);
+                                    }
                                 }
+                            }else{
+                                System.out.println("umigon api did not return a 200 code");
+                                System.out.println("body of response: " + new String(body, StandardCharsets.UTF_8));
                             }
                         }
                         ).exceptionally(exception -> {
