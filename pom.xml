@@ -30,7 +30,7 @@
         <dependency>
             <groupId>org.glassfish</groupId>
             <artifactId>jakarta.faces</artifactId>
-            <version>4.0.3</version>
+            <version>4.0.4</version>
             <scope>runtime</scope>
         </dependency>
         <dependency>
@@ -61,7 +61,7 @@
         <dependency>
             <groupId>org.primefaces</groupId>
             <artifactId>primefaces</artifactId>
-            <version>13.0.0</version>
+            <version>13.0.2</version>
             <classifier>jakarta</classifier>
         </dependency>
         <dependency>
