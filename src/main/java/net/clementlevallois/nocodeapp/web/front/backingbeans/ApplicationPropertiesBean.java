@@ -110,6 +110,7 @@ public class ApplicationPropertiesBean {
         try (InputStream is = new FileInputStream(privatePropsFilePath.toFile())) {
             props = new Properties();
             props.load(is);
+            
         } catch (IOException ex) {
             System.out.println("ex: " + ex);
             System.out.println("could not open the file for private properties");
