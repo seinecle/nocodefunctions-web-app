@@ -6,7 +6,7 @@
     xmlns:p="http://primefaces.org/ui"
     xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
     <f:view locale="#{localeBean.currentLocale}">
-        
+
         <h:head>        <!-- Primary Meta Tags -->
             <title>#{text['umigon.sentiment_analysis_tool.title']}</title>
             <meta name="description" content="#{text['umigon.sentiment_analysis_tool.description']}"/>
@@ -81,42 +81,43 @@
                 <p>#{text['general.message.try_it_just_click_on_link']}</p>
                 <span style="overflow-wrap: break-word;">
                     <a href="#{sessionBean.hostFunctionsAPI()}/api/sentimentForAText?text-lang=en&amp;text=this app is amazing&amp;explanation=on&amp;output-format=html&amp;explanation-lang=#{localeBean.currentLocale}" target="_blank">
-                        #{sessionBean.hostFunctionsAPI()}
-                        <span style="color:blue">
-                            /api/sentimentForAText?
-                        </span>
-                        <span style="color:red">
-                            text-lang=
-                        </span>
-                        en
-                        <span style="color:green">
-                            &amp;
-                        </span>
-                        <span style="color:red">
-                            text=
-                        </span>
-                        this app is amazing
-                        <span style="color:green">
-                            &amp;
-                        </span>
-                        <span style="color:red">
-                            explanation=
-                        </span>
-                        on
-                        <span style="color:green">
-                            &amp;
-                        </span>
-                        <span style="color:red">
-                            output-format=
-                        </span>
-                        html
-                        <span style="color:green">
-                            &amp;
-                        </span>
-                        <span style="color:red">
-                            explanation-lang=
-                        </span>
-                        fr
+                        <p:outputLabel>#{sessionBean.hostFunctionsAPI()}
+                            <span style="color:blue">
+                                /api/sentimentForAText?
+                            </span>
+                            <span style="color:red">
+                                text-lang=
+                            </span>
+                            en
+                            <span style="color:green">
+                                &amp;
+                            </span>
+                            <span style="color:red">
+                                text=
+                            </span>
+                            this app is amazing
+                            <span style="color:green">
+                                &amp;
+                            </span>
+                            <span style="color:red">
+                                explanation=
+                            </span>
+                            on
+                            <span style="color:green">
+                                &amp;
+                            </span>
+                            <span style="color:red">
+                                output-format=
+                            </span>
+                            html
+                            <span style="color:green">
+                                &amp;
+                            </span>
+                            <span style="color:red">
+                                explanation-lang=
+                            </span>
+                            fr
+                        </p:outputLabel>
                     </a>
                 </span>
                 <br/>
