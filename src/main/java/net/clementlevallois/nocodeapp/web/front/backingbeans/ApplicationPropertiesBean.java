@@ -149,31 +149,6 @@ public class ApplicationPropertiesBean {
         return privateProperties;
     }
 
-    public String getHostFunctionsAPI() {
-        URI uri;
-
-        if (RemoteLocal.isLocal()) {
-            uri = UrlBuilder
-                    .empty()
-                    .withScheme("http")
-                    .withHost("localhost")
-                    .withPort((Integer.valueOf(privateProperties.getProperty("nocode_api_port")))).toUri();
-            return uri.toString();
-        } else {
-            UrlBuilder urlBuilder = UrlBuilder
-                    .empty()
-                    .withScheme("https");
-            String domain;
-            if (System.getProperty("test") != null && System.getProperty("test").equals("yes")) {
-                domain = "test.nocodefunctions.com";
-            } else {
-                domain = "nocodefunctions.com";
-            }
-            urlBuilder.withHost(domain);
-            return urlBuilder.toUrl().toString();
-        }
-    }
-
     public static Path getExternalFolderForInternationalizationFiles() {
         return i18nStaticResourcesFullPath;
     }

@@ -34,8 +34,13 @@ public class OneFileUploadInMultipleUploadBean {
             if (f == null) {
                 return;
             }
-            
+
             String currentFunction = sessionBean.getFunction();
+
+            if (currentFunction == null) {
+                logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.error_function_not_set"));
+            }
+
             FileUploaded oneFile = new FileUploaded(f.getInputStream(), f.getFileName());
 
             logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("back.import.file_successful_upload.opening") + oneFile.getFileName() + sessionBean.getLocaleBundle().getString("back.import.file_successful_upload.closing"));

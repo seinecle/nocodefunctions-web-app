@@ -80,8 +80,8 @@
                 <br/>
                 <p>#{text['general.message.try_it_just_click_on_link']}</p>
                 <span style="overflow-wrap: break-word;">
-                    <a href="#{sessionBean.hostFunctionsAPI()}/api/sentimentForAText?text-lang=en&amp;text=this app is amazing&amp;explanation=on&amp;output-format=html&amp;explanation-lang=#{localeBean.currentLocale}" target="_blank">
-                        <p:outputLabel>#{sessionBean.hostFunctionsAPI()}
+                    <a href="#{sessionBean.getHostFunctionsAPI(false)}/api/sentimentForAText?text-lang=en&amp;text=this app is amazing&amp;explanation=on&amp;output-format=html&amp;explanation-lang=#{localeBean.currentLocale}" target="_blank">
+                        #{sessionBean.getHostFunctionsAPI(false)}
                             <span style="color:blue">
                                 /api/sentimentForAText?
                             </span>
@@ -117,7 +117,6 @@
                                 explanation-lang=
                             </span>
                             fr
-                        </p:outputLabel>
                     </a>
                 </span>
                 <br/>

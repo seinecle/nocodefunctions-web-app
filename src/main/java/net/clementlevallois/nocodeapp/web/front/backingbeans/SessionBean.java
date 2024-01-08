@@ -1,5 +1,6 @@
 package net.clementlevallois.nocodeapp.web.front.backingbeans;
 
+import io.mikael.urlbuilder.UrlBuilder;
 import jakarta.inject.Named;
 import java.io.Serializable;
 import java.util.Locale;
@@ -12,6 +13,9 @@ import net.clementlevallois.nocodeapp.web.front.http.SendReport;
 import jakarta.annotation.PostConstruct;
 import jakarta.faces.application.FacesMessage;
 import jakarta.inject.Inject;
+import java.net.URI;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import net.clementlevallois.nocodeapp.web.front.i18n.I18nStaticFilesResourceBundle;
 
 /**
@@ -110,8 +114,31 @@ public class SessionBean implements Serializable {
         return RemoteLocal.getDomain();
     }
 
-    public String hostFunctionsAPI() {
-        return applicationProperties.getHostFunctionsAPI();
+    public String getHostFunctionsAPI(Boolean urlEncode) {
+        URI uri;
+
+        if (RemoteLocal.isLocal()) {
+            uri = UrlBuilder
+                    .empty()
+                    .withScheme("http")
+                    .withHost("localhost")
+                    .withPort((Integer.valueOf(applicationProperties.getPrivateProperties().getProperty("nocode_api_port")))).toUri();
+            return uri.toString();
+        } else {
+            String domain;
+            if (System.getProperty("test") != null && System.getProperty("test").equals("yes")) {
+                domain = "test.nocodefunctions.com";
+            } else {
+                domain = "nocodefunctions.com";
+            }
+            UrlBuilder urlBuilder = UrlBuilder
+                    .empty()
+                    .withScheme("https")
+                    .withHost(domain);
+            String urlString = urlBuilder.toUri().toString();
+
+            return urlEncode ? URLEncoder.encode(urlString, StandardCharsets.UTF_8) : urlString;
+        }
     }
 
     public void refreshLocaleBundle() {

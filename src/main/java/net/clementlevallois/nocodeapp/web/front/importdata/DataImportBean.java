@@ -392,6 +392,7 @@ public class DataImportBean implements Serializable {
                 System.out.println("return of xlsx reader by the API was not a 200 code");
                 String errorMessage = new String(body, StandardCharsets.UTF_8);
                 System.out.println(errorMessage);
+                logBean.addOneNotificationFromString(errorMessage);
                 sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, errorMessage, errorMessage);
             }
 
@@ -496,7 +497,7 @@ public class DataImportBean implements Serializable {
         }
 
         if (twoColumnsIndexForColOne.equals(twoColumnsIndexForColTwo)) {
-            sessionBean.getLocaleBundle().getString("back.import.term_text_different_columns");
+            logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("back.import.term_text_different_columns"));
             sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "😳", sessionBean.getLocaleBundle().getString("back.import.term_text_different_columns"));
             return "";
         }

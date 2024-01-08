@@ -5,10 +5,8 @@ package net.clementlevallois.nocodeapp.web.front.http.tests;
 
 import java.io.IOException;
 import net.clementlevallois.nocodeapp.web.front.http.RemoteLocal;
-import net.clementlevallois.nocodeapp.web.front.backingbeans.ApplicationPropertiesBean;
 import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -17,13 +15,8 @@ import org.junit.jupiter.api.Test;
  */
 public class RemoteLocalTest {
 
-    private static ApplicationPropertiesBean applicationProperties;
-        
-    @BeforeAll
-    public static void loadProperties() throws IOException {
-        applicationProperties = new ApplicationPropertiesBean();
-    }
-    
+       
+   
     @AfterEach
     public void resetEnvToWindows() throws IOException {
         System.setProperty("os.name", "windows");
@@ -46,13 +39,7 @@ public class RemoteLocalTest {
 
     }
 
-    @Test
-    public void getHostFunctionsAPI() {
-        String apiUrl = applicationProperties.getHostFunctionsAPI();
-        assertThat(apiUrl).isEqualTo("http://localhost:7002");
-    }
-
-    @Test
+     @Test
     public void isTest() {
         boolean isTest = RemoteLocal.isTest();
         assertThat(isTest).isFalse();

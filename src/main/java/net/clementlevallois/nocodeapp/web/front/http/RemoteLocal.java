@@ -15,9 +15,7 @@ public class RemoteLocal {
         String domain;
         int port;
 
-        boolean onWindows = System.getProperty("os.name").toLowerCase().contains("win");
-
-        if (onWindows) {
+        if (isLocal()) {
             path = "jsf-app";
             protocol = "http";
             domain = "localhost";
@@ -34,7 +32,7 @@ public class RemoteLocal {
         }
         URI uri;
 
-        if (onWindows) {
+        if (isLocal()) {
             uri = UrlBuilder
                     .empty()
                     .withScheme(protocol)
