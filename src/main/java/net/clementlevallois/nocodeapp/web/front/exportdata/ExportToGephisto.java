@@ -16,8 +16,6 @@ import net.clementlevallois.nocodeapp.web.front.http.RemoteLocal;
  */
 
 public class ExportToGephisto {
-
-
     
     public static String exportAndReturnLink(String gexf, Path directoryToSaveFile, Path relativePathFromProjectRootToGephistoFolder, Path gephistoRootFullPath) {
         long nextLong = ThreadLocalRandom.current().nextLong();

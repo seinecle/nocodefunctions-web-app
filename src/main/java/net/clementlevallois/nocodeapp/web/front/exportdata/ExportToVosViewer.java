@@ -17,7 +17,6 @@ import java.nio.file.Path;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import net.clementlevallois.nocodeapp.web.front.functions.BiblioCouplingBean;
 import net.clementlevallois.nocodeapp.web.front.http.RemoteLocal;
 import org.primefaces.model.file.UploadedFile;
 
