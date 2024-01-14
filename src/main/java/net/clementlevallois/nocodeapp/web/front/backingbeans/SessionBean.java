@@ -150,6 +150,9 @@ public class SessionBean implements Serializable {
         return localeBundle;
     }
 
+    // redudant with RemoteLocal.isTest() but for a good reason
+    // we need this method here because that's going to be called in an EL in a page
+    // and for that it has to be in a bean, not just a static method
     public boolean isTestServer() {
         return RemoteLocal.isTest();
     }
