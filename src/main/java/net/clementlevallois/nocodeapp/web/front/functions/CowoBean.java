@@ -33,7 +33,9 @@ import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.json.JsonWriter;
 import jakarta.servlet.annotation.MultipartConfig;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashMap;
 import java.util.Properties;
 import net.clementlevallois.importers.model.DataFormatConverter;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.LocaleComparator;
@@ -43,6 +45,7 @@ import net.clementlevallois.nocodeapp.web.front.exportdata.ExportToVosViewer;
 import net.clementlevallois.nocodeapp.web.front.importdata.DataImportBean;
 import net.clementlevallois.nocodeapp.web.front.logview.LogBean;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.ApplicationPropertiesBean;
+import net.clementlevallois.nocodeapp.web.front.importdata.LargePdfImportBean;
 import net.clementlevallois.nocodeapp.web.front.utils.GEXFSaver;
 import net.clementlevallois.nocodeapp.web.front.utils.Converters;
 import net.clementlevallois.utils.TextCleaningOps;
@@ -93,6 +96,9 @@ public class CowoBean implements Serializable {
     DataImportBean inputData;
 
     @Inject
+    LargePdfImportBean largePdfImportBean;
+
+    @Inject
     SessionBean sessionBean;
 
     @Inject
@@ -132,8 +138,17 @@ public class CowoBean implements Serializable {
         try {
             sessionBean.sendFunctionPageReport();
             logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.starting_analysis"));
-            DataFormatConverter dataFormatConverter = new DataFormatConverter();
-            mapOfLines = dataFormatConverter.convertToMapOfLines(inputData.getBulkData(), inputData.getDataInSheets(), inputData.getSelectedSheetName(), inputData.getSelectedColumnIndex(), inputData.getHasHeaders());
+
+            if (largePdfImportBean.getMapOfLines().isEmpty()) {
+                DataFormatConverter dataFormatConverter = new DataFormatConverter();
+                mapOfLines = dataFormatConverter.convertToMapOfLines(inputData.getBulkData(), inputData.getDataInSheets(), inputData.getSelectedSheetName(), inputData.getSelectedColumnIndex(), inputData.getHasHeaders());
+            }else{
+                mapOfLines = largePdfImportBean.getMapOfLines();
+                Path fileToDelete = largePdfImportBean.getPathOfTempData();
+                Files.deleteIfExists(fileToDelete);
+            }
+            inputData.setDataInSheets(new ArrayList());
+            largePdfImportBean.setMapOfLines(new HashMap());
 
             if (mapOfLines == null || mapOfLines.isEmpty()) {
                 logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.data_not_found"));

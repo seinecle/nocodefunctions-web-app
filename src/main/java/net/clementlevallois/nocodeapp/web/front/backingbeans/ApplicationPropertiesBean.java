@@ -3,13 +3,11 @@
  */
 package net.clementlevallois.nocodeapp.web.front.backingbeans;
 
-import io.mikael.urlbuilder.UrlBuilder;
 import jakarta.ejb.Singleton;
 import jakarta.ejb.Startup;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -36,12 +34,14 @@ public class ApplicationPropertiesBean {
     private Path vosviewerRootRelativePath;
     private Path gephistoRootFullPath;
     private Path vosviewerRootFullPath;
+    private Path tempFolderRelativePath;
 
     private final String ENV_VARIABLE_ROOTPROJECT = "root.project";
     private final String ENV_VARIABLE_PROPERTIES_FILE = "properties.relative.path.and.filename";
     private static final String ENV_VARIABLE_I18N_DIR = "i18n.relative.path";
     private final String ENV_VARIABLE_VOSVIEWER_DIR = "relative.path.vosviewer";
     private final String ENV_VARIABLE_GEPHISTO_DIR = "relative.path.gephisto";
+    private final String ENV_VARIABLE_TEMP_DIR = "relative.path.temp";
     private final String ENV_VARIABLE_PUBLIC_DIR = "relative.path.public";
     private final String ENV_VARIABLE_PRIVATE_DIR = "relative.path.private";
     private final String ENV_VARIABLE_USER_CREATED_FILES_DIR = "relative.path.user.created.files";
@@ -60,6 +60,7 @@ public class ApplicationPropertiesBean {
         userGeneratedGephistoPublicDirectoryFullPath = loadGephistoPublicFullPath();
         userGeneratedGephistoPrivateDirectoryFullPath = loadGephistoPrivateFullPath();
         gephistoRootRelativePath = loadGephistoRootRelativePath();
+        tempFolderRelativePath = loadTempFolderFullPath();
         vosviewerRootRelativePath = loadVosviewerRootRelativePath();
         vosviewerRootFullPath = loadVosviewerRootFullPath();
         gephistoRootFullPath = loadGephistoRootFullPath();        
@@ -186,6 +187,11 @@ public class ApplicationPropertiesBean {
         return Path.of(gephisto);
     }
 
+    private Path loadTempFolderFullPath() {
+        String temp = System.getProperty(ENV_VARIABLE_TEMP_DIR);
+        return Path.of(rootProjectPath.toString(), temp);
+    }
+
     private Path loadVosviewerRootRelativePath() {
         String vosviewer = System.getProperty(ENV_VARIABLE_VOSVIEWER_DIR);
         return Path.of(vosviewer);
@@ -267,6 +273,10 @@ public class ApplicationPropertiesBean {
         return vosviewerRootFullPath;
     }
 
+    public Path getTempFolderRelativePath() {
+        return tempFolderRelativePath;
+    }
+    
     public String getMiddlewarePort() {
         if (RemoteLocal.isLocal()) {
             return privateProperties.getProperty("middleware_local_port");
@@ -282,6 +292,8 @@ public class ApplicationPropertiesBean {
             return privateProperties.getProperty("middleware_remote_host");
         }
     }
+    
+    
 
     private void loadEnvironmentVariablesOnWindows() {
         if (!RemoteLocal.isLocal()) {

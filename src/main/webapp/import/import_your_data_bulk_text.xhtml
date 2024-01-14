@@ -56,8 +56,8 @@
                                 listener="#{oneFileUploadInMultipleUploadBean.handleFileUpload}"
                                 update=":notifications whenFileUploaded"
                                 allowTypes="/(\.|\/)(txt|pdf)$/"
-                                sequential="true"
-                                fileLimit="50"
+                                sequential="false"
+                                fileLimit="10"
                                 rendered="#{sessionBean.function != 'pdfmatcher' &amp;&amp; sessionBean.function != 'pdf_region_extractor'}"
                                 >
                             </p:fileUpload>
@@ -73,7 +73,7 @@
                                 update=":notifications whenFileUploaded"
                                 allowTypes="/(\.|\/)(pdf)$/"
                                 rendered="#{sessionBean.function == 'pdfmatcher' || sessionBean.function == 'pdf_region_extractor'}"
-                                fileLimit="100"                                    
+                                fileLimit="120"                                    
                                 >
                             </p:fileUpload>
                             <br/>

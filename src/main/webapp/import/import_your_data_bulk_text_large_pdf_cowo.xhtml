@@ -3,7 +3,7 @@
     xmlns="http://www.w3.org/1999/xhtml"
     xmlns:h="jakarta.faces.html"
     xmlns:f="jakarta.faces.core"
-    
+
     xmlns:p="http://primefaces.org/ui"
     xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
     <f:view locale="#{localeBean.currentLocale}">
@@ -33,7 +33,8 @@
             <h:outputStylesheet name="css/custom.css" />
             <f:metadata>
                 <f:viewParam name="function" value="#{sessionBean.function}" />
-                <f:viewAction action="#{dataImportBean.setBulkData(true)}" />
+                <f:viewAction action="#{largePdfImportBean.setBulkData(true)}" />
+                <f:viewAction action="#{largePdfImportBean.setUniqueId()}" />
             </f:metadata>
             <p:panel>
                 <ui:include src="/WEB-INF/includes/header.xhtml"/>
@@ -53,27 +54,11 @@
                                 skinSimple="true"
                                 sizeLimit="100000000"
                                 multiple="true"
-                                listener="#{oneFileUploadInMultipleUploadBean.handleFileUpload}"
-                                update=":notifications whenFileUploaded"
-                                allowTypes="/(\.|\/)(txt|pdf)$/"
-                                sequential="true"
-                                fileLimit="50"
-                                rendered="#{sessionBean.function != 'pdfmatcher' &amp;&amp; sessionBean.function != 'pdf_region_extractor'}"
-                                >
-                            </p:fileUpload>
-
-                            <p:fileUpload
-                                label="#{text['import_data.general.choose_pdf']}"
-                                mode="advanced"
-                                skinSimple="true"
-                                sizeLimit="100000000" 
-                                sequential="true"
-                                multiple="true"
-                                listener="#{oneFileUploadInMultipleUploadBean.handleFileUpload}"
-                                update=":notifications whenFileUploaded"
+                                listener="#{oneLargePdfFileUploadInMultipleUploadBean.handleFileUpload}"
+                                update=":notifications"
                                 allowTypes="/(\.|\/)(pdf)$/"
-                                rendered="#{sessionBean.function == 'pdfmatcher' || sessionBean.function == 'pdf_region_extractor'}"
-                                fileLimit="100"                                    
+                                sequential="true"
+                                fileLimit="1000"
                                 >
                             </p:fileUpload>
                             <br/>
@@ -82,50 +67,6 @@
                                 #{text['general.message.max_file_size']}: 100Mb
                             </p:outputLabel>
                             <br/>
-                            <br/>
-                            <p:outputPanel id = "whenFileUploaded">
-                                <p:outputPanel rendered="#{dataImportBean.filesUploaded.size() gt '0'}">
-                                    <p:outputLabel
-                                        escape="false"
-                                        value="#{text['general.message.several_files_possible']}"/>
-                                    <br/>
-                                    <br/>
-                                    <p:outputLabel
-                                        escape="false">
-                                        <strong style="color:#FF6347">#{dataImportBean.displayNameForSingleUploadedFileOrSeveralFiles()}</strong>. #{text['import_data.general.click_below_to_read_it']}
-                                    </p:outputLabel>
-                                    <br/>
-                                    <br/>
-                                    <!--READ FILE OPERATION-->
-                                    <p:growl id="growl" showDetail="true" />
-                                    <!--READ FILE BUTTON-->
-                                    <h:graphicImage name="images/round_2_orange.png" width="20" height="20" style="vertical-align: middle;"/>
-                                    <div>
-                                        <p:spacer height="5" width="5"/>
-                                    </div>
-                                    <p:commandButton
-                                        id="readFileBtn"
-                                        value="#{text['import_data.general.read_data']}"
-                                        onclick="PF('pbAjaxLong').start()"
-                                        action="#{dataImportBean.readData}"
-                                        update=":notifications dataTable launch"/>
-                                    <br/>
-                                    <br/>
-                                    <!--PROGRESS BAR FOR READ OPERATION-->
-                                    <p:progressBar
-                                        id="pb"
-                                        widgetVar="pbAjaxLong"
-                                        ajax="true"
-                                        value="#{dataImportBean.progress}"
-                                        rendered="#{dataImportBean.renderProgressBar}"
-                                        labelTemplate="{value}%"
-                                        styleClass="p-mt-3"
-                                        global="false"
-                                        interval="500"
-                                        >
-                                    </p:progressBar>
-                                </p:outputPanel>
-                            </p:outputPanel>
                         </h:form>
                         <br/>
                         <br/>
@@ -133,44 +74,11 @@
                             <h:form>
                                 <p:commandButton
                                     value="#{text['general.verbs.compute']}"
-                                    action="#{dataImportBean.gotToFunctionWithDataInBulk}"
-                                    onclick="PF('pbAjaxLong').start()"
+                                    action="#{largePdfImportBean.gotToFunctionWithDataInBulk}"
                                     styleClass="btn btn-primary"
-                                    rendered="#{not empty dataImportBean.dataInSheets}"
                                     update=":notifications"
                                     />
                             </h:form>
-                        </p:outputPanel>
-                        <br/>
-                        <br/>
-                        <p:outputPanel id="dataTable">
-                            <p:outputPanel  rendered="#{not empty dataImportBean.dataInSheets}">
-                                <h3>#{text['import_data.general.preview_your_data']}</h3>
-                                <p:tabView value="#{dataImportBean.dataInSheets}" var="dataInSheet">
-                                    <p:tab title="#{dataInSheet.name}">
-                                        <div class="card">
-                                            <h:form id="formTable">
-                                                <p:dataTable id="tbl"
-                                                             var="data"
-                                                             value="#{dataInSheet.sheetData}"
-                                                             rowIndexVar="rowIndex"
-                                                             style="display:block; text-align:center"
-                                                             rendered="#{not empty dataImportBean.dataInSheets}"
-                                                             >
-                                                    <p:column  width="25">
-                                                        <h:outputText value="#{rowIndex+1}" />
-                                                    </p:column>
-                                                    <p:columns value="#{dataInSheet.tableHeaderNames}"
-                                                               var="mycolHeader" columnIndexVar="colIndex">
-                                                        <h:outputText value="#{data[mycolHeader.colIndex].cellValue}"/>
-                                                        <br />
-                                                    </p:columns>
-                                                </p:dataTable>
-                                            </h:form>
-                                        </div>
-                                    </p:tab>
-                                </p:tabView>
-                            </p:outputPanel>
                         </p:outputPanel>
                     </div>
                     <div class="col-3 flex-grow-1">
@@ -180,9 +88,9 @@
                                     <h:column>#{notification.message}</h:column>
                                 </h:dataTable>
                                 <h:form>
-                                <f:websocket channel="push"  scope="session">
-                                    <f:ajax event="updateNotifications" render=":notifications" />
-                                </f:websocket>
+                                    <f:websocket channel="push"  scope="session">
+                                        <f:ajax event="updateNotifications" render=":notifications" />
+                                    </f:websocket>
                                 </h:form>
                             </p:scrollPanel>
                         </p:panel>

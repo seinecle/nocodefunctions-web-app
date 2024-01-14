@@ -228,74 +228,71 @@ public class DataImportBean implements Serializable {
     }
 
     private void readPdfFile(FileUploaded f) {
-        String localizedEmptyLineMessage = sessionBean.getLocaleBundle().getString("general.message.empty_line");
-        HttpRequest request;
-        HttpClient client = HttpClient.newHttpClient();
-        Set<CompletableFuture> futures = new HashSet();
-        HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(f.getBytes());
-        URI uri;
-        if (currentFunction.equals("pdf_region_extractor")) {
-            imagesPerFiles = new ArrayList();
-            imageNamesOfCurrentFile = new ArrayList();
-            uri = UrlBuilder
-                    .empty()
-                    .withScheme("http")
-                    .withPort(Integer.valueOf(privateProperties.getProperty("nocode_import_port")))
-                    .withHost("localhost")
-                    .withPath("api/import/pdf/return-png")
-                    .addParameter("fileName", f.getFileName())
-                    .addParameter("localizedEmptyLineMessage", localizedEmptyLineMessage)
-                    .toUri();
-
-        } else {
-            uri = UrlBuilder
-                    .empty()
-                    .withScheme("http")
-                    .withPort(Integer.valueOf(privateProperties.getProperty("nocode_import_port")))
-                    .withHost("localhost")
-                    .withPath("api/import/pdf")
-                    .addParameter("fileName", f.getFileName())
-                    .toUri();
-        }
-        request = HttpRequest.newBuilder()
-                .POST(bodyPublisher)
-                .uri(uri)
-                .build();
-        CompletableFuture<Void> future = client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()).thenAccept(
-                resp -> {
-                    byte[] body = resp.body();
-                    if (resp.statusCode() == 200) {
-                        if (currentFunction.equals("pdf_region_extractor")) {
-                            try (
+        try {
+            String localizedEmptyLineMessage = sessionBean.getLocaleBundle().getString("general.message.empty_line");
+            HttpRequest request;
+            HttpClient client = HttpClient.newHttpClient();
+            HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(f.getBytes());
+            URI uri;
+            if (currentFunction.equals("pdf_region_extractor")) {
+                imagesPerFiles = new ArrayList();
+                imageNamesOfCurrentFile = new ArrayList();
+                uri = UrlBuilder
+                        .empty()
+                        .withScheme("http")
+                        .withPort(Integer.valueOf(privateProperties.getProperty("nocode_import_port")))
+                        .withHost("localhost")
+                        .withPath("api/import/pdf/return-png")
+                        .addParameter("fileName", f.getFileName())
+                        .addParameter("localizedEmptyLineMessage", localizedEmptyLineMessage)
+                        .toUri();
+                
+            } else {
+                uri = UrlBuilder
+                        .empty()
+                        .withScheme("http")
+                        .withPort(Integer.valueOf(privateProperties.getProperty("nocode_import_port")))
+                        .withHost("localhost")
+                        .withPath("api/import/pdf")
+                        .addParameter("fileName", f.getFileName())
+                        .toUri();
+            }
+            request = HttpRequest.newBuilder()
+                    .POST(bodyPublisher)
+                    .uri(uri)
+                    .build();
+            HttpResponse<byte[]> resp = client.send(request, HttpResponse.BodyHandlers.ofByteArray());
+            byte[] body = resp.body();
+            if (resp.statusCode() == 200) {
+                if (currentFunction.equals("pdf_region_extractor")) {
+                    try (
                             ByteArrayInputStream bis = new ByteArrayInputStream(body); ObjectInputStream ois = new ObjectInputStream(bis)) {
-                                ImagesPerFile imagesPerOneFile = (ImagesPerFile) ois.readObject();
-                                imagesPerFiles.add(imagesPerOneFile);
-                            } catch (IOException | ClassNotFoundException ex) {
-                                Logger.getLogger(DataImportBean.class.getName()).log(Level.SEVERE, null, ex);
-                            }
-                        } else {
-                            try (
+                        ImagesPerFile imagesPerOneFile = (ImagesPerFile) ois.readObject();
+                        imagesPerFiles.add(imagesPerOneFile);
+                    } catch (IOException | ClassNotFoundException ex) {
+                        Logger.getLogger(DataImportBean.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                } else {
+                    try (
                             ByteArrayInputStream bis = new ByteArrayInputStream(body); ObjectInputStream ois = new ObjectInputStream(bis)) {
-                                List<SheetModel> tempResult = (List<SheetModel>) ois.readObject();
-                                dataInSheets.addAll(tempResult);
-                            } catch (IOException | ClassNotFoundException ex) {
-                                Logger.getLogger(DataImportBean.class.getName()).log(Level.SEVERE, null, ex);
-                            }
-                        }
-                    } else {
-                        System.out.println("return of pdf reader by the API was not a 200 code");
-                        String errorMessage = new String(body, StandardCharsets.UTF_8);
-                        System.out.println(errorMessage);
-                        logBean.addOneNotificationFromString(errorMessage);
-                        sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "💔", errorMessage);
-
+                        List<SheetModel> tempResult = (List<SheetModel>) ois.readObject();
+                        dataInSheets.addAll(tempResult);
+                    } catch (IOException | ClassNotFoundException ex) {
+                        Logger.getLogger(DataImportBean.class.getName()).log(Level.SEVERE, null, ex);
                     }
                 }
-        );
-        futures.add(future);
-        CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(futures.toArray((new CompletableFuture[0])));
-        combinedFuture.join();
-        progress = 100;
+            } else {
+                System.out.println("return of pdf reader by the API was not a 200 code");
+                String errorMessage = new String(body, StandardCharsets.UTF_8);
+                System.out.println(errorMessage);
+                logBean.addOneNotificationFromString(errorMessage);
+                sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "💔", errorMessage);
+                
+            }
+            progress = 100;
+        } catch (IOException | InterruptedException ex) {
+            Logger.getLogger(DataImportBean.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     private void readCsvFile(FileUploaded f, String functionName, String gazeOption) {
