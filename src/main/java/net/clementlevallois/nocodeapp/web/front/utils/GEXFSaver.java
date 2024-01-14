@@ -4,8 +4,6 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
 
@@ -16,9 +14,9 @@ import org.primefaces.model.StreamedContent;
 public class GEXFSaver {
 
     public static StreamedContent exportGexfAsStreamedFile(String gexf, String resultFileNameWithoutExtension) {
+        StreamedContent file = null;
         try {
             byte[] readAllBytes = gexf.getBytes(StandardCharsets.UTF_8);
-            StreamedContent file;
             try (InputStream is = new ByteArrayInputStream(readAllBytes)) {
                 file = DefaultStreamedContent.builder()
                         .name(resultFileNameWithoutExtension + ".gexf")
@@ -26,10 +24,9 @@ public class GEXFSaver {
                         .stream(() -> is)
                         .build();
             }
-            return file;
         } catch (IOException ex) {
             System.out.println("exception in exportGexfAsStreamedFile:" + ex.toString());
-            return null;
         }
+        return file;
     }
 }
