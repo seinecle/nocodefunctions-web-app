@@ -26,7 +26,7 @@ public class RemoteLocalTest {
     @Test
     public void remoteLocalClass() {
         String domain = RemoteLocal.getDomain();
-        assertThat(domain).isEqualTo("http://localhost:8080/jsf-app");
+        assertThat(domain).isEqualTo("http://localhost:8080/nocode-app-web-front");
 
         System.setProperty("os.name", "linux");
         domain = RemoteLocal.getDomain();

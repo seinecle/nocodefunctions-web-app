@@ -16,8 +16,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.ApplicationPropertiesBean;
-import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
-import net.clementlevallois.nocodeapp.web.front.logview.LogBean;
 
 /**
  *
@@ -29,23 +27,14 @@ import net.clementlevallois.nocodeapp.web.front.logview.LogBean;
 public class LargePdfImportBean implements Serializable {
 
     @Inject
-    LogBean logBean;
-
-    @Inject
-    SessionBean sessionBean;
-
-    @Inject
     ApplicationPropertiesBean applicationProperties;
 
-    @Inject
-    DataImportBean dataImportBean;
-    
     private Boolean bulkData = false;
 
-    private String uniqueId;
-    
-    private Map<Integer,String> mapOfLines = new HashMap();
-    
+    private String dataPersistenceUniqueId;
+
+    private Map<Integer, String> mapOfLines = new HashMap();
+
     Path pathOfTempData;
 
     public Boolean getBulkData() {
@@ -56,12 +45,23 @@ public class LargePdfImportBean implements Serializable {
         this.bulkData = bulkData;
     }
 
-    public void setUniqueId() {
-        uniqueId = UUID.randomUUID().toString().substring(0, 10);
+    public void setDataPersistenceUniqueId(String dataPersistenceUniqueId) {
+        Path tempFolderRelativePath = applicationProperties.getTempFolderRelativePath();
+        pathOfTempData = Path.of(tempFolderRelativePath.toString(), dataPersistenceUniqueId);
+        if (!pathOfTempData.toFile().exists()) {
+            setDataPersistenceUniqueId();
+        } else {
+            this.dataPersistenceUniqueId = dataPersistenceUniqueId;
+        }
+        pathOfTempData = Path.of(tempFolderRelativePath.toString(), this.dataPersistenceUniqueId);
+    }
+    
+    public void setDataPersistenceUniqueId() {
+            this.dataPersistenceUniqueId = UUID.randomUUID().toString().substring(0, 10);
     }
 
-    public String getUniqueId() {
-        return uniqueId;
+    public String getDataPersistenceUniqueId() {
+        return dataPersistenceUniqueId;
     }
 
     public Map<Integer, String> getMapOfLines() {
@@ -71,14 +71,14 @@ public class LargePdfImportBean implements Serializable {
     public void setMapOfLines(Map<Integer, String> mapOfLines) {
         this.mapOfLines = mapOfLines;
     }
-    
+
     public String gotToFunctionWithDataInBulk() throws IOException {
         Path tempFolderRelativePath = applicationProperties.getTempFolderRelativePath();
-        pathOfTempData = Path.of(tempFolderRelativePath.toString(), uniqueId);
+        pathOfTempData = Path.of(tempFolderRelativePath.toString(), dataPersistenceUniqueId);
         mapOfLines = new HashMap();
         int i = 0;
         List<String> allLines = Files.readAllLines(pathOfTempData, StandardCharsets.UTF_8);
-        for (String line: allLines){
+        for (String line : allLines) {
             mapOfLines.put(i++, line);
         }
         return "/" + "cowo" + "/" + "cowo" + ".xhtml?faces-redirect=true";
@@ -87,7 +87,5 @@ public class LargePdfImportBean implements Serializable {
     public Path getPathOfTempData() {
         return pathOfTempData;
     }
-    
-    
 
 }

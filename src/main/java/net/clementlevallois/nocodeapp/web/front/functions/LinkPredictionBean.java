@@ -22,6 +22,7 @@ import jakarta.json.JsonObject;
 import jakarta.json.JsonReader;
 import jakarta.json.stream.JsonParsingException;
 import jakarta.servlet.annotation.MultipartConfig;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Properties;
 import java.util.logging.Level;
@@ -105,7 +106,7 @@ public class LinkPredictionBean implements Serializable {
             }
             sessionBean.sendFunctionPageReport();
             HttpRequest request;
-            HttpClient client = HttpClient.newHttpClient();
+            HttpClient client = HttpClient.newBuilder().connectTimeout(Duration.ofMinutes(10)).build();
             HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(uploadedFileAsByteArray);
             URI uri = UrlBuilder
                     .empty()

@@ -32,6 +32,7 @@ import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.json.JsonWriter;
 import java.io.InputStream;
+import java.time.Duration;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
@@ -124,7 +125,7 @@ public class PdfMatcherBean implements Serializable {
         logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.starting_analysis"));
         List<SheetModel> dataInSheets = inputData.getDataInSheets();
         HttpRequest request;
-        HttpClient client = HttpClient.newHttpClient();
+        HttpClient client = HttpClient.newBuilder().connectTimeout(Duration.ofMinutes(10)).build();
         Set<CompletableFuture> futures = new HashSet();
         results = new ConcurrentHashMap();
         BodyPublisher bodyPublisher;
@@ -251,7 +252,7 @@ public class PdfMatcherBean implements Serializable {
             }
             byte[] documentsAsByteArray = Converters.byteArraySerializerForAnyObject(results);
             HttpRequest request;
-            HttpClient client = HttpClient.newHttpClient();
+            HttpClient client = HttpClient.newBuilder().connectTimeout(Duration.ofMinutes(10)).build();
             HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(documentsAsByteArray);
 
             URI uri = UrlBuilder

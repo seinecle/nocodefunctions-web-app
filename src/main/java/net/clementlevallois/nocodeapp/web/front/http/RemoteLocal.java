@@ -16,7 +16,7 @@ public class RemoteLocal {
         int port;
 
         if (isLocal()) {
-            path = "jsf-app";
+            path = "nocode-app-web-front";
             protocol = "http";
             domain = "localhost";
             port = 8080;

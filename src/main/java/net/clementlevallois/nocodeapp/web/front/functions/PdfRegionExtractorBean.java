@@ -22,6 +22,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.time.Duration;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
@@ -172,7 +173,7 @@ public class PdfRegionExtractorBean implements Serializable {
         logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.starting_analysis"));
         Map<String, String> pdfs = inputData.getPdfsToBeExtracted();
         HttpRequest request;
-        HttpClient client = HttpClient.newHttpClient();
+        HttpClient client = HttpClient.newBuilder().connectTimeout(Duration.ofMinutes(10)).build();
         Set<CompletableFuture> futures = new HashSet();
         results = new ConcurrentHashMap();
         HttpRequest.BodyPublisher bodyPublisher;
@@ -248,7 +249,7 @@ public class PdfRegionExtractorBean implements Serializable {
     public StreamedContent getFileToSave() {
         try {
             HttpRequest request;
-            HttpClient client = HttpClient.newHttpClient();
+            HttpClient client = HttpClient.newBuilder().connectTimeout(Duration.ofMinutes(10)).build();
             byte[] documentsAsByteArray = Converters.byteArraySerializerForAnyObject(results);
             HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(documentsAsByteArray);
 

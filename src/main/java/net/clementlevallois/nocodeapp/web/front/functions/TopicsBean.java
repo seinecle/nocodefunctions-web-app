@@ -35,6 +35,7 @@ import jakarta.json.JsonReader;
 import jakarta.json.JsonWriter;
 import jakarta.json.stream.JsonParsingException;
 import jakarta.servlet.annotation.MultipartConfig;
+import java.time.Duration;
 import java.util.Properties;
 import net.clementlevallois.importers.model.DataFormatConverter;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.LocaleComparator;
@@ -146,7 +147,7 @@ public class TopicsBean implements Serializable {
             logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.finding_key_terms"));
             progress = 20;
 
-            client = HttpClient.newHttpClient();
+            client = HttpClient.newBuilder().connectTimeout(Duration.ofMinutes(10)).build();
             JsonObjectBuilder overallObject = Json.createObjectBuilder();
 
             JsonObjectBuilder linesBuilder = Json.createObjectBuilder();

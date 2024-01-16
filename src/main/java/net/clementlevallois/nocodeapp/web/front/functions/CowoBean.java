@@ -19,8 +19,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 import static java.util.stream.Collectors.toList;
 import jakarta.enterprise.context.SessionScoped;
 import jakarta.faces.application.FacesMessage;
@@ -35,9 +33,17 @@ import jakarta.json.JsonWriter;
 import jakarta.servlet.annotation.MultipartConfig;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.Properties;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import net.clementlevallois.importers.model.DataFormatConverter;
+import net.clementlevallois.nocodeapp.web.front.ApiMessagesReceiver;
+import net.clementlevallois.nocodeapp.web.front.MessageFromApi;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.LocaleComparator;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.exportdata.ExportToGephisto;
@@ -45,10 +51,11 @@ import net.clementlevallois.nocodeapp.web.front.exportdata.ExportToVosViewer;
 import net.clementlevallois.nocodeapp.web.front.importdata.DataImportBean;
 import net.clementlevallois.nocodeapp.web.front.logview.LogBean;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.ApplicationPropertiesBean;
+import net.clementlevallois.nocodeapp.web.front.backingbeans.SingletonBean;
+import net.clementlevallois.nocodeapp.web.front.http.RemoteLocal;
 import net.clementlevallois.nocodeapp.web.front.importdata.LargePdfImportBean;
 import net.clementlevallois.nocodeapp.web.front.utils.GEXFSaver;
 import net.clementlevallois.nocodeapp.web.front.utils.Converters;
-import net.clementlevallois.utils.TextCleaningOps;
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
 import org.primefaces.model.file.UploadedFile;
@@ -64,7 +71,7 @@ import org.primefaces.model.file.UploadedFile;
 public class CowoBean implements Serializable {
 
     private Integer progress = 0;
-    private Boolean runButtonDisabled = true;
+    private Boolean runButtonDisabled = false;
     private StreamedContent fileToSave;
     private String selectedLanguage;
     private String nodesAsJson;
@@ -82,12 +89,16 @@ public class CowoBean implements Serializable {
     private boolean lemmatize = true;
     private boolean usePMI = false;
     private UploadedFile fileUserStopwords;
-    private String gexf;
     private Boolean shareVVPublicly;
     private Boolean shareGephistoPublicly;
     private Integer minCharNumber = 4;
     private Map<Integer, String> mapOfLines;
     private Properties privateProperties;
+    private boolean test = true;
+    private String dataPersistenceUniqueId = "";
+    private String sessionId;
+    private boolean gexfHasArrived = false;
+    private boolean topNodesHaveArrived = false;
 
     @Inject
     LogBean logBean;
@@ -111,6 +122,29 @@ public class CowoBean implements Serializable {
     public void init() {
         sessionBean.setFunction("cowo");
         privateProperties = applicationProperties.getPrivateProperties();
+        sessionId = FacesContext.getCurrentInstance().getExternalContext().getSessionId(false);
+        logBean.setSessionId(sessionId);
+    }
+
+    private void watchTower() {
+        Executors.newSingleThreadExecutor().execute(() -> {
+            while (!gexfHasArrived && SingletonBean.getCurrentSessions().containsKey(sessionId)) {
+                ArrayList<MessageFromApi> messagesFromApi = ApiMessagesReceiver.queueResultsArrived.get(sessionId);
+                if (messagesFromApi != null && !messagesFromApi.isEmpty()) {
+                    for (MessageFromApi msg : messagesFromApi) {
+                        if (msg.getDataPersistenceId().equals(dataPersistenceUniqueId)) {
+                            gexfHasArrived = true;
+                        }
+                    }
+                }
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(LogBean.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        });
+
     }
 
     public Integer getProgress() {
@@ -125,74 +159,79 @@ public class CowoBean implements Serializable {
         return "";
     }
 
-    public String runAnalysis() throws InterruptedException {
+    public void runAnalysis() {
         progress = 0;
+        runButtonDisabled = true;
+        topNodesHaveArrived = false;
+        gexfHasArrived = false;
+        watchTower();
+        sendCallToCowoFunction();
+        progress = 80;
+        getTopNodes();
+        progress = 100;
+        runButtonDisabled = false;
+    }
 
-        HttpRequest request;
-        HttpClient client = null;
-
-        if (usePMI) {
-            typeCorrection = "pmi";
+    public void pollingAction() {
+        if (topNodesHaveArrived) {
+            topNodesHaveArrived = false;
+            FacesContext context = FacesContext.getCurrentInstance();
+            context.getApplication().getNavigationHandler().handleNavigation(context, null, "/cowo/results.xhtml?faces-redirect=true");
         }
+    }
+
+    private void sendCallToCowoFunction() {
 
         try {
             sessionBean.sendFunctionPageReport();
             logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.starting_analysis"));
 
-            if (largePdfImportBean.getMapOfLines().isEmpty()) {
+            if (usePMI) {
+                typeCorrection = "pmi";
+            }
+
+            if (largePdfImportBean.getDataPersistenceUniqueId() != null) {
+                dataPersistenceUniqueId = largePdfImportBean.getDataPersistenceUniqueId();
+            } else {
+                dataPersistenceUniqueId = UUID.randomUUID().toString().substring(0, 10);
+                Path tempFolderRelativePath = applicationProperties.getTempFolderRelativePath();
+                Path fullPathForFileContainingTextInput = Path.of(tempFolderRelativePath.toString(), dataPersistenceUniqueId);
                 DataFormatConverter dataFormatConverter = new DataFormatConverter();
                 mapOfLines = dataFormatConverter.convertToMapOfLines(inputData.getBulkData(), inputData.getDataInSheets(), inputData.getSelectedSheetName(), inputData.getSelectedColumnIndex(), inputData.getHasHeaders());
-            }else{
-                mapOfLines = largePdfImportBean.getMapOfLines();
-                Path fileToDelete = largePdfImportBean.getPathOfTempData();
-                Files.deleteIfExists(fileToDelete);
+                StringBuilder sb = new StringBuilder();
+                for (Map.Entry<Integer, String> entry : mapOfLines.entrySet()) {
+                    sb.append(entry.getValue()).append("\n");
+                }
+                Files.writeString(fullPathForFileContainingTextInput, sb.toString(), StandardCharsets.UTF_8, StandardOpenOption.CREATE,
+                        StandardOpenOption.APPEND);
+
             }
+
             inputData.setDataInSheets(new ArrayList());
             largePdfImportBean.setMapOfLines(new HashMap());
-
-            if (mapOfLines == null || mapOfLines.isEmpty()) {
-                logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.data_not_found"));
-                return "";
-            }
 
             if (selectedLanguage == null) {
                 selectedLanguage = "en";
             }
-            progress = 10;
-            logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.removing_punctuation_and_cleaning"));
-
-            mapOfLines = TextCleaningOps.doAllCleaningOps(mapOfLines, removeNonAsciiCharacters);
-            mapOfLines = TextCleaningOps.putInLowerCase(mapOfLines);
-
-            progress = 15;
-
-            logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.finding_key_terms"));
-            progress = 20;
-            Runnable incrementProgress = () -> {
-                progress = progress + 1;
-            };
-            ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
-            executor.scheduleAtFixedRate(incrementProgress, 0, 2, TimeUnit.SECONDS);
 
             JsonObjectBuilder overallObject = Json.createObjectBuilder();
-
-            JsonObjectBuilder linesBuilder = Json.createObjectBuilder();
-            for (Map.Entry<Integer, String> entryLines : mapOfLines.entrySet()) {
-                linesBuilder.add(String.valueOf(entryLines.getKey()), entryLines.getValue());
-            }
 
             JsonObjectBuilder userSuppliedStopwordsBuilder = Json.createObjectBuilder();
             if (fileUserStopwords != null && fileUserStopwords.getFileName() != null) {
                 List<String> userSuppliedStopwords;
                 try (BufferedReader br = new BufferedReader(new InputStreamReader(fileUserStopwords.getInputStream(), StandardCharsets.UTF_8))) {
                     userSuppliedStopwords = br.lines().collect(toList());
-                }
-                int index = 0;
-                for (String stopword : userSuppliedStopwords) {
-                    userSuppliedStopwordsBuilder.add(String.valueOf(index++), stopword);
+                    int index = 0;
+                    for (String stopword : userSuppliedStopwords) {
+                        userSuppliedStopwordsBuilder.add(String.valueOf(index++), stopword);
+                    }
+                } catch (IOException exIO) {
+                    Logger.getLogger(CowoBean.class.getName()).log(Level.SEVERE, null, exIO);
                 }
             }
-            overallObject.add("lines", linesBuilder);
+
+            String callbackURL = RemoteLocal.getDomain() + "/api/messageFromAPI/cowo";
+
             overallObject.add("lang", selectedLanguage);
             overallObject.add("userSuppliedStopwords", userSuppliedStopwordsBuilder);
             overallObject.add("minCharNumber", minCharNumber);
@@ -204,6 +243,9 @@ public class CowoBean implements Serializable {
             overallObject.add("minTermFreq", minTermFreq);
             overallObject.add("maxNGram", maxNGram);
             overallObject.add("typeCorrection", typeCorrection);
+            overallObject.add("sessionId", sessionId);
+            overallObject.add("dataPersistenceId", dataPersistenceUniqueId);
+            overallObject.add("callbackURL", callbackURL);
 
             JsonObject build = overallObject.build();
             StringWriter sw = new StringWriter(128);
@@ -222,67 +264,75 @@ public class CowoBean implements Serializable {
                     .withPath("api/cowo")
                     .toUri();
 
-            request = HttpRequest.newBuilder()
+            HttpRequest request = HttpRequest.newBuilder()
                     .POST(bodyPublisher)
+                    .timeout(Duration.ofMinutes(20))
                     .uri(uri)
                     .build();
-            client = HttpClient.newHttpClient();
-            HttpResponse<byte[]> resp = client.send(request, HttpResponse.BodyHandlers.ofByteArray());
-            byte[] body = resp.body();
+            HttpClient client = HttpClient.newBuilder().connectTimeout(Duration.ofMinutes(20)).build();
+            HttpResponse<String> resp = client.send(request, HttpResponse.BodyHandlers.ofString());
             if (resp.statusCode() == 200) {
-                gexf = new String(body, StandardCharsets.UTF_8);
             } else {
                 System.out.println("cowo returned by the API was not a 200 code");
-                String errorMessage = new String(body, StandardCharsets.UTF_8);
+                String errorMessage = resp.body();
                 logBean.addOneNotificationFromString(errorMessage);
                 sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "💔", errorMessage);
             }
-            executor.shutdown();
-            logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.last_ops_creating_network"));
-            progress = 60;
 
-            if (gexf == null) {
-                logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.internal_server_error"));
-                runButtonDisabled = true;
-                return "";
+        } catch (IOException | InterruptedException ex) {
+            Logger.getLogger(CowoBean.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    private void getTopNodes() {
+        Executors.newSingleThreadExecutor().execute(() -> {
+            while (!gexfHasArrived && SingletonBean.getCurrentSessions().containsKey(sessionId)) {
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(CowoBean.class.getName()).log(Level.SEVERE, null, ex);
+                }
             }
 
-            bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(gexf.getBytes(StandardCharsets.UTF_8));
+            if (!SingletonBean.getCurrentSessions().containsKey(sessionId)) {
+                return;
+            }
 
-            uri = UrlBuilder
+            // waiting for the message saying the results have been peristed to disk
+            progress = 60;
+            URI uri = UrlBuilder
                     .empty()
                     .withScheme("http")
                     .withPort(Integer.valueOf(privateProperties.getProperty("nocode_api_port")))
                     .withHost("localhost")
                     .withPath("api/graphops/topnodes")
                     .addParameter("nbNodes", "30")
+                    .addParameter("dataPersistenceId", dataPersistenceUniqueId)
                     .toUri();
-
-            request = HttpRequest.newBuilder()
-                    .POST(bodyPublisher)
+            HttpRequest request = HttpRequest.newBuilder()
+                    .GET()
                     .uri(uri)
                     .build();
-
-            resp = client.send(request, HttpResponse.BodyHandlers.ofByteArray());
-            body = resp.body();
-            if (resp.statusCode() != 200) {
-                System.out.println("top nodes returned by the API was not a 200 code");
-                String error = sessionBean.getLocaleBundle().getString("general.nouns.error");
-                logBean.addOneNotificationFromString(error);
-                sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "💔", error);
-                runButtonDisabled = true;
-            } else {
-                String jsonResult = new String(body, StandardCharsets.UTF_8);
-                JsonObject jsonObject = Json.createReader(new StringReader(jsonResult)).readObject();
-                nodesAsJson = Converters.turnJsonObjectToString(jsonObject.getJsonObject("nodes"));
-                edgesAsJson = Converters.turnJsonObjectToString(jsonObject.getJsonObject("edges"));
-            }
-
-        } catch (IOException | NumberFormatException ex) {
-            System.out.println("ex:" + ex.getMessage());
+            HttpClient client = HttpClient.newBuilder().connectTimeout(Duration.ofMinutes(20)).build();
+            CompletableFuture<HttpResponse<byte[]>> futureResponse = client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray());
+            futureResponse.thenAccept(resp -> {
+                if (resp.statusCode() != 200) {
+                    byte[] body = resp.body();
+                    String error = new String(body, StandardCharsets.UTF_8);
+                    System.out.println("top nodes returned by the API was not a 200 code");
+                    System.out.println("error: " + error);
+                    runButtonDisabled = true;
+                } else {
+                    byte[] body = resp.body();
+                    String jsonResult = new String(body, StandardCharsets.UTF_8);
+                    JsonObject jsonObject = Json.createReader(new StringReader(jsonResult)).readObject();
+                    nodesAsJson = Converters.turnJsonObjectToString(jsonObject.getJsonObject("nodes"));
+                    edgesAsJson = Converters.turnJsonObjectToString(jsonObject.getJsonObject("edges"));
+                    topNodesHaveArrived = true;
+                }
+            });
         }
-        return "/" + sessionBean.getFunction()
-                + "/results.xhtml?faces-redirect=true";
+        );
     }
 
     public String getSelectedLanguage() {
@@ -305,12 +355,25 @@ public class CowoBean implements Serializable {
     }
 
     public StreamedContent getFileToSave() {
-        if (gexf == null) {
+        Path tempFolderRelativePath = Path.of(applicationProperties.getTempFolderRelativePath().toString(), dataPersistenceUniqueId + "_result");
+        String gexfAsString = "";
+        if (Files.exists(tempFolderRelativePath)) {
+            try {
+                gexfAsString = Files.readString(tempFolderRelativePath, StandardCharsets.UTF_8);
+            } catch (IOException ex) {
+                Logger.getLogger(CowoBean.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        } else {
+            System.out.println("gexf file did not exist in temp folder");
+            return new DefaultStreamedContent();
+        }
+        if (gexfAsString == null || gexfAsString.isBlank()) {
             System.out.println("gexf was null in cowo function");
             sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "💔", sessionBean.getLocaleBundle().getString("general.message.internal_server_error"));
             return new DefaultStreamedContent();
+        } else {
+            return GEXFSaver.exportGexfAsStreamedFile(gexfAsString, "results");
         }
-        return GEXFSaver.exportGexfAsStreamedFile(gexf, "results");
     }
 
     public void setFileToSave(StreamedContent fileToSave) {
@@ -346,6 +409,18 @@ public class CowoBean implements Serializable {
     }
 
     public int getMaxNGram() {
+        // these are defensive measures to avoid out of memory errors due to ngram detections on very large collections of files        
+        if (largePdfImportBean != null) {
+            if (largePdfImportBean.getMapOfLines().size() > 300_000) {
+                maxNGram = 2;
+            } else if (largePdfImportBean.getMapOfLines().size() > 200_000) {
+                maxNGram = 3;
+            } else {
+                maxNGram = 4;
+            }
+        } else {
+            maxNGram = 4;
+        }
         return maxNGram;
     }
 
@@ -458,12 +533,33 @@ public class CowoBean implements Serializable {
         this.lemmatize = lemmatize;
     }
 
+    public String getDataPersistenceUniqueId() {
+        return dataPersistenceUniqueId;
+    }
+
+    public void setDataPersistenceUniqueId(String dataPersistenceUniqueId) {
+        this.dataPersistenceUniqueId = dataPersistenceUniqueId;
+    }
+
     public void gotoVV() {
+        Path tempFolderRelativePath = Path.of(applicationProperties.getTempFolderRelativePath().toString(), dataPersistenceUniqueId + "_result");
+        String gexfAsString = "";
+        if (Files.exists(tempFolderRelativePath)) {
+            try {
+                gexfAsString = Files.readString(tempFolderRelativePath, StandardCharsets.UTF_8);
+            } catch (IOException ex) {
+                Logger.getLogger(CowoBean.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        } else {
+            System.out.println("gexf file did not exist in temp folder");
+            return;
+        }
+
         String apiPort = privateProperties.getProperty("nocode_api_port");
         Path userGeneratedVosviewerDirectoryFullPath = applicationProperties.getUserGeneratedVosviewerDirectoryFullPath(shareVVPublicly);
         Path relativePathFromProjectRootToVosviewerFolder = applicationProperties.getRelativePathFromProjectRootToVosviewerFolder();
         Path vosviewerRootFullPath = applicationProperties.getVosviewerRootFullPath();
-        String linkToVosViewer = ExportToVosViewer.exportAndReturnLinkFromGexf(gexf, apiPort, userGeneratedVosviewerDirectoryFullPath, relativePathFromProjectRootToVosviewerFolder, vosviewerRootFullPath);
+        String linkToVosViewer = ExportToVosViewer.exportAndReturnLinkFromGexf(gexfAsString, apiPort, userGeneratedVosviewerDirectoryFullPath, relativePathFromProjectRootToVosviewerFolder, vosviewerRootFullPath);
         if (linkToVosViewer != null && !linkToVosViewer.isBlank()) {
             try {
                 ExternalContext externalContext = FacesContext.getCurrentInstance().getExternalContext();
@@ -475,10 +571,23 @@ public class CowoBean implements Serializable {
     }
 
     public void gotoGephisto() {
+        Path tempFolderRelativePath = Path.of(applicationProperties.getTempFolderRelativePath().toString(), dataPersistenceUniqueId + "_result");
+        String gexfAsString = "";
+        if (Files.exists(tempFolderRelativePath)) {
+            try {
+                gexfAsString = Files.readString(tempFolderRelativePath, StandardCharsets.UTF_8);
+            } catch (IOException ex) {
+                Logger.getLogger(CowoBean.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        } else {
+            System.out.println("gexf file did not exist in temp folder");
+            return;
+        }
+
         Path userGeneratedGephistoDirectoryFullPath = applicationProperties.getUserGeneratedGephistoDirectoryFullPath(shareGephistoPublicly);
         Path relativePathFromProjectRootToGephistoFolder = applicationProperties.getRelativePathFromProjectRootToGephistoFolder();
         Path gephistoRootFullPath = applicationProperties.getGephistoRootFullPath();
-        String urlToGephisto = ExportToGephisto.exportAndReturnLink(gexf, userGeneratedGephistoDirectoryFullPath, relativePathFromProjectRootToGephistoFolder, gephistoRootFullPath);
+        String urlToGephisto = ExportToGephisto.exportAndReturnLink(gexfAsString, userGeneratedGephistoDirectoryFullPath, relativePathFromProjectRootToGephistoFolder, gephistoRootFullPath);
         ExternalContext externalContext = FacesContext.getCurrentInstance().getExternalContext();
         try {
             externalContext.redirect(urlToGephisto);

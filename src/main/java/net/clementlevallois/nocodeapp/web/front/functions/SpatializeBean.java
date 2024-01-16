@@ -138,7 +138,7 @@ public class SpatializeBean implements Serializable {
             return;
         }
         HttpRequest request;
-        HttpClient client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(120)).build();
+        HttpClient client = HttpClient.newBuilder().connectTimeout(Duration.ofMinutes(10)).build();
         Set<CompletableFuture> futures = new HashSet();
         HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(uploadedFileAsByteArray);
         URI uri = UrlBuilder

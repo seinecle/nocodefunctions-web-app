@@ -31,6 +31,7 @@ import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.json.JsonWriter;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.Properties;
 import net.clementlevallois.importers.model.CellRecord;
 import net.clementlevallois.importers.model.SheetModel;
@@ -211,7 +212,7 @@ public class GazeBean implements Serializable {
 
     public boolean callCooc(Map<Integer, Multiset<String>> inputLines) throws Exception {
         HttpRequest request;
-        HttpClient client = HttpClient.newHttpClient();
+        HttpClient client = HttpClient.newBuilder().connectTimeout(Duration.ofMinutes(10)).build();
         JsonObjectBuilder overallObject = Json.createObjectBuilder();
 
         JsonObjectBuilder linesBuilder = Json.createObjectBuilder();
@@ -294,7 +295,7 @@ public class GazeBean implements Serializable {
     public boolean callSim(Map<String, Set<String>> sourcesAndTargets) {
         try {
             HttpRequest request;
-            HttpClient client = HttpClient.newHttpClient();
+            HttpClient client = HttpClient.newBuilder().connectTimeout(Duration.ofMinutes(10)).build();
             JsonObjectBuilder overallObject = Json.createObjectBuilder();
 
             JsonObjectBuilder linesBuilder = Json.createObjectBuilder();

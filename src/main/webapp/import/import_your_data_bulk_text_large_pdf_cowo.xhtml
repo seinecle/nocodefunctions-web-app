@@ -34,7 +34,7 @@
             <f:metadata>
                 <f:viewParam name="function" value="#{sessionBean.function}" />
                 <f:viewAction action="#{largePdfImportBean.setBulkData(true)}" />
-                <f:viewAction action="#{largePdfImportBean.setUniqueId()}" />
+                <f:viewAction action="#{largePdfImportBean.setDataPersistenceUniqueId()}" />
             </f:metadata>
             <p:panel>
                 <ui:include src="/WEB-INF/includes/header.xhtml"/>
@@ -72,6 +72,9 @@
                         <br/>
                         <p:outputPanel id="launch">
                             <h:form>
+                                (just for test purpose, ignore this) <p:inputText value="#{largePdfImportBean.dataPersistenceUniqueId}"/>
+                                <br/>
+                                <br/>
                                 <p:commandButton
                                     value="#{text['general.verbs.compute']}"
                                     action="#{largePdfImportBean.gotToFunctionWithDataInBulk}"

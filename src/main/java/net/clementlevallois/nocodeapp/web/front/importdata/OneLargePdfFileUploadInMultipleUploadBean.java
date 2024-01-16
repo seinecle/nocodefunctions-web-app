@@ -3,10 +3,8 @@ package net.clementlevallois.nocodeapp.web.front.importdata;
 import io.mikael.urlbuilder.UrlBuilder;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.faces.application.FacesMessage;
-import jakarta.faces.context.FacesContext;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
-import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -18,15 +16,11 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import net.clementlevallois.importers.model.CellRecord;
-import net.clementlevallois.importers.model.DataFormatConverter;
-import net.clementlevallois.importers.model.ImagesPerFile;
 import net.clementlevallois.importers.model.SheetModel;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.ApplicationPropertiesBean;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
@@ -123,7 +117,7 @@ public class OneLargePdfFileUploadInMultipleUploadBean {
             }
 
             Path tempFolderRelativePath = applicationProperties.getTempFolderRelativePath();
-            String uniqueId = largePdfImportBean.getUniqueId();
+            String uniqueId = largePdfImportBean.getDataPersistenceUniqueId();
             Path fullPathForFileContainingTextInput = Path.of(tempFolderRelativePath.toString(), uniqueId);
             Files.writeString(fullPathForFileContainingTextInput, sb.toString(), StandardCharsets.UTF_8, StandardOpenOption.CREATE,
                     StandardOpenOption.APPEND);

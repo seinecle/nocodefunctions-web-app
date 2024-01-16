@@ -26,6 +26,7 @@ import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.Duration;
 import java.util.Properties;
 import net.clementlevallois.importers.model.DataFormatConverter;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
@@ -122,7 +123,7 @@ public class OrganicBean implements Serializable {
         results = Arrays.asList(new Document[maxRecords + 1]);
 
         HttpRequest request;
-        HttpClient client = HttpClient.newHttpClient();
+        HttpClient client = HttpClient.newBuilder().connectTimeout(Duration.ofMinutes(10)).build();
         Set<CompletableFuture> futures = new HashSet();
         int i = 1;
         try {

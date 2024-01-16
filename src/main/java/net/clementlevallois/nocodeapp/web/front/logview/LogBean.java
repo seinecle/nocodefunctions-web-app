@@ -8,6 +8,12 @@ import jakarta.faces.push.PushContext;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import java.util.ArrayList;
+import java.util.Set;
+import java.util.concurrent.Executors;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import net.clementlevallois.nocodeapp.web.front.MessageFromApi;
+import net.clementlevallois.nocodeapp.web.front.backingbeans.SingletonBean;
 
 /**
  *
@@ -22,9 +28,33 @@ public class LogBean implements Serializable {
     @Inject
     @Push
     private PushContext push;
+    private String sessionId = "";
 
     public LogBean() {
         notifications = new ArrayList();
+    }
+
+    public void setSessionId(String sessionId) {
+        this.sessionId = sessionId;
+        watchIncomingMessages();
+    }
+
+    private void watchIncomingMessages() {
+        Executors.newSingleThreadExecutor().execute(() -> {
+            while (true && SingletonBean.getCurrentSessions().containsKey(sessionId)) {
+                ArrayList<MessageFromApi> messagesFromApi = SingletonBean.takeMessagesFromApi(sessionId);
+                if (messagesFromApi != null && !messagesFromApi.isEmpty()) {
+                    for (MessageFromApi msg : messagesFromApi) {
+                        addOneNotificationFromString(msg.getMessage());
+                    }
+                }
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(LogBean.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        });
     }
 
     public void addOneNotificationFromString(String notificationAsString) {
