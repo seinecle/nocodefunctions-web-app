@@ -305,15 +305,15 @@ public class BiblioCouplingBean implements Serializable {
         Path userGeneratedVosviewerDirectoryFullPath = applicationProperties.getUserGeneratedVosviewerDirectoryFullPath(shareVVPublicly);
         Path relativePathFromProjectRootToVosviewerFolder = applicationProperties.getRelativePathFromProjectRootToVosviewerFolder();
         Path vosviewerRootFullPath = applicationProperties.getVosviewerRootFullPath();
-        String linkToVosViewer = ExportToVosViewer.exportAndReturnLinkFromGexf(gexf, apiPort,userGeneratedVosviewerDirectoryFullPath,relativePathFromProjectRootToVosviewerFolder,vosviewerRootFullPath);
-        if (linkToVosViewer != null && !linkToVosViewer.isBlank()) {
-            try {
-                ExternalContext externalContext = FacesContext.getCurrentInstance().getExternalContext();
-                externalContext.redirect(linkToVosViewer);
-            } catch (IOException ex) {
-                System.out.println("error in ops for export to vv");
-            }
-        }
+//        String linkToVosViewer = ExportToVosViewer.exportAndReturnLinkFromGexf(gexf, apiPort,userGeneratedVosviewerDirectoryFullPath,relativePathFromProjectRootToVosviewerFolder,vosviewerRootFullPath);
+//        if (linkToVosViewer != null && !linkToVosViewer.isBlank()) {
+//            try {
+//                ExternalContext externalContext = FacesContext.getCurrentInstance().getExternalContext();
+//                externalContext.redirect(linkToVosViewer);
+//            } catch (IOException ex) {
+//                System.out.println("error in ops for export to vv");
+//            }
+//        }
     }
 
     public void gotoGephisto() {

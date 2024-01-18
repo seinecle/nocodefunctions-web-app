@@ -8,12 +8,14 @@ import jakarta.faces.push.PushContext;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import java.util.ArrayList;
-import java.util.Set;
+import java.util.Iterator;
+import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import net.clementlevallois.nocodeapp.web.front.MessageFromApi;
-import net.clementlevallois.nocodeapp.web.front.backingbeans.SingletonBean;
+import net.clementlevallois.nocodeapp.web.front.MessageFromApi.Information;
+import net.clementlevallois.nocodeapp.web.front.WatchTower;
 
 /**
  *
@@ -41,11 +43,16 @@ public class LogBean implements Serializable {
 
     private void watchIncomingMessages() {
         Executors.newSingleThreadExecutor().execute(() -> {
-            while (true && SingletonBean.getCurrentSessions().containsKey(sessionId)) {
-                ArrayList<MessageFromApi> messagesFromApi = SingletonBean.takeMessagesFromApi(sessionId);
+            while (true && WatchTower.getCurrentSessions().containsKey(sessionId)) {
+                ConcurrentLinkedDeque<MessageFromApi> messagesFromApi = WatchTower.getDequeAPIMessages().get(sessionId);
                 if (messagesFromApi != null && !messagesFromApi.isEmpty()) {
-                    for (MessageFromApi msg : messagesFromApi) {
-                        addOneNotificationFromString(msg.getMessage());
+                    Iterator<MessageFromApi> it = messagesFromApi.iterator();
+                    while (it.hasNext()) {
+                        MessageFromApi msg = it.next();
+                        if (msg.getInfo().equals(Information.INTERMEDIARY)) {
+                            addOneNotificationFromString(msg.getMessage());
+                            it.remove();
+                        }
                     }
                 }
                 try {

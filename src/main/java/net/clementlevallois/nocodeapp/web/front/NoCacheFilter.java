@@ -34,8 +34,8 @@ public class NoCacheFilter implements Filter {
             }
 
             chain.doFilter(request, response);
-        } catch (IOException | ServletException | ViewExpiredException ex) {
-            if (ex instanceof ViewExpiredException) {
+        } catch (IOException | ServletException | jakarta.faces.FacesException ex) {
+            if (ex instanceof jakarta.faces.FacesException) {
                 // do nothing because these are not informative
             } else {
                 System.out.println("exception: " + ex.getMessage());

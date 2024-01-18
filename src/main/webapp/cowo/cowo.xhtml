@@ -197,7 +197,7 @@
                             <p:ajax event="complete" update=":notifications"/>
                         </p:progressBar>
                         <h:panelGroup id="pollingArea">
-                            <p:poll listener="#{cowoBean.pollingAction}" process="pollingArea" update="pollingArea" interval="2" />
+                            <p:poll listener="#{cowoBean.pollingDidTopNodesArrived}" process="pollingArea" update="pollingArea" interval="2" />
                         </h:panelGroup>
                     </h:form>
                 </div>
@@ -208,8 +208,8 @@
                                 <h:column>#{notification.message}</h:column>
                             </h:dataTable>
                             <h:form>
-                                <f:websocket channel="push"  scope="session" onmessage="function(m){console.log(m);}">
-                                    <f:ajax event="updateNotifications" render=":notifications" />
+                                <f:websocket channel="push"  scope="session">
+                                    <f:ajax event="updateNotifications" render=":scrollPanel :notifications" />
                                 </f:websocket>
                             </h:form>
                         </p:scrollPanel>

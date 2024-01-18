@@ -34,7 +34,7 @@ public class ApplicationPropertiesBean {
     private Path vosviewerRootRelativePath;
     private Path gephistoRootFullPath;
     private Path vosviewerRootFullPath;
-    private Path tempFolderRelativePath;
+    private Path tempFolderFullPath;
 
     private final String ENV_VARIABLE_ROOTPROJECT = "root.project";
     private final String ENV_VARIABLE_PROPERTIES_FILE = "properties.relative.path.and.filename";
@@ -60,7 +60,7 @@ public class ApplicationPropertiesBean {
         userGeneratedGephistoPublicDirectoryFullPath = loadGephistoPublicFullPath();
         userGeneratedGephistoPrivateDirectoryFullPath = loadGephistoPrivateFullPath();
         gephistoRootRelativePath = loadGephistoRootRelativePath();
-        tempFolderRelativePath = loadTempFolderFullPath();
+        tempFolderFullPath = loadTempFolderFullPath();
         vosviewerRootRelativePath = loadVosviewerRootRelativePath();
         vosviewerRootFullPath = loadVosviewerRootFullPath();
         gephistoRootFullPath = loadGephistoRootFullPath();        
@@ -273,8 +273,8 @@ public class ApplicationPropertiesBean {
         return vosviewerRootFullPath;
     }
 
-    public Path getTempFolderRelativePath() {
-        return tempFolderRelativePath;
+    public Path getTempFolderFullPath() {
+        return tempFolderFullPath;
     }
     
     public String getMiddlewarePort() {
@@ -300,8 +300,8 @@ public class ApplicationPropertiesBean {
             return;
         }
         List<String> vars = null;
-        String currentWorkingDirectory = System.getProperty("user.dir");
-        System.out.println("working dir: " + currentWorkingDirectory);
+//        String currentWorkingDirectory = System.getProperty("user.dir");
+//        System.out.println("working dir: " + currentWorkingDirectory);
         try {
             vars = Files.readAllLines(Path.of("sys.properties"), StandardCharsets.UTF_8);
             for (String line : vars) {

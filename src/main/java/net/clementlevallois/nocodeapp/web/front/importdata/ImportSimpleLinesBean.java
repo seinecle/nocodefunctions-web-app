@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.ApplicationPropertiesBean;
+import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 
 /**
  *
@@ -24,16 +25,17 @@ import net.clementlevallois.nocodeapp.web.front.backingbeans.ApplicationProperti
 @Named
 @SessionScoped
 
-public class LargePdfImportBean implements Serializable {
+public class ImportSimpleLinesBean implements Serializable {
 
     @Inject
     ApplicationPropertiesBean applicationProperties;
 
+    @Inject
+    SessionBean sessionBean;
+
     private Boolean bulkData = false;
 
     private String dataPersistenceUniqueId;
-
-    private Map<Integer, String> mapOfLines = new HashMap();
 
     Path pathOfTempData;
 
@@ -46,7 +48,7 @@ public class LargePdfImportBean implements Serializable {
     }
 
     public void setDataPersistenceUniqueId(String dataPersistenceUniqueId) {
-        Path tempFolderRelativePath = applicationProperties.getTempFolderRelativePath();
+        Path tempFolderRelativePath = applicationProperties.getTempFolderFullPath();
         pathOfTempData = Path.of(tempFolderRelativePath.toString(), dataPersistenceUniqueId);
         if (!pathOfTempData.toFile().exists()) {
             setDataPersistenceUniqueId();
@@ -64,24 +66,10 @@ public class LargePdfImportBean implements Serializable {
         return dataPersistenceUniqueId;
     }
 
-    public Map<Integer, String> getMapOfLines() {
-        return mapOfLines;
-    }
-
-    public void setMapOfLines(Map<Integer, String> mapOfLines) {
-        this.mapOfLines = mapOfLines;
-    }
-
     public String gotToFunctionWithDataInBulk() throws IOException {
-        Path tempFolderRelativePath = applicationProperties.getTempFolderRelativePath();
+        Path tempFolderRelativePath = applicationProperties.getTempFolderFullPath();
         pathOfTempData = Path.of(tempFolderRelativePath.toString(), dataPersistenceUniqueId);
-        mapOfLines = new HashMap();
-        int i = 0;
-        List<String> allLines = Files.readAllLines(pathOfTempData, StandardCharsets.UTF_8);
-        for (String line : allLines) {
-            mapOfLines.put(i++, line);
-        }
-        return "/" + "cowo" + "/" + "cowo" + ".xhtml?faces-redirect=true";
+        return "/" + sessionBean.getFunction() + "/" + sessionBean.getFunction() + ".xhtml?faces-redirect=true";
     }
 
     public Path getPathOfTempData() {

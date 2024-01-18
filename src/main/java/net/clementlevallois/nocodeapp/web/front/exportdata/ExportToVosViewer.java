@@ -18,6 +18,8 @@ import java.time.Duration;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import net.clementlevallois.nocodeapp.web.front.backingbeans.ApplicationPropertiesBean;
+import net.clementlevallois.nocodeapp.web.front.functions.CowoBean;
 import net.clementlevallois.nocodeapp.web.front.http.RemoteLocal;
 import org.primefaces.model.file.UploadedFile;
 
@@ -27,6 +29,46 @@ import org.primefaces.model.file.UploadedFile;
  */
 public class ExportToVosViewer {
 
+    public static String exportAndReturnLinkFromGexf(String dataPersistenceUniqueId, String apiPort, boolean shareVVPublicly, ApplicationPropertiesBean applicationProperties) {
+        Path userGeneratedVosviewerDirectoryFullPath = applicationProperties.getUserGeneratedVosviewerDirectoryFullPath(shareVVPublicly);
+        Path relativePathFromProjectRootToVosviewerFolder = applicationProperties.getRelativePathFromProjectRootToVosviewerFolder();
+        Path vosviewerRootFullPath = applicationProperties.getVosviewerRootFullPath();
+
+        try {
+            HttpRequest request;
+            HttpClient client = HttpClient.newBuilder().connectTimeout(Duration.ofMinutes(10)).build();
+
+            URI uri = UrlBuilder
+                    .empty()
+                    .withScheme("http")
+                    .withPort(Integer.valueOf(apiPort))
+                    .withHost("localhost")
+                    .withPath("api/convert2vv")
+                    .addParameter("item", "Term")
+                    .addParameter("items", "Terms")
+                    .addParameter("link", "Co-occurrence link")
+                    .addParameter("links", "Co-occurrence links")
+                    .addParameter("linkStrength", "Number of co-occurrences")
+                    .addParameter("totalLinkStrength", "Total number of co-occurrences")
+                    .addParameter("descriptionData", "Made with nocodefunctions.com")
+                    .addParameter("dataPersistenceUniqueId", dataPersistenceUniqueId)
+                    .toUri();
+
+            request = HttpRequest.newBuilder()
+                    .GET()
+                    .uri(uri)
+                    .build();
+            HttpResponse<byte[]> resp = client.send(request, HttpResponse.BodyHandlers.ofByteArray());
+            byte[] body = resp.body();
+            String graphAsJsonVosViewer = new String(body, StandardCharsets.UTF_8);
+            String url = finishOpsFromGraphAsJson(graphAsJsonVosViewer, userGeneratedVosviewerDirectoryFullPath, relativePathFromProjectRootToVosviewerFolder, vosviewerRootFullPath);
+            return url;
+        } catch (InterruptedException | IOException ex) {
+            Logger.getLogger(ExportToVosViewer.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return "";
+    }
+
     public static String exportAndReturnLinkFromGexf(String gexf, String apiPort, Path userGeneratedVosviewerDirectoryFullPath, Path relativePathFromProjectRootToVosviewerFolder, Path vosviewerRootFullPath) {
         try {
             if (gexf == null) {
@@ -35,7 +77,7 @@ public class ExportToVosViewer {
             }
 
             HttpRequest request;
-            HttpClient client = HttpClient.newBuilder().connectTimeout(Duration.ofMinutes(10)).build();
+            HttpClient client = HttpClient.newHttpClient();
 
             HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(gexf.getBytes(StandardCharsets.UTF_8));
 

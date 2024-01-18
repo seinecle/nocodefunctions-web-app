@@ -19,13 +19,13 @@ public class CustomHttpSessionListener implements HttpSessionListener {
     @Override
     public void sessionCreated(HttpSessionEvent se) {
         String sessionId = se.getSession().getId();
-        SingletonBean.addCurrentSession(sessionId);
+        WatchTower.addCurrentSession(sessionId);
     }
 
     @Override
     public void sessionDestroyed(HttpSessionEvent se) {
         String sessionId = se.getSession().getId();
-        SingletonBean.removeCurrentSession(sessionId);
+        WatchTower.removeCurrentSession(sessionId);
     }
 }
 
