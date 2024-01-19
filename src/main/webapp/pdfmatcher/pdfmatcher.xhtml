@@ -60,7 +60,7 @@
                                 <h:column>#{notification.message}</h:column>
                             </h:dataTable>
                             <h:form>
-                                <f:websocket channel="push"  scope="session">
+                                <f:websocket channel="logChannel"  scope="session">
                                     <f:ajax event="updateNotifications" render=":notifications" />
                                 </f:websocket>
                             </h:form>

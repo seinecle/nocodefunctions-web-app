@@ -29,7 +29,7 @@ public class LogBean implements Serializable {
 
     @Inject
     @Push
-    private PushContext push;
+    private PushContext logChannel;
     private String sessionId = "";
 
     public LogBean() {
@@ -68,7 +68,12 @@ public class LogBean implements Serializable {
         Notification notification = new Notification();
         notification.setMessage(notificationAsString);
         notifications.add(0, notification);
-        push.send(notificationAsString);
+        // because what is sent to the frontend is not the incoming message!
+        // it is just the arbitrary name of an event, here "updateNotifications"
+        // this will cause the ajax to trigger the rendering of the log
+        // and the newest messages will appear in the log...
+        
+        logChannel.send("updateNotifications");
     }
 
     public List<Notification> getNotifications() {

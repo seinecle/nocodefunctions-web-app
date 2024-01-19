@@ -162,7 +162,7 @@ public class CowoBean implements Serializable {
         progress = 0;
         runButtonDisabled = true;
         gexfHasArrived = false;
-        watchTower();
+//        watchTower();
         sendCallToCowoFunction();
         getTopNodes();
     }
@@ -286,9 +286,8 @@ public class CowoBean implements Serializable {
 
             gexfHasArrived = false;
 
-            ConcurrentLinkedDeque<MessageFromApi> messagesFromApi = WatchTower.getDequeAPIMessages().get(sessionId);
-
             while (!gexfHasArrived && WatchTower.getCurrentSessions().containsKey(sessionId)) {
+                ConcurrentLinkedDeque<MessageFromApi> messagesFromApi = WatchTower.getDequeAPIMessages().get(sessionId);
                 if (messagesFromApi != null && !messagesFromApi.isEmpty()) {
                     Iterator<MessageFromApi> it = messagesFromApi.iterator();
                     while (it.hasNext()) {
