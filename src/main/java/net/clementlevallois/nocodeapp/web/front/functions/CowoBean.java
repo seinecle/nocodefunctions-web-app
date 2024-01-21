@@ -125,27 +125,6 @@ public class CowoBean implements Serializable {
         logBean.setSessionId(sessionId);
     }
 
-    private void watchTower() {
-        Executors.newSingleThreadExecutor().execute(() -> {
-            while (!gexfHasArrived && WatchTower.getCurrentSessions().containsKey(sessionId)) {
-                ConcurrentLinkedDeque<MessageFromApi> messagesFromApi = WatchTower.getDequeAPIMessages().get(sessionId);
-                if (messagesFromApi != null && !messagesFromApi.isEmpty()) {
-                    for (MessageFromApi msg : messagesFromApi) {
-                        if (msg.getDataPersistenceId().equals(dataPersistenceUniqueId)) {
-                            gexfHasArrived = true;
-                        }
-                    }
-                }
-                try {
-                    Thread.sleep(500);
-                } catch (InterruptedException ex) {
-                    Logger.getLogger(LogBean.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            }
-        });
-
-    }
-
     public Integer getProgress() {
         return progress;
     }
@@ -162,7 +141,6 @@ public class CowoBean implements Serializable {
         progress = 0;
         runButtonDisabled = true;
         gexfHasArrived = false;
-//        watchTower();
         sendCallToCowoFunction();
         getTopNodes();
     }

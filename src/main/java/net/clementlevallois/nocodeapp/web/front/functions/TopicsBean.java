@@ -35,14 +35,19 @@ import jakarta.json.JsonReader;
 import jakarta.json.JsonWriter;
 import jakarta.json.stream.JsonParsingException;
 import jakarta.servlet.annotation.MultipartConfig;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.time.Duration;
 import java.util.Properties;
+import java.util.UUID;
 import net.clementlevallois.importers.model.DataFormatConverter;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.LocaleComparator;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.importdata.DataImportBean;
 import net.clementlevallois.nocodeapp.web.front.logview.LogBean;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.ApplicationPropertiesBean;
+import net.clementlevallois.nocodeapp.web.front.importdata.ImportSimpleLinesBean;
 import net.clementlevallois.nocodeapp.web.front.utils.Converters;
 import net.clementlevallois.nocodeapp.web.front.utils.GEXFSaver;
 import net.clementlevallois.utils.Multiset;
@@ -82,6 +87,11 @@ public class TopicsBean implements Serializable {
     private boolean removeNonAsciiCharacters = false;
     private UploadedFile fileUserStopwords;
 
+    private String dataPersistenceUniqueId = "";
+    private String sessionId;
+    private boolean gexfHasArrived = false;
+    
+    
     private Properties privateProperties;
 
     private Map<Integer, String> mapOfLines;
@@ -90,8 +100,13 @@ public class TopicsBean implements Serializable {
     LogBean logBean;
 
     @Inject
-    DataImportBean dataImportBean;
+    DataImportBean inputData;
 
+    @Inject
+    ImportSimpleLinesBean simpleLinesImportBean;
+
+    
+    
     @Inject
     SessionBean sessionBean;
 
@@ -127,33 +142,33 @@ public class TopicsBean implements Serializable {
         try {
             sessionBean.sendFunctionPageReport();
             logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.starting_analysis"));
-            DataFormatConverter dataFormatConverter = new DataFormatConverter();
-            mapOfLines = dataFormatConverter.convertToMapOfLines(dataImportBean.getBulkData(), dataImportBean.getDataInSheets(), dataImportBean.getSelectedSheetName(), dataImportBean.getSelectedColumnIndex(), dataImportBean.getHasHeaders());
 
-            if (mapOfLines == null || mapOfLines.isEmpty()) {
-                logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.data_not_found"));
-                return "";
+            if (simpleLinesImportBean.getDataPersistenceUniqueId() != null) {
+                dataPersistenceUniqueId = simpleLinesImportBean.getDataPersistenceUniqueId();
+            } else {
+                dataPersistenceUniqueId = UUID.randomUUID().toString().substring(0, 10);
+                Path tempFolderRelativePath = applicationProperties.getTempFolderFullPath();
+                Path fullPathForFileContainingTextInput = Path.of(tempFolderRelativePath.toString(), dataPersistenceUniqueId);
+                DataFormatConverter dataFormatConverter = new DataFormatConverter();
+                mapOfLines = dataFormatConverter.convertToMapOfLines(inputData.getBulkData(), inputData.getDataInSheets(), inputData.getSelectedSheetName(), inputData.getSelectedColumnIndex(), inputData.getHasHeaders());
+                StringBuilder sb = new StringBuilder();
+                for (Map.Entry<Integer, String> entry : mapOfLines.entrySet()) {
+                    sb.append(entry.getValue().trim()).append("\n");
+                }
+                Files.writeString(fullPathForFileContainingTextInput, sb.toString(), StandardCharsets.UTF_8, StandardOpenOption.CREATE,
+                        StandardOpenOption.APPEND);
             }
+            inputData.setDataInSheets(new ArrayList());
 
             if (selectedLanguage == null) {
                 selectedLanguage = "en";
             }
-            progress = 10;
-            logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.removing_punctuation_and_cleaning"));
-
-            mapOfLines = TextCleaningOps.doAllCleaningOps(mapOfLines, removeNonAsciiCharacters);
-            mapOfLines = TextCleaningOps.putInLowerCase(mapOfLines);
 
             logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.finding_key_terms"));
             progress = 20;
 
             client = HttpClient.newBuilder().connectTimeout(Duration.ofMinutes(10)).build();
             JsonObjectBuilder overallObject = Json.createObjectBuilder();
-
-            JsonObjectBuilder linesBuilder = Json.createObjectBuilder();
-            for (Map.Entry<Integer, String> entryLines : mapOfLines.entrySet()) {
-                linesBuilder.add(String.valueOf(entryLines.getKey()), entryLines.getValue());
-            }
 
             JsonObjectBuilder userSuppliedStopwordsBuilder = Json.createObjectBuilder();
             if (fileUserStopwords != null && fileUserStopwords.getFileName() != null) {
@@ -167,11 +182,6 @@ public class TopicsBean implements Serializable {
                 }
             }
 
-            for (Map.Entry<Integer, String> entryLines : mapOfLines.entrySet()) {
-                linesBuilder.add(String.valueOf(entryLines.getKey()), entryLines.getValue());
-            }
-
-            overallObject.add("lines", linesBuilder);
             overallObject.add("lang", selectedLanguage);
             overallObject.add("userSuppliedStopwords", userSuppliedStopwordsBuilder);
             overallObject.add("replaceStopwords", replaceStopwords);

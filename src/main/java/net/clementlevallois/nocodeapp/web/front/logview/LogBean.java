@@ -43,7 +43,7 @@ public class LogBean implements Serializable {
 
     private void watchIncomingMessages() {
         Executors.newSingleThreadExecutor().execute(() -> {
-            while (true && WatchTower.getCurrentSessions().containsKey(sessionId)) {
+            while (WatchTower.getCurrentSessions().containsKey(sessionId)) {
                 ConcurrentLinkedDeque<MessageFromApi> messagesFromApi = WatchTower.getDequeAPIMessages().get(sessionId);
                 if (messagesFromApi != null && !messagesFromApi.isEmpty()) {
                     Iterator<MessageFromApi> it = messagesFromApi.iterator();
