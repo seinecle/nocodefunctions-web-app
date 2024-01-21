@@ -23,6 +23,7 @@ import jakarta.enterprise.context.SessionScoped;
 import jakarta.faces.application.FacesMessage;
 import jakarta.faces.context.ExternalContext;
 import jakarta.faces.context.FacesContext;
+import jakarta.faces.event.AjaxBehaviorEvent;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import jakarta.json.Json;
@@ -145,15 +146,9 @@ public class CowoBean implements Serializable {
         getTopNodes();
     }
 
-    public void pollingDidTopNodesArrived() {
-        String key = dataPersistenceUniqueId + "topnodes";
-        boolean topNodesHaveArrived = WatchTower.getQueueOutcomesProcesses().containsKey(dataPersistenceUniqueId + "topnodes");
-        if (topNodesHaveArrived) {
-            WatchTower.getQueueOutcomesProcesses().remove(key);
-            runButtonDisabled = false;
-            FacesContext context = FacesContext.getCurrentInstance();
-            context.getApplication().getNavigationHandler().handleNavigation(context, null, "/cowo/results.xhtml?faces-redirect=true");
-        }
+    public void navigateToResults() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        context.getApplication().getNavigationHandler().handleNavigation(context, null, "/cowo/results.xhtml?faces-redirect=true");
     }
 
     private void sendCallToCowoFunction() {
@@ -318,6 +313,13 @@ public class CowoBean implements Serializable {
                     edgesAsJson = Converters.turnJsonObjectToString(jsonObject.getJsonObject("edges"));
                     WatchTower.getQueueOutcomesProcesses().put(dataPersistenceUniqueId + "topnodes", System.currentTimeMillis());
                     progress = 100;
+                    MessageFromApi msg = new MessageFromApi();
+                    msg.setSessionId(sessionId);
+                    msg.setFunction("cowo");
+                    msg.setInfo(MessageFromApi.Information.GOTORESULTS);
+                    ConcurrentLinkedDeque<MessageFromApi> messages = WatchTower.getDequeAPIMessages().getOrDefault(msg.getSessionId(), new ConcurrentLinkedDeque());
+                    messages.addLast(msg);
+                    WatchTower.getDequeAPIMessages().put(sessionId, messages);
                 }
             });
         }

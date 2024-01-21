@@ -3,6 +3,7 @@ package net.clementlevallois.nocodeapp.web.front.logview;
 import java.io.Serializable;
 import java.util.List;
 import jakarta.enterprise.context.SessionScoped;
+import jakarta.faces.context.FacesContext;
 import jakarta.faces.push.Push;
 import jakarta.faces.push.PushContext;
 import jakarta.inject.Inject;
@@ -30,6 +31,10 @@ public class LogBean implements Serializable {
     @Inject
     @Push
     private PushContext logChannel;
+
+    @Inject
+    @Push
+    private PushContext navigationChannel;
     private String sessionId = "";
 
     public LogBean() {
@@ -52,6 +57,9 @@ public class LogBean implements Serializable {
                         if (msg.getInfo().equals(Information.INTERMEDIARY)) {
                             addOneNotificationFromString(msg.getMessage());
                             it.remove();
+                        } else if (msg.getInfo().equals(Information.GOTORESULTS)) {
+                            navigateToResultsPage(msg.getFunction());
+                            it.remove();
                         }
                     }
                 }
@@ -72,8 +80,11 @@ public class LogBean implements Serializable {
         // it is just the arbitrary name of an event, here "updateNotifications"
         // this will cause the ajax to trigger the rendering of the log
         // and the newest messages will appear in the log...
-        
         logChannel.send("updateNotifications");
+    }
+
+    public void navigateToResultsPage(String functionName) {
+        navigationChannel.send("navigateToResults" + functionName);
     }
 
     public List<Notification> getNotifications() {

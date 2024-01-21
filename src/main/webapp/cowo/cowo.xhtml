@@ -194,11 +194,7 @@
                         <!--PROGRESS BAR FOR RUN ANALYSIS-->
                         <p:progressBar id="pb" widgetVar="pbAjaxLong" ajax="true" value="#{cowoBean.progress}"
                                        labelTemplate="{value}%" styleClass="p-mt-3" global="false" interval="500">
-                            <p:ajax event="complete" update=":notifications"/>
                         </p:progressBar>
-                        <h:panelGroup id="pollingArea">
-                            <p:poll listener="#{cowoBean.pollingDidTopNodesArrived}" process="pollingArea" update="pollingArea" interval="2" />
-                        </h:panelGroup>
                     </h:form>
                 </div>
                 <div class="col-3 flex-grow-1">
@@ -208,8 +204,11 @@
                                 <h:column>#{notification.message}</h:column>
                             </h:dataTable>
                             <h:form>
-                                <f:websocket channel="logChannel"  scope="session" onmessage="function(m){console.log(m);}">
-                                    <f:ajax event="updateNotifications" render=":scrollPanel :notifications" />
+                                <f:websocket channel="logChannel"  scope="session">
+                                    <p:ajax event="updateNotifications" update=":notifications" />
+                                </f:websocket>
+                                <f:websocket channel="navigationChannel"  scope="session">
+                                    <p:ajax event="navigateToResultscowo" listener="#{cowoBean.navigateToResults}"/>
                                 </f:websocket>
                             </h:form>
                         </p:scrollPanel>
