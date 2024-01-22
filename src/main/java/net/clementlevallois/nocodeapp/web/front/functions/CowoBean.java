@@ -99,6 +99,7 @@ public class CowoBean implements Serializable {
     private String dataPersistenceUniqueId = "";
     private String sessionId;
     private boolean gexfHasArrived = false;
+    private String runButtonText = "";
 
     @Inject
     LogBean logBean;
@@ -124,6 +125,7 @@ public class CowoBean implements Serializable {
         privateProperties = applicationProperties.getPrivateProperties();
         sessionId = FacesContext.getCurrentInstance().getExternalContext().getSessionId(false);
         logBean.setSessionId(sessionId);
+        runButtonText = sessionBean.getLocaleBundle().getString("general.verbs.compute");
     }
 
     public Integer getProgress() {
@@ -139,6 +141,7 @@ public class CowoBean implements Serializable {
     }
 
     public void runAnalysis() {
+        runButtonText = sessionBean.getLocaleBundle().getString("general.message.wait_long_operation");
         progress = 0;
         runButtonDisabled = true;
         gexfHasArrived = false;
@@ -146,7 +149,19 @@ public class CowoBean implements Serializable {
         getTopNodes();
     }
 
-    public void navigateToResults() {
+    public void pollingDidTopNodesArrive() {
+        String key = dataPersistenceUniqueId + "topnodes";
+        boolean topNodesHaveArrived = WatchTower.getQueueOutcomesProcesses().containsKey(dataPersistenceUniqueId + "topnodes");
+        if (topNodesHaveArrived) {
+            WatchTower.getQueueOutcomesProcesses().remove(key);
+            runButtonDisabled = false;
+            runButtonText = sessionBean.getLocaleBundle().getString("general.verbs.compute");
+            FacesContext context = FacesContext.getCurrentInstance();
+            context.getApplication().getNavigationHandler().handleNavigation(context, null, "/cowo/results.xhtml?faces-redirect=true");
+        }
+    }
+
+    public void navigatToResults(AjaxBehaviorEvent event) {
         FacesContext context = FacesContext.getCurrentInstance();
         context.getApplication().getNavigationHandler().handleNavigation(context, null, "/cowo/results.xhtml?faces-redirect=true");
     }
@@ -171,6 +186,9 @@ public class CowoBean implements Serializable {
                 mapOfLines = dataFormatConverter.convertToMapOfLines(inputData.getBulkData(), inputData.getDataInSheets(), inputData.getSelectedSheetName(), inputData.getSelectedColumnIndex(), inputData.getHasHeaders());
                 StringBuilder sb = new StringBuilder();
                 for (Map.Entry<Integer, String> entry : mapOfLines.entrySet()) {
+                    if (entry.getValue() == null){
+                        continue;
+                    }
                     sb.append(entry.getValue().trim()).append("\n");
                 }
                 Files.writeString(fullPathForFileContainingTextInput, sb.toString(), StandardCharsets.UTF_8, StandardOpenOption.CREATE,
@@ -198,7 +216,7 @@ public class CowoBean implements Serializable {
                 }
             }
 
-            String callbackURL = RemoteLocal.getDomain() + "/api/messageFromAPI/cowo";
+            String callbackURL = RemoteLocal.getDomain() + "/internalapi/messageFromAPI/cowo";
 
             overallObject.add("lang", selectedLanguage);
             overallObject.add("userSuppliedStopwords", userSuppliedStopwordsBuilder);
@@ -246,6 +264,7 @@ public class CowoBean implements Serializable {
                 String errorMessage = resp.body();
                 logBean.addOneNotificationFromString(errorMessage);
                 sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "💔", errorMessage);
+                runButtonDisabled = false;
             }
 
         } catch (IOException | InterruptedException ex) {
@@ -313,13 +332,15 @@ public class CowoBean implements Serializable {
                     edgesAsJson = Converters.turnJsonObjectToString(jsonObject.getJsonObject("edges"));
                     WatchTower.getQueueOutcomesProcesses().put(dataPersistenceUniqueId + "topnodes", System.currentTimeMillis());
                     progress = 100;
-                    MessageFromApi msg = new MessageFromApi();
-                    msg.setSessionId(sessionId);
-                    msg.setFunction("cowo");
-                    msg.setInfo(MessageFromApi.Information.GOTORESULTS);
-                    ConcurrentLinkedDeque<MessageFromApi> messages = WatchTower.getDequeAPIMessages().getOrDefault(msg.getSessionId(), new ConcurrentLinkedDeque());
-                    messages.addLast(msg);
-                    WatchTower.getDequeAPIMessages().put(sessionId, messages);
+                    runButtonText = sessionBean.getLocaleBundle().getString("general.verbs.compute");
+                    runButtonDisabled = false;
+//                    MessageFromApi msg = new MessageFromApi();
+//                    msg.setSessionId(sessionId);
+//                    msg.setFunction("cowo");
+//                    msg.setInfo(MessageFromApi.Information.GOTORESULTS);
+//                    ConcurrentLinkedDeque<MessageFromApi> messages = WatchTower.getDequeAPIMessages().getOrDefault(msg.getSessionId(), new ConcurrentLinkedDeque());
+//                    messages.addLast(msg);
+//                    WatchTower.getDequeAPIMessages().put(sessionId, messages);
                 }
             });
         }
@@ -396,6 +417,14 @@ public class CowoBean implements Serializable {
 
     public void setMinFreqNode(int minFreqNode) {
         this.minFreqNode = minFreqNode;
+    }
+
+    public String getRunButtonText() {
+        return runButtonText;
+    }
+
+    public void setRunButtonText(String runButtonText) {
+        this.runButtonText = runButtonText;
     }
 
     public int getMaxNGram() {

@@ -169,11 +169,12 @@
                     <h:form>
                         <!--RUN ANALYSIS BUTTON-->
                         <p:commandButton
-                            value="#{text['general.verbs.compute']}"
+                            value="#{topicsBean.runButtonText}"
                             widgetVar="topicsButton"
                             action="#{topicsBean.runAnalysis}"
                             onclick="PF('pbAjaxLong').start();PF('topicsButton').disable()"
                             styleClass="btn btn-primary"
+                            disabled="#{topicsBean.runButtonDisabled}"
                             update=":notifications"/>
                         <br/>
                         <br/>
@@ -182,6 +183,9 @@
                                        labelTemplate="{value}%" styleClass="p-mt-3" global="false" interval="500">
                             <p:ajax event="complete" update=":notifications"/>
                         </p:progressBar>
+                        <h:panelGroup id="pollingArea">
+                            <p:poll listener="#{topicsBean.pollingDidEndResultsArrive}" process="pollingArea" update="pollingArea :notifications" interval="2" />
+                        </h:panelGroup>
                     </h:form>
                 </div>
                 <div id="thirdcol" class="col-3 flex-grow-1">
@@ -192,7 +196,10 @@
                             </h:dataTable>
                             <h:form>
                                 <f:websocket channel="logChannel"  scope="session">
-                                    <f:ajax event="updateNotifications" render=":notifications" />
+                                    <p:ajax event="updateNotifications" update=":notifications" />
+                                </f:websocket>
+                                <f:websocket channel="navigationChannel"  scope="session">
+                                    <p:ajax event="navigateToResultscowo" listener="#{topicsBean.navigateToResults}"/>
                                 </f:websocket>
                             </h:form>
                         </p:scrollPanel>

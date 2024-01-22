@@ -26,6 +26,7 @@ import static java.util.stream.Collectors.toList;
 import jakarta.enterprise.context.SessionScoped;
 import jakarta.faces.application.FacesMessage;
 import jakarta.faces.context.FacesContext;
+import jakarta.faces.event.AjaxBehaviorEvent;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import jakarta.json.Json;
@@ -41,17 +42,23 @@ import java.nio.file.StandardOpenOption;
 import java.time.Duration;
 import java.util.Properties;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.concurrent.Executors;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import net.clementlevallois.importers.model.DataFormatConverter;
+import net.clementlevallois.nocodeapp.web.front.MessageFromApi;
+import net.clementlevallois.nocodeapp.web.front.WatchTower;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.LocaleComparator;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.importdata.DataImportBean;
 import net.clementlevallois.nocodeapp.web.front.logview.LogBean;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.ApplicationPropertiesBean;
+import net.clementlevallois.nocodeapp.web.front.http.RemoteLocal;
 import net.clementlevallois.nocodeapp.web.front.importdata.ImportSimpleLinesBean;
 import net.clementlevallois.nocodeapp.web.front.utils.Converters;
 import net.clementlevallois.nocodeapp.web.front.utils.GEXFSaver;
 import net.clementlevallois.utils.Multiset;
-import net.clementlevallois.utils.TextCleaningOps;
 import org.primefaces.event.SlideEndEvent;
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
@@ -71,7 +78,7 @@ public class TopicsBean implements Serializable {
     private String jsonResultAsString;
     private Map<Integer, Multiset<String>> keywordsPerTopic;
     private Map<Integer, Multiset<Integer>> topicsPerLine;
-    private Boolean runButtonDisabled = true;
+    private Boolean runButtonDisabled = false;
     private StreamedContent excelFileToSave;
     private StreamedContent fileTopicsPerLineToSave;
     private StreamedContent gexfFile;
@@ -87,11 +94,11 @@ public class TopicsBean implements Serializable {
     private boolean removeNonAsciiCharacters = false;
     private UploadedFile fileUserStopwords;
 
+    private String runButtonText = "";
     private String dataPersistenceUniqueId = "";
     private String sessionId;
-    private boolean gexfHasArrived = false;
-    
-    
+    private boolean topicsHaveArrived = false;
+
     private Properties privateProperties;
 
     private Map<Integer, String> mapOfLines;
@@ -105,14 +112,12 @@ public class TopicsBean implements Serializable {
     @Inject
     ImportSimpleLinesBean simpleLinesImportBean;
 
-    
-    
     @Inject
     SessionBean sessionBean;
 
     @Inject
-    ApplicationPropertiesBean applicationProperties;    
-    
+    ApplicationPropertiesBean applicationProperties;
+
     public TopicsBean() {
     }
 
@@ -120,9 +125,10 @@ public class TopicsBean implements Serializable {
     public void init() {
         sessionBean.setFunction("topics");
         privateProperties = applicationProperties.getPrivateProperties();
+        runButtonText = sessionBean.getLocaleBundle().getString("general.verbs.compute");
+        sessionId = FacesContext.getCurrentInstance().getExternalContext().getSessionId(false);
     }
-    
-    
+
     public Integer getProgress() {
         return progress;
     }
@@ -135,7 +141,33 @@ public class TopicsBean implements Serializable {
         return "";
     }
 
-    public String runAnalysis() {
+    public void runAnalysis() {
+        runButtonText = sessionBean.getLocaleBundle().getString("general.message.wait_long_operation");
+        progress = 0;
+        runButtonDisabled = true;
+        topicsHaveArrived = false;
+        sendCallToTopicsFunction();
+        formatTopicsInVariousWays();
+    }
+
+    public void pollingDidEndResultsArrive() {
+        String key = dataPersistenceUniqueId + "topics";
+        boolean topicsHaveArrived = WatchTower.getQueueOutcomesProcesses().containsKey(dataPersistenceUniqueId + "topics");
+        if (topicsHaveArrived) {
+            WatchTower.getQueueOutcomesProcesses().remove(key);
+            runButtonDisabled = false;
+            runButtonText = sessionBean.getLocaleBundle().getString("general.verbs.compute");
+            FacesContext context = FacesContext.getCurrentInstance();
+            context.getApplication().getNavigationHandler().handleNavigation(context, null, "/topics/results.xhtml?faces-redirect=true");
+        }
+    }
+
+    public void navigatToResults(AjaxBehaviorEvent event) {
+        FacesContext context = FacesContext.getCurrentInstance();
+        context.getApplication().getNavigationHandler().handleNavigation(context, null, "/topics/results.xhtml?faces-redirect=true");
+    }
+
+    public void sendCallToTopicsFunction() {
         progress = 0;
         HttpRequest request;
         HttpClient client;
@@ -153,6 +185,9 @@ public class TopicsBean implements Serializable {
                 mapOfLines = dataFormatConverter.convertToMapOfLines(inputData.getBulkData(), inputData.getDataInSheets(), inputData.getSelectedSheetName(), inputData.getSelectedColumnIndex(), inputData.getHasHeaders());
                 StringBuilder sb = new StringBuilder();
                 for (Map.Entry<Integer, String> entry : mapOfLines.entrySet()) {
+                    if (entry.getValue() == null){
+                        continue;
+                    }
                     sb.append(entry.getValue().trim()).append("\n");
                 }
                 Files.writeString(fullPathForFileContainingTextInput, sb.toString(), StandardCharsets.UTF_8, StandardOpenOption.CREATE,
@@ -182,6 +217,8 @@ public class TopicsBean implements Serializable {
                 }
             }
 
+            String callbackURL = RemoteLocal.getDomain() + "/internalapi/messageFromAPI/topics";
+            
             overallObject.add("lang", selectedLanguage);
             overallObject.add("userSuppliedStopwords", userSuppliedStopwordsBuilder);
             overallObject.add("replaceStopwords", replaceStopwords);
@@ -191,6 +228,9 @@ public class TopicsBean implements Serializable {
             overallObject.add("precision", precision);
             overallObject.add("minCharNumber", minCharNumber);
             overallObject.add("minTermFreq", minTermFreq);
+            overallObject.add("sessionId", sessionId);
+            overallObject.add("dataPersistenceId", dataPersistenceUniqueId);
+            overallObject.add("callbackURL", callbackURL);
 
             JsonObject build = overallObject.build();
             StringWriter sw = new StringWriter(128);
@@ -214,102 +254,136 @@ public class TopicsBean implements Serializable {
                     .uri(uri)
                     .build();
 
-            HttpResponse<byte[]> resp = client.send(request, HttpResponse.BodyHandlers.ofByteArray());
-            byte[] body = resp.body();
+            HttpResponse<String> resp = client.send(request, HttpResponse.BodyHandlers.ofString());
+            String body = resp.body();
             if (resp.statusCode() == 200) {
-                jsonResultAsString = new String(body, StandardCharsets.UTF_8);
+                progress = 80;
             } else {
-                System.out.println("topic returned by the API was not a 200 code");
-                String errorMessage = new String(body, StandardCharsets.UTF_8);
+                System.out.println("topics returned by the API was not a 200 code");
+                String errorMessage = body;
+                logBean.addOneNotificationFromString(errorMessage);
                 sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "💔", errorMessage);
+                runButtonDisabled = false;
             }
-
-            if (jsonResultAsString == null) {
-                logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.internal_server_error"));
-                runButtonDisabled = true;
-                return "";
-            }
-            logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.last_ops_creating_network"));
-            progress = 60;
-
-            keywordsPerTopic = new TreeMap();
-            topicsPerLine = new TreeMap();
-            JsonReader jsonReader = Json.createReader(new StringReader(jsonResultAsString));
-            JsonObject jsonObject;
-            try {
-                jsonObject = jsonReader.readObject();
-            } catch (JsonParsingException jsonEx) {
-                System.out.println("error: the json we received is not formatted as json");
-                logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.internal_server_error"));
-                runButtonDisabled = true;
-                return "";
-            }
-
-            String gexfSemanticNetwork = jsonObject.getString("gexf");
-            gexfFile = GEXFSaver.exportGexfAsStreamedFile(gexfSemanticNetwork, "semantic_network");
-
-            JsonObject keywordsPerTopicAsJson = jsonObject.getJsonObject("keywordsPerTopic");
-            for (String keyCommunity : keywordsPerTopicAsJson.keySet()) {
-                JsonObject termsAndFrequenciesForThisCommunity = keywordsPerTopicAsJson.getJsonObject(keyCommunity);
-                Iterator<String> iteratorTerms = termsAndFrequenciesForThisCommunity.keySet().iterator();
-                Multiset<String> termsAndFreqs = new Multiset();
-                while (iteratorTerms.hasNext()) {
-                    String nextTerm = iteratorTerms.next();
-                    termsAndFreqs.addSeveral(nextTerm, termsAndFrequenciesForThisCommunity.getInt(nextTerm));
-                }
-                keywordsPerTopic.put(Integer.valueOf(keyCommunity), termsAndFreqs);
-            }
-            JsonObject topicsPerLineAsJson = jsonObject.getJsonObject("topicsPerLine");
-            for (String lineNumber : topicsPerLineAsJson.keySet()) {
-                JsonObject topicsAndTheirCountsForOneLine = topicsPerLineAsJson.getJsonObject(lineNumber);
-                Iterator<String> iteratorTopics = topicsAndTheirCountsForOneLine.keySet().iterator();
-                Multiset<Integer> topicsAndFreqs = new Multiset();
-                while (iteratorTopics.hasNext()) {
-                    String nextTopic = iteratorTopics.next();
-                    topicsAndFreqs.addSeveral(Integer.valueOf(nextTopic), topicsAndTheirCountsForOneLine.getInt(nextTopic));
-                }
-                topicsPerLine.put(Integer.valueOf(lineNumber), topicsAndFreqs);
-            }
-
-            if (keywordsPerTopic.isEmpty()) {
-                return null;
-            }
-            byte[] topicsAsArray = Converters.byteArraySerializerForAnyObject(jsonResultAsString);
-
-            HttpRequest.BodyPublisher bodyPublisherTopics = HttpRequest.BodyPublishers.ofByteArray(topicsAsArray);
-
-            URI uriExportTopicsToExcel = UrlBuilder
-                    .empty()
-                    .withScheme("http")
-                    .withPort(Integer.valueOf(privateProperties.getProperty("nocode_import_port")))
-                    .withHost("localhost")
-                    .withPath("api/export/xlsx/topics")
-                    .addParameter("nbTerms", "10")
-                    .toUri();
-
-            HttpRequest requestExportTopicsToExcel = HttpRequest.newBuilder()
-                    .POST(bodyPublisherTopics)
-                    .uri(uriExportTopicsToExcel)
-                    .build();
-
-            resp = client.send(requestExportTopicsToExcel, HttpResponse.BodyHandlers.ofByteArray());
-            body = resp.body();
-            InputStream is = new ByteArrayInputStream(body);
-            excelFileToSave = DefaultStreamedContent.builder()
-                    .name("results_topics.xlsx")
-                    .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-                    .stream(() -> is)
-                    .build();
-
-            progress = 100;
-
-            logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.analysis_complete"));
-            runButtonDisabled = true;
 
         } catch (IOException | NumberFormatException | InterruptedException ex) {
             System.out.println("ex:" + ex.getMessage());
         }
-        return "/" + sessionBean.getFunction() + "/results.xhtml?faces-redirect=true";
+    }
+
+    private void formatTopicsInVariousWays() {
+        // waiting for the message saying the results have been persisted to disk
+        Executors.newSingleThreadExecutor().execute(() -> {
+
+            try {
+
+                topicsHaveArrived = false;
+
+                while (!topicsHaveArrived && WatchTower.getCurrentSessions().containsKey(sessionId)) {
+                    ConcurrentLinkedDeque<MessageFromApi> messagesFromApi = WatchTower.getDequeAPIMessages().get(sessionId);
+                    if (messagesFromApi != null && !messagesFromApi.isEmpty()) {
+                        Iterator<MessageFromApi> it = messagesFromApi.iterator();
+                        while (it.hasNext()) {
+                            MessageFromApi msg = it.next();
+                            if (msg.getInfo().equals(MessageFromApi.Information.RESULT_ARRIVED) && msg.getDataPersistenceId().equals(dataPersistenceUniqueId)) {
+                                topicsHaveArrived = true;
+                                it.remove();
+                            }
+                        }
+                    }
+                    try {
+                        Thread.sleep(500);
+                    } catch (InterruptedException ex) {
+                        Logger.getLogger(TopicsBean.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+                topicsHaveArrived = false;
+
+                if (!WatchTower.getCurrentSessions().containsKey(sessionId)) {
+                    return;
+                }
+
+                progress = 60;
+
+                keywordsPerTopic = new TreeMap();
+                topicsPerLine = new TreeMap();
+                Path tempDataPath = Path.of(applicationProperties.getTempFolderFullPath().toString(), dataPersistenceUniqueId + "_result");
+                jsonResultAsString = Files.readString(tempDataPath, StandardCharsets.UTF_8);
+
+                JsonReader jsonReader = Json.createReader(new StringReader(jsonResultAsString));
+                JsonObject jsonObject;
+                try {
+                    jsonObject = jsonReader.readObject();
+                } catch (JsonParsingException jsonEx) {
+                    System.out.println("error: the json we received is not formatted as json");
+                    runButtonDisabled = true;
+                    return;
+                }
+
+                String gexfSemanticNetwork = jsonObject.getString("gexf");
+                gexfFile = GEXFSaver.exportGexfAsStreamedFile(gexfSemanticNetwork, "semantic_network");
+
+                JsonObject keywordsPerTopicAsJson = jsonObject.getJsonObject("keywordsPerTopic");
+                for (String keyCommunity : keywordsPerTopicAsJson.keySet()) {
+                    JsonObject termsAndFrequenciesForThisCommunity = keywordsPerTopicAsJson.getJsonObject(keyCommunity);
+                    Iterator<String> iteratorTerms = termsAndFrequenciesForThisCommunity.keySet().iterator();
+                    Multiset<String> termsAndFreqs = new Multiset();
+                    while (iteratorTerms.hasNext()) {
+                        String nextTerm = iteratorTerms.next();
+                        termsAndFreqs.addSeveral(nextTerm, termsAndFrequenciesForThisCommunity.getInt(nextTerm));
+                    }
+                    keywordsPerTopic.put(Integer.valueOf(keyCommunity), termsAndFreqs);
+                }
+                JsonObject topicsPerLineAsJson = jsonObject.getJsonObject("topicsPerLine");
+                for (String lineNumber : topicsPerLineAsJson.keySet()) {
+                    JsonObject topicsAndTheirCountsForOneLine = topicsPerLineAsJson.getJsonObject(lineNumber);
+                    Iterator<String> iteratorTopics = topicsAndTheirCountsForOneLine.keySet().iterator();
+                    Multiset<Integer> topicsAndFreqs = new Multiset();
+                    while (iteratorTopics.hasNext()) {
+                        String nextTopic = iteratorTopics.next();
+                        topicsAndFreqs.addSeveral(Integer.valueOf(nextTopic), topicsAndTheirCountsForOneLine.getInt(nextTopic));
+                    }
+                    topicsPerLine.put(Integer.valueOf(lineNumber), topicsAndFreqs);
+                }
+
+                if (keywordsPerTopic.isEmpty()) {
+                    return;
+                }
+                byte[] topicsAsArray = Converters.byteArraySerializerForAnyObject(jsonResultAsString);
+
+                HttpRequest.BodyPublisher bodyPublisherTopics = HttpRequest.BodyPublishers.ofByteArray(topicsAsArray);
+
+                URI uriExportTopicsToExcel = UrlBuilder
+                        .empty()
+                        .withScheme("http")
+                        .withPort(Integer.valueOf(privateProperties.getProperty("nocode_import_port")))
+                        .withHost("localhost")
+                        .withPath("api/export/xlsx/topics")
+                        .addParameter("nbTerms", "10")
+                        .toUri();
+
+                HttpRequest requestExportTopicsToExcel = HttpRequest.newBuilder()
+                        .POST(bodyPublisherTopics)
+                        .uri(uriExportTopicsToExcel)
+                        .build();
+                HttpClient client = HttpClient.newBuilder().connectTimeout(Duration.ofMinutes(5)).build();
+
+                HttpResponse<byte[]> resp = client.send(requestExportTopicsToExcel, HttpResponse.BodyHandlers.ofByteArray());
+                byte[] body = resp.body();
+                InputStream is = new ByteArrayInputStream(body);
+                excelFileToSave = DefaultStreamedContent.builder()
+                        .name("results_topics.xlsx")
+                        .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                        .stream(() -> is)
+                        .build();
+
+                progress = 100;
+                WatchTower.getQueueOutcomesProcesses().put(dataPersistenceUniqueId + "topics", System.currentTimeMillis());
+                progress = 100;
+            } catch (IOException | InterruptedException ex) {
+                Logger.getLogger(TopicsBean.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        });
     }
 
     public String getSelectedLanguage() {
@@ -439,6 +513,14 @@ public class TopicsBean implements Serializable {
 
     public void setMinTermFreq(int minTermFreq) {
         this.minTermFreq = minTermFreq;
+    }
+
+    public String getRunButtonText() {
+        return runButtonText;
+    }
+
+    public void setRunButtonText(String runButtonText) {
+        this.runButtonText = runButtonText;
     }
 
     public List<Locale> getAvailable() {

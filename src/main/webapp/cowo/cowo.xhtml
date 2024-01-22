@@ -195,6 +195,9 @@
                         <p:progressBar id="pb" widgetVar="pbAjaxLong" ajax="true" value="#{cowoBean.progress}"
                                        labelTemplate="{value}%" styleClass="p-mt-3" global="false" interval="500">
                         </p:progressBar>
+                        <h:panelGroup id="pollingArea">
+                            <p:poll listener="#{cowoBean.pollingDidTopNodesArrive}" process="pollingArea" update="pollingArea :notifications" interval="2" />
+                        </h:panelGroup>
                     </h:form>
                 </div>
                 <div class="col-3 flex-grow-1">

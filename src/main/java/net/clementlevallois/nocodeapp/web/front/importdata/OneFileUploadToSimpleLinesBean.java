@@ -113,7 +113,9 @@ public class OneFileUploadToSimpleLinesBean {
                     Files.createFile(fullPathForFileContainingTextInput);
                 }
                 concurrentWriting(fullPathForFileContainingTextInput, readString);
-                Files.deleteIfExists(pathToFile);
+                if (!applicationProperties.getTempFolderFullPath().equals(pathToFile)) {
+                    Files.deleteIfExists(pathToFile);
+                }
             }
 
         } catch (IOException | InterruptedException ex) {

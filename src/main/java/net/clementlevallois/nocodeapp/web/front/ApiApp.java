@@ -10,6 +10,6 @@ import jakarta.ws.rs.core.Application;
  *
  * @author LEVALLOIS
  */
-@ApplicationPath("/api")
+@ApplicationPath("/internalapi")
 public class ApiApp extends Application {
 }
