@@ -23,6 +23,7 @@ import jakarta.enterprise.context.SessionScoped;
 import jakarta.faces.application.FacesMessage;
 import jakarta.faces.context.ExternalContext;
 import jakarta.faces.context.FacesContext;
+import jakarta.faces.event.AjaxBehaviorEvent;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import jakarta.json.Json;
@@ -30,20 +31,29 @@ import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.json.JsonWriter;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.Properties;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.concurrent.Executors;
 import net.clementlevallois.importers.model.CellRecord;
 import net.clementlevallois.importers.model.SheetModel;
+import net.clementlevallois.nocodeapp.web.front.MessageFromApi;
+import net.clementlevallois.nocodeapp.web.front.WatchTower;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.exportdata.ExportToGephisto;
 import net.clementlevallois.nocodeapp.web.front.exportdata.ExportToVosViewer;
 import net.clementlevallois.nocodeapp.web.front.importdata.DataImportBean;
 import net.clementlevallois.nocodeapp.web.front.logview.LogBean;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.ApplicationPropertiesBean;
+import net.clementlevallois.nocodeapp.web.front.http.RemoteLocal;
 import net.clementlevallois.nocodeapp.web.front.utils.GEXFSaver;
 import net.clementlevallois.nocodeapp.web.front.utils.Converters;
 import net.clementlevallois.utils.Multiset;
+import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
 
 /**
@@ -65,6 +75,10 @@ public class GazeBean implements Serializable {
     private Boolean shareVVPublicly;
     private Boolean shareGephistoPublicly;
     private boolean applyPMI = false;
+
+    private String dataPersistenceUniqueId;
+    private String sessionId;
+    private boolean gexfHasArrived = false;
 
     private Properties privateProperties;
 
@@ -89,14 +103,32 @@ public class GazeBean implements Serializable {
     public void init() {
         sessionBean.setFunction("networkconverter");
         privateProperties = applicationProperties.getPrivateProperties();
+        sessionId = FacesContext.getCurrentInstance().getExternalContext().getSessionId(false);
     }
 
     public void onTabChange(String sheetName) {
         dataImportBean.setSelectedSheetName(sheetName);
     }
 
-    public String runCoocAnalysis() {
+    public void pollingDidTopNodesArrive() {
+        String key = dataPersistenceUniqueId + "topnodes";
+        boolean topNodesHaveArrived = WatchTower.getQueueOutcomesProcesses().containsKey(dataPersistenceUniqueId + "topnodes");
+        if (topNodesHaveArrived) {
+            WatchTower.getQueueOutcomesProcesses().remove(key);
+            runButtonDisabled = false;
+            FacesContext context = FacesContext.getCurrentInstance();
+            context.getApplication().getNavigationHandler().handleNavigation(context, null, "/gaze/results.xhtml?faces-redirect=true");
+        }
+    }
+
+    public void navigatToResults(AjaxBehaviorEvent event) {
+        FacesContext context = FacesContext.getCurrentInstance();
+        context.getApplication().getNavigationHandler().handleNavigation(context, null, "/gaze/results.xhtml?faces-redirect=true");
+    }
+
+    public void runCoocAnalysis() {
         try {
+            dataPersistenceUniqueId = UUID.randomUUID().toString().substring(0, 10);
             progress = 0;
             sessionBean.sendFunctionPageReport();
             logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.starting_analysis"));
@@ -110,7 +142,7 @@ public class GazeBean implements Serializable {
             }
             if (sheetWithData == null) {
                 logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.data_not_found") + " (1)");
-                return "";
+                return;
             }
             Map<Integer, List<CellRecord>> mapOfCellRecordsPerRow = sheetWithData.getRowIndexToCellRecords();
             Map<Integer, Multiset<String>> lines = new HashMap();
@@ -128,28 +160,24 @@ public class GazeBean implements Serializable {
             }
             if (lines.isEmpty()) {
                 logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.data_not_found") + " (2)");
-                return "";
+                return;
             }
 
             if (dataImportBean.getHasHeaders()) {
                 lines.remove(0);
             }
 
-            boolean returnCallCooc = callCooc(lines);
-            progress = 100;
-            logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.analysis_complete"));
+            callCooc(lines);
+            getTopNodes();
             runButtonDisabled = true;
-
-            return "/" + sessionBean.getFunction() + "/results.xhtml?faces-redirect=true";
         } catch (Exception ex) {
             Logger.getLogger(CowoBean.class.getName()).log(Level.SEVERE, null, ex);
-            return "";
         }
-
     }
 
-    public String runSimAnalysis(String sourceColIndex, String sheetName) {
+    public void runSimAnalysis(String sourceColIndex, String sheetName) {
         try {
+            dataPersistenceUniqueId = UUID.randomUUID().toString().substring(0, 10);
             sessionBean.sendFunctionPageReport();
             logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.starting_analysis"));
             List<SheetModel> dataInSheets = dataImportBean.getDataInSheets();
@@ -162,7 +190,6 @@ public class GazeBean implements Serializable {
             }
             if (sheetWithData == null) {
                 logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.data_not_found") + " (1)");
-                return "";
             }
             Map<Integer, List<CellRecord>> mapOfCellRecordsPerRow = sheetWithData.getRowIndexToCellRecords();
             if (dataImportBean.getHasHeaders()) {
@@ -194,23 +221,15 @@ public class GazeBean implements Serializable {
             }
             if (sourcesAndTargets.isEmpty()) {
                 logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.data_not_found") + " (2)");
-                return "";
             }
-
-            boolean callSimReturned = callSim(sourcesAndTargets);
-            progress = 100;
-            logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.analysis_complete"));
-            runButtonDisabled = true;
-
-            return "/" + sessionBean.getFunction() + "/results.xhtml?faces-redirect=true";
+            callSim(sourcesAndTargets);
+            getTopNodes();
         } catch (NumberFormatException ex) {
             Logger.getLogger(CowoBean.class.getName()).log(Level.SEVERE, null, ex);
-            return "";
         }
-
     }
 
-    public boolean callCooc(Map<Integer, Multiset<String>> inputLines) throws Exception {
+    public void callCooc(Map<Integer, Multiset<String>> inputLines) throws Exception {
         HttpRequest request;
         HttpClient client = HttpClient.newBuilder().connectTimeout(Duration.ofMinutes(10)).build();
         JsonObjectBuilder overallObject = Json.createObjectBuilder();
@@ -224,8 +243,12 @@ public class GazeBean implements Serializable {
             }
             linesBuilder.add(String.valueOf(entryLines.getKey()), createArrayBuilder);
         }
+        String callbackURL = RemoteLocal.getDomain() + "/internalapi/messageFromAPI/gaze";
 
         overallObject.add("lines", linesBuilder);
+        overallObject.add("sessionId", sessionId);
+        overallObject.add("dataPersistenceId", dataPersistenceUniqueId);
+        overallObject.add("callbackURL", callbackURL);
 
         JsonObject build = overallObject.build();
         StringWriter sw = new StringWriter(128);
@@ -235,6 +258,7 @@ public class GazeBean implements Serializable {
         String jsonString = sw.toString();
 
         HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(jsonString.getBytes(StandardCharsets.UTF_8));
+
 
         URI uri = UrlBuilder
                 .empty()
@@ -249,50 +273,16 @@ public class GazeBean implements Serializable {
                 .uri(uri)
                 .build();
 
-        HttpResponse<byte[]> resp = client.send(request, HttpResponse.BodyHandlers.ofByteArray());
-        byte[] body = resp.body();
-        gexf = new String(body, StandardCharsets.UTF_8);
-
-        if (gexf == null) {
-            logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.internal_server_error"));
-            runButtonDisabled = true;
-            return false;
+        HttpResponse<String> resp = client.send(request, HttpResponse.BodyHandlers.ofString());
+        if (resp.statusCode() != 200) {
+            String error = resp.body();
+            System.out.println(error);
+            logBean.addOneNotificationFromString(error);
+            runButtonDisabled = false;
         }
-        progress = 80;
-
-        bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(gexf.getBytes(StandardCharsets.UTF_8));
-
-        uri = UrlBuilder
-                .empty()
-                .withScheme("http")
-                .withPort(Integer.valueOf(privateProperties.getProperty("nocode_api_port")))
-                .withHost("localhost")
-                .withPath("api/graphops/topnodes")
-                .addParameter("nbNodes", "30")
-                .toUri();
-
-        request = HttpRequest.newBuilder()
-                .POST(bodyPublisher)
-                .uri(uri)
-                .build();
-
-        resp = client.send(request, HttpResponse.BodyHandlers.ofByteArray());
-        if (resp.statusCode() == 200) {
-            body = resp.body();
-            String jsonResult = new String(body, StandardCharsets.UTF_8);
-            JsonObject jsonObject = Json.createReader(new StringReader(jsonResult)).readObject();
-            nodesAsJson = Converters.turnJsonObjectToString(jsonObject.getJsonObject("nodes"));
-            edgesAsJson = Converters.turnJsonObjectToString(jsonObject.getJsonObject("edges"));
-        } else {
-            System.out.println("gaze results by the API was not a 200 code");
-            String error = sessionBean.getLocaleBundle().getString("general.nouns.error");
-            sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "💔", error);
-            return false;
-        }
-        return true;
     }
 
-    public boolean callSim(Map<String, Set<String>> sourcesAndTargets) {
+    public void callSim(Map<String, Set<String>> sourcesAndTargets) {
         try {
             HttpRequest request;
             HttpClient client = HttpClient.newBuilder().connectTimeout(Duration.ofMinutes(10)).build();
@@ -308,18 +298,18 @@ public class GazeBean implements Serializable {
                 linesBuilder.add(entryLines.getKey(), createArrayBuilder);
             }
 
+            String callbackURL = RemoteLocal.getDomain() + "/internalapi/messageFromAPI/gaze";
+
             JsonObjectBuilder parametersBuilder = Json.createObjectBuilder();
             parametersBuilder.add("minSharedTarget", minSharedTargets);
 
             overallObject.add("lines", linesBuilder);
             overallObject.add("parameters", parametersBuilder);
+            overallObject.add("sessionId", sessionId);
+            overallObject.add("dataPersistenceId", dataPersistenceUniqueId);
+            overallObject.add("callbackURL", callbackURL);
 
-            JsonObject build = overallObject.build();
-            StringWriter sw = new StringWriter(128);
-            try (JsonWriter jw = Json.createWriter(sw)) {
-                jw.write(build);
-            }
-            String jsonString = sw.toString();
+            String jsonString = overallObject.build().toString();
 
             HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(jsonString.getBytes(StandardCharsets.UTF_8));
 
@@ -335,57 +325,82 @@ public class GazeBean implements Serializable {
                     .POST(bodyPublisher)
                     .uri(uri)
                     .build();
-            HttpResponse<byte[]> resp = client.send(request, HttpResponse.BodyHandlers.ofByteArray());
-            byte[] body = resp.body();
+            HttpResponse<String> resp = client.send(request, HttpResponse.BodyHandlers.ofString());
             if (resp.statusCode() != 200) {
-                logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.internal_server_error"));
-                runButtonDisabled = true;
-                return false;
+                String error = resp.body();
+                System.out.println(error);
+                logBean.addOneNotificationFromString(error);
+                runButtonDisabled = false;
             }
-            gexf = new String(body, StandardCharsets.UTF_8);
-            this.progress = 80;
+        } catch (IOException | InterruptedException ex) {
+            System.out.println("exception when getting top nodes: " + ex);
+        }
+    }
 
-            if (gexf == null) {
-                logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.internal_server_error"));
-                runButtonDisabled = true;
-                return false;
+    private void getTopNodes() {
+        // waiting for the message saying the results have been persisted to disk
+        Executors.newSingleThreadExecutor().execute(() -> {
+
+            gexfHasArrived = false;
+            while (!gexfHasArrived && WatchTower.getCurrentSessions().containsKey(sessionId)) {
+                ConcurrentLinkedDeque<MessageFromApi> messagesFromApi = WatchTower.getDequeAPIMessages().get(sessionId);
+                if (messagesFromApi != null && !messagesFromApi.isEmpty()) {
+                    Iterator<MessageFromApi> it = messagesFromApi.iterator();
+                    while (it.hasNext()) {
+                        MessageFromApi msg = it.next();
+                        if (msg.getInfo().equals(MessageFromApi.Information.RESULT_ARRIVED) && msg.getDataPersistenceId().equals(dataPersistenceUniqueId)) {
+                            gexfHasArrived = true;
+                            it.remove();
+                        }
+                    }
+                }
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(CowoBean.class.getName()).log(Level.SEVERE, null, ex);
+                }
             }
-            progress = 80;
+            gexfHasArrived = false;
 
-            bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(gexf.getBytes(StandardCharsets.UTF_8));
+            if (!WatchTower.getCurrentSessions().containsKey(sessionId)) {
+                return;
+            }
 
-            uri = UrlBuilder
+            URI uri = UrlBuilder
                     .empty()
                     .withScheme("http")
                     .withPort(Integer.valueOf(privateProperties.getProperty("nocode_api_port")))
                     .withHost("localhost")
                     .withPath("api/graphops/topnodes")
                     .addParameter("nbNodes", "30")
+                    .addParameter("dataPersistenceId", dataPersistenceUniqueId)
                     .toUri();
-
-            request = HttpRequest.newBuilder()
-                    .POST(bodyPublisher)
+            HttpRequest request = HttpRequest.newBuilder()
+                    .GET()
                     .uri(uri)
                     .build();
-
-            resp = client.send(request, HttpResponse.BodyHandlers.ofByteArray());
-            body = resp.body();
-            if (resp.statusCode() != 200) {
-                logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.internal_server_error"));
-                System.out.println("top nodes returned by the API was not a 200 code");
-                runButtonDisabled = true;
-                return false;
-            }
-            String jsonResult = new String(body, StandardCharsets.UTF_8);
-            JsonObject jsonObject = Json.createReader(new StringReader(jsonResult)).readObject();
-            nodesAsJson = Converters.turnJsonObjectToString(jsonObject.getJsonObject("nodes"));
-            edgesAsJson = Converters.turnJsonObjectToString(jsonObject.getJsonObject("edges"));
-
-        } catch (IOException | InterruptedException ex) {
-            System.out.println("exception when getting top nodes: " + ex);
-            return false;
+            HttpClient client = HttpClient.newBuilder().connectTimeout(Duration.ofMinutes(20)).build();
+            CompletableFuture<HttpResponse<byte[]>> futureResponse = client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray());
+            futureResponse.thenAccept(resp -> {
+                if (resp.statusCode() != 200) {
+                    byte[] body = resp.body();
+                    String error = new String(body, StandardCharsets.UTF_8);
+                    System.out.println("top nodes returned by the API was not a 200 code");
+                    System.out.println("error: " + error);
+                    runButtonDisabled = false;
+                } else {
+                    byte[] body = resp.body();
+                    String jsonResult = new String(body, StandardCharsets.UTF_8);
+                    JsonObject jsonObject = Json.createReader(new StringReader(jsonResult)).readObject();
+                    nodesAsJson = Converters.turnJsonObjectToString(jsonObject.getJsonObject("nodes"));
+                    edgesAsJson = Converters.turnJsonObjectToString(jsonObject.getJsonObject("edges"));
+                    WatchTower.getQueueOutcomesProcesses().put(dataPersistenceUniqueId + "topnodes", System.currentTimeMillis());
+                    progress = 100;
+                    runButtonDisabled = false;
+                }
+            });
         }
-        return true;
+        );
     }
 
     public void gotoVV() {
@@ -418,7 +433,25 @@ public class GazeBean implements Serializable {
     }
 
     public StreamedContent getFileToSave() {
-        return GEXFSaver.exportGexfAsStreamedFile(gexf, "results");
+        Path tempFolderRelativePath = Path.of(applicationProperties.getTempFolderFullPath().toString(), dataPersistenceUniqueId + "_result");
+        String gexfAsString = "";
+        if (Files.exists(tempFolderRelativePath)) {
+            try {
+                gexfAsString = Files.readString(tempFolderRelativePath, StandardCharsets.UTF_8);
+            } catch (IOException ex) {
+                Logger.getLogger(CowoBean.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        } else {
+            System.out.println("gexf file did not exist in temp folder");
+            return new DefaultStreamedContent();
+        }
+        if (gexfAsString == null || gexfAsString.isBlank()) {
+            System.out.println("gexf was null in cowo function");
+            sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "💔", sessionBean.getLocaleBundle().getString("general.message.internal_server_error"));
+            return new DefaultStreamedContent();
+        } else {
+            return GEXFSaver.exportGexfAsStreamedFile(gexfAsString, "results");
+        }
     }
 
     public void setFileToSave(StreamedContent fileToSave) {

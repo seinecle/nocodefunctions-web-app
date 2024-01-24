@@ -4,7 +4,7 @@
     xmlns:h="jakarta.faces.html"
     xmlns:f="jakarta.faces.core"
     xmlns:p="http://primefaces.org/ui"
-    
+
     xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
     <f:view locale="#{localeBean.currentLocale}">
 
@@ -140,6 +140,10 @@
                                                 <br />
                                             </p:columns>
                                         </p:dataTable>
+                                        <h:panelGroup id="pollingArea">
+                                            <p:poll listener="#{gazeBean.pollingDidTopNodesArrive}" process="pollingArea" update="pollingArea :notifications" interval="2" />
+                                        </h:panelGroup>
+
                                     </h:form>
                                 </div>
                             </p:tab>

@@ -38,6 +38,16 @@ public class ApiMessagesReceiver {
         return Response.ok().build();
     }
 
+    @POST
+    @Path("/gaze")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response messagesFromGazeAPI(MessageFromApi msg) {
+        ConcurrentLinkedDeque <MessageFromApi> messages = WatchTower.getDequeAPIMessages().getOrDefault(msg.getSessionId(), new ConcurrentLinkedDeque ());
+        messages.addLast(msg);
+        WatchTower.getDequeAPIMessages().put(msg.getSessionId(), messages);
+        return Response.ok().build();
+    }
+
     @Path("/hello")
     @GET
     public String sayHello() {

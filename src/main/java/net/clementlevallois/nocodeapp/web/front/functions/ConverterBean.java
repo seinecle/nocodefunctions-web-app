@@ -17,9 +17,13 @@ import jakarta.faces.context.FacesContext;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import jakarta.servlet.annotation.MultipartConfig;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.Properties;
+import java.util.UUID;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.exportdata.ExportToVosViewer;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.ApplicationPropertiesBean;
@@ -52,6 +56,9 @@ public class ConverterBean implements Serializable {
     private StreamedContent fileToSave;
     private Properties privateProperties;
 
+    private String dataPersistenceUniqueId = "";
+    private String sessionId;
+
     @Inject
     SessionBean sessionBean;
 
@@ -66,6 +73,7 @@ public class ConverterBean implements Serializable {
         sessionBean.setFunction("networkconverter");
         privateProperties = applicationProperties.getPrivateProperties();
         uploadButtonMessage = sessionBean.getLocaleBundle().getString("general.message.choose_gexf_file");
+        sessionId = FacesContext.getCurrentInstance().getExternalContext().getSessionId(false);
     }
 
     public String logout() {
@@ -82,25 +90,30 @@ public class ConverterBean implements Serializable {
     }
 
     public String handleFileUpload(FileUploadEvent event) {
-        sessionBean.sendFunctionPageReport();
-        String success = sessionBean.getLocaleBundle().getString("general.nouns.success");
-        String is_uploaded = sessionBean.getLocaleBundle().getString("general.verb.is_uploaded");
-        sessionBean.addMessage(FacesMessage.SEVERITY_INFO, success, event.getFile().getFileName() + " " + is_uploaded + ".");
-        uploadedFile = event.getFile();
         try {
-            inputFileAsByteArray = uploadedFile.getInputStream().readAllBytes();
+            byte[] readAllBytes = event.getFile().getInputStream().readAllBytes();
+            sessionBean.sendFunctionPageReport();
+            dataPersistenceUniqueId = UUID.randomUUID().toString().substring(0, 10);
+            Path tempFolderRelativePath = applicationProperties.getTempFolderFullPath();
+            Path fullPathForFileContainingGexf = Path.of(tempFolderRelativePath.toString(), dataPersistenceUniqueId + "_result");
+
+            String success = sessionBean.getLocaleBundle().getString("general.nouns.success");
+            String is_uploaded = sessionBean.getLocaleBundle().getString("general.verb.is_uploaded");
+            sessionBean.addMessage(FacesMessage.SEVERITY_INFO, success, event.getFile().getFileName() + " " + is_uploaded + ".");
+            try {
+                Files.write(fullPathForFileContainingGexf, readAllBytes);
+            } catch (IOException ex) {
+                System.out.println("ex:" + ex.getMessage());
+            }
         } catch (IOException ex) {
-            System.out.println("ex:" + ex.getMessage());
+            Logger.getLogger(ConverterBean.class.getName()).log(Level.SEVERE, null, ex);
         }
         return "";
     }
 
     public void gotoVV() {
         String apiPort = privateProperties.getProperty("nocode_api_port");
-        Path userGeneratedVosviewerDirectoryFullPath = applicationProperties.getUserGeneratedVosviewerDirectoryFullPath(shareVVPublicly);
-        Path relativePathFromProjectRootToVosviewerFolder = applicationProperties.getRelativePathFromProjectRootToVosviewerFolder();
-        Path vosviewerRootFullPath = applicationProperties.getVosviewerRootFullPath();
-        String linkToVosViewer = ExportToVosViewer.exportAndReturnLinkFromUploadedFile(uploadedFile, apiPort, item, link, linkStrength, userGeneratedVosviewerDirectoryFullPath, relativePathFromProjectRootToVosviewerFolder, vosviewerRootFullPath);
+        String linkToVosViewer = ExportToVosViewer.exportAndReturnLinkForConversionToVV(dataPersistenceUniqueId, apiPort, shareVVPublicly, applicationProperties, item, link, linkStrength);
         if (linkToVosViewer != null && !linkToVosViewer.isBlank()) {
             try {
                 ExternalContext externalContext = FacesContext.getCurrentInstance().getExternalContext();

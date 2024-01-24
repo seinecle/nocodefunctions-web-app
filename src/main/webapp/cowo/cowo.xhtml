@@ -179,15 +179,16 @@
 
                     </p:panel> 
                     <p:spacer width="10" height="50"/>
-                    <h:form>
+                    <h:form id="generalForm">
                         <!--RUN ANALYSIS BUTTON-->
-                        <p:commandButton value="#{text['general.verbs.compute']}"
-                                         widgetVar="cowoButton"
-                                         action="#{cowoBean.runAnalysis}"
-                                         onclick="PF('pbAjaxLong').start();PF('cowoButton').disable()"
-                                         styleClass="btn btn-primary"
-                                         disabled="#{cowoBean.runButtonDisabled}"
-                                         update=":notifications"/>
+                        <p:commandButton 
+                            value="#{cowoBean.runButtonText}"
+                            widgetVar="cowoButton"
+                            action="#{cowoBean.runAnalysis}"
+                            onclick="PF('pbAjaxLong').start();PF('cowoButton').disable()"
+                            styleClass="btn btn-primary"
+                            disabled="#{cowoBean.runButtonDisabled}"
+                            update=":notifications"/>
                         <br/>
                         <br/>
                         <p:spacer height="20"/>
@@ -196,7 +197,7 @@
                                        labelTemplate="{value}%" styleClass="p-mt-3" global="false" interval="500">
                         </p:progressBar>
                         <h:panelGroup id="pollingArea">
-                            <p:poll listener="#{cowoBean.pollingDidTopNodesArrive}" process="pollingArea" update="pollingArea :notifications" interval="2" />
+                            <p:poll listener="#{cowoBean.pollingDidTopNodesArrive}" process="pollingArea" update="pollingArea :notifications generalForm" interval="2" />
                         </h:panelGroup>
                     </h:form>
                 </div>

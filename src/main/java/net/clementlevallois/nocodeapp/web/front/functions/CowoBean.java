@@ -101,6 +101,7 @@ public class CowoBean implements Serializable {
     private boolean gexfHasArrived = false;
     private String runButtonText = "";
 
+
     @Inject
     LogBean logBean;
 
