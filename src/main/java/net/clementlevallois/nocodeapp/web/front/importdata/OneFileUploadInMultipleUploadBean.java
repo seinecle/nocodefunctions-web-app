@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
-import net.clementlevallois.nocodeapp.web.front.logview.LogBean;
+import net.clementlevallois.nocodeapp.web.front.logview.BackToFrontMessengerBean;
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.file.UploadedFile;
 
@@ -23,7 +23,7 @@ public class OneFileUploadInMultipleUploadBean {
     DataImportBean dataImportBean;
 
     @Inject
-    LogBean logBean;
+    BackToFrontMessengerBean logBean;
 
     @Inject
     SessionBean sessionBean;

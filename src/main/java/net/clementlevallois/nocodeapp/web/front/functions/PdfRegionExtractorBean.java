@@ -35,7 +35,7 @@ import javax.imageio.ImageIO;
 import net.clementlevallois.importers.model.SheetModel;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.importdata.DataImportBean;
-import net.clementlevallois.nocodeapp.web.front.logview.LogBean;
+import net.clementlevallois.nocodeapp.web.front.logview.BackToFrontMessengerBean;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.ApplicationPropertiesBean;
 import net.clementlevallois.nocodeapp.web.front.utils.Converters;
 import org.primefaces.model.CroppedImage;
@@ -69,7 +69,7 @@ public class PdfRegionExtractorBean implements Serializable {
     private Properties privateProperties;
 
     @Inject
-    LogBean logBean;
+    BackToFrontMessengerBean logBean;
 
     @Inject
     SessionBean sessionBean;

@@ -38,7 +38,7 @@ import net.clementlevallois.importers.model.ImagesPerFile;
 import net.clementlevallois.importers.model.SheetModel;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.functions.UmigonBean;
-import net.clementlevallois.nocodeapp.web.front.logview.LogBean;
+import net.clementlevallois.nocodeapp.web.front.logview.BackToFrontMessengerBean;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.ApplicationPropertiesBean;
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
@@ -53,7 +53,7 @@ import org.primefaces.model.StreamedContent;
 public class DataImportBean implements Serializable {
 
     @Inject
-    LogBean logBean;
+    BackToFrontMessengerBean logBean;
 
     @Inject
     SessionBean sessionBean;

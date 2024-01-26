@@ -10,7 +10,7 @@
         <p:growl id="messages" showDetail="true"/>
         
         <div class="flex justify-content-end flex-wrap">
-            <div class="flex align-items-center justify-content-center">
+            <div class="flex align-items-center justify-content-center m-2">
                 <h:selectOneMenu value="#{localeBean.languageTag}" onchange="submit()">
                     <f:selectItems value="#{localeBean.availableLocales}" var="l"
                                    itemValue="#{l.toLanguageTag()}"
@@ -19,11 +19,11 @@
                 </h:selectOneMenu>
             </div>
             <p:spacer width="10"/>
-            <div class="flex align-items-center justify-content-center">
+            <div class="flex align-items-center justify-content-center m-2">
                 <p><a href="https://nocodefunctions.com">Nocode functions</a> 🔎</p>
             </div>
             <p:spacer width="10"/>
-            <div class="flex align-items-center justify-content-center">
+            <div class="flex align-items-center justify-content-center m-2">
                 <p:commandButton id="dynaButton" value="Menu" type="button" icon="pi pi-bars"/>
                 <p:menu overlay="true" trigger="dynaButton" my="left top" at="left bottom">
                     <p:menuitem value="#{text['header.menu.home']}" action="#{sessionBean.logout}" icon="pi pi-home" rendered="#{not view.viewId.contains('index')}"/>

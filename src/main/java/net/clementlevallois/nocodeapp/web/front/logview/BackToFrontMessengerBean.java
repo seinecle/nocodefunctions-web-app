@@ -3,7 +3,6 @@ package net.clementlevallois.nocodeapp.web.front.logview;
 import java.io.Serializable;
 import java.util.List;
 import jakarta.enterprise.context.SessionScoped;
-import jakarta.faces.context.FacesContext;
 import jakarta.faces.push.Push;
 import jakarta.faces.push.PushContext;
 import jakarta.inject.Inject;
@@ -24,7 +23,7 @@ import net.clementlevallois.nocodeapp.web.front.WatchTower;
  */
 @Named
 @SessionScoped
-public class LogBean implements Serializable {
+public class BackToFrontMessengerBean implements Serializable {
 
     private final List<Notification> notifications;
 
@@ -37,7 +36,7 @@ public class LogBean implements Serializable {
     private PushContext navigationChannel;
     private String sessionId = "";
 
-    public LogBean() {
+    public BackToFrontMessengerBean() {
         notifications = new ArrayList();
     }
 
@@ -66,7 +65,7 @@ public class LogBean implements Serializable {
                 try {
                     Thread.sleep(500);
                 } catch (InterruptedException ex) {
-                    Logger.getLogger(LogBean.class.getName()).log(Level.SEVERE, null, ex);
+                    Logger.getLogger(BackToFrontMessengerBean.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
         });

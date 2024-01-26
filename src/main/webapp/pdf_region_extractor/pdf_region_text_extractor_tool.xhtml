@@ -225,7 +225,7 @@
                 <div class="col-3 flex-grow-1">
                     <p:panel header="Log">
                         <p:scrollPanel id="scrollPanel" mode="native" style="height:100%">
-                            <h:dataTable id="notifications" value="#{logBean.notifications}" var="notification">
+                            <h:dataTable id="notifications" value="#{backToFrontMessengerBean.notifications}" var="notification">
                                 <h:column>#{notification.message}</h:column>
                             </h:dataTable>
                             <h:form>

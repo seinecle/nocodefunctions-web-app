@@ -96,7 +96,7 @@
                     <p:spacer width="5"/>
                     <p:fileUpload
                         label="#{converterBean.uploadButtonMessage}"
-                        mode="advanced"
+                        mode="simple"
                         auto="false"
                         multiple="false"
                         skinSimple="true"
@@ -179,6 +179,7 @@
                                 <p:inputText id="item" styleClass="p-d-block" value="#{converterBean.item}">
                                     <p:ajax event="keyup" process="@this"/>
                                 </p:inputText>
+                                <br/>
                                 <small class="p-d-block">#{text['network_converter.items.question']}</small>
                             </div>
                             <br/>
@@ -188,6 +189,7 @@
                                 <p:inputText id="link" styleClass="p-d-block" value="#{converterBean.link}">
                                     <p:ajax event="keyup" process="@this"/>
                                 </p:inputText>
+                                <br/>
                                 <small class="p-d-block">#{text['network_converter.links.question']}</small>
                             </div>
                             <br/>
@@ -196,6 +198,7 @@
                                 <p:inputText id="link_strength" styleClass="p-d-block" value="#{converterBean.linkStrength}">
                                     <p:ajax event="keyup" process="@this"/>
                                 </p:inputText>
+                                <br/>
                                 <small class="p-d-block">#{text['network_converter.links_strength.question']}</small>
                             </div>
                         </p:fieldset>
