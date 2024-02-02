@@ -5,9 +5,15 @@ import jakarta.enterprise.context.RequestScoped;
 import jakarta.faces.application.FacesMessage;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
+import jakarta.json.Json;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonValue;
+import jakarta.json.stream.JsonParsingException;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.io.StringReader;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -17,9 +23,11 @@ import java.nio.channels.FileLock;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import static java.util.stream.Collectors.toList;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.ApplicationPropertiesBean;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.logview.BackToFrontMessengerBean;
@@ -35,7 +43,7 @@ import org.primefaces.model.file.UploadedFile;
 public class OneFileUploadToSimpleLinesBean {
 
     @Inject
-    ImportSimpleLinesBean largePdfImportBean;
+    ImportSimpleLinesBean simpleLineImportBean;
 
     @Inject
     BackToFrontMessengerBean logBean;
@@ -64,7 +72,7 @@ public class OneFileUploadToSimpleLinesBean {
                 return;
             }
 
-            String dataPersistenceUniqueId = largePdfImportBean.getDataPersistenceUniqueId();
+            String dataPersistenceUniqueId = simpleLineImportBean.getDataPersistenceUniqueId();
 
             Path pathToFile = Path.of(applicationProperties.getTempFolderFullPath().toString(), dataPersistenceUniqueId + fileName);
             Files.write(pathToFile, fileAllBytes);
@@ -110,6 +118,34 @@ public class OneFileUploadToSimpleLinesBean {
                 if (!applicationProperties.getTempFolderFullPath().equals(pathToFile)) {
                     Files.deleteIfExists(pathToFile);
                 }
+            } else if (fileName.endsWith("json")) {
+                String jsonKey = simpleLineImportBean.getJsonKey();
+                if (jsonKey == null || jsonKey.isBlank()) {
+                    logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("back.import.json_key_missing"));
+                    if (!applicationProperties.getTempFolderFullPath().equals(pathToFile)) {
+                        Files.deleteIfExists(pathToFile);
+                    }
+                }
+                StringBuilder sb = new StringBuilder();
+                List<String> lines = Files.lines(pathToFile, StandardCharsets.UTF_8).collect(toList());
+                // Detect if the root is an object or an array and handle accordingly
+                for (String line : lines) {
+                    try {
+                        JsonValue value = Json.createReader(new StringReader(line)).read();
+                        traverse(value, "", jsonKey, sb); // Start traversal with an empty prefix for the root
+                    } catch (JsonParsingException e) {
+                        logBean.addOneNotificationFromString("Parsing error: Invalid JSON structure - " + e.getMessage());
+                        return;
+                    }
+                }
+                Path fullPathForFileContainingTextInput = Path.of(applicationProperties.getTempFolderFullPath().toString(), dataPersistenceUniqueId);
+                if (Files.notExists(fullPathForFileContainingTextInput)) {
+                    Files.createFile(fullPathForFileContainingTextInput);
+                }
+                concurrentWriting(fullPathForFileContainingTextInput, sb.toString());
+                if (!applicationProperties.getTempFolderFullPath().equals(pathToFile)) {
+                    Files.deleteIfExists(pathToFile);
+                }
             }
 
         } catch (IOException | InterruptedException ex) {
@@ -127,6 +163,41 @@ public class OneFileUploadToSimpleLinesBean {
             }
         } catch (IOException e) {
             System.out.println("error in the concurrent write to file in txt on front sides");
+        }
+    }
+
+    private static void traverse(JsonValue jsonValue, String key, String TARGET_KEY, StringBuilder foundValues) {
+        switch (jsonValue.getValueType()) {
+            case OBJECT:
+                JsonObject obj = jsonValue.asJsonObject();
+                obj.keySet().forEach(k -> traverse(obj.get(k), key.isEmpty() ? k : key + "." + k, TARGET_KEY, foundValues));
+                break;
+            case ARRAY:
+                JsonArray array = jsonValue.asJsonArray();
+                for (int i = 0; i < array.size(); i++) {
+                    traverse(array.get(i), key + "[" + i + "]", TARGET_KEY, foundValues);
+                }
+                break;
+            case STRING:
+                if (key.equals(TARGET_KEY)) {
+                    String textualValue = jsonValue.toString();
+                    textualValue = textualValue.replaceAll("\\n", ". ");
+                    textualValue = textualValue.replaceAll("\\R", ". ");
+                    if (textualValue.startsWith("\"")) {
+                        textualValue = textualValue.substring(1);
+                    }
+                    if (textualValue.endsWith("\"")) {
+                        textualValue = textualValue.substring(0, textualValue.length() - 1);
+                    }
+                    foundValues.append(textualValue).append("\n");
+                }
+                break;
+            case NUMBER:
+            case TRUE:
+            case FALSE:
+            case NULL:
+                // Handle other types if necessary
+                break;
         }
     }
 

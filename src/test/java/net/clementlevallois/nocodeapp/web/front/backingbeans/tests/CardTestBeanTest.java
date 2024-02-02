@@ -30,7 +30,8 @@ public class CardTestBeanTest {
         cardTest = new CardTestBean();
         cardTest.setSessionBean(sessionBean);
         cardTest.setApplicationPropertiesBean(applicationProperties);
-        cardTest.setUsePublicDomainName(Boolean.TRUE);
+        cardTest.setUsePublicDomainName(Boolean.FALSE);
+        cardTest.setPrivateProperties(applicationProperties.getPrivateProperties());
     }
 
     @Test

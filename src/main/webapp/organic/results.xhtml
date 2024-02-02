@@ -53,8 +53,6 @@
                                      icon="pi pi-arrow-down" styleClass="p-mr-2">
                         <p:fileDownload value="#{organicBean.fileToSave}"/>
                     </p:commandButton>
-                    <p:spacer width="10"/>
-                    <p:commandButton value="#{text['general.verbs.open_report']}" action="#{organicBean.getReport}" onclick="PrimeFaces.monitorDownload(start, stop);" oncomplete="PrimeFaces.monitorDownload(stop);" icon="pi pi-arrow-right"/>
                 </h:form>
                 <h:form>
                     <div class="card">
@@ -69,11 +67,11 @@
                                 <h:outputText value="#{item.text}" />
                             </p:column>
 
-                            <p:column field="naturalness" headerText="#{text['organic.general.tone_of_voice']}">
+                            <p:column field="categoryLocalizedPlainText" headerText="#{text['organic.general.tone_of_voice']}">
                                 <h:outputText value="#{item.categoryLocalizedPlainText}"/>
                                 <p:spacer width="3"/>
                                 <p:graphicImage name="images/organic.png" rendered ="#{item.categoryCode eq '_10'}" />
-                                <p:graphicImage name="images/loud_speaker.png" rendered ="#{item.categoryCode eq '_61'}"/>
+                                <p:graphicImage name="images/loud_speaker.png" rendered ="#{item.categoryCode eq '_61' || item.categoryCode eq '_611'}"/>
                             </p:column>
                             <p:column headerText="#{text['general.verbs.signal_error']}">
                                 <p:commandButton style="text-align: center;font-size: 80%" 

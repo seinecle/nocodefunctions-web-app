@@ -26,14 +26,20 @@ import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.time.Duration;
+import java.util.HashMap;
 import java.util.Properties;
+import java.util.UUID;
 import net.clementlevallois.importers.model.DataFormatConverter;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.importdata.DataImportBean;
 import net.clementlevallois.nocodeapp.web.front.http.SendReport;
 import net.clementlevallois.nocodeapp.web.front.logview.BackToFrontMessengerBean;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.ApplicationPropertiesBean;
+import net.clementlevallois.nocodeapp.web.front.importdata.ImportSimpleLinesBean;
 import net.clementlevallois.nocodeapp.web.front.utils.Converters;
 import net.clementlevallois.umigon.model.classification.Document;
 import org.primefaces.model.DefaultStreamedContent;
@@ -60,6 +66,8 @@ public class OrganicBean implements Serializable {
     private List<Document> filteredDocuments;
     private Integer maxCapacity = 10_000;
 
+    private String dataPersistenceUniqueId = "";
+
     @Inject
     BackToFrontMessengerBean logBean;
 
@@ -71,10 +79,12 @@ public class OrganicBean implements Serializable {
 
     @Inject
     ApplicationPropertiesBean applicationProperties;
-        
-    
+
+    @Inject
+    ImportSimpleLinesBean simpleLinesImportBean;
+
     private Properties privateProperties;
-    
+
     public OrganicBean() {
     }
 
@@ -114,8 +124,29 @@ public class OrganicBean implements Serializable {
         }
         sessionBean.sendFunctionPageReport();
         logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.starting_analysis"));
-        DataFormatConverter dataFormatConverter = new DataFormatConverter();
-        Map<Integer, String> mapOfLines = dataFormatConverter.convertToMapOfLines(inputData.getBulkData(), inputData.getDataInSheets(), inputData.getSelectedSheetName(), inputData.getSelectedColumnIndex(), inputData.getHasHeaders());
+
+        Map<Integer, String> mapOfLines;
+        if (simpleLinesImportBean.getDataPersistenceUniqueId() != null) {
+            mapOfLines = new HashMap();
+            dataPersistenceUniqueId = simpleLinesImportBean.getDataPersistenceUniqueId();
+            Path tempDataPath = Path.of(applicationProperties.getTempFolderFullPath().toString(), dataPersistenceUniqueId);
+            if (Files.exists(tempDataPath) && !Files.isDirectory(tempDataPath)) {
+                try {
+                    List<String> readAllLines = Files.readAllLines(tempDataPath, StandardCharsets.UTF_8);
+                    int i = 0;
+                    for (String line : readAllLines) {
+                        mapOfLines.put(i++, line.trim());
+                    }
+                    Files.delete(tempDataPath);
+                } catch (IOException ex) {
+                    Logger.getLogger(OrganicBean.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        } else {
+            DataFormatConverter dataFormatConverter = new DataFormatConverter();
+            mapOfLines = dataFormatConverter.convertToMapOfLines(inputData.getBulkData(), inputData.getDataInSheets(), inputData.getSelectedSheetName(), inputData.getSelectedColumnIndex(), inputData.getHasHeaders());
+        }
+        inputData.setDataInSheets(new ArrayList());
 
         int maxRecords = Math.min(mapOfLines.size(), maxCapacity);
         tempResults = new ConcurrentHashMap(maxRecords + 1);
@@ -150,7 +181,7 @@ public class OrganicBean implements Serializable {
                         .addParameter("output-format", "bytes")
                         .addParameter("explanation-lang", sessionBean.getCurrentLocale().toLanguageTag())
                         .toUri();
-                
+
                 request = HttpRequest.newBuilder()
                         .uri(uri)
                         .build();

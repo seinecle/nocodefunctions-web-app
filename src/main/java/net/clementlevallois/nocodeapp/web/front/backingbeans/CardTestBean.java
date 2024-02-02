@@ -85,6 +85,10 @@ public class CardTestBean implements Serializable {
         this.applicationProperties = applicationPropertiesBean;
     }
 
+    public void setPrivateProperties(Properties privateProperties) {
+        this.privateProperties = privateProperties;
+    }
+    
     public String getUmigonTestInputFR() {
         return umigonTestInputFR;
     }

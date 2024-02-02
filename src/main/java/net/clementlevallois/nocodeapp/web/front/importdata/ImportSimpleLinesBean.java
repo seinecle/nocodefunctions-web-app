@@ -6,14 +6,8 @@ package net.clementlevallois.nocodeapp.web.front.importdata;
 import jakarta.enterprise.context.SessionScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
-import java.io.IOException;
 import java.io.Serializable;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.ApplicationPropertiesBean;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
@@ -37,6 +31,9 @@ public class ImportSimpleLinesBean implements Serializable {
 
     private String dataPersistenceUniqueId;
 
+    private String jsonKey;
+    private Boolean oneJsonPerLine = false;
+
     Path pathOfTempData;
 
     public Boolean getBulkData() {
@@ -57,16 +54,16 @@ public class ImportSimpleLinesBean implements Serializable {
         }
         pathOfTempData = Path.of(tempFolderRelativePath.toString(), this.dataPersistenceUniqueId);
     }
-    
+
     public void setDataPersistenceUniqueId() {
-            this.dataPersistenceUniqueId = UUID.randomUUID().toString().substring(0, 10);
+        this.dataPersistenceUniqueId = UUID.randomUUID().toString().substring(0, 10);
     }
 
     public String getDataPersistenceUniqueId() {
         return dataPersistenceUniqueId;
     }
 
-    public String gotToFunctionWithDataInBulk() throws IOException {
+    public String gotToFunctionWithDataInBulk() {
         Path tempFolderRelativePath = applicationProperties.getTempFolderFullPath();
         pathOfTempData = Path.of(tempFolderRelativePath.toString(), dataPersistenceUniqueId);
         return "/" + sessionBean.getFunction() + "/" + sessionBean.getFunction() + ".xhtml?faces-redirect=true";
@@ -74,6 +71,22 @@ public class ImportSimpleLinesBean implements Serializable {
 
     public Path getPathOfTempData() {
         return pathOfTempData;
+    }
+
+    public String getJsonKey() {
+        return jsonKey;
+    }
+
+    public void setJsonKey(String jsonKey) {
+        this.jsonKey = jsonKey;
+    }
+
+    public Boolean getOneJsonPerLine() {
+        return oneJsonPerLine;
+    }
+
+    public void setOneJsonPerLine(Boolean oneJsonPerLine) {
+        this.oneJsonPerLine = oneJsonPerLine;
     }
 
 }
