@@ -6,6 +6,13 @@
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
     <f:view locale="#{localeBean.currentLocale}">
         <h:head>
+            <title>#{text['organic.description']}</title>
+            <meta name="description" content="#{text['organic.description']}"/>
+            <meta http-equiv="content-language" content="en-us"/>
+            <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+            <meta http-equiv="cleartype" content="on"/>
+            <meta name="HandheldFriendly" content="true"/>
+
             <link rel="apple-touch-icon" sizes="180x180" href="#{resource['images/favicons/apple-touch-icon.png']}"/>
             <link rel="icon" type="image/png" sizes="32x32" href="#{resource['images/favicons/favicon-32x32.png']}"/>
             <link rel="icon" type="image/png" sizes="16x16" href="#{resource['images/favicons/favicon-16x16.png']}"/>
