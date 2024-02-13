@@ -112,17 +112,20 @@
             <p:panel>
                 <h:form>
                     <br/>
-                    <blockquote>
-                        <p:outputLabel id="example">"To the red country and part of the gray country of <span style="background-color: ##{highlighterBean.colorBackground};color:##{highlighterBean.colorText};">Oklahoma</span>, the last rains came gently, and they did not cut the scarred earth."</p:outputLabel>
-                    </blockquote>
+                    <p:outputLabel id="example">"To the red country and part of the gray country of <span style="background-color: #{highlighterBean.colorBackground};color:#{highlighterBean.colorText};">Oklahoma</span>, the last rains came gently, and they did not cut the scarred earth."</p:outputLabel>
                     <br/>
                     <br/>
                     <p>
                         <i>#{text['highlighter.tool.which_color_word']}</i>
                     </p>
                     <br/>
-                    <p:colorPicker value="#{highlighterBean.colorText}" mode="inline">
-                        <p:ajax event="change" update="example"/>
+                    <p:colorPicker value="#{highlighterBean.colorText}"
+                                   clearButton="true"
+                                   closeButton="true"
+                                   alpha="true"
+                                   forceAlpha="true"
+                                   >
+                        <p:ajax event="change" update="example"  process="@this"/>
                     </p:colorPicker>
                     <div>
                         <p:spacer height="10" width="10"/>            
@@ -131,8 +134,13 @@
                         <i>#{text['highlighter.tool.which_color_background']}</i>
                     </p>
                     <br/>
-                    <p:colorPicker value="#{highlighterBean.colorBackground}" mode="inline">
-                        <p:ajax event="change" update="example"/>
+                    <p:colorPicker value="#{highlighterBean.colorBackground}"
+                                   clearButton="true"
+                                   closeButton="true"
+                                   alpha="true"
+                                   forceAlpha="true"
+                                   >
+                        <p:ajax event="change" update="example" process="@this"/>
                     </p:colorPicker>
                     <div>
                         <p:spacer height="30" width="10"/>            
