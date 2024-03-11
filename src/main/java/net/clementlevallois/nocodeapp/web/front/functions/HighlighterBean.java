@@ -54,8 +54,8 @@ public class HighlighterBean implements Serializable {
     ApplicationPropertiesBean applicationProperties;
     
     
-    private String colorText = "ffffff";
-    private String colorBackground = "e81e5b";
+    private String colorText = "#ffffff";
+    private String colorBackground = "#e81e5b";
     private Properties privateProperties;
 
 
