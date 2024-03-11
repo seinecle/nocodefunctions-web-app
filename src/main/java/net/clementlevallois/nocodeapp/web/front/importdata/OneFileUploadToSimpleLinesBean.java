@@ -25,6 +25,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Properties;
+import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import static java.util.stream.Collectors.toList;
@@ -74,7 +75,9 @@ public class OneFileUploadToSimpleLinesBean {
 
             String dataPersistenceUniqueId = simpleLineImportBean.getDataPersistenceUniqueId();
 
-            Path pathToFile = Path.of(applicationProperties.getTempFolderFullPath().toString(), dataPersistenceUniqueId + fileName);
+            String uniqueFileId = UUID.randomUUID().toString().substring(0, 10);
+
+            Path pathToFile = Path.of(applicationProperties.getTempFolderFullPath().toString(), dataPersistenceUniqueId + uniqueFileId);
             Files.write(pathToFile, fileAllBytes);
 
             logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("back.import.file_successful_upload.opening") + f.getFileName() + sessionBean.getLocaleBundle().getString("back.import.file_successful_upload.closing"));
@@ -82,73 +85,103 @@ public class OneFileUploadToSimpleLinesBean {
             HttpClient client = HttpClient.newHttpClient();
             HttpRequest request = null;
             URI uri = null;
-            if (fileName.endsWith("pdf")) {
-                uri = UrlBuilder
-                        .empty()
-                        .withScheme("http")
-                        .withPort(Integer.valueOf(privateProperties.getProperty("nocode_import_port")))
-                        .withHost("localhost")
-                        .withPath("api/import/pdf/simpleLines")
-                        .addParameter("fileName", fileName)
-                        .addParameter("dataPersistenceId", dataPersistenceUniqueId)
-                        .toUri();
+            switch (fileName.substring(fileName.lastIndexOf(".") + 1)) {
 
-                request = HttpRequest.newBuilder()
-                        .GET()
-                        .uri(uri)
-                        .build();
+                case "pdf" -> {
+                    uri = UrlBuilder
+                            .empty()
+                            .withScheme("http")
+                            .withPort(Integer.valueOf(privateProperties.getProperty("nocode_import_port")))
+                            .withHost("localhost")
+                            .withPath("api/import/pdf/simpleLines")
+                            .addParameter("fileName", fileName)
+                            .addParameter("uniqueFileId", uniqueFileId)
+                            .addParameter("dataPersistenceId", dataPersistenceUniqueId)
+                            .toUri();
 
-                HttpResponse<String> resp = client.send(request, HttpResponse.BodyHandlers.ofString());
-                String body = resp.body();
-                if (resp.statusCode() != 200) {
-                    System.out.println("return of pdf reader by the API was not a 200 code");
-                    String errorMessage = body;
-                    System.out.println(errorMessage);
-                    logBean.addOneNotificationFromString(errorMessage);
-                    sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "💔", errorMessage);
+                    request = HttpRequest.newBuilder()
+                            .GET()
+                            .uri(uri)
+                            .build();
+
+                    HttpResponse<String> resp = client.send(request, HttpResponse.BodyHandlers.ofString());
+                    String body = resp.body();
+                    if (resp.statusCode() != 200) {
+                        System.out.println("return of pdf reader by the API was not a 200 code");
+                        String errorMessage = body;
+                        System.out.println(errorMessage);
+                        logBean.addOneNotificationFromString(errorMessage);
+                        sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "💔", errorMessage);
+                    }
+
                 }
 
-            } else if (fileName.endsWith("txt")) {
-                String readString = Files.readString(pathToFile, StandardCharsets.UTF_8);
-                Path fullPathForFileContainingTextInput = Path.of(applicationProperties.getTempFolderFullPath().toString(), dataPersistenceUniqueId);
-                if (Files.notExists(fullPathForFileContainingTextInput)) {
-                    Files.createFile(fullPathForFileContainingTextInput);
+                case "txt" -> {
+                    uri = UrlBuilder
+                            .empty()
+                            .withScheme("http")
+                            .withPort(Integer.valueOf(privateProperties.getProperty("nocode_import_port")))
+                            .withHost("localhost")
+                            .withPath("api/import/txt/simpleLines")
+                            .addParameter("fileName", fileName)
+                            .addParameter("uniqueFileId", uniqueFileId)
+                            .addParameter("dataPersistenceId", dataPersistenceUniqueId)
+                            .toUri();
+
+                    request = HttpRequest.newBuilder()
+                            .GET()
+                            .uri(uri)
+                            .build();
+
+                    HttpResponse<String> resp = client.send(request, HttpResponse.BodyHandlers.ofString());
+                    String body = resp.body();
+                    if (resp.statusCode() != 200) {
+                        System.out.println("return of txt reader by the API was not a 200 code");
+                        String errorMessage = body;
+                        System.out.println(errorMessage);
+                        logBean.addOneNotificationFromString(errorMessage);
+                        sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "💔", errorMessage);
+                    }
                 }
-                concurrentWriting(fullPathForFileContainingTextInput, readString);
-                if (!applicationProperties.getTempFolderFullPath().equals(pathToFile)) {
-                    Files.deleteIfExists(pathToFile);
-                }
-            } else if (fileName.endsWith("json")) {
-                String jsonKey = simpleLineImportBean.getJsonKey();
-                if (jsonKey == null || jsonKey.isBlank()) {
-                    logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("back.import.json_key_missing"));
+
+                case "json" -> {
+                    String jsonKey = simpleLineImportBean.getJsonKey();
+                    if (jsonKey == null || jsonKey.isBlank()) {
+                        logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("back.import.json_key_missing"));
+                        if (!applicationProperties.getTempFolderFullPath().equals(pathToFile)) {
+                            Files.deleteIfExists(pathToFile);
+                        }
+                    }
+                    StringBuilder sb = new StringBuilder();
+                    List<String> lines = Files.lines(pathToFile, StandardCharsets.UTF_8).collect(toList());
+                    // Detect if the root is an object or an array and handle accordingly
+                    for (String line : lines) {
+                        try {
+                            JsonValue value = Json.createReader(new StringReader(line)).read();
+                            traverse(value, "", jsonKey, sb); // Start traversal with an empty prefix for the root
+                        } catch (JsonParsingException e) {
+                            logBean.addOneNotificationFromString("Parsing error: Invalid JSON structure - " + e.getMessage());
+                            return;
+                        }
+                    }
+                    Path fullPathForFileContainingTextInput = Path.of(applicationProperties.getTempFolderFullPath().toString(), dataPersistenceUniqueId);
+                    if (Files.notExists(fullPathForFileContainingTextInput)) {
+                        Files.createFile(fullPathForFileContainingTextInput);
+                    }
+                    concurrentWriting(fullPathForFileContainingTextInput, sb.toString());
                     if (!applicationProperties.getTempFolderFullPath().equals(pathToFile)) {
                         Files.deleteIfExists(pathToFile);
                     }
                 }
-                StringBuilder sb = new StringBuilder();
-                List<String> lines = Files.lines(pathToFile, StandardCharsets.UTF_8).collect(toList());
-                // Detect if the root is an object or an array and handle accordingly
-                for (String line : lines) {
-                    try {
-                        JsonValue value = Json.createReader(new StringReader(line)).read();
-                        traverse(value, "", jsonKey, sb); // Start traversal with an empty prefix for the root
-                    } catch (JsonParsingException e) {
-                        logBean.addOneNotificationFromString("Parsing error: Invalid JSON structure - " + e.getMessage());
-                        return;
-                    }
-                }
-                Path fullPathForFileContainingTextInput = Path.of(applicationProperties.getTempFolderFullPath().toString(), dataPersistenceUniqueId);
-                if (Files.notExists(fullPathForFileContainingTextInput)) {
-                    Files.createFile(fullPathForFileContainingTextInput);
-                }
-                concurrentWriting(fullPathForFileContainingTextInput, sb.toString());
-                if (!applicationProperties.getTempFolderFullPath().equals(pathToFile)) {
-                    Files.deleteIfExists(pathToFile);
+
+                default -> {
+                    logBean.addOneNotificationFromString("Parsing error: file extension not recognized. Should be txt, json or pdf.");
+                    return;
                 }
             }
 
         } catch (IOException | InterruptedException ex) {
+            logBean.addOneNotificationFromString("possible error with the encoding of your file. The text should be encoded in UTF-8.");
             Logger.getLogger(OneFileUploadToSimpleLinesBean.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
@@ -168,17 +201,17 @@ public class OneFileUploadToSimpleLinesBean {
 
     private static void traverse(JsonValue jsonValue, String key, String TARGET_KEY, StringBuilder foundValues) {
         switch (jsonValue.getValueType()) {
-            case OBJECT:
+            case OBJECT -> {
                 JsonObject obj = jsonValue.asJsonObject();
                 obj.keySet().forEach(k -> traverse(obj.get(k), key.isEmpty() ? k : key + "." + k, TARGET_KEY, foundValues));
-                break;
-            case ARRAY:
+            }
+            case ARRAY -> {
                 JsonArray array = jsonValue.asJsonArray();
                 for (int i = 0; i < array.size(); i++) {
                     traverse(array.get(i), key + "[" + i + "]", TARGET_KEY, foundValues);
                 }
-                break;
-            case STRING:
+            }
+            case STRING -> {
                 if (key.equals(TARGET_KEY)) {
                     String textualValue = jsonValue.toString();
                     textualValue = textualValue.replaceAll("\\n", ". ");
@@ -191,14 +224,11 @@ public class OneFileUploadToSimpleLinesBean {
                     }
                     foundValues.append(textualValue).append("\n");
                 }
-                break;
-            case NUMBER:
-            case TRUE:
-            case FALSE:
-            case NULL:
-                // Handle other types if necessary
-                break;
+            }
+            case NUMBER, TRUE, FALSE, NULL -> {
+            }
         }
+        // Handle other types if necessary
     }
 
 }
