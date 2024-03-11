@@ -300,8 +300,8 @@ public class ApplicationPropertiesBean {
             return;
         }
         List<String> vars = null;
-//        String currentWorkingDirectory = System.getProperty("user.dir");
-//        System.out.println("working dir: " + currentWorkingDirectory);
+        String currentWorkingDirectory = System.getProperty("user.dir");
+        System.out.println("working dir: " + currentWorkingDirectory);
         try {
             vars = Files.readAllLines(Path.of("sys.properties"), StandardCharsets.UTF_8);
             for (String line : vars) {

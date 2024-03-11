@@ -15,8 +15,8 @@
         <jakartaee>10.0.0</jakartaee>
         <java.version>17</java.version>
         <!--the two following properties are useful to NetBeans to detect correct and incorrect java languagage features in the code-->
-        <maven.compiler.source>${java.version}</maven.compiler.source>
-        <maven.compiler.target>${java.version}</maven.compiler.target>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
     </properties>
     
     <dependencies>
@@ -61,7 +61,7 @@
         <dependency>
             <groupId>org.primefaces</groupId>
             <artifactId>primefaces</artifactId>
-            <version>13.0.3</version>
+            <version>13.0.6</version>
             <classifier>jakarta</classifier>
         </dependency>
         <dependency>
