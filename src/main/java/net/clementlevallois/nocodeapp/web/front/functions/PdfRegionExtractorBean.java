@@ -64,7 +64,6 @@ public class PdfRegionExtractorBean implements Serializable {
     private float proportionTopLeftY;
     private float proportionWidth;
     private float proportionHeight;
-    private int counterImages = 0;
     private ConcurrentHashMap<String, SheetModel> results = new ConcurrentHashMap();
     private Properties privateProperties;
 
@@ -87,7 +86,6 @@ public class PdfRegionExtractorBean implements Serializable {
     public void init() {
         sessionBean.setFunction("pdf_region_extractor");
         privateProperties = applicationProperties.getPrivateProperties();
-        counterImages = 0;
     }
 
     public Integer getProgress() {
@@ -158,16 +156,15 @@ public class PdfRegionExtractorBean implements Serializable {
         if (index == null) {
             return;
         }
-        if (counterImages == Integer.parseInt(index)) {
-            this.selectedRegions[Integer.parseInt(index)] = selectedRegion;
+        if (Integer.parseInt(index) < selectedRegions.length) {
+            selectedRegions[Integer.parseInt(index)] = selectedRegion;
+        } else {
+            logBean.addOneNotificationFromString("😭 error with the selected region");
         }
-        counterImages++;
-
     }
 
     public String extract() throws FileNotFoundException, IOException {
         fillInCoordinates();
-        counterImages = 0;
 
         sessionBean.sendFunctionPageReport();
         logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.starting_analysis"));
