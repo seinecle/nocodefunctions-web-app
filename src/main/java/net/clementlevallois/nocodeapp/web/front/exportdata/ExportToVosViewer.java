@@ -120,7 +120,6 @@ public class ExportToVosViewer {
                 System.out.println("gexf was null so exportAndReturnLinkFromGexf method exited");
                 return "";
             }
-
             HttpRequest request;
             HttpClient client = HttpClient.newHttpClient();
 

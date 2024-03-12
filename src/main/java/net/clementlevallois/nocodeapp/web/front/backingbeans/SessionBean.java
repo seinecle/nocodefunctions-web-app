@@ -90,7 +90,7 @@ public class SessionBean implements Serializable {
 
     public void sendFunctionPageReport() {
         SendReport send = new SendReport(applicationProperties.getMiddlewareHost(), applicationProperties.getMiddlewarePort());
-        send.initAnalytics("function launched: " + this.function, userAgent);
+        send.initAnalytics(this.function, userAgent);
         send.start();
     }
 

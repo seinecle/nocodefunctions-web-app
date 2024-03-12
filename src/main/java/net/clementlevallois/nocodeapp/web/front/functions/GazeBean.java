@@ -259,7 +259,6 @@ public class GazeBean implements Serializable {
 
         HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(jsonString.getBytes(StandardCharsets.UTF_8));
 
-
         URI uri = UrlBuilder
                 .empty()
                 .withScheme("http")
@@ -420,6 +419,11 @@ public class GazeBean implements Serializable {
     }
 
     public void gotoGephisto() {
+        if (gexf == null || gexf.isBlank()) {
+            String errorMessage = "gexf file was null or empty, not possible to go to Gephisto";
+            logBean.addOneNotificationFromString(errorMessage);
+
+        }
         Path userGeneratedGephistoDirectoryFullPath = applicationProperties.getUserGeneratedGephistoDirectoryFullPath(shareGephistoPublicly);
         Path relativePathFromProjectRootToGephistoFolder = applicationProperties.getRelativePathFromProjectRootToGephistoFolder();
         Path gephistoRootFullPath = applicationProperties.getGephistoRootFullPath();

@@ -84,17 +84,15 @@ public class BiblioCouplingBean implements Serializable {
 
     @Inject
     ApplicationPropertiesBean applicationProperties;
-    
-    
+
     public BiblioCouplingBean() {
     }
-    
+
     @PostConstruct
     public void init() {
         sessionBean.setFunction("bibliocoupling");
         privateProperties = applicationProperties.getPrivateProperties();
     }
-    
 
     public String runBiblioCouplingAnalysis() {
         try {
@@ -299,9 +297,8 @@ public class BiblioCouplingBean implements Serializable {
         return true;
     }
 
-
     public void gotoVV() {
-       String apiPort = privateProperties.getProperty("nocode_api_port");
+        String apiPort = privateProperties.getProperty("nocode_api_port");
         Path userGeneratedVosviewerDirectoryFullPath = applicationProperties.getUserGeneratedVosviewerDirectoryFullPath(shareVVPublicly);
         Path relativePathFromProjectRootToVosviewerFolder = applicationProperties.getRelativePathFromProjectRootToVosviewerFolder();
         Path vosviewerRootFullPath = applicationProperties.getVosviewerRootFullPath();
@@ -317,6 +314,11 @@ public class BiblioCouplingBean implements Serializable {
     }
 
     public void gotoGephisto() {
+        if (gexf == null || gexf.isBlank()) {
+            String errorMessage = "gexf file was null or empty, not possible to go to Gephisto";
+            logBean.addOneNotificationFromString(errorMessage);
+
+        }
         Path userGeneratedGephistoDirectoryFullPath = applicationProperties.getUserGeneratedGephistoDirectoryFullPath(shareGephistoPublicly);
         Path relativePathFromProjectRootToGephistoFolder = applicationProperties.getRelativePathFromProjectRootToGephistoFolder();
         Path gephistoRootFullPath = applicationProperties.getGephistoRootFullPath();

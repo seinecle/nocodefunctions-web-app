@@ -101,7 +101,6 @@ public class CowoBean implements Serializable {
     private boolean gexfHasArrived = false;
     private String runButtonText = "";
 
-
     @Inject
     BackToFrontMessengerBean logBean;
 
@@ -187,7 +186,7 @@ public class CowoBean implements Serializable {
                 mapOfLines = dataFormatConverter.convertToMapOfLines(inputData.getBulkData(), inputData.getDataInSheets(), inputData.getSelectedSheetName(), inputData.getSelectedColumnIndex(), inputData.getHasHeaders());
                 StringBuilder sb = new StringBuilder();
                 for (Map.Entry<Integer, String> entry : mapOfLines.entrySet()) {
-                    if (entry.getValue() == null){
+                    if (entry.getValue() == null) {
                         continue;
                     }
                     sb.append(entry.getValue().trim()).append("\n");
