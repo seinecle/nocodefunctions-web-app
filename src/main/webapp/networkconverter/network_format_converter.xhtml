@@ -99,13 +99,13 @@
                         mode="advanced"
                         auto="false"
                         multiple="false"
-                        skinSimple="true"
+                        skinSimple="false"
                         sizeLimit="100000000"
                         process="@this"
                         listener="#{converterBean.handleFileUpload}"
                         allowTypes="/(\.|\/)(json|gexf)$/"
                         update="launchButtons"
-                        chooseIcon="ui-icon-person">                                
+                        >                                
                     </p:fileUpload>
                     <p:spacer width="10"/>
                     <p:outputLabel rendered="#{converterBean.uploadedFile ne null}" escape="false">#{text['general.message.file_loaded']} <strong style="color:#FF6347">#{converterBean.uploadedFile.fileName}</strong>. #{text['network_converter.click_to_convert']}</p:outputLabel>

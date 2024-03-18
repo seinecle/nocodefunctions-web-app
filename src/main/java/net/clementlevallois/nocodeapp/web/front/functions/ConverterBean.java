@@ -19,7 +19,6 @@ import jakarta.inject.Named;
 import jakarta.servlet.annotation.MultipartConfig;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.time.Duration;
 import java.util.Properties;
 import java.util.UUID;
 import java.util.logging.Level;
@@ -92,10 +91,14 @@ public class ConverterBean implements Serializable {
     public String handleFileUpload(FileUploadEvent event) {
         try {
             byte[] readAllBytes = event.getFile().getInputStream().readAllBytes();
+            String fileName = event.getFile().getFileName();
             sessionBean.sendFunctionPageReport();
             dataPersistenceUniqueId = UUID.randomUUID().toString().substring(0, 10);
             Path tempFolderRelativePath = applicationProperties.getTempFolderFullPath();
-            Path fullPathForFileContainingGexf = Path.of(tempFolderRelativePath.toString(), dataPersistenceUniqueId + "_result");
+
+            // as an obscure convention, gexf files are persisted with a _result extension - but not other files like json files
+            String fileNameToPersist = fileName.endsWith("gexf") ? dataPersistenceUniqueId + "_result" : dataPersistenceUniqueId;
+            Path fullPathForFileContainingGexf = Path.of(tempFolderRelativePath.toString(), fileNameToPersist);
 
             String success = sessionBean.getLocaleBundle().getString("general.nouns.success");
             String is_uploaded = sessionBean.getLocaleBundle().getString("general.verb.is_uploaded");
@@ -191,15 +194,8 @@ public class ConverterBean implements Serializable {
     public StreamedContent getFileToSave() {
         StreamedContent fileStream = null;
         try {
-            if (inputFileAsByteArray == null) {
-                System.out.println("no file found for conversion to gephi");
-                return null;
-            }
-
             HttpRequest request;
-            HttpClient client = HttpClient.newBuilder().connectTimeout(Duration.ofMinutes(10)).build();
-
-            HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(inputFileAsByteArray);
+            HttpClient client = HttpClient.newBuilder().build();
 
             URI uri = UrlBuilder
                     .empty()
@@ -207,10 +203,11 @@ public class ConverterBean implements Serializable {
                     .withPort((Integer.valueOf(privateProperties.getProperty("nocode_api_port"))))
                     .withHost("localhost")
                     .withPath("api/convert2gexf")
+                    .addParameter("dataPersistenceUniqueId", dataPersistenceUniqueId)
                     .toUri();
 
             request = HttpRequest.newBuilder()
-                    .POST(bodyPublisher)
+                    .GET()
                     .uri(uri)
                     .build();
 
