@@ -1,5 +1,5 @@
-# Nocodefunctions: in-browser data analysis for non coders
-## free, no registration, open source
+# Nocodefunctions: web platform for data analysis for non coders
+## free, click & point, no registration, open source
 
 > Just visit https://nocodefunctions.com
 
@@ -31,8 +31,7 @@ Tools:
 - [highlight text with css](https://nocodefunctions.com/highlighter/highlight_word_in_context.html)
 
 ### 2. no registration
-There is no login asked and no installation.
-Just use the functions.
+There is no login asked and no installation. No credit card required.
 The aim is to make it as easy and seamless as possible for you to work.
 
 ### 3. no code
