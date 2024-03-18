@@ -101,9 +101,6 @@ public class CardTestBean implements Serializable {
         URI uri = null;
         try {
             showFRExplanation = false;
-            SendReport send = new SendReport(applicationProperties.getMiddlewareHost(), applicationProperties.getMiddlewarePort());
-            send.initAnalytics("test: umigon fr", sessionBean.getUserAgent());
-            send.start();
 
             UrlBuilder urlBuilder = UrlBuilder.empty();
             if (usePublicDomainName) {
@@ -167,9 +164,6 @@ public class CardTestBean implements Serializable {
         URI uri = null;
         try {
             showFRExplanationOrganic = false;
-            SendReport send = new SendReport(applicationProperties.getMiddlewareHost(), applicationProperties.getMiddlewarePort());
-            send.initAnalytics("test: organic fr", sessionBean.getUserAgent());
-            send.start();
 
             UrlBuilder urlBuilder = UrlBuilder.empty();
             if (usePublicDomainName) {
@@ -237,9 +231,6 @@ public class CardTestBean implements Serializable {
         URI uri = null;
         try {
             showENExplanationOrganic = false;
-            SendReport send = new SendReport(applicationProperties.getMiddlewareHost(), applicationProperties.getMiddlewarePort());
-            send.initAnalytics("test: organic en", sessionBean.getUserAgent());
-            send.start();
 
             UrlBuilder urlBuilder = UrlBuilder.empty();
             if (usePublicDomainName) {
@@ -304,9 +295,6 @@ public class CardTestBean implements Serializable {
         URI uri = null;
         try {
             showESExplanation = false;
-            SendReport send = new SendReport(applicationProperties.getMiddlewareHost(), applicationProperties.getMiddlewarePort());
-            send.initAnalytics("test: umigon es", sessionBean.getUserAgent());
-            send.start();
 
             UrlBuilder urlBuilder = UrlBuilder.empty();
             if (usePublicDomainName) {
@@ -373,9 +361,6 @@ public class CardTestBean implements Serializable {
         URI uri = null;
         try {
             showENExplanation = false;
-            SendReport send = new SendReport(applicationProperties.getMiddlewareHost(), applicationProperties.getMiddlewarePort());
-            send.initAnalytics("test: umigon en", sessionBean.getUserAgent());
-            send.start();
 
             UrlBuilder urlBuilder = UrlBuilder.empty();
             if (usePublicDomainName) {
