@@ -1,5 +1,6 @@
 **/target/**
 **/private/**
+**/temp/**
 **/user_created_files/**
 list-process.sh
 nb-configuration.xml
