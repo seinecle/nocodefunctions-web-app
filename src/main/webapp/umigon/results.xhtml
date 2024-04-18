@@ -55,8 +55,9 @@
             <ui:include src="/WEB-INF/includes/call-form.xhtml" />
             <p:spacer height="10"/>
             <p:panel>
-                <h:form target="_blank">
+                <h:form target="_blank" id="formDownloadButton">
                     <p:commandButton
+                        id="downloadButton"
                         value="#{text['general.verbs.download_results']}"
                         ajax="false"
                         onclick="PrimeFaces.monitorDownload(start, stop);"

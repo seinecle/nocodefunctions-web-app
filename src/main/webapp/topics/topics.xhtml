@@ -125,8 +125,6 @@
                                             <p:spacer width="30" height="20"/>
                                         </div>
 
-
-
                                         <p:divider align="left">
                                             <div class="p-d-inline-flex p-ai-center">
                                                 <i class="pi pi-chart-bar p-mr-2"/>
@@ -171,26 +169,29 @@
                         </p:accordionPanel>
                     </p:panel> 
                     <p:spacer width="10" height="50"/>
-                    <h:form>
-                        <!--RUN ANALYSIS BUTTON-->
-                        <p:commandButton
-                            value="#{topicsBean.runButtonText}"
-                            widgetVar="topicsButton"
-                            action="#{topicsBean.runAnalysis}"
-                            onclick="PF('pbAjaxLong').start();PF('topicsButton').disable()"
-                            styleClass="btn btn-primary"
-                            disabled="#{topicsBean.runButtonDisabled}"
-                            update=":notifications"/>
-                        <br/>
-                        <br/>
-                        <!--PROGRESS BAR FOR RUN ANALYSIS-->
-                        <p:progressBar id="pb" widgetVar="pbAjaxLong" ajax="true" value="#{topicsBean.progress}"
-                                       labelTemplate="{value}%" styleClass="p-mt-3" global="false" interval="500">
-                            <p:ajax event="complete" update=":notifications"/>
-                        </p:progressBar>
-                        <h:panelGroup id="pollingArea">
-                            <p:poll listener="#{topicsBean.pollingDidEndResultsArrive}" process="pollingArea" update="pollingArea :notifications" interval="2" />
-                        </h:panelGroup>
+                    <h:form id="formComputeButton">
+                        <p:panel>
+                            <!--RUN ANALYSIS BUTTON-->
+                            <p:commandButton
+                                id="computeButton"
+                                value="#{topicsBean.runButtonText}"
+                                widgetVar="topicsButton"
+                                action="#{topicsBean.runAnalysis}"
+                                onclick="PF('pbAjaxLong').start();PF('topicsButton').disable()"
+                                styleClass="btn btn-primary"
+                                disabled="#{topicsBean.runButtonDisabled}"
+                                update=":notifications"/>
+                            <br/>
+                            <br/>
+                            <!--PROGRESS BAR FOR RUN ANALYSIS-->
+                            <p:progressBar id="pb" widgetVar="pbAjaxLong" ajax="true" value="#{topicsBean.progress}"
+                                           labelTemplate="{value}%" styleClass="p-mt-3" global="false" interval="500">
+                                <p:ajax event="complete" update=":notifications"/>
+                            </p:progressBar>
+                            <h:panelGroup id="pollingArea">
+                                <p:poll listener="#{topicsBean.pollingDidEndResultsArrive}" process="pollingArea" update="pollingArea :notifications" interval="2" />
+                            </h:panelGroup>
+                        </p:panel>
                     </h:form>
                 </div>
                 <div id="thirdcol" class="col-3 flex-grow-1">

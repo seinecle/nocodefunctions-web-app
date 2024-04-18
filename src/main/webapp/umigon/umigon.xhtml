@@ -60,10 +60,11 @@
                     <div>
                         <p:spacer height="20"/>
                     </div>
-                    <h:form>
+                    <h:form id="formComputeButton">
                         <p:panel>
                             <!--RUN ANALYSIS BUTTON-->
                             <p:commandButton
+                                id="computeButton"
                                 value="#{text['general.verbs.compute']}"
                                 widgetVar="umigonButton"
                                 action="#{umigonBean.runAnalysis}"

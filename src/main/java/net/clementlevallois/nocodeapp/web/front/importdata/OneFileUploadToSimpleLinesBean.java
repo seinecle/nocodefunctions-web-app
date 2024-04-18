@@ -172,11 +172,9 @@ public class OneFileUploadToSimpleLinesBean {
                     return;
                 }
             }
-
         } catch (IOException | InterruptedException ex) {
             logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.encoding_error"));
             Logger.getLogger(OneFileUploadToSimpleLinesBean.class.getName()).log(Level.SEVERE, null, ex);
-            
         }
     }
 }

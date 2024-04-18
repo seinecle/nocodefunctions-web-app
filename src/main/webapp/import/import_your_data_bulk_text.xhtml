@@ -48,6 +48,7 @@
                             <br/>
                             <br/>
                             <p:fileUpload
+                                id="fileUploadButton"
                                 label="#{text['import_data.general.choose_txt_or_pdf']}"
                                 mode="advanced"
                                 skinSimple="true"
@@ -130,8 +131,9 @@
                         <br/>
                         <br/>
                         <p:outputPanel id="launch">
-                            <h:form>
+                            <h:form id="formComputeButton">
                                 <p:commandButton
+                                    id="computeButton"
                                     value="#{text['general.verbs.compute']}"
                                     action="#{dataImportBean.gotToFunctionWithDataInBulk}"
                                     onclick="PF('pbAjaxLong').start()"

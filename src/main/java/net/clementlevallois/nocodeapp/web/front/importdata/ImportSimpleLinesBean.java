@@ -64,13 +64,7 @@ public class ImportSimpleLinesBean implements Serializable {
     }
 
     public String gotToFunctionWithDataInBulk() {
-        Path tempFolderRelativePath = applicationProperties.getTempFolderFullPath();
-        pathOfTempData = Path.of(tempFolderRelativePath.toString(), dataPersistenceUniqueId);
         return "/" + sessionBean.getFunction() + "/" + sessionBean.getFunction() + ".xhtml?faces-redirect=true";
-    }
-
-    public Path getPathOfTempData() {
-        return pathOfTempData;
     }
 
     public String getJsonKey() {
@@ -88,5 +82,4 @@ public class ImportSimpleLinesBean implements Serializable {
     public void setOneJsonPerLine(Boolean oneJsonPerLine) {
         this.oneJsonPerLine = oneJsonPerLine;
     }
-
 }

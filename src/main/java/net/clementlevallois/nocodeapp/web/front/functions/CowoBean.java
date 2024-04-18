@@ -178,7 +178,8 @@ public class CowoBean implements Serializable {
 
             if (simpleLinesImportBean.getDataPersistenceUniqueId() != null) {
                 dataPersistenceUniqueId = simpleLinesImportBean.getDataPersistenceUniqueId();
-            } else {
+            }
+            else {
                 dataPersistenceUniqueId = UUID.randomUUID().toString().substring(0, 10);
                 Path tempFolderRelativePath = applicationProperties.getTempFolderFullPath();
                 Path fullPathForFileContainingTextInput = Path.of(tempFolderRelativePath.toString(), dataPersistenceUniqueId);
