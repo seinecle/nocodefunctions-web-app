@@ -79,7 +79,12 @@ public class BackToFrontMessengerBean implements Serializable {
         // it is just the arbitrary name of an event, here "updateNotifications"
         // this will cause the ajax to trigger the rendering of the log
         // and the newest messages will appear in the log...
-        logChannel.send("updateNotifications");
+        try {
+            logChannel.send("updateNotifications");
+        } catch (Exception e) {
+            // let's not pollute the logs
+            // an exception here probably means the user has closed their tab
+        }
     }
 
     public void navigateToResultsPage(String functionName) {

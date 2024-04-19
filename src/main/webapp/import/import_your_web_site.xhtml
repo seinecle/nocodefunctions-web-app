@@ -9,8 +9,8 @@
     <f:view locale="#{localeBean.currentLocale}">
 
         <h:head>
-            <title>#{text['import_data.general.choose_web_page']}</title>
-            <meta name="description" content="#{text['import_data.general.choose_web_page']}"/>
+            <title>#{text['import_data.general.choose_web_page_title']}</title>
+            <meta name="description" content="#{text['import_data.general.choose_web_page_description']}"/>
             <meta http-equiv="content-language" content="en-us"/>
             <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
             <meta http-equiv="cleartype" content="on"/>
@@ -38,7 +38,7 @@
             </f:metadata>.
             <p:panel>
                 <ui:include src="/WEB-INF/includes/header.xhtml"/>
-                <h1>#{text['general.message.analyze_url']}</h1>
+                <h1>#{text['import_data.website.analyze_website']}</h1>
             </p:panel>
             <p:spacer height="20"/>
             <p:panel>
@@ -52,7 +52,7 @@
                             <p:spacer width="5"/>
                             <p:inputText
                                 id="urlInput"
-                                value="#{htmlTextImportToSimpleLines.urlWebPage}"
+                                value="#{htmlTextImportToSimpleLines.urlWebSite}"
                                 placeholder="https:// ...">
                                 <p:ajax/>
                             </p:inputText>
@@ -60,9 +60,9 @@
                             <p:commandButton
                                 id="loadUrlButton"
                                 value="#{text['import_data.website.crawl_website']}"
-                                action="#{htmlTextImportToSimpleLines.retrieveUrlsContainedOnAPage}"
+                                action="#{htmlTextImportToSimpleLines.crawlPagesOfAWebsite()}"
                                 styleClass="btn btn-primary"
-                                update=":notifications accordion"
+                                update=":notifications"
                                 />
                             <br/>
                             <br/>
@@ -78,40 +78,38 @@
                             </p:outputPanel>
                             <br/>
                             <br/>
-                            <p:accordionPanel widgetVar="basic" activeIndex="null" id="accordion">
-                                <p:tab title="#{text['general.title.if_you_need_more_parameters']}" id="parameters">
-                                    <p class="p-m-0">
-                                        <p:divider align="left">
-                                            <div class="p-d-inline-flex p-ai-center">
-                                                <i class="pi pi-chart-bar p-mr-2"/>
-                                                <b>#{text['import_data.include_depth_1_links']}</b>
-                                            </div>
-                                        </p:divider>
-                                        <p>⚠️ #{text['import_data.you_need_to_do_step_one_first']} ⚠️</p>
-                                        <div>
-                                            <p:spacer height="20"/>
+                            <p:accordionPanel widgetVar="basic" activeIndex="null">
+                                <p:tab title="#{text['general.title.if_you_need_more_parameters']}">
+                                    <br/>
+                                    <br/>
+
+                                    <p:divider align="left">
+                                        <div class="p-d-inline-flex p-ai-center">
+                                            <i class="pi pi-chart-bar p-mr-2"/>
+                                            <b>#{text['import_data.website.max_links']}</b>
                                         </div>
-                                        <div class="card">
-                                            <p:dataTable
-                                                id="linksTable"
-                                                var="link"
-                                                value="#{htmlTextImportToSimpleLines.linksToHarvest}"
-                                                selection="#{htmlTextImportToSimpleLines.selectedLinks}"
-                                                rowKey="#{link.link}"
-                                                style="margin-bottom:0"
-                                                paginator="true"
-                                                rows="50"
-                                                selectionPageOnly="false"
-                                                rowSelectMode="none">
-                                                <p:column selectionMode="multiple" style="width:16px;text-align:center"/>
-                                                <p:column headerText="#{text['import_data.include_this_link_question']}">
-                                                    <a href="#{link.link}" target="_blank">#{link.linkText}</a> (#{link.getLinkFirstChars(40)} ...)
-                                                </p:column>
-                                            </p:dataTable>
+                                    </p:divider>
+                                    #{text['import_data.website.max_links_defaut_value']}
+                                    <br/>
+                                    <br/>
+                                    <p:spinner id="spinner1" value="#{htmlTextImportToSimpleLines.maxUrls}" min="1" max="100" stepFactor="1">
+                                    </p:spinner>
+                                    <p:slider for="spinner1" minValue="1" maxValue="100" step="1"/>
+                                    <br/>
+                                    <br/>
+                                    <p:divider align="left">
+                                        <div class="p-d-inline-flex p-ai-center">
+                                            <i class="pi pi-chart-bar p-mr-2"/>
+                                            <b>#{text['import_data.exclude_terms']}</b>
                                         </div>
-                                    </p>
+                                    </p:divider>
+                                    #{text['import_data.website.exclude_terms_instructions']}
+                                    <br/>
+                                    <br/>
+                                    <p:inputText value="#{htmlTextImportToSimpleLines.commaSeparatedValuesExclusionTerms}" placeholder="login, register, admin" />
                                 </p:tab>
                             </p:accordionPanel>
+
                         </h:form>
                     </div>
                     <div class="col-3 flex-grow-1">

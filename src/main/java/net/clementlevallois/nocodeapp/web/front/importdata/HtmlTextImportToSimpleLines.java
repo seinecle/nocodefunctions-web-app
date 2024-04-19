@@ -56,9 +56,13 @@ public class HtmlTextImportToSimpleLines implements Serializable {
     private String dataPersistenceUniqueId;
 
     private String urlWebPage;
+    private String urlWebSite;
 
-    private List<UrlLink> urlsPresentOnPage = new ArrayList();
+    private List<UrlLink> linksToHarvest = new ArrayList();
     private List<UrlLink> selectedLinks = new ArrayList();
+
+    private Integer maxUrls = 10;
+    private String commaSeparatedValuesExclusionTerms = "";
 
     private Boolean includeDepthOne = false;
 
@@ -75,7 +79,11 @@ public class HtmlTextImportToSimpleLines implements Serializable {
             }
 
             UrlLink linkOriginal = new UrlLink();
-            linkOriginal.setLink(urlWebPage);
+            if (urlWebPage == null || urlWebPage.isBlank()) {
+                linkOriginal.setLink(urlWebSite);
+            } else {
+                linkOriginal.setLink(urlWebPage);
+            }
             linkOriginal.setLinkText(sessionBean.getLocaleBundle().getString("import_data.web_link_user_provided"));
 
             selectedLinks.add(0, linkOriginal);
@@ -129,7 +137,7 @@ public class HtmlTextImportToSimpleLines implements Serializable {
     public void retrieveUrlsContainedOnAPage() {
         dataPersistenceUniqueId = simpleLineImportBean.getDataPersistenceUniqueId();
         selectedLinks = new ArrayList();
-        urlsPresentOnPage = new ArrayList();
+        linksToHarvest = new ArrayList();
 
         try {
             String currentFunction = sessionBean.getFunction();
@@ -177,7 +185,7 @@ public class HtmlTextImportToSimpleLines implements Serializable {
                         UrlLink urlOnPage = new UrlLink();
                         urlOnPage.setLink(linkHref);
                         urlOnPage.setLinkText(linkText);
-                        urlsPresentOnPage.add(urlOnPage);
+                        linksToHarvest.add(urlOnPage);
                     }
                 }
             } catch (HttpTimeoutException e) {
@@ -191,12 +199,79 @@ public class HtmlTextImportToSimpleLines implements Serializable {
         }
     }
 
-    public List<UrlLink> getUrlsToTextPresentOnPage() {
-        return urlsPresentOnPage;
+    public void crawlPagesOfAWebsite() {
+        dataPersistenceUniqueId = simpleLineImportBean.getDataPersistenceUniqueId();
+        selectedLinks = new ArrayList();
+        linksToHarvest = new ArrayList();
+
+        try {
+            String currentFunction = sessionBean.getFunction();
+
+            Properties privateProperties = applicationProperties.getPrivateProperties();
+
+            if (currentFunction == null) {
+                logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.error_function_not_set"));
+                return;
+            }
+
+            HttpClient client = HttpClient.newHttpClient();
+
+            URI uri = UrlBuilder
+                    .empty()
+                    .withScheme("http")
+                    .withPort(Integer.valueOf(privateProperties.getProperty("nocode_import_port")))
+                    .withHost("localhost")
+                    .withPath("api/import/html/getPagesContainedInWebsite")
+                    .addParameter("dataPersistenceId", dataPersistenceUniqueId)
+                    .addParameter("url", urlWebSite)
+                    .addParameter("maxUrls", String.valueOf(maxUrls))
+                    .addParameter("exclusionTerms", commaSeparatedValuesExclusionTerms)
+                    .toUri();
+
+            HttpRequest request = HttpRequest.newBuilder()
+                    .GET()
+                    .uri(uri)
+                    .build();
+
+            try {
+                HttpResponse<String> resp = client.send(request, HttpResponse.BodyHandlers.ofString());
+                String body = resp.body();
+                if (resp.statusCode() != 200) {
+                    System.out.println("return of html text reader by the API was not a 200 code");
+                    String errorMessage = body;
+                    System.out.println(errorMessage);
+                    logBean.addOneNotificationFromString(errorMessage);
+                    sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "💔", errorMessage);
+                } else {
+                    JsonReader reader = Json.createReader(new StringReader(body));
+                    JsonArray jsonArray = reader.readArray();
+                    for (JsonValue jsonValue : jsonArray) {
+                        JsonObject jo = jsonValue.asJsonObject();
+                        String linkHref = jo.getString("linkHref");
+                        String linkText = jo.getString("linkText");
+                        UrlLink urlOnPage = new UrlLink();
+                        urlOnPage.setLink(linkHref);
+                        urlOnPage.setLinkText(linkText);
+                        selectedLinks.add(urlOnPage);
+                    }
+                }
+            } catch (HttpTimeoutException e) {
+                logBean.addOneNotificationFromString("💔 " + sessionBean.getLocaleBundle().getString("general.message.error_url_timed_out") + ": " + urlWebPage);
+            } catch (ConnectException e) {
+                logBean.addOneNotificationFromString("💔 " + sessionBean.getLocaleBundle().getString("general.message.error_no_connection") + ": " + urlWebPage);
+            }
+
+        } catch (IOException | InterruptedException ex) {
+            Logger.getLogger(HtmlTextImportToSimpleLines.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
-    public void setUrlsToTextPresentOnPage(List<UrlLink> urls) {
-        this.urlsPresentOnPage = urls;
+    public List<UrlLink> getLinksToHarvest() {
+        return linksToHarvest;
+    }
+
+    public void setLinksToHarvest(List<UrlLink> urls) {
+        this.linksToHarvest = urls;
     }
 
     public List<UrlLink> getSelectedLinks() {
@@ -208,7 +283,13 @@ public class HtmlTextImportToSimpleLines implements Serializable {
     }
 
     public String gotToFunctionWithDataInBulk() {
+        if (urlWebPage == null || urlWebPage.isBlank()) {
+            String nbOfPagesToCrawl = "📚 " + sessionBean.getLocaleBundle().getString("general.message.nb_pages_to_crawl") + " " + selectedLinks.size();
+            logBean.addOneNotificationFromString(nbOfPagesToCrawl);
+        }
         getRawTextFromUrls();
+        urlWebPage = null;
+        urlWebSite = null;
         return "/" + sessionBean.getFunction() + "/" + sessionBean.getFunction() + ".xhtml?faces-redirect=true";
     }
 
@@ -220,6 +301,14 @@ public class HtmlTextImportToSimpleLines implements Serializable {
         this.urlWebPage = urlWebPage;
     }
 
+    public String getUrlWebSite() {
+        return urlWebSite;
+    }
+
+    public void setUrlWebSite(String urlWebSite) {
+        this.urlWebSite = urlWebSite;
+    }
+
     public Boolean getIncludeDepthOne() {
         return includeDepthOne;
     }
@@ -227,4 +316,21 @@ public class HtmlTextImportToSimpleLines implements Serializable {
     public void setIncludeDepthOne(Boolean includeDepthOne) {
         this.includeDepthOne = includeDepthOne;
     }
+
+    public Integer getMaxUrls() {
+        return maxUrls;
+    }
+
+    public void setMaxUrls(Integer maxUrls) {
+        this.maxUrls = maxUrls;
+    }
+
+    public String getCommaSeparatedValuesExclusionTerms() {
+        return commaSeparatedValuesExclusionTerms;
+    }
+
+    public void setCommaSeparatedValuesExclusionTerms(String commaSeparatedValuesExclusionTerms) {
+        this.commaSeparatedValuesExclusionTerms = commaSeparatedValuesExclusionTerms;
+    }
+
 }

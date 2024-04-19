@@ -108,22 +108,20 @@
                         >                                
                     </p:fileUpload>
                     <p:spacer width="10"/>
-                    <p:outputLabel rendered="#{converterBean.uploadedFile ne null}" escape="false">#{text['general.message.file_loaded']} <strong style="color:#FF6347">#{converterBean.uploadedFile.fileName}</strong>. #{text['network_converter.click_to_convert']}</p:outputLabel>
-                    <div>
-                        <p:spacer height="15" width="10"/>            
-                    </div>
-                    <p>
+                    <p:outputPanel rendered="#{not converterBean.fileNameUploaded.blank}">
+                        <p:outputLabel
+                            escape="false">
+                            <strong style="color:#FF6347">#{converterBean.displayNameForSingleUploadedFileOrSeveralFiles()}</strong>. #{text['network_converter.click_to_convert']}
+                        </p:outputLabel>
+                    </p:outputPanel>
+                    <p:outputPanel rendered="#{converterBean.fileNameUploaded.blank}">
                         <p:outputLabel rendered="#{converterBean.renderGephiWarning}" value="#{text['network_converter.warning_not_gephi_file']}" escape="false"/>
                         <p:outputLabel value="#{text['general.message.max_file_size']}: 100Mb" escape="false"/>
-                    </p>
-                    <div>
-                        <p:spacer height="15" width="10"/>            
-                    </div>
+                    </p:outputPanel>
                 </p:panel>
                 <div>
                     <p:spacer height="20" width="10"/>            
                 </div>
-
                 <p:panel id = "buttonConvertToVV" rendered="#{converterBean.option == 'sourceGexf'}">
                     <h:graphicImage name="images/round_2_orange.png" width="20" height="20" style="vertical-align: middle;"/>
                     <p:spacer width="5"/>

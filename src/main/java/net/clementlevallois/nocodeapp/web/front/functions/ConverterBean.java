@@ -29,7 +29,6 @@ import net.clementlevallois.nocodeapp.web.front.backingbeans.ApplicationProperti
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
-import org.primefaces.model.file.UploadedFile;
 
 /**
  *
@@ -40,12 +39,11 @@ import org.primefaces.model.file.UploadedFile;
 @MultipartConfig
 public class ConverterBean implements Serializable {
 
-    private UploadedFile uploadedFile;
+    private String fileNameUploaded = "";
     private String option = "sourceGexf";
     private String item = "item_name";
     private String link = "link_name";
     private String linkStrength = "link strength name";
-    private byte[] inputFileAsByteArray;
     private String uploadButtonMessage;
     private boolean renderGephiWarning = true;
 
@@ -56,7 +54,6 @@ public class ConverterBean implements Serializable {
     private Properties privateProperties;
 
     private String dataPersistenceUniqueId = "";
-    private String sessionId;
 
     @Inject
     SessionBean sessionBean;
@@ -72,7 +69,6 @@ public class ConverterBean implements Serializable {
         sessionBean.setFunction("networkconverter");
         privateProperties = applicationProperties.getPrivateProperties();
         uploadButtonMessage = sessionBean.getLocaleBundle().getString("general.message.choose_gexf_file");
-        sessionId = FacesContext.getCurrentInstance().getExternalContext().getSessionId(false);
     }
 
     public String logout() {
@@ -80,24 +76,16 @@ public class ConverterBean implements Serializable {
         return "/index?faces-redirect=true";
     }
 
-    public UploadedFile getUploadedFile() {
-        return uploadedFile;
-    }
-
-    public void setUploadedFile(UploadedFile uploadedFile) {
-        this.uploadedFile = uploadedFile;
-    }
-
     public String handleFileUpload(FileUploadEvent event) {
         try {
             byte[] readAllBytes = event.getFile().getInputStream().readAllBytes();
-            String fileName = event.getFile().getFileName();
+            fileNameUploaded = event.getFile().getFileName();
             sessionBean.sendFunctionPageReport();
             dataPersistenceUniqueId = UUID.randomUUID().toString().substring(0, 10);
             Path tempFolderRelativePath = applicationProperties.getTempFolderFullPath();
 
             // as an obscure convention, gexf files are persisted with a _result extension - but not other files like json files
-            String fileNameToPersist = fileName.endsWith("gexf") ? dataPersistenceUniqueId + "_result" : dataPersistenceUniqueId;
+            String fileNameToPersist = fileNameUploaded.endsWith("gexf") ? dataPersistenceUniqueId + "_result" : dataPersistenceUniqueId;
             Path fullPathForFileContainingGexf = Path.of(tempFolderRelativePath.toString(), fileNameToPersist);
 
             String success = sessionBean.getLocaleBundle().getString("general.nouns.success");
@@ -241,4 +229,21 @@ public class ConverterBean implements Serializable {
     public void setFileToSave(StreamedContent fileToSave) {
         this.fileToSave = fileToSave;
     }
+
+    public String displayNameForSingleUploadedFileOrSeveralFiles() {
+        if (fileNameUploaded != null) {
+            return "🚚 " + sessionBean.getLocaleBundle().getString("back.import.one_file_uploaded") + ": " + fileNameUploaded;
+        } else {
+            return sessionBean.getLocaleBundle().getString("general.message.data_not_found");
+        }
+    }
+
+    public String getFileNameUploaded() {
+        return fileNameUploaded;
+    }
+
+    public void setFileNameUploaded(String fileNameUploaded) {
+        this.fileNameUploaded = fileNameUploaded;
+    }
+
 }
