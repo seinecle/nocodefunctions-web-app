@@ -240,7 +240,7 @@ public class HtmlTextImportToSimpleLines implements Serializable {
                     System.out.println("return of html text reader by the API was not a 200 code");
                     String errorMessage = body;
                     System.out.println(errorMessage);
-                    logBean.addOneNotificationFromString(errorMessage);
+                    logBean.addOneNotificationFromString("💔 " + errorMessage);
                     sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "💔", errorMessage);
                 } else {
                     JsonReader reader = Json.createReader(new StringReader(body));
@@ -264,6 +264,10 @@ public class HtmlTextImportToSimpleLines implements Serializable {
         } catch (IOException | InterruptedException ex) {
             Logger.getLogger(HtmlTextImportToSimpleLines.class.getName()).log(Level.SEVERE, null, ex);
         }
+
+        String nbOfPagesToCrawl = "📚 " + sessionBean.getLocaleBundle().getString("general.message.nb_pages_to_crawl") + " " + selectedLinks.size();
+        logBean.addOneNotificationFromString(nbOfPagesToCrawl);
+
     }
 
     public List<UrlLink> getLinksToHarvest() {
@@ -283,10 +287,6 @@ public class HtmlTextImportToSimpleLines implements Serializable {
     }
 
     public String gotToFunctionWithDataInBulk() {
-        if (urlWebPage == null || urlWebPage.isBlank()) {
-            String nbOfPagesToCrawl = "📚 " + sessionBean.getLocaleBundle().getString("general.message.nb_pages_to_crawl") + " " + selectedLinks.size();
-            logBean.addOneNotificationFromString(nbOfPagesToCrawl);
-        }
         getRawTextFromUrls();
         urlWebPage = null;
         urlWebSite = null;
