@@ -48,11 +48,11 @@ import net.clementlevallois.nocodeapp.web.front.MessageFromApi;
 import net.clementlevallois.nocodeapp.web.front.WatchTower;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.LocaleComparator;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
-import net.clementlevallois.nocodeapp.web.front.exportdata.ExportToGephisto;
 import net.clementlevallois.nocodeapp.web.front.exportdata.ExportToVosViewer;
 import net.clementlevallois.nocodeapp.web.front.importdata.DataImportBean;
 import net.clementlevallois.nocodeapp.web.front.logview.BackToFrontMessengerBean;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.ApplicationPropertiesBean;
+import net.clementlevallois.nocodeapp.web.front.exportdata.ExportToGephiLite;
 import net.clementlevallois.nocodeapp.web.front.http.RemoteLocal;
 import net.clementlevallois.nocodeapp.web.front.importdata.ImportSimpleLinesBean;
 import net.clementlevallois.nocodeapp.web.front.utils.Converters;
@@ -91,7 +91,7 @@ public class CowoBean implements Serializable {
     private boolean usePMI = false;
     private UploadedFile fileUserStopwords;
     private Boolean shareVVPublicly;
-    private Boolean shareGephistoPublicly;
+    private Boolean shareGephiLitePublicly;
     private Integer minCharNumber = 4;
     private Map<Integer, String> mapOfLines;
     private Properties privateProperties;
@@ -529,12 +529,12 @@ public class CowoBean implements Serializable {
         this.shareVVPublicly = shareVVPublicly;
     }
 
-    public Boolean getShareGephistoPublicly() {
-        return shareGephistoPublicly;
+    public Boolean getShareGephiLitePublicly() {
+        return shareGephiLitePublicly;
     }
 
-    public void setShareGephistoPublicly(Boolean shareGephistoPublicly) {
-        this.shareGephistoPublicly = shareGephistoPublicly;
+    public void setShareGephiLitePublicly(Boolean shareGephiLitePublicly) {
+        this.shareGephiLitePublicly = shareGephiLitePublicly;
     }
 
     public Integer getMinCharNumber() {
@@ -582,13 +582,13 @@ public class CowoBean implements Serializable {
         }
     }
 
-    public void gotoGephisto() {
-        String urlToGephisto = ExportToGephisto.exportAndReturnLink(shareGephistoPublicly, dataPersistenceUniqueId, applicationProperties);
+    public void gotoGephiLite() {
+        String urlToGephiLite = ExportToGephiLite.exportAndReturnLink(shareGephiLitePublicly, dataPersistenceUniqueId, applicationProperties);
         ExternalContext externalContext = FacesContext.getCurrentInstance().getExternalContext();
         try {
-            externalContext.redirect(urlToGephisto);
+            externalContext.redirect(urlToGephiLite);
         } catch (IOException ex) {
-            System.out.println("error in redirect to Gephisto");
+            System.out.println("error in redirect to Gephi Lite");
         }
     }
 

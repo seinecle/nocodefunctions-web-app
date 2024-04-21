@@ -84,17 +84,18 @@
                             <p:spacer width="50"/>
                         </div>
                         <div class="col-12 md:col-6 lg:col-3 border-1 border-200">
-                            <p:graphicImage name="images/gephisto.jpg" style="max-width: 100%;"/>
+                            <p:graphicImage name="images/gephi-logo_lite_new.png" style="max-width: 100%;"/>
                             <br/>
                             <br/>
                             <p:commandButton
-                                value="#{text['general.message.visualize_with_gephisto']}"
-                                action ="#{cowoBean.gotoGephisto()}"
+                                value="#{text['general.message.visualize_with_gephi-lite']}"
+                                action ="#{cowoBean.gotoGephiLite()}"
                                 icon="pi pi-external-link"
                                 styleClass="p-mr-2"/>
+                            <p:spacer width="5"/>
                             <br/>
                             <br/>
-                            <p:selectBooleanCheckbox value="#{cowoBean.shareGephistoPublicly}" itemLabel="#{text['general.message.make_viz_public_question']}"/>
+                            <p:selectBooleanCheckbox value="#{cowoBean.shareGephiLitePublicly}" itemLabel="#{text['general.message.make_viz_public_question']}"/>
                             <br/>
                             <br/>
                             <p:outputLabel escape="false" value="#{text['general.message.make_viz_public_details']}"/>
@@ -112,6 +113,8 @@
                                 icon="pi pi-external-link" styleClass="p-mr-2"/>
                             <br/>
                             <br/>
+                            <p:outputLabel escape="false" value="🧐 #{text['vosviewer.warning.zoom_in']}"/>
+                            <br/>
                             <p:selectBooleanCheckbox value="#{cowoBean.shareVVPublicly}" itemLabel="#{text['general.message.make_viz_public_question']}"/>
                             <br/>
                             <br/>
@@ -120,7 +123,11 @@
                     </div>
                     <br/>
                     <br/>
-                    <p:outputLabel escape="false" value="#{text['cowo.results.long_explanation']}"/>
+                    <h3><p:outputLabel escape="false" value="#{text['cowo.results.long_explanation_title']}"/></h3>
+                    <p:outputLabel escape="false" value="#{text['cowo.results.long_explanation_details']}"/>
+                    <br/>
+                    <h3><p:outputLabel escape="false" value="#{text['general.message.results.options_for_visualization_title']}"/></h3>
+                    <p:outputLabel escape="false" value="#{text['general.message.results.options_for_visualization_details']}"/>
                 </h:form>
             </p:panel>
             <ui:include src="/WEB-INF/includes/footer.xhtml" />

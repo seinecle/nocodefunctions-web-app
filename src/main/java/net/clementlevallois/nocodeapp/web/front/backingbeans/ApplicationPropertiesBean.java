@@ -1,5 +1,5 @@
 /*
- * Copyright Clement Levallois 2021-2023. License Attribution 4.0 Intertnational (CC BY 4.0)
+ * Copyright Clement Levallois 2021-2024. License Attribution 4.0 Intertnational (CC BY 4.0)
  */
 package net.clementlevallois.nocodeapp.web.front.backingbeans;
 
@@ -30,9 +30,13 @@ public class ApplicationPropertiesBean {
     private Path userGeneratedVosviewerPrivateDirectoryFullPath;
     private Path userGeneratedGephistoPublicDirectoryFullPath;
     private Path userGeneratedGephistoPrivateDirectoryFullPath;
+    private Path userGeneratedGephiLitePublicDirectoryFullPath;
+    private Path userGeneratedGephiLitePrivateDirectoryFullPath;
     private Path gephistoRootRelativePath;
+    private Path gephiLiteRootRelativePath;
     private Path vosviewerRootRelativePath;
     private Path gephistoRootFullPath;
+    private Path gephiLiteRootFullPath;
     private Path vosviewerRootFullPath;
     private Path tempFolderFullPath;
 
@@ -41,6 +45,7 @@ public class ApplicationPropertiesBean {
     private static final String ENV_VARIABLE_I18N_DIR = "i18n.relative.path";
     private final String ENV_VARIABLE_VOSVIEWER_DIR = "relative.path.vosviewer";
     private final String ENV_VARIABLE_GEPHISTO_DIR = "relative.path.gephisto";
+    private final String ENV_VARIABLE_GEPHILITE_DIR = "relative.path.gephilite";
     private final String ENV_VARIABLE_TEMP_DIR = "relative.path.temp";
     private final String ENV_VARIABLE_PUBLIC_DIR = "relative.path.public";
     private final String ENV_VARIABLE_PRIVATE_DIR = "relative.path.private";
@@ -60,10 +65,14 @@ public class ApplicationPropertiesBean {
         userGeneratedGephistoPublicDirectoryFullPath = loadGephistoPublicFullPath();
         userGeneratedGephistoPrivateDirectoryFullPath = loadGephistoPrivateFullPath();
         gephistoRootRelativePath = loadGephistoRootRelativePath();
+        userGeneratedGephiLitePublicDirectoryFullPath = loadGephiLitePublicFullPath();
+        userGeneratedGephiLitePrivateDirectoryFullPath = loadGephiLitePrivateFullPath();
+        gephiLiteRootRelativePath = loadGephiLiteRootRelativePath();
         tempFolderFullPath = loadTempFolderFullPath();
         vosviewerRootRelativePath = loadVosviewerRootRelativePath();
         vosviewerRootFullPath = loadVosviewerRootFullPath();
         gephistoRootFullPath = loadGephistoRootFullPath();        
+        gephiLiteRootFullPath = loadGephiLiteRootFullPath();        
     }
 
     private Path loadRootProjectPath() {
@@ -187,6 +196,25 @@ public class ApplicationPropertiesBean {
         return Path.of(gephisto);
     }
 
+    private Path loadGephiLitePublicFullPath() {
+        String ug = System.getProperty(ENV_VARIABLE_USER_CREATED_FILES_DIR);
+        String gephiLite = System.getProperty(ENV_VARIABLE_GEPHILITE_DIR);
+        String publicFolder = System.getProperty(ENV_VARIABLE_PUBLIC_DIR);
+        return rootProjectPath.resolve(Path.of(ug)).resolve(Path.of(gephiLite)).resolve(Path.of(publicFolder));
+    }
+
+    private Path loadGephiLitePrivateFullPath() {
+        String ug = System.getProperty(ENV_VARIABLE_USER_CREATED_FILES_DIR);
+        String gephiLite = System.getProperty(ENV_VARIABLE_GEPHILITE_DIR);
+        String privateFolder = System.getProperty(ENV_VARIABLE_PRIVATE_DIR);
+        return rootProjectPath.resolve(Path.of(ug)).resolve(Path.of(gephiLite)).resolve(Path.of(privateFolder));
+    }
+
+    private Path loadGephiLiteRootRelativePath() {
+        String gephiLite = System.getProperty(ENV_VARIABLE_GEPHILITE_DIR);
+        return Path.of(gephiLite);
+    }
+
     private Path loadTempFolderFullPath() {
         String temp = System.getProperty(ENV_VARIABLE_TEMP_DIR);
         return Path.of(rootProjectPath.toString(), temp);
@@ -201,6 +229,12 @@ public class ApplicationPropertiesBean {
         String ug = System.getProperty(ENV_VARIABLE_USER_CREATED_FILES_DIR);
         String gephisto = System.getProperty(ENV_VARIABLE_GEPHISTO_DIR);
         return rootProjectPath.resolve(Path.of(ug)).resolve(Path.of(gephisto));
+    }
+
+    private Path loadGephiLiteRootFullPath() {
+        String ug = System.getProperty(ENV_VARIABLE_USER_CREATED_FILES_DIR);
+        String gephiLite = System.getProperty(ENV_VARIABLE_GEPHILITE_DIR);
+        return rootProjectPath.resolve(Path.of(ug)).resolve(Path.of(gephiLite));
     }
 
     private Path loadVosviewerRootFullPath() {
@@ -245,8 +279,28 @@ public class ApplicationPropertiesBean {
         }
     }
 
+    public Path getUserGeneratedGephiLitePublicDirectoryFullPath() {
+        return userGeneratedGephiLitePublicDirectoryFullPath;
+    }
+
+    public Path getUserGeneratedGephiLitePrivateDirectoryFullPath() {
+        return userGeneratedGephiLitePrivateDirectoryFullPath;
+    }
+
+    public Path getUserGeneratedGephiLiteDirectoryFullPath(boolean sharePublicly) {
+        if (sharePublicly) {
+            return userGeneratedGephiLitePublicDirectoryFullPath;
+        } else {
+            return userGeneratedGephiLitePrivateDirectoryFullPath;
+        }
+    }
+
     public Path getRelativePathFromProjectRootToGephistoFolder() {
         return getRootProjectFullPath().relativize(getGephistoRootFullPath());
+    }
+
+    public Path getRelativePathFromProjectRootToGephiLiteFolder() {
+        return gephiLiteRootRelativePath; // different from vosvier and gephisto for a weird reason?
     }
 
     public Path getRootProjectFullPath() {
@@ -261,12 +315,20 @@ public class ApplicationPropertiesBean {
         return gephistoRootRelativePath;
     }
 
+    public Path getGephiLiteRootRelativePath() {
+        return gephiLiteRootRelativePath;
+    }
+
     public Path getVosviewerRootRelativePath() {
         return vosviewerRootRelativePath;
     }
 
     public Path getGephistoRootFullPath() {
         return gephistoRootFullPath;
+    }
+
+    public Path getGephiLiteRootFullPath() {
+        return gephiLiteRootFullPath;
     }
 
     public Path getVosviewerRootFullPath() {

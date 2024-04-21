@@ -49,6 +49,7 @@ import net.clementlevallois.nocodeapp.web.front.exportdata.ExportToVosViewer;
 import net.clementlevallois.nocodeapp.web.front.importdata.DataImportBean;
 import net.clementlevallois.nocodeapp.web.front.logview.BackToFrontMessengerBean;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.ApplicationPropertiesBean;
+import net.clementlevallois.nocodeapp.web.front.exportdata.ExportToGephiLite;
 import net.clementlevallois.nocodeapp.web.front.http.RemoteLocal;
 import net.clementlevallois.nocodeapp.web.front.utils.GEXFSaver;
 import net.clementlevallois.nocodeapp.web.front.utils.Converters;
@@ -73,7 +74,7 @@ public class GazeBean implements Serializable {
     private int minFreqNode = 1000_000;
     private int maxFreqNode = 0;
     private Boolean shareVVPublicly;
-    private Boolean shareGephistoPublicly;
+    private Boolean shareGephiLitePublicly;
     private boolean applyPMI = false;
 
     private String dataPersistenceUniqueId;
@@ -418,21 +419,21 @@ public class GazeBean implements Serializable {
         }
     }
 
-    public void gotoGephisto() {
+    public void gotoGephiLite() {
         if (gexf == null || gexf.isBlank()) {
-            String errorMessage = "gexf file was null or empty, not possible to go to Gephisto";
+            String errorMessage = "gexf file was null or empty, not possible to go to Gephi Lite";
             logBean.addOneNotificationFromString(errorMessage);
 
         }
-        Path userGeneratedGephistoDirectoryFullPath = applicationProperties.getUserGeneratedGephistoDirectoryFullPath(shareGephistoPublicly);
-        Path relativePathFromProjectRootToGephistoFolder = applicationProperties.getRelativePathFromProjectRootToGephistoFolder();
-        Path gephistoRootFullPath = applicationProperties.getGephistoRootFullPath();
-        String urlToGephisto = ExportToGephisto.exportAndReturnLink(gexf, userGeneratedGephistoDirectoryFullPath, relativePathFromProjectRootToGephistoFolder, gephistoRootFullPath);
+        Path userGeneratedGephiLiteDirectoryFullPath = applicationProperties.getUserGeneratedGephiLiteDirectoryFullPath(shareGephiLitePublicly);
+        Path relativePathFromProjectRootToGephiLiteFolder = applicationProperties.getRelativePathFromProjectRootToGephiLiteFolder();
+        Path gephiLiteRootFullPath = applicationProperties.getGephiLiteRootFullPath();
+        String urlToGephiLite = ExportToGephiLite.exportAndReturnLink(gexf, userGeneratedGephiLiteDirectoryFullPath, relativePathFromProjectRootToGephiLiteFolder, gephiLiteRootFullPath);
         ExternalContext externalContext = FacesContext.getCurrentInstance().getExternalContext();
         try {
-            externalContext.redirect(urlToGephisto);
+            externalContext.redirect(urlToGephiLite);
         } catch (IOException ex) {
-            System.out.println("error in redirect to Gephisto");
+            System.out.println("error in redirect to Gephi Lite");
         }
     }
 
@@ -506,12 +507,12 @@ public class GazeBean implements Serializable {
         this.shareVVPublicly = shareVVPublicly;
     }
 
-    public Boolean getShareGephistoPublicly() {
-        return shareGephistoPublicly;
+    public Boolean getShareGephiLitePublicly() {
+        return shareGephiLitePublicly;
     }
 
-    public void setShareGephistoPublicly(Boolean shareGephistoPublicly) {
-        this.shareGephistoPublicly = shareGephistoPublicly;
+    public void setShareGephiLitePublicly(Boolean shareGephiLitePublicly) {
+        this.shareGephiLitePublicly = shareGephiLitePublicly;
     }
 
     public boolean isApplyPMI() {

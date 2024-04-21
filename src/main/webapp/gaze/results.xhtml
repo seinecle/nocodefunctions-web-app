@@ -58,8 +58,8 @@
             <p:spacer height="10"/>
             <ui:include src="/WEB-INF/includes/call-form.xhtml" />
             <p:spacer height="10"/>
-                <div id="graphDiv">
-                </div>
+            <div id="graphDiv">
+            </div>
             <p:spacer height="20"/>
             <p:panel>
                 <h:form>
@@ -84,17 +84,18 @@
                             <p:spacer width="50"/>
                         </div>
                         <div class="col-12 md:col-6 lg:col-3 border-1 border-200">
-                            <p:graphicImage name="images/gephisto.jpg" style="max-width: 100%;"/>
+                            <p:graphicImage name="images/gephi-logo_lite_new.png" style="max-width: 100%;"/>
                             <br/>
                             <br/>
                             <p:commandButton
-                                value="#{text['general.message.visualize_with_gephisto']}"
-                                action="#{gazeBean.gotoGephisto()}"
+                                value="#{text['general.message.visualize_with_gephi-lite']}"
+                                action ="#{gazeBean.gotoGephiLite()}"
                                 icon="pi pi-external-link"
                                 styleClass="p-mr-2"/>
+                            <p:spacer width="5"/>
                             <br/>
                             <br/>
-                            <p:selectBooleanCheckbox value="#{gazeBean.shareGephistoPublicly}" itemLabel="#{text['general.message.make_viz_public_question']}"/>
+                            <p:selectBooleanCheckbox value="#{gazeBean.shareGephiLitePublicly}" itemLabel="#{text['general.message.make_viz_public_question']}"/>
                             <br/>
                             <br/>
                             <p:outputLabel escape="false" value="#{text['general.message.make_viz_public_details']}"/>
@@ -121,7 +122,11 @@
                     </div>
                     <br/>
                     <br/>
-                    <p:outputLabel escape="false" value="#{text['gaze.results.long_explanation']}"/>
+                    <h3><p:outputLabel escape="false" value="#{text['gaze.results.long_explanation_title']}"/></h3>
+                    <p:outputLabel escape="false" value="#{text['gaze.results.long_explanation_details']}"/>
+
+                    <h3><p:outputLabel escape="false" value="#{text['general.message.results.options_for_visualization_title']}"/></h3>
+                    <p:outputLabel escape="false" value="#{text['general.message.results.options_for_visualization_details']}"/>
                 </h:form>
             </p:panel>
             <ui:include src="/WEB-INF/includes/footer.xhtml" />
