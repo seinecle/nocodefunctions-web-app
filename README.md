@@ -43,7 +43,7 @@ You are here on the Github repository which hosts the code of the web app.
 The license is Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International Public License:
 https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode
 
-Most of the functions have their dedicated repository. See the [list of all repos](https://github.com/stars/seinecle/lists/opened-with-nocodefunctions) tied to Nocodefunctions.
+Most of the functions have their dedicated repository. See the [list of all repos](https://github.com/stars/seinecle/lists/nocodefunctions-repos) tied to Nocodefunctions.
 
 ### 5. Respectful of your data
 The data is not stored nor re-used in any way.
