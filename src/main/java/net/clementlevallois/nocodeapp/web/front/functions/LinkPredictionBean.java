@@ -132,7 +132,6 @@ public class LinkPredictionBean implements Serializable {
                 if (jsonObjectReturned == null) {
                     System.out.println("error: the json we received from link prediction is not formatted as json");
                     return -1;
-
                 }
             } else {
                 System.out.println("call to link prediction returned an error");

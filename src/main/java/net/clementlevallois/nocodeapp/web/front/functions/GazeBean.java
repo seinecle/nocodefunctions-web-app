@@ -423,7 +423,7 @@ public class GazeBean implements Serializable {
         if (gexf == null || gexf.isBlank()) {
             String errorMessage = "gexf file was null or empty, not possible to go to Gephi Lite";
             logBean.addOneNotificationFromString(errorMessage);
-
+            return;
         }
         Path userGeneratedGephiLiteDirectoryFullPath = applicationProperties.getUserGeneratedGephiLiteDirectoryFullPath(shareGephiLitePublicly);
         Path relativePathFromProjectRootToGephiLiteFolder = applicationProperties.getRelativePathFromProjectRootToGephiLiteFolder();
