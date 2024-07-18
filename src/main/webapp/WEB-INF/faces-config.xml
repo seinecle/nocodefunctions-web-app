@@ -31,8 +31,7 @@
         <external-context-factory>net.clementlevallois.nocodeapp.web.front.CustomExternalContext$Factory</external-context-factory>
         <exception-handler-factory>net.clementlevallois.nocodeapp.web.front.CustomExceptionHandlerFactory</exception-handler-factory>
     </factory>
-    <!--    This is an optimization of the serving of css and js resources in one go
-    See: https://showcase.omnifaces.org/resourcehandlers/CombinedResourceHandler-->
+
     <application>
         <locale-config>
             <default-locale>en</default-locale>
