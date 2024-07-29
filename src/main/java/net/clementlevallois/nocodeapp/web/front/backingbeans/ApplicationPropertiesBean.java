@@ -300,7 +300,7 @@ public class ApplicationPropertiesBean {
     }
 
     public Path getRelativePathFromProjectRootToGephiLiteFolder() {
-        return gephiLiteRootRelativePath; // different from vosvier and gephisto for a weird reason?
+        return getRootProjectFullPath().relativize(getGephiLiteRootFullPath());
     }
 
     public Path getRootProjectFullPath() {

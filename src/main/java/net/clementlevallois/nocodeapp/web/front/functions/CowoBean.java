@@ -155,7 +155,6 @@ public class CowoBean implements Serializable {
         if (topNodesHaveArrived) {
             WatchTower.getQueueOutcomesProcesses().remove(key);
             runButtonDisabled = false;
-            runButtonText = sessionBean.getLocaleBundle().getString("general.verbs.compute");
             FacesContext context = FacesContext.getCurrentInstance();
             context.getApplication().getNavigationHandler().handleNavigation(context, null, "/cowo/results.xhtml?faces-redirect=true");
         }
@@ -333,7 +332,6 @@ public class CowoBean implements Serializable {
                     edgesAsJson = Converters.turnJsonObjectToString(jsonObject.getJsonObject("edges"));
                     WatchTower.getQueueOutcomesProcesses().put(dataPersistenceUniqueId + "topnodes", System.currentTimeMillis());
                     progress = 100;
-                    runButtonText = sessionBean.getLocaleBundle().getString("general.verbs.compute");
                     runButtonDisabled = false;
 //                    MessageFromApi msg = new MessageFromApi();
 //                    msg.setSessionId(sessionId);
