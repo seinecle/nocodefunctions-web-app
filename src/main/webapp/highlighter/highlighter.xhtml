@@ -1,0 +1,73 @@
+<html 
+    lang="#{localeBean.languageTag}"
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="jakarta.faces.html"
+    xmlns:f="jakarta.faces.core"
+    xmlns:p="http://primefaces.org/ui"
+    xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+    <f:view locale="#{localeBean.currentLocale}">
+
+        <h:head>
+            <title>#{text['highlighter.results.title']}</title>
+
+            <meta name="msapplication-TileColor" content="#da532c"/>
+            <meta name="msapplication-config" content="#{resource['images/favicons/browserconfig.xml']}"/>
+            <meta name="theme-color" content="#ffffff"/>
+            <meta name="description" content="#{text['highlighter.tool.title']}"/>
+            <meta http-equiv="content-language" content="en-us"/>
+            <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+            <meta http-equiv="cleartype" content="on"/>
+            <meta name="HandheldFriendly" content="true"/>
+            <meta name="robots" content="noindex"/>
+
+            <link rel="apple-touch-icon" sizes="180x180" href="#{resource['images/favicons/apple-touch-icon.png']}"/>
+            <link rel="icon" type="image/png" sizes="32x32" href="#{resource['images/favicons/favicon-32x32.png']}"/>
+            <link rel="icon" type="image/png" sizes="16x16" href="#{resource['images/favicons/favicon-16x16.png']}"/>
+            <link rel="manifest" href="#{resource['images/favicons/site.webmanifest']}"/>
+            <link rel="mask-icon" href="#{resource['images/favicons/safari-pinned-tab.svg']}" color="#5bbad5"/>
+            <link rel="shortcut icon" href="#{resource['images/favicons/favicon.ico']}"/>
+            <link rel="shortcut icon" type="image/x-icon" href="#{resource['images/favicons/favicon.ico']}"/>
+        </h:head>
+
+        <h:body>
+            <h:outputStylesheet name="css/primeflex.css" />
+            <h:outputStylesheet name="css/custom.css" />
+            <f:metadata>
+                <f:viewAction action="#{highlighterBean.doTheHighlight()}" />
+            </f:metadata>        
+
+            <script type="text/javascript">
+                //<![CDATA[
+                function start() {
+                    PF('statusDialog').show();
+                }
+
+                function stop() {
+                    PF('statusDialog').hide();
+                }
+                //]]>
+            </script>
+            <p:dialog modal="true" widgetVar="statusDialog" header="#{text['general.message.wait_and_authorize_popup']}" draggable="false" closable="false"
+                      resizable="false">
+                <i class="pi pi-spinner pi-spin" style="font-size:3rem"></i>
+            </p:dialog>
+            <p:panel>
+                <ui:include src="/WEB-INF/includes/header.xhtml"/>
+                <h1>#{text['highlighter.results.tagline']}</h1>
+            </p:panel>
+            <p:spacer height="10"/>
+            <ui:include src="/WEB-INF/includes/call-form.xhtml" />
+            <p:spacer height="10"/>
+            <p:panel>
+                <h:form target="_blank">
+                    <p:commandButton value="#{text['highlighter.results.download']}" ajax="false" onclick="PrimeFaces.monitorDownload(start, stop);"
+                                     icon="pi pi-arrow-down" styleClass="p-mr-2" update="resultsTable">
+                        <p:fileDownload value="#{highlighterBean.fileToSave}"/>
+                    </p:commandButton>
+
+                </h:form>
+            </p:panel>
+            <ui:include src="/WEB-INF/includes/footer.xhtml" />
+        </h:body>
+    </f:view>
+</html>

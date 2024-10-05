@@ -1,0 +1,14 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core">
+
+    <h:head>
+        <meta name="robots" content="noindex"/>
+    </h:head>
+    <h:body>
+        <f:metadata>
+            <f:viewParam name="code" value="#{googleSheetsImportBean.code}" />
+            <f:viewAction action="#{googleSheetsImportBean.onloadingRedirectPage}" />
+        </f:metadata>
+    </h:body>
+</html>

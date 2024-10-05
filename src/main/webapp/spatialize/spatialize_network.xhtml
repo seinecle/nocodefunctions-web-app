@@ -1,0 +1,170 @@
+<html 
+    lang="#{localeBean.languageTag}"
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="jakarta.faces.html"
+    xmlns:f="jakarta.faces.core"
+    xmlns:p="http://primefaces.org/ui"
+    xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+    <f:view locale="#{localeBean.currentLocale}">
+
+        <h:head>        <!-- Primary Meta Tags -->
+            <title>#{text['spatialize.title']}</title>
+            <meta name="description" content="#{text['spatialize.description']}"/>
+            <meta http-equiv="content-language" content="en-us"/>
+            <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+            <meta http-equiv="cleartype" content="on"/>
+            <meta name="HandheldFriendly" content="true"/>
+
+            <!-- Open Graph / Facebook -->
+            <meta property="og:type" content="website"/>
+            <meta property="og:site_name" content="Nocode functions"/>
+            <meta property="og:url" content="https://nocodefunctions.com/spatialize/spatialize_network.html"/>
+            <meta property="og:title" content="#{text['spatialize.title']}"/>
+            <meta property="og:description" content="#{text['spatialize.description']}"/>
+            <meta property="og:image" content="/images/vosviewer_logo.jpg"/>
+
+            <!-- Twitter -->
+            <meta property="twitter:card" content="summary_large_image"/>
+            <meta property="twitter:url" content="https://nocodefunctions.com/spatialize/spatialize_network.html"/>
+            <meta property="twitter:title" content="#{text['spatialize.title']}"/>
+            <meta property="twitter:description" content="#{text['spatialize.description']}"/>
+            <meta property="twitter:image" content="/images/vosviewer_logo.jpg"/>
+
+            <link rel="apple-touch-icon" sizes="180x180" href="#{resource['images/favicons/apple-touch-icon.png']}"/>
+            <link rel="icon" type="image/png" sizes="32x32" href="#{resource['images/favicons/favicon-32x32.png']}"/>
+            <link rel="icon" type="image/png" sizes="16x16" href="#{resource['images/favicons/favicon-16x16.png']}"/>
+            <link rel="manifest" href="#{resource['images/favicons/site.webmanifest']}"/>
+            <link rel="mask-icon" href="#{resource['images/favicons/safari-pinned-tab.svg']}" color="#5bbad5"/>
+            <link rel="shortcut icon" href="#{resource['images/favicons/favicon.ico']}"/>
+            <meta name="msapplication-TileColor" content="#da532c"/>
+            <meta name="msapplication-config" content="#{resource['images/favicons/browserconfig.xml']}"/>
+            <meta name="theme-color" content="#ffffff"/>
+            <link rel="shortcut icon" type="image/x-icon" href="#{resource['images/favicons/favicon.ico']}"/>
+
+            <p:outputLabel value="#{sessionBean.noRobot}" escape="false" rendered="#{sessionBean.testServer}"/>
+        </h:head>
+        <h:body>
+            <h:outputStylesheet name="css/primeflex.css" />
+            <h:outputStylesheet name="css/custom.css" />
+            <f:metadata>
+                <f:viewParam name="lang" value="#{localeBean.languageTag}" />
+                <f:viewParam name="function" value="#{sessionBean.function}" />
+            </f:metadata>
+            <script type="text/javascript">
+                //<![CDATA[
+                function start() {
+                    PF('statusDialog').show();
+                }
+
+                function stop() {
+                    PF('statusDialog').hide();
+                }
+                //]]>
+            </script>
+            <p:dialog modal="true" widgetVar="statusDialog" header="Status" draggable="false" closable="false"
+                      resizable="false">
+                <i class="pi pi-spinner pi-spin" style="font-size:3rem"></i>
+            </p:dialog>
+            <p:panel>
+                <ui:include src="/WEB-INF/includes/header.xhtml"/>
+                <h1>#{text['spatialize.title']}</h1>
+            </p:panel>
+            <p:spacer height="10"/>
+            <ui:include src="/WEB-INF/includes/call-form.xhtml" />
+            <p:spacer height="10"/>
+            <p:panel id = "buttonSpatializeGexf">
+                <p:fieldset>
+                    <p>
+                        <p:outputLabel value="#{text['spatialize.explanation']}" escape="false"/>
+                    </p>
+                    <br/>
+                    <br/>
+                </p:fieldset>
+                <div>
+                    <p:spacer height="20" width="10"/>            
+                </div>
+                <p:fieldset>
+                    <div class="p-d-inline-flex p-ai-center">
+                        <i class="pi pi-stopwatch p-mr-2"/>
+                        <b>#{text['spatialize.select_duration_in_seconds']}</b>
+                    </div>
+                    <br/>
+                    <br/>
+                    <h:form id="durationPanel">
+                        <p:spinner id="spinnerDuration" value="#{spatializeBean.durationInSeconds}" min="5" max="60" stepFactor="1"/>
+                        <div>
+                            <p:spacer height="10" width="10"/>            
+                        </div>
+                        <p:slider for="spinnerDuration" minValue="5" maxValue="60" step="1"/>
+                    </h:form>            
+                </p:fieldset>
+            </p:panel>
+            <div>
+                <p:spacer height="20" width="10"/>            
+            </div>
+
+            <h:form id="launchButtons">
+                <p:panel>
+                    <p:fileUpload
+                        label="#{text['general.message.choose_gexf_file']}"
+                        mode="simple"
+                        auto="false"
+                        multiple="false"
+                        skinSimple="true"
+                        sizeLimit="1000000000"
+                        listener="#{spatializeBean.handleFileUpload}"
+                        allowTypes="/(\.|\/)(gexf)$/"
+                        update="launchButtons download"
+                        chooseIcon="ui-icon-person">                                
+                    </p:fileUpload>
+                    <p:spacer width="10"/>
+                    <p:outputLabel rendered="#{spatializeBean.uploadedFile ne null}" escape="false">#{text['general.message.file_loaded']} <strong style="color:#FF6347">#{spatializeBean.uploadedFile.fileName}</strong>. #{text['spatialize.click_below_to_spatialize']}</p:outputLabel>
+                    <div>
+                        <p:spacer height="15" width="10"/>            
+                    </div>
+                </p:panel>
+                <div>
+                    <p:spacer height="20" width="10"/>            
+                </div>
+                <p:panel id = "buttonSpatializeGexf">
+                    <p:commandButton value="#{text['spatialize.launch_spatialization']}"
+                                     ajax="false"
+                                     action="#{spatializeBean.layout}"
+                                     onclick="PF('pbAjaxLong').start()"
+                                     icon="pi pi-arrows-alt"
+                                     styleClass="p-mr-2">
+                    </p:commandButton>
+                    <div>
+                        <p:spacer height="10" width="10"/>            
+                    </div>
+                    <p:progressBar
+                        id="pb"
+                        widgetVar="pbAjaxLong"
+                        ajax="true"
+                        value="#{spatializeBean.progress}"
+                        labelTemplate="{value}%"
+                        styleClass="p-mt-3"
+                        global="false"
+                        interval="1000">
+                    </p:progressBar>
+                    <div>
+                        <p:spacer height="10" width="10"/>            
+                    </div>
+                    <p:commandButton id="download"
+                                     value="#{text['general.message.download_gexf']}"
+                                     ajax="false"
+                                     icon="pi pi-arrow-down"
+                                     styleClass="p-mr-2"
+                                     onclick="PrimeFaces.monitorDownload(start, stop);"
+                                     rendered="#{spatializeBean.displayDownloadButton}">
+                        <p:fileDownload value="#{spatializeBean.fileToSave}"/>
+                    </p:commandButton>
+                </p:panel>
+                <div>
+                    <p:spacer height="50" width="10"/>            
+                </div>
+            </h:form>
+            <ui:include src="/WEB-INF/includes/footer.xhtml" />
+        </h:body>
+    </f:view>
+</html>

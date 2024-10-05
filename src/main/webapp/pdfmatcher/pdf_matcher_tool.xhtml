@@ -1,0 +1,133 @@
+<html 
+    lang="#{localeBean.languageTag}"
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="jakarta.faces.html"
+    xmlns:f="jakarta.faces.core"
+    xmlns:p="http://primefaces.org/ui"
+    xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+    <f:view locale="#{localeBean.currentLocale}">
+
+        <h:head>
+            <title>#{text['pdfmatcher.tool.title']}</title>
+            <meta name="description" content="#{text['pdfmatcher.tool.description']}"/>
+            <meta http-equiv="content-language" content="en-us"/>
+            <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+            <meta http-equiv="cleartype" content="on"/>
+            <meta name="HandheldFriendly" content="true"/>
+
+            <!-- Open Graph / Facebook -->
+            <meta property="og:type" content="website"/>
+            <meta property="og:site_name" content="Nocode functions"/>
+            <meta property="og:url" content="https://nocodefunctions.com/pdfmatcher/pdf_matcher_tool.html"/>
+            <meta property="og:title" content="#{text['pdfmatcher.tool.title']}"/>
+            <meta property="og:description" content="#{text['pdfmatcher.tool.description']}"/>
+            <meta property="og:image" content="/images/workflow_medium.jpg"/>
+
+            <!-- Twitter -->
+            <meta property="twitter:card" content="summary_large_image"/>
+            <meta property="twitter:url" content="https://nocodefunctions.com/pdfmatcher/pdf_matcher_tool.html"/>
+            <meta property="twitter:title" content="#{text['pdfmatcher.tool.title']}"/>
+            <meta property="twitter:description" content="#{text['pdfmatcher.tool.description']}"/>
+            <meta property="twitter:image" content="/images/workflow_medium.jpg"/>
+
+            <link rel="apple-touch-icon" sizes="180x180" href="#{resource['images/favicons/apple-touch-icon.png']}"/>
+            <link rel="icon" type="image/png" sizes="32x32" href="#{resource['images/favicons/favicon-32x32.png']}"/>
+            <link rel="icon" type="image/png" sizes="16x16" href="#{resource['images/favicons/favicon-16x16.png']}"/>
+            <link rel="manifest" href="#{resource['images/favicons/site.webmanifest']}"/>
+            <link rel="mask-icon" href="#{resource['images/favicons/safari-pinned-tab.svg']}" color="#5bbad5"/>
+            <link rel="shortcut icon" href="#{resource['images/favicons/favicon.ico']}"/>
+            <meta name="msapplication-TileColor" content="#da532c"/>
+            <meta name="msapplication-config" content="#{resource['images/favicons/browserconfig.xml']}"/>
+            <meta name="theme-color" content="#ffffff"/>
+            <link rel="shortcut icon" type="image/x-icon" href="#{resource['images/favicons/favicon.ico']}"/>
+
+            <p:outputLabel value="#{sessionBean.noRobot}" escape="false" rendered="#{sessionBean.testServer}"/>
+        </h:head>
+        <h:body>
+            <h:outputStylesheet name="css/primeflex.css" />
+            <h:outputStylesheet name="css/custom.css" />
+            <f:metadata>
+                <f:viewParam name="lang" value="#{localeBean.languageTag}" />
+                <f:viewParam name="function" value="#{sessionBean.function}" />
+            </f:metadata>
+            <p:panel>
+                <ui:include src="/WEB-INF/includes/header.xhtml"/>
+                <h1>#{text['pdfmatcher.tool.tagline']}</h1>
+            </p:panel>
+            <p:spacer height="20"/>
+            <h:form>
+                <p:panel>
+                    <p:fieldset>
+                        <f:facet name="legend">
+                            <h3>#{text['pdfmatcher.tool.select_search_word']}</h3>
+                        </f:facet>
+                        <p:growl id="growl" showDetail="true" />
+                        <h2>
+                            <p:inputText value="#{pdfMatcherBean.searchedTerm}"/>
+                            <br/>
+                            <br/>
+                            <i><p:outputLabel escape="false" value="#{text['pdfmatcher.tool.complex_query_allowed']}"/> (programmation AND java) OR python AND NOT("monty python")</i>
+                        </h2>
+                    </p:fieldset>
+                    <p:fieldset>
+                        <f:facet name="legend">
+                            <h3>#{text['pdfmatcher.tool.search_case_sensitive']}</h3>
+                        </f:facet>
+                        <h2>
+                            <p:selectBooleanCheckbox value="#{pdfMatcherBean.caseSensitive}" itemLabel="#{text['general.message.case_sensitive']}" escape="false"/>
+                        </h2>
+                    </p:fieldset>
+                </p:panel>
+                <p:panel>
+                    <p:fieldset id="contextParams">
+                        <f:facet name="legend">
+                            <h3>#{text['pdfmatcher.tool.type_of_context']}</h3>
+                        </f:facet>
+                        <p:spacer height="5" width="10"/>
+                        <i><p:outputLabel escape="false" value="#{text['pdfmatcher.tool.type_of_context_description']}"/></i>
+                        <div>
+                            <p:spacer height="10" width="10"/>            
+                        </div>
+                        <p:selectOneRadio id="console" value="#{pdfMatcherBean.typeOfContext}">
+                            <f:selectItem itemLabel="#{text['pdfmatcher.tool.surrounding_lines']}" itemValue="surroundingLines"/>
+                            <f:selectItem itemLabel="#{text['pdfmatcher.tool.surrounding_words']}" itemValue="surroundingWords"/>
+                            <p:ajax update="lines words"/>
+                        </p:selectOneRadio>
+                        <div>
+                            <p:spacer height="10" width="10"/>            
+                        </div>
+                        <p:outputPanel id="lines">
+                            <h2>
+                                <p:spinner value="#{pdfMatcherBean.nbLines}" min="0" max="5" rendered="#{pdfMatcherBean.typeOfContext == 'surroundingLines'}" />
+                            </h2>
+                        </p:outputPanel>                        
+                        <p:outputPanel id="words">
+                            <h2>
+                                <p:spinner value="#{pdfMatcherBean.nbWords}" min="0" max="15" rendered="#{pdfMatcherBean.typeOfContext == 'surroundingWords'}" />
+                            </h2>
+                        </p:outputPanel>
+                    </p:fieldset>
+                </p:panel>
+                <p:panel>
+                    <div style="text-align: center">
+                        <i>#{text['general.message.use_it_directly_by_selecting_a_data_source']}</i>
+                    </div>
+                    <div>
+                        <p:spacer height="30" width="10"/>            
+                    </div>
+                    <div style="text-align: center">
+                        <p:commandButton
+                            value="#{text['general.message.text_in_bulk_pdf_only']}"
+                            icon="pi pi-file-pdf"
+                            iconPos="right"
+                            action="#{pdfMatcherBean.goToPdfUpload}"
+                            styleClass="btn btn-primary"
+                            style="min-width: 15em;"
+                            update="growl" />
+                    </div>
+                </p:panel>
+            </h:form>
+            <ui:include src="/WEB-INF/includes/footer.xhtml" />
+        </h:body>
+    </f:view>
+</html>

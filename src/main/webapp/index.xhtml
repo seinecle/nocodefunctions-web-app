@@ -1,0 +1,490 @@
+<html 
+    lang="#{localeBean.languageTag}"
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="jakarta.faces.html"
+    xmlns:f="jakarta.faces.core"
+    xmlns:p="http://primefaces.org/ui"
+    xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+    <f:view locale="#{localeBean.currentLocale}">
+        <h:head>
+            <!-- Primary Meta Tags -->
+            <title>#{text['index.title']}</title>
+            <meta name="description" content="#{text['index.description']}"/>
+            <meta http-equiv="content-language" content="en-us"/>
+            <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+            <meta http-equiv="cleartype" content="on"/>
+            <meta name="HandheldFriendly" content="true"/>
+
+            <!-- Open Graph / Facebook -->
+            <meta property="og:type" content="website"/>
+            <meta property="og:site_name" content="Nocode functions"/>
+            <meta property="og:url" content="https://nocodefunctions.com/"/>
+            <meta property="og:title" content="#{text['index.tagline']}"/>
+            <meta property="og:description" content="#{text['index.description']}"/>
+            <meta property="og:image" content="/images/workflow_medium.jpg"/>
+
+            <!-- Twitter -->
+            <meta property="twitter:card" content="summary_large_image"/>
+            <meta property="twitter:url" content="https://nocodefunctions.com/"/>
+            <meta property="twitter:title" content="#{text['index.tagline']}"/>
+            <meta property="twitter:description" content="#{text['index.description']}"/>
+            <meta property="twitter:image" content="/images/workflow_medium.jpg"/>
+
+            <link rel="apple-touch-icon" sizes="180x180" href="#{resource['images/favicons/apple-touch-icon.png']}"/>
+            <link rel="icon" type="image/png" sizes="32x32" href="#{resource['images/favicons/favicon-32x32.png']}"/>
+            <link rel="icon" type="image/png" sizes="16x16" href="#{resource['images/favicons/favicon-16x16.png']}"/>
+            <link rel="manifest" href="#{resource['images/favicons/site.webmanifest']}"/>
+            <link rel="mask-icon" href="#{resource['images/favicons/safari-pinned-tab.svg']}" color="#5bbad5"/>
+            <link rel="shortcut icon" href="#{resource['images/favicons/favicon.ico']}"/>
+            <meta name="msapplication-TileColor" content="#da532c"/>
+            <meta name="msapplication-config" content="#{resource['images/favicons/browserconfig.xml']}"/>
+            <meta name="theme-color" content="#ffffff"/>
+            <link rel="shortcut icon" type="image/x-icon" href="#{resource['images/favicons/favicon.ico']}"/>
+
+            <p:outputLabel value="#{sessionBean.noRobot}" escape="false" rendered="#{sessionBean.testServer}"/>
+        </h:head>
+        <h:body>
+            <h:outputStylesheet name="css/primeflex.css"/>
+            <h:outputStylesheet name="css/custom.css" />
+            <f:metadata>
+                <f:viewParam name="lang" value="#{localeBean.languageTag}" />
+                <f:viewAction action="#{sessionBean.init()}" />
+            </f:metadata>
+            <p:panel>
+                <ui:include src="/WEB-INF/includes/header.xhtml" />
+                <div style="text-align: center; font-size: xx-large">🔎</div>
+                <h1 style="text-align: center">Nocode functions</h1>
+                <h3 style="text-align: center">#{text['index.tagline']}</h3>
+                <h4 style="text-align: center; opacity: 0.6">#{text['index.argument1']}</h4>
+                <h4 style="text-align: center; opacity: 0.6">#{text['index.argument2']}</h4>
+            </p:panel>
+            <p:spacer height="10" width="10"/>
+            <p:panel>
+                <h3 style="text-align: center; opacity: 0.8;">#{text['index.calltochooseafunction']}</h3>
+                <p:spacer height="20" width="10"/>
+                <div class="flex justify-content-center flex-wrap" align="center">
+                    <div class="flex justify-content-center justify-content-center buttonIndexPage">
+                        <p:button id="umigonButton" value="#{text['index.button.umigon']}" outcome="umigon/sentiment_analysis_tool.html"/>
+                    </div>
+                    <p:spacer width="10"/>
+                    <div class="flex justify-content-center justify-content-center buttonIndexPage">
+                        <p:button id="organicButton" value="#{text['index.button.organic']}" outcome="organic/organic_listening_voice_of_customer_tool.html"/>
+                    </div>
+                    <p:spacer width="10"/>
+                    <div class="flex justify-content-center justify-content-center buttonIndexPage">
+                        <p:button id="cowoButton" value="#{text['index.button.cowo']}" outcome="cowo/semantic_networks_tool.html"/>
+                    </div>
+                    <p:spacer width="10"/>
+                    <div class="flex justify-content-center justify-content-center buttonIndexPage">
+                        <p:button id="topicsButton" value="#{text['index.button.topics']}" outcome="topics/topic_extraction_tool.html"/>
+                    </div>
+                    <p:spacer width="10"/>
+                    <div class="flex justify-content-center justify-content-center buttonIndexPage">
+                        <p:button id="gazeButton" value="#{text['index.button.gaze']}" outcome="gaze/network_builder_tool.html"/>
+                    </div>
+                    <p:spacer width="10"/>
+                    <div class="flex justify-content-center justify-content-center buttonIndexPage">
+                        <p:button id="networkconverterButton" value="#{text['index.button.networkconverter']}" outcome="networkconverter/network_format_converter.html"/>
+                    </div>
+                    <p:spacer width="10"/>
+                    <div class="flex justify-content-center justify-content-center buttonIndexPage">
+                        <p:button id="link_predictionButton" value="#{text['index.button.link_prediction']}" outcome="link_prediction/link_prediction.html"/>
+                    </div>
+                    <p:spacer width="10"/>
+                    <div class="flex justify-content-center justify-content-center buttonIndexPage">
+                        <p:button id="highlighterButton" value="#{text['index.button.highlighter']}" outcome="highlighter/highlight_word_in_context.html"/>
+                    </div>
+                    <p:spacer width="10"/>
+                    <div class="flex justify-content-center justify-content-center buttonIndexPage">
+                        <p:button id="pdfmatcherButton" value="#{text['index.button.pdfmatcher']}" outcome="pdfmatcher/pdf_matcher_tool.html"/>
+                    </div>
+                    <p:spacer width="10"/>
+                    <div class="flex justify-content-center justify-content-center buttonIndexPage">
+                        <p:button id="spatializeButton" value="#{text['index.button.spatialize']}" outcome="spatialize/spatialize_network.html"/>
+                    </div>
+                    <p:spacer width="10"/>
+                    <div class="flex justify-content-center justify-content-center buttonIndexPage">
+                        <p:button id="pdf_region_extractorButton" value="#{text['index.button.pdfregionextractor']}" outcome="pdf_region_extractor/pdf_region_text_extractor_tool.html"/>
+                    </div>
+                    <p:spacer width="10"/>
+                    <div class="flex justify-content-center justify-content-center buttonIndexPageSlideLang">
+                        <p:button id="slidelangButton" value="slidelang" href="https://alpha.slidelang.com" target="_blank"/>
+                    </div>
+                </div>
+            </p:panel>
+            <p:spacer height="10" width="10"/>
+            <p:panel>
+                <h3 style="text-align: center; opacity: 0.8;">#{text['index.ordosometestshere']}</h3>
+                <p:spacer height="10" width="10"/>
+                <div class="grid justify-content-center">
+                    <p:card style="width: 30rem; margin-bottom: 2em">
+                        <f:facet name="title">
+                            #{text['index.testsentimentanalysisuk']}
+                        </f:facet>
+                        <h:form id="umigonEN">
+                            <div class="ui-inputgroup">
+                                <p:inputText id="umigonTestEN" value="#{cardTestBean.umigonTestInputEN}"/>
+                                <p:commandButton
+                                    value="#{text['general.verbs.compute']}"
+                                    widgetVar="umigonButtonEN"
+                                    action="#{cardTestBean.runUmigonTestEN}"
+                                    update="resultEN umigonEN:explanationEN"
+                                    styleClass="btn btn-primary"/>
+                            </div>
+                            <p:outputPanel id="resultEN">   
+                                <h:outputText value="#{cardTestBean.umigonResultEN}" style="width:40px;"/>
+                                <p:spacer width="15"/>
+                                <p:commandLink
+                                    value="#{text['general.small_words.why']} 🤔"
+                                    action="#{cardTestBean.setShowENExplanation(true)}"
+                                    rendered="#{cardTestBean.renderSignalEN}"
+                                    update="umigonEN:explanationEN"/>
+                                <p:spacer width="15"/>
+                                <p:commandLink
+                                    style="text-align: center;font-size: 80%"
+                                    value="#{text['general.verbs.signal_error']}"
+                                    action="#{cardTestBean.signalUmigonEN}"
+                                    update="resultEN"
+                                    rendered="#{cardTestBean.renderSignalEN}"/>
+                                <p:spacer width="20" rendered ="#{cardTestBean.reportResultENRendered}"/>
+                                <p:outputLabel style="font-size: 80%" value="#{text['general.message.reportsent']}" rendered ="#{cardTestBean.reportResultENRendered}" />
+                                <p:graphicImage name="images/check.png" width="24px" rendered ="#{cardTestBean.reportResultENRendered}"  alt="check mark"/>
+                                <p:outputPanel id="explanationEN">
+                                    <br/>
+                                    <br/>
+                                    <small>
+                                        <h:outputText value="#{cardTestBean.umigonResultENExplanation}" escape="false" rendered="#{cardTestBean.showENExplanation}"/>
+                                    </small>
+                                    <br/>
+                                    <br/>
+                                    <p:commandLink
+                                        value="#{text['general.verbs.hide']} ↩️"
+                                        action="#{cardTestBean.setShowENExplanation(false)}"
+                                        rendered="#{cardTestBean.showENExplanation}"
+                                        update="umigonEN:explanationEN"/>
+                                    <p:spacer width="15"/>
+                                </p:outputPanel>
+                            </p:outputPanel>
+                        </h:form>
+                    </p:card>
+                    <p:spacer width="10"/>
+                    <p:card style="width: 30rem; margin-bottom: 2em">
+                        <f:facet name="title">
+                            #{text['index.testsentimentanalysisfr']}
+                        </f:facet>
+                        <h:form id="umigonFR">
+                            <div class="ui-inputgroup">
+                                <p:inputText id="umigonTestFR" value="#{cardTestBean.umigonTestInputFR}"/>
+                                <p:commandButton
+                                    value="#{text['general.verbs.compute']}"
+                                    widgetVar="umigonButtonFR"
+                                    action="#{cardTestBean.runUmigonTestFR}"
+                                    update="resultFR umigonFR:explanationFR"
+                                    styleClass="btn btn-primary"/>
+                            </div>
+                            <p:outputPanel id="resultFR">
+                                <h:outputText value="#{cardTestBean.umigonResultFR}" style="width:40px;"/>
+                                <p:spacer width="15"/>
+                                <p:commandLink
+                                    value="#{text['general.small_words.why']} 🤔"
+                                    action="#{cardTestBean.setShowFRExplanation(true)}"
+                                    rendered="#{cardTestBean.renderSignalFR}"
+                                    update="umigonFR:explanationFR"/>
+                                <p:spacer width="15"/>
+                                <p:commandLink
+                                    style="text-align: center;font-size: 80%"
+                                    value="#{text['general.verbs.signal_error']}"
+                                    action="#{cardTestBean.signalUmigonFR}" update="resultFR"
+                                    rendered="#{cardTestBean.renderSignalFR}"/>
+                                <p:spacer width="20" rendered ="#{cardTestBean.reportResultFRRendered}"/>
+                                <p:outputLabel style="font-size: 80%" value="#{text['general.message.reportsent']}" rendered ="#{cardTestBean.reportResultFRRendered}" />
+                                <p:graphicImage name="images/check.png" width="24px" rendered ="#{cardTestBean.reportResultFRRendered}" alt="check mark"/>
+                                <p:outputPanel id="explanationFR">
+                                    <br/>
+                                    <br/>
+                                    <small>
+                                        <h:outputText value="#{cardTestBean.umigonResultFRExplanation}" escape="false" rendered="#{cardTestBean.showFRExplanation}"/>
+                                    </small>
+                                    <br/>
+                                    <br/>
+                                    <p:commandLink
+                                        value="#{text['general.verbs.hide']} ↩️"
+                                        action="#{cardTestBean.setShowFRExplanation(false)}"
+                                        rendered="#{cardTestBean.showFRExplanation}"
+                                        update="umigonFR:explanationFR"/>
+                                    <p:spacer width="15"/>
+                                </p:outputPanel>
+                            </p:outputPanel>
+                        </h:form>
+                    </p:card>
+                    <p:spacer width="10"/>
+                    <p:card style="width: 30rem; margin-bottom: 2em">
+                        <f:facet name="title">
+                            #{text['index.testsentimentanalysises']}
+                        </f:facet>
+                        <h:form id="umigonES">
+                            <div class="ui-inputgroup">
+                                <p:inputText id="umigonTestES" value="#{cardTestBean.umigonTestInputES}"/>
+                                <p:commandButton
+                                    value="#{text['general.verbs.compute']}"
+                                    widgetVar="umigonButtonES"
+                                    action="#{cardTestBean.runUmigonTestES}"
+                                    update="resultES umigonES:explanationES"
+                                    styleClass="btn btn-primary"/>
+                            </div>
+                            <p:outputPanel id="resultES">
+                                <h:outputText value="#{cardTestBean.umigonResultES}" style="width:40px;"/>
+                                <p:spacer width="15"/>
+                                <p:commandLink
+                                    value="#{text['general.small_words.why']} 🤔"
+                                    action="#{cardTestBean.setShowESExplanation(true)}"
+                                    rendered="#{cardTestBean.renderSignalES}"
+                                    update="umigonES:explanationES"/>
+                                <p:spacer width="15"/>
+                                <p:commandLink 
+                                    style="text-align: center;font-size: 80%"
+                                    value="#{text['general.verbs.signal_error']}"
+                                    action="#{cardTestBean.signalUmigonES}" update="resultES"
+                                    rendered="#{cardTestBean.renderSignalES}"/>
+                                <p:spacer width="20" rendered ="#{cardTestBean.reportResultESRendered}"/>
+                                <p:outputLabel style="font-size: 80%" value="#{text['general.message.reportsent']}" rendered ="#{cardTestBean.reportResultESRendered}" />
+                                <p:graphicImage name="images/check.png" width="24px" rendered ="#{cardTestBean.reportResultESRendered}" alt="check mark"/>
+                                <p:outputPanel id="explanationES">
+                                    <br/>
+                                    <br/>
+                                    <small>
+                                        <h:outputText value="#{cardTestBean.umigonResultESExplanation}" escape="false" rendered="#{cardTestBean.showESExplanation}"/>
+                                    </small>
+                                    <br/>
+                                    <br/>
+                                    <p:commandLink
+                                        value="#{text['general.verbs.hide']} ↩️"
+                                        action="#{cardTestBean.setShowESExplanation(false)}"
+                                        rendered="#{cardTestBean.showESExplanation}"
+                                        update="umigonES:explanationES"/>
+                                    <p:spacer width="15"/>
+                                </p:outputPanel>
+                            </p:outputPanel>
+                        </h:form>
+                    </p:card>
+                </div>
+                <div class="grid justify-content-center">
+                    <p:card style="width: 30rem; margin-bottom: 2em">
+                        <f:facet name="title">
+                            #{text['index.button.organic']}<br/>
+                            <small>#{text['index.testorganic.analysisforUK']}</small>
+                        </f:facet>
+                        <h:form id="organicEN">
+                            <div class="ui-inputgroup">
+                                <p:inputText id="organicTestEN" value="#{cardTestBean.organicTestInputEN}"/>
+                                <p:commandButton
+                                    value="#{text['general.verbs.compute']}"
+                                    widgetVar="organicButtonEN"
+                                    action="#{cardTestBean.runOrganicTestEN}"
+                                    update="resultOrganicEN organicEN:explanationOrganicEN"
+                                    styleClass="btn btn-primary"/>
+                            </div>
+                            <p:outputPanel id="resultOrganicEN">
+                                <h:outputText value="#{cardTestBean.organicResultEN}" style="width:40px;"/>
+                                <p:spacer width="15"/>
+                                <p:commandLink
+                                    value="#{text['general.small_words.why']} 🤔"
+                                    action="#{cardTestBean.setShowENExplanationOrganic(true)}"
+                                    rendered="#{cardTestBean.renderSignalOrganicEN}"
+                                    update="organicEN:explanationOrganicEN"/>
+                                <p:spacer width="15"/>
+                                <p:commandLink style="text-align: center;font-size: 80%"
+                                               value="#{text['general.verbs.signal_error']}"
+                                               action="#{cardTestBean.signalOrganicEN}"
+                                               update="resultOrganicEN"
+                                               rendered="#{cardTestBean.renderSignalOrganicEN}"/>
+                                <p:spacer width="20" rendered ="#{cardTestBean.reportResultENOrganicRendered}"/>
+                                <p:outputLabel style="font-size: 80%" value="#{text['general.message.reportsent']}" rendered ="#{cardTestBean.reportResultENOrganicRendered}" />
+                                <p:graphicImage name="images/check.png" width="24px" rendered ="#{cardTestBean.reportResultENOrganicRendered}" alt="check mark"/>
+                                <p:outputPanel id="explanationOrganicEN">
+                                    <br/>
+                                    <br/>
+                                    <small>
+                                        <h:outputText value="#{cardTestBean.organicResultENExplanation}" escape="false" rendered="#{cardTestBean.showENExplanationOrganic}"/>
+                                    </small>
+                                    <br/>
+                                    <br/>
+                                    <p:commandLink
+                                        value="#{text['general.verbs.hide']} ↩️"
+                                        action="#{cardTestBean.setShowENExplanationOrganic(false)}"
+                                        rendered="#{cardTestBean.showENExplanationOrganic}"
+                                        update="organicEN:explanationOrganicEN"/>
+                                    <p:spacer width="15"/>
+                                </p:outputPanel>
+                            </p:outputPanel>
+                        </h:form>
+                    </p:card>
+                    <p:spacer width="10"/>
+                    <p:card style="width: 30rem; margin-bottom: 2em">
+                        <f:facet name="title">
+                            #{text['index.button.organic']}<br/>
+                            <small>#{text['index.testorganic.analysisforFR']}</small>
+                        </f:facet>
+                        <h:form id="organicFR">
+                            <div class="ui-inputgroup">
+                                <p:inputText id="organicTestFR" value="#{cardTestBean.organicTestInputFR}"/>
+                                <p:commandButton value="#{text['general.verbs.compute']}" widgetVar="organicButtonFR" action="#{cardTestBean.runOrganicTestFR}" update="resultOrganicFR organicFR:explanationOrganicFR" styleClass="btn btn-primary"/>
+                            </div>
+                            <p:outputPanel id="resultOrganicFR">
+                                <h:outputText value="#{cardTestBean.organicResultFR}" style="width:40px;"/>
+                                <p:spacer width="15"/>
+                                <p:commandLink value="#{text['general.small_words.why']} 🤔" action="#{cardTestBean.setShowFRExplanationOrganic(true)}" rendered="#{cardTestBean.renderSignalOrganicFR}" update="organicFR:explanationOrganicFR"/>
+                                <p:spacer width="15"/>
+                                <p:commandLink style="text-align: center;font-size: 80%"
+                                               value="#{text['general.verbs.signal_error']}"
+                                               action="#{cardTestBean.signalOrganicFR}"
+                                               update="resultOrganicFR"
+                                               rendered="#{cardTestBean.renderSignalOrganicFR}"/>
+                                <p:spacer width="20" rendered ="#{cardTestBean.reportResultFROrganicRendered}"/>
+                                <p:outputLabel style="font-size: 80%" value="#{text['general.message.reportsent']}" rendered ="#{cardTestBean.reportResultFROrganicRendered}" />
+                                <p:graphicImage name="images/check.png" width="24px" rendered ="#{cardTestBean.reportResultFROrganicRendered}" alt="check mark"/>
+                                <p:outputPanel id="explanationOrganicFR">
+                                    <br/>
+                                    <br/>
+                                    <small>
+                                        <h:outputText value="#{cardTestBean.organicResultFRExplanation}" escape="false" rendered="#{cardTestBean.showFRExplanationOrganic}"/>
+                                    </small>
+                                    <br/>
+                                    <br/>
+                                    <p:commandLink
+                                        value="#{text['general.verbs.hide']} ↩️"
+                                        action="#{cardTestBean.setShowFRExplanationOrganic(false)}"
+                                        rendered="#{cardTestBean.showFRExplanationOrganic}"
+                                        update="organicFR:explanationOrganicFR"/>
+                                    <p:spacer width="15"/>
+                                </p:outputPanel>
+                            </p:outputPanel>
+                        </h:form>
+                    </p:card>
+                </div>
+                <p:spacer height="20"/>
+            </p:panel>
+            <p:spacer height="10" width="10"/>
+            <p:panel>
+                <h3 style="text-align: center;opacity: 0.8;">
+                    <small>
+                        #{text['index.togetstarted']}
+                        <br/>
+                        <br/>
+                        #{text['index.togettheresults']}
+                    </small>
+                </h3>
+                <p><p:spacer height="20"/></p>
+                <div id="reduce-desktop"> 
+                    <h:graphicImage name="images/workflow_medium.jpg"  alt="workflow for nocode function"/>
+                </div>
+                <br/>
+            </p:panel>
+            <p:spacer height="10" width="10"/>
+            <p:panel>
+                <h3 style="text-align: center; opacity: 0.8;">#{text['index.calltochooseafunction']}</h3>
+                <div class="flex justify-content-center flex-wrap" align="center">
+                    <div class="flex justify-content-center justify-content-center buttonIndexPage">
+                        <p:button value="#{text['index.button.umigon']}" outcome="umigon/sentiment_analysis_tool.html"/>
+                    </div>
+                    <p:spacer width="10"/>
+                    <div class="flex justify-content-center justify-content-center buttonIndexPage">
+                        <p:button value="#{text['index.button.organic']}" outcome="organic/organic_listening_voice_of_customer_tool.html"/>
+                    </div>
+                    <p:spacer width="10"/>
+                    <div class="flex justify-content-center justify-content-center buttonIndexPage">
+                        <p:button value="#{text['index.button.cowo']}" outcome="cowo/semantic_networks_tool.html"/>
+                    </div>
+                    <p:spacer width="10"/>
+                    <div class="flex justify-content-center justify-content-center buttonIndexPage">
+                        <p:button value="#{text['index.button.topics']}" outcome="topics/topic_extraction_tool.html"/>
+                    </div>
+                    <p:spacer width="10"/>
+                    <div class="flex justify-content-center justify-content-center buttonIndexPage">
+                        <p:button value="#{text['index.button.gaze']}" outcome="gaze/network_builder_tool.html"/>
+                    </div>
+                    <p:spacer width="10"/>
+                    <div class="flex justify-content-center justify-content-center buttonIndexPage">
+                        <p:button value="#{text['index.button.networkconverter']}" outcome="networkconverter/network_format_converter.html"/>
+                    </div>
+                    <p:spacer width="10"/>
+                    <div class="flex justify-content-center justify-content-center buttonIndexPage">
+                        <p:button value="#{text['index.button.link_prediction']}" outcome="link_prediction/link_prediction.html"/>
+                    </div>
+                    <p:spacer width="10"/>
+                    <div class="flex justify-content-center justify-content-center buttonIndexPage">
+                        <p:button value="#{text['index.button.highlighter']}" outcome="highlighter/highlight_word_in_context.html"/>
+                    </div>
+                    <p:spacer width="10"/>
+                    <div class="flex justify-content-center justify-content-center buttonIndexPage">
+                        <p:button value="#{text['index.button.pdfmatcher']}" outcome="pdfmatcher/pdf_matcher_tool.html"/>
+                    </div>
+                    <p:spacer width="10"/>
+                    <div class="flex justify-content-center justify-content-center buttonIndexPage">
+                        <p:button value="#{text['index.button.spatialize']}" outcome="spatialize/spatialize_network.html"/>
+                    </div>
+                    <p:spacer width="10"/>
+                    <div class="flex justify-content-center justify-content-center buttonIndexPage">
+                        <p:button value="#{text['index.button.pdfregionextractor']}" outcome="pdf_region_extractor/pdf_region_text_extractor_tool.html"/>
+                    </div>
+                    <p:spacer width="10"/>
+                    <div class="flex justify-content-center justify-content-center buttonIndexPage">
+                        <p:button value="#{text['index.button.pdfregionextractor']}" outcome="pdf_region_extractor/pdf_region_text_extractor_tool.html"/>
+                    </div>
+                    <p:spacer width="10"/>
+                    <div class="flex justify-content-center justify-content-center buttonIndexPageSlideLang">
+                        <p:button id="slidelangButton2" value="slidelang" href="https://alpha.slidelang.com" target="_blank"/>
+                    </div>
+                </div>
+            </p:panel>
+            <p:spacer height="10" width="10"/>
+            <p:panel>
+                <p:fieldset legend="#{text['index.datapolicy']}">
+                    <p>
+                        <small>
+                            <h:outputText value="#{text['index.datapolicy.forallotherfunctions.details']}" escape="false" />
+                        </small>
+                    </p>
+                    <br/>
+                    <p><small><a href="https://nocodefunctions.com/html/privacy_policy.html" target="_blank">#{text['index.datapolicy.link']}</a></small></p>
+                </p:fieldset>
+                <p:spacer height="20"/>
+                <p:fieldset legend="#{text['index.academic.title']}">
+                    <p>
+                        <small>
+                            <h:outputText value="#{text['index.academic.citations']}" escape="false" />
+                        </small>
+                    </p>
+                </p:fieldset>
+                <p:spacer height="20"/>
+                <span  id="Pricing">
+                    <p:fieldset legend="#{text['header.menu.pricing']}">
+                        <p>
+                            <small>
+                                <h:outputText value="#{text['index.pricing.details']}" escape="false" />
+                            </small>
+                        </p>
+                    </p:fieldset>
+                </span>
+                <p:spacer height="20"/>
+                <p:fieldset legend="@2021 Clement Levallois">
+                    <p>
+                        <small>
+                            <h:outputText value="#{text['index.contact.details']}" escape="false" />                        
+                        </small>
+                    </p>
+                </p:fieldset>
+                <p:spacer height="20"/>
+                <p:fieldset legend="#{text['header.menu.acknowledgements']}">
+                    <h:form>
+                        <p:commandLink
+                            style="text-align: center;font-size: 80%"
+                            value="#{text['index.acknowledgements.details']}"
+                            action="acknowledgements.html?faces-redirect=true"/>
+                    </h:form>
+                </p:fieldset>
+            </p:panel>
+            <ui:include src="/WEB-INF/includes/footer.xhtml" />
+        </h:body>
+    </f:view>
+</html>

@@ -1,0 +1,71 @@
+<html lang="#{localeBean.languageTag}"
+      xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+    <f:view locale="#{localeBean.currentLocale}">
+
+        <h:head>
+            <!-- Primary Meta Tags -->
+            <title>#{text['why.title']}</title>
+            <meta name="description" content="Nocode functions is developed to remain free and accessible to all"/>
+            <meta http-equiv="content-language" content="en-us"/>
+            <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+            <meta http-equiv="cleartype" content="on"/>
+            <meta name="HandheldFriendly" content="true"/>
+
+            <!-- Open Graph / Facebook -->
+            <meta property="og:type" content="website"/>
+            <meta property="og:site_name" content="Nocode functions"/>
+            <meta property="og:url" content="https://nocodefunctions.com/why.html"/>
+            <meta property="og:title" content="#{text['why.title']}"/>
+            <meta property="og:description" content="#{text['why.description']}"/>
+            <meta property="og:image" content="/images/workflow_medium.jpg"/>
+
+            <!-- Twitter -->
+            <meta property="twitter:card" content="summary_large_image"/>
+            <meta property="twitter:url" content="https://nocodefunctions.com/who.html"/>
+            <meta property="twitter:title" content="#{text['why.title']}"/>
+            <meta property="twitter:description" content="#{text['why.description']}"/>
+            <meta property="twitter:image" content="/images/workflow_medium.jpg"/>
+            <link rel="apple-touch-icon" sizes="180x180" href="#{resource['images/favicons/apple-touch-icon.png']}"/>
+            <link rel="icon" type="image/png" sizes="32x32" href="#{resource['images/favicons/favicon-32x32.png']}"/>
+            <link rel="icon" type="image/png" sizes="16x16" href="#{resource['images/favicons/favicon-16x16.png']}"/>
+            <link rel="manifest" href="#{resource['images/favicons/site.webmanifest']}"/>
+            <link rel="mask-icon" href="#{resource['images/favicons/safari-pinned-tab.svg']}" color="#5bbad5"/>
+            <link rel="shortcut icon" href="#{resource['images/favicons/favicon.ico']}"/>
+            <meta name="msapplication-TileColor" content="#da532c"/>
+            <meta name="msapplication-config" content="#{resource['images/favicons/browserconfig.xml']}"/>
+            <meta name="theme-color" content="#ffffff"/>
+            <link rel="shortcut icon" type="image/x-icon" href="#{resource['images/favicons/favicon.ico']}"/>
+
+            <p:outputLabel value="#{sessionBean.noRobot}" escape="false" rendered="#{sessionBean.testServer}"/>
+        </h:head>
+        <h:body>
+            <h:outputStylesheet name="css/primeflex.css" />
+            <h:outputStylesheet name="css/custom.css" />
+            <f:metadata>
+                <f:viewParam name="lang" value="#{localeBean.languageTag}" />
+            </f:metadata>
+            <p:panel>
+                <ui:include src="/WEB-INF/includes/header.xhtml"/>
+                
+                <div style="text-align: center; font-size: xx-large">🔥</div>
+                <h1 style="text-align: center">#{text['why.tagline']}</h1>
+                <div style="text-align: center" id="reduce-pic-when-mobile-below-930-width">
+                    <p:graphicImage name="images/silicon valley.jpg" width="60%" alt="Poster of Silicon Valley HBO series"/>
+                </div>
+            </p:panel>
+            <p:spacer height="20"/>
+            <p:fieldset legend="#{text['why.argument1']}">
+                <h:outputText value="#{text['why.argument1.details']}" escape="false" />
+            </p:fieldset>
+            <p:spacer height="20"/>
+            <p:fieldset legend="#{text['why.argument2']}">
+                <h:outputText value="#{text['why.argument2.details']}" escape="false" />
+            </p:fieldset>
+            <ui:include src="/WEB-INF/includes/footer.xhtml" />
+        </h:body>
+    </f:view>
+</html>

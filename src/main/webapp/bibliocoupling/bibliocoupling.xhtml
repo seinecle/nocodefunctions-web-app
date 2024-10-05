@@ -1,0 +1,78 @@
+<html 
+    lang="#{localeBean.languageTag}"
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="jakarta.faces.html"
+    xmlns:f="jakarta.faces.core"
+    xmlns:p="http://primefaces.org/ui"
+    xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+    <f:view locale="#{localeBean.currentLocale}">
+
+        <h:head>
+            <title>#{text['pdfmatcher.tool.title']}</title>
+            <link rel="apple-touch-icon" sizes="180x180" href="#{resource['images/favicons/apple-touch-icon.png']}"/>
+            <link rel="icon" type="image/png" sizes="32x32" href="#{resource['images/favicons/favicon-32x32.png']}"/>
+            <link rel="icon" type="image/png" sizes="16x16" href="#{resource['images/favicons/favicon-16x16.png']}"/>
+            <link rel="manifest" href="#{resource['images/favicons/site.webmanifest']}"/>
+            <link rel="mask-icon" href="#{resource['images/favicons/safari-pinned-tab.svg']}" color="#5bbad5"/>
+            <link rel="shortcut icon" href="#{resource['images/favicons/favicon.ico']}"/>
+            <meta name="msapplication-TileColor" content="#da532c"/>
+            <meta name="msapplication-config" content="#{resource['images/favicons/browserconfig.xml']}"/>
+            <meta name="theme-color" content="#ffffff"/>
+            <link rel="shortcut icon" type="image/x-icon" href="#{resource['images/favicons/favicon.ico']}"/>
+            <meta name="robots" content="noindex"/>
+        </h:head>
+        <h:body>
+            <h:outputStylesheet name="css/primeflex.css" />
+            <h:outputStylesheet name="css/custom.css" />
+            <p:panel>
+                <ui:include src="/WEB-INF/includes/header.xhtml"/>
+                <h1>#{text['pdfmatcher.pdfmatcher.tagline']}</h1>
+            </p:panel>
+            <p:spacer height="20"/>
+
+            <div class="grid" >
+                <div class="col-12 md:9 lg:col-9">
+                    <h:form id="form">
+
+                        <!--RUN ANALYSIS BUTTON-->
+                        <p:commandButton value="#{text['general.verbs.compute']}" widgetVar="cowoButton" action="#{biblioCouplingBean.runBiblioCouplingAnalysis}" onclick="PF('pbAjaxLong').start();PF('cowoButton').disable()" styleClass="btn btn-primary"/>
+                        <br/>
+                        <br/>
+                        <p:spacer height="20"/>
+                        <!--PROGRESS BAR FOR RUN ANALYSIS-->
+                        <p:progressBar id="pb" widgetVar="pbAjaxLong" ajax="true" value="#{biblioCouplingBean.progress}"
+                                       labelTemplate="{value}%" styleClass="p-mt-3" global="false" interval="500">
+                            <p:ajax event="complete" update=":header:messages"/>
+
+                        </p:progressBar>
+                        <div>
+                            <p:spacer height="20"/>
+                        </div>
+                        <br/>
+                        <br/>
+                        <p:commandButton
+                            id="button"
+                            value="#{text['general.verbs.download_results']}"
+                            action="#{biblioCouplingBean.goSeeResults}"
+                            rendered="#{biblioCouplingBean.renderResultsButton}"/>
+                    </h:form>
+                </div>
+                <div class="col-3 flex-grow-1">
+                    <p:panel header="Log">
+                        <p:scrollPanel id="scrollPanel" mode="native" style="height:100%">
+                            <h:dataTable id="notifications" value="#{backToFrontMessengerBean.notifications}" var="notification">
+                                <h:column>#{notification.message}</h:column>
+                            </h:dataTable>
+                            <h:form>
+                                <f:websocket channel="logChannel"  scope="session">
+                                    <f:ajax event="updateNotifications" render=":notifications" />
+                                </f:websocket>
+                            </h:form>
+                        </p:scrollPanel>
+                    </p:panel>
+                </div>
+            </div>
+            <ui:include src="/WEB-INF/includes/footer.xhtml" />
+        </h:body>
+    </f:view>
+</html>

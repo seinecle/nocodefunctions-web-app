@@ -1,0 +1,136 @@
+<html 
+    lang="#{localeBean.languageTag}"
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="jakarta.faces.html"
+    xmlns:f="jakarta.faces.core"
+
+    xmlns:p="http://primefaces.org/ui"
+    xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+    <f:view locale="#{localeBean.currentLocale}">
+
+        <h:head>
+            <title>#{text['import_data.general.choose_web_page']}</title>
+            <meta name="description" content="#{text['import_data.general.choose_web_page']}"/>
+            <meta http-equiv="content-language" content="en-us"/>
+            <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+            <meta http-equiv="cleartype" content="on"/>
+            <meta name="HandheldFriendly" content="true"/>
+
+            <link rel="apple-touch-icon" sizes="180x180" href="#{resource['images/favicons/apple-touch-icon.png']}"/>
+            <link rel="icon" type="image/png" sizes="32x32" href="#{resource['images/favicons/favicon-32x32.png']}"/>
+            <link rel="icon" type="image/png" sizes="16x16" href="#{resource['images/favicons/favicon-16x16.png']}"/>
+            <link rel="manifest" href="#{resource['images/favicons/site.webmanifest']}"/>
+            <link rel="mask-icon" href="#{resource['images/favicons/safari-pinned-tab.svg']}" color="#5bbad5"/>
+            <link rel="shortcut icon" href="#{resource['images/favicons/favicon.ico']}"/>
+            <meta name="msapplication-TileColor" content="#da532c"/>
+            <meta name="msapplication-config" content="#{resource['images/favicons/browserconfig.xml']}"/>
+            <meta name="theme-color" content="#ffffff"/>
+            <link rel="shortcut icon" type="image/x-icon" href="#{resource['images/favicons/favicon.ico']}"/>
+            <meta name="robots" content="noindex"/>
+        </h:head>
+        <h:body>
+            <h:outputStylesheet name="css/primeflex.css" />
+            <h:outputStylesheet name="css/custom.css" />
+            <f:metadata>
+                <f:viewParam name="function" value="#{sessionBean.function}" />
+                <f:viewAction action="#{dataImportBean.setBulkData(true)}" />
+                <f:viewAction action="#{importSimpleLinesBean.setDataPersistenceUniqueId()}" />
+            </f:metadata>.
+            <p:panel>
+                <ui:include src="/WEB-INF/includes/header.xhtml"/>
+                <h1>#{text['general.message.analyze_url']}</h1>
+            </p:panel>
+            <p:spacer height="20"/>
+            <p:panel>
+                <div class="grid" >
+                    <div class="col-12 md:9 lg:col-9">
+                        <h:form enctype="multipart/form-data" id="loadUrlForm">
+                            <b>#{text['general.message.paste_url']}</b>
+                            <br/>
+                            <br/>
+                            <h:graphicImage name="images/round_1_orange.png" width="20" height="20" style="vertical-align: middle;"/>
+                            <p:spacer width="5"/>
+                            <p:inputText
+                                id="urlInput"
+                                value="#{htmlTextImportToSimpleLines.urlWebPage}"
+                                placeholder="https:// ...">
+                                <p:ajax/>
+                            </p:inputText>
+                            <p:spacer width="10"/>
+                            <p:commandButton
+                                id="loadUrlButton"
+                                value="#{text['import_data.website.crawl_website']}"
+                                action="#{htmlTextImportToSimpleLines.retrieveUrlsContainedOnAPage}"
+                                styleClass="btn btn-primary"
+                                update=":notifications accordion"
+                                />
+                            <br/>
+                            <br/>
+                            <p:outputPanel id="launch">
+                                <h:graphicImage name="images/round_2_orange.png" width="20" height="20" style="vertical-align: middle;"/>
+                                <p:spacer width="5"/>
+                                <p:commandButton
+                                    value="#{text['general.verbs.compute']}"
+                                    action="#{htmlTextImportToSimpleLines.gotToFunctionWithDataInBulk()}"
+                                    styleClass="btn btn-primary"
+                                    update=":notifications"
+                                    />
+                            </p:outputPanel>
+                            <br/>
+                            <br/>
+                            <p:accordionPanel widgetVar="basic" activeIndex="null" id="accordion">
+                                <p:tab title="#{text['general.title.if_you_need_more_parameters']}" id="parameters">
+                                    <p class="p-m-0">
+                                        <p:divider align="left">
+                                            <div class="p-d-inline-flex p-ai-center">
+                                                <i class="pi pi-chart-bar p-mr-2"/>
+                                                <b>#{text['import_data.include_depth_1_links']}</b>
+                                            </div>
+                                        </p:divider>
+                                        <p>⚠️ #{text['import_data.you_need_to_do_step_one_first']} ⚠️</p>
+                                        <div>
+                                            <p:spacer height="20"/>
+                                        </div>
+                                        <div class="card">
+                                            <p:dataTable
+                                                id="linksTable"
+                                                var="link"
+                                                value="#{htmlTextImportToSimpleLines.linksToHarvest}"
+                                                selection="#{htmlTextImportToSimpleLines.selectedLinks}"
+                                                rowKey="#{link.link}"
+                                                style="margin-bottom:0"
+                                                paginator="true"
+                                                rows="50"
+                                                selectionPageOnly="false"
+                                                rowSelectMode="none">
+                                                <p:column selectionMode="multiple" style="width:16px;text-align:center"/>
+                                                <p:column headerText="#{text['import_data.include_this_link_question']}">
+                                                    <a href="#{link.link}" target="_blank">#{link.linkText}</a> (#{link.getLinkFirstChars(40)} ...)
+                                                </p:column>
+                                            </p:dataTable>
+                                        </div>
+                                    </p>
+                                </p:tab>
+                            </p:accordionPanel>
+                        </h:form>
+                    </div>
+                    <div class="col-3 flex-grow-1">
+                        <p:panel header="Log">
+                            <p:scrollPanel id="scrollPanel" mode="native" style="height:100%">
+                                <h:dataTable id="notifications" value="#{backToFrontMessengerBean.notifications}" var="notification">
+                                    <h:column>#{notification.message}</h:column>
+                                </h:dataTable>
+                                <h:form>
+                                    <f:websocket channel="logChannel"  scope="session">
+                                        <f:ajax event="updateNotifications" render=":notifications" />
+                                    </f:websocket>
+                                </h:form>
+                            </p:scrollPanel>
+                        </p:panel>
+                    </div>
+                </div>
+            </p:panel>
+            <ui:include src="/WEB-INF/includes/footer.xhtml" />
+        </h:body>
+    </f:view>
+</html>
