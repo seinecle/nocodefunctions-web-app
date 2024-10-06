@@ -6,6 +6,10 @@
     xmlns:p="http://primefaces.org/ui"
     xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
     <f:view locale="#{localeBean.currentLocale}">
+        <f:metadata>
+            <f:viewAction action="#{highlighterBean.doTheHighlight()}" />
+        </f:metadata>        
+
 
         <h:head>
             <title>#{text['highlighter.results.title']}</title>
@@ -32,10 +36,6 @@
         <h:body>
             <h:outputStylesheet name="css/primeflex.css" />
             <h:outputStylesheet name="css/custom.css" />
-            <f:metadata>
-                <f:viewAction action="#{highlighterBean.doTheHighlight()}" />
-            </f:metadata>        
-
             <script type="text/javascript">
                 //<![CDATA[
                 function start() {

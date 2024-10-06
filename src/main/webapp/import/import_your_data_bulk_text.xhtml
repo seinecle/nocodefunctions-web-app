@@ -3,10 +3,14 @@
     xmlns="http://www.w3.org/1999/xhtml"
     xmlns:h="jakarta.faces.html"
     xmlns:f="jakarta.faces.core"
-    
+
     xmlns:p="http://primefaces.org/ui"
     xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
     <f:view locale="#{localeBean.currentLocale}">
+        <f:metadata>
+            <f:viewParam name="function" value="#{sessionBean.function}" />
+            <f:viewAction action="#{dataImportBean.setBulkData(true)}" />
+        </f:metadata>
 
         <h:head>
             <title>#{text['import_data.bulk.title']}</title>
@@ -31,10 +35,6 @@
         <h:body>
             <h:outputStylesheet name="css/primeflex.css" />
             <h:outputStylesheet name="css/custom.css" />
-            <f:metadata>
-                <f:viewParam name="function" value="#{sessionBean.function}" />
-                <f:viewAction action="#{dataImportBean.setBulkData(true)}" />
-            </f:metadata>
             <p:panel>
                 <ui:include src="/WEB-INF/includes/header.xhtml"/>
                 <h1>#{text['general.message.upload_your_data']}</h1>
@@ -182,9 +182,9 @@
                                     <h:column>#{notification.message}</h:column>
                                 </h:dataTable>
                                 <h:form>
-                                <f:websocket channel="logChannel"  scope="session">
-                                    <f:ajax event="updateNotifications" render=":notifications" />
-                                </f:websocket>
+                                    <f:websocket channel="logChannel"  scope="session">
+                                        <f:ajax event="updateNotifications" render=":notifications" />
+                                    </f:websocket>
                                 </h:form>
                             </p:scrollPanel>
                         </p:panel>

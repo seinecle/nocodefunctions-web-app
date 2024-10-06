@@ -8,6 +8,8 @@ import java.net.URI;
  * @author LEVALLOIS
  */
 public class RemoteLocal {
+    
+    
 
     public static String getDomain() {
         String path;

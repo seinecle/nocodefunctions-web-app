@@ -7,6 +7,11 @@
     xmlns:p="http://primefaces.org/ui"
     xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
     <f:view locale="#{localeBean.currentLocale}">
+            <f:metadata>
+                <f:viewParam name="function" value="#{sessionBean.function}" />
+                <f:viewAction action="#{dataImportBean.setBulkData(true)}" />
+                <f:viewAction action="#{importSimpleLinesBean.setDataPersistenceUniqueId()}" />
+            </f:metadata>
 
         <h:head>
             <title>#{text['import_data.general.choose_json']}</title>
@@ -31,11 +36,6 @@
         <h:body>
             <h:outputStylesheet name="css/primeflex.css" />
             <h:outputStylesheet name="css/custom.css" />
-            <f:metadata>
-                <f:viewParam name="function" value="#{sessionBean.function}" />
-                <f:viewAction action="#{dataImportBean.setBulkData(true)}" />
-                <f:viewAction action="#{importSimpleLinesBean.setDataPersistenceUniqueId()}" />
-            </f:metadata>
             <p:panel>
                 <ui:include src="/WEB-INF/includes/header.xhtml"/>
                 <h1>#{text['general.message.upload_your_data']}</h1>

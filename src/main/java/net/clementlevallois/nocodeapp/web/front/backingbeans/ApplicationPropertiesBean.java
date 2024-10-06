@@ -54,9 +54,9 @@ public class ApplicationPropertiesBean {
     public ApplicationPropertiesBean() {
         loadAll();
     }
-    
-    private void loadAll(){
-        loadEnvironmentVariablesOnWindows();
+
+    private void loadAll() {
+        loadEnvironmentVariables();
         rootProjectPath = loadRootProjectPath();
         privateProperties = loadPrivateProperties();
         i18nStaticResourcesFullPath = loadI18nStaticResourcesFullPath();
@@ -71,8 +71,8 @@ public class ApplicationPropertiesBean {
         tempFolderFullPath = loadTempFolderFullPath();
         vosviewerRootRelativePath = loadVosviewerRootRelativePath();
         vosviewerRootFullPath = loadVosviewerRootFullPath();
-        gephistoRootFullPath = loadGephistoRootFullPath();        
-        gephiLiteRootFullPath = loadGephiLiteRootFullPath();        
+        gephistoRootFullPath = loadGephistoRootFullPath();
+        gephiLiteRootFullPath = loadGephiLiteRootFullPath();
     }
 
     private Path loadRootProjectPath() {
@@ -120,7 +120,7 @@ public class ApplicationPropertiesBean {
         try (InputStream is = new FileInputStream(privatePropsFilePath.toFile())) {
             props = new Properties();
             props.load(is);
-            
+
         } catch (IOException ex) {
             System.out.println("ex: " + ex);
             System.out.println("could not open the file for private properties");
@@ -338,7 +338,7 @@ public class ApplicationPropertiesBean {
     public Path getTempFolderFullPath() {
         return tempFolderFullPath;
     }
-    
+
     public String getMiddlewarePort() {
         if (RemoteLocal.isLocal()) {
             return privateProperties.getProperty("middleware_local_port");
@@ -354,23 +354,49 @@ public class ApplicationPropertiesBean {
             return privateProperties.getProperty("middleware_remote_host");
         }
     }
-    
-    
 
-    private void loadEnvironmentVariablesOnWindows() {
-        if (!RemoteLocal.isLocal()) {
-            return;
+    private void loadEnvironmentVariables() {
+        if (RemoteLocal.isLocal()) {
+            loadEnvironmentVariablesOnWindows();
+        } else {
+            loadEnvironmentVariablesOnLinux();
         }
-        List<String> vars = null;
+    }
+
+    private void loadEnvironmentVariablesOnLinux() {
         String currentWorkingDirectory = System.getProperty("user.dir");
         System.out.println("working dir: " + currentWorkingDirectory);
+        Path pathToSystemProperties = Path.of("sys.properties");
+        if (!Files.exists(Path.of("sys.properties"))) {
+            pathToSystemProperties = Path.of("..", "sys.properties");
+        }
+
         try {
-            vars = Files.readAllLines(Path.of("sys.properties"), StandardCharsets.UTF_8);
+        List<String> vars = Files.readAllLines(pathToSystemProperties, StandardCharsets.UTF_8);
             for (String line : vars) {
                 if (line.startsWith("#")) {
                     continue;
                 }
-                String[] fields = line.split("=");
+                String[] fields = line.split("=", 2);
+                System.setProperty(fields[0], fields[1]);
+            }
+        } catch (IOException ex) {
+            System.out.println("running on linux, could not find the file sys.properties containing all environment variablesl");
+            System.out.println("EXITING NOW because without these properties, the app can't function");
+            System.out.println("ex: " + ex);
+        }
+    }
+
+    private void loadEnvironmentVariablesOnWindows() {
+        String currentWorkingDirectory = System.getProperty("user.dir");
+        System.out.println("working dir: " + currentWorkingDirectory);
+        try {
+        List<String> vars = Files.readAllLines(Path.of("sys.properties"), StandardCharsets.UTF_8);
+            for (String line : vars) {
+                if (line.startsWith("#")) {
+                    continue;
+                }
+                String[] fields = line.split("=", 2);
                 System.setProperty(fields[0], fields[1]);
             }
         } catch (IOException ex) {

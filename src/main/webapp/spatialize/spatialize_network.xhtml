@@ -6,6 +6,10 @@
     xmlns:p="http://primefaces.org/ui"
     xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
     <f:view locale="#{localeBean.currentLocale}">
+        <f:metadata>
+            <f:viewParam name="lang" value="#{localeBean.languageTag}" />
+            <f:viewParam name="function" value="#{sessionBean.function}" />
+        </f:metadata>
 
         <h:head>        <!-- Primary Meta Tags -->
             <title>#{text['spatialize.title']}</title>
@@ -46,10 +50,6 @@
         <h:body>
             <h:outputStylesheet name="css/primeflex.css" />
             <h:outputStylesheet name="css/custom.css" />
-            <f:metadata>
-                <f:viewParam name="lang" value="#{localeBean.languageTag}" />
-                <f:viewParam name="function" value="#{sessionBean.function}" />
-            </f:metadata>
             <script type="text/javascript">
                 //<![CDATA[
                 function start() {
