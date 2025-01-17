@@ -23,11 +23,14 @@ public class I18nStaticFilesResourceBundleTest {
     @BeforeAll
     public static void loadProperties() throws IOException {
         applicationProperties = new ApplicationPropertiesBean();
+        applicationProperties.loadAll();
+
     }
 
     @Test
     public void remoteLocalClass() {
         I18nStaticFilesResourceBundle bundleManager = new I18nStaticFilesResourceBundle();
+        bundleManager.setApplicationPropertiesBean(applicationProperties);
         ResourceBundle bundle = bundleManager.simpleMethodToGetResourceBundle(Locale.forLanguageTag("fr"));
         boolean containsKey = bundle.containsKey("cowo.tool.argument1.details");
         assertThat(containsKey).isTrue();

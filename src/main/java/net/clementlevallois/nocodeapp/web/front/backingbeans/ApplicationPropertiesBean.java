@@ -3,6 +3,7 @@
  */
 package net.clementlevallois.nocodeapp.web.front.backingbeans;
 
+import jakarta.annotation.PostConstruct;
 import jakarta.ejb.Singleton;
 import jakarta.ejb.Startup;
 import java.io.FileInputStream;
@@ -52,10 +53,10 @@ public class ApplicationPropertiesBean {
     private final String ENV_VARIABLE_USER_CREATED_FILES_DIR = "relative.path.user.created.files";
 
     public ApplicationPropertiesBean() {
-        loadAll();
     }
-
-    private void loadAll() {
+    
+    @PostConstruct
+    public void loadAll() {
         loadEnvironmentVariables();
         rootProjectPath = loadRootProjectPath();
         privateProperties = loadPrivateProperties();
@@ -132,7 +133,7 @@ public class ApplicationPropertiesBean {
 
     }
 
-    private static Path loadI18nStaticResourcesFullPath() {
+    private Path loadI18nStaticResourcesFullPath() {
         Path i18nResourcesFullPath = null;
         String i18nStaticResourcesRelativePath = System.getProperty(ENV_VARIABLE_I18N_DIR);
         if (i18nStaticResourcesRelativePath == null || i18nStaticResourcesRelativePath.isBlank()) {

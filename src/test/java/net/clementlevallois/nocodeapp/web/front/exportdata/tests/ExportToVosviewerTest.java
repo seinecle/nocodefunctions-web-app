@@ -28,6 +28,8 @@ public class ExportToVosviewerTest {
     @BeforeAll
     public static void loadProperties() throws IOException {
         applicationProperties = new ApplicationPropertiesBean();
+                applicationProperties.loadAll();
+
     }
 
     @AfterEach

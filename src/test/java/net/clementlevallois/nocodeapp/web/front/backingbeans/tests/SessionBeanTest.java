@@ -17,21 +17,22 @@ import org.junit.jupiter.api.Test;
  */
 public class SessionBeanTest {
 
-    
     private static SessionBean sessionBean;
-    private static ApplicationPropertiesBean applicationProperties; 
+    private static ApplicationPropertiesBean applicationProperties;
 
     @BeforeAll
     public static void mockEssentialBeans() throws IOException {
         sessionBean = new SessionBean();
         applicationProperties = new ApplicationPropertiesBean();
-    }    
-    
-    
+        applicationProperties.loadAll();
+
+    }
+
     @Test
     public void refreshLocaleBundle() {
         Locale l = Locale.GERMAN;
         sessionBean.setCurrentLocale(l);
+        sessionBean.setApplicationProperties(applicationProperties);
         sessionBean.refreshLocaleBundle();
         assertThat(sessionBean.getLocaleBundle().getLocale()).isEqualTo(Locale.GERMAN);
     }

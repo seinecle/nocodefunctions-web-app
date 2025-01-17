@@ -62,6 +62,7 @@ public class HtmlTextImportToSimpleLines implements Serializable {
     private List<UrlLink> selectedLinks = new ArrayList();
 
     private Integer maxUrls = 10;
+    private Integer maxUrlsHardLimit = 10;
     private String commaSeparatedValuesExclusionTerms = "";
 
     private Boolean includeDepthOne = false;
@@ -212,6 +213,10 @@ public class HtmlTextImportToSimpleLines implements Serializable {
             if (currentFunction == null) {
                 logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.error_function_not_set"));
                 return;
+            }
+
+            if (maxUrls > maxUrlsHardLimit) {
+                maxUrls = maxUrlsHardLimit;
             }
 
             HttpClient client = HttpClient.newHttpClient();

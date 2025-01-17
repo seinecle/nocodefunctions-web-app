@@ -12,11 +12,13 @@ import org.junit.jupiter.api.Test;
  * @author LEVALLOIS
  */
 public class SingletonBeanTest {
-    
+
     @Test
-    public void constructor(){
+    public void constructor() {
         ApplicationPropertiesBean app = new ApplicationPropertiesBean();
+        app.loadAll();
+
         assertThat(app.getGephistoRootFullPath()).isNotNull();
     }
-    
+
 }

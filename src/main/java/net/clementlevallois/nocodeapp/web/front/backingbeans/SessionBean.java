@@ -52,6 +52,7 @@ public class SessionBean implements Serializable {
             userAgent = request.getHeader("user-agent");
         }
         I18nStaticFilesResourceBundle staticFilesResourceBundle = new I18nStaticFilesResourceBundle();
+        staticFilesResourceBundle.setApplicationPropertiesBean(applicationProperties);
         localeBundle = staticFilesResourceBundle.simpleMethodToGetResourceBundle(currentLocale);
     }
 
@@ -143,6 +144,7 @@ public class SessionBean implements Serializable {
 
     public void refreshLocaleBundle() {
         I18nStaticFilesResourceBundle dbb = new I18nStaticFilesResourceBundle();
+        dbb.setApplicationPropertiesBean(applicationProperties);
         localeBundle = dbb.simpleMethodToGetResourceBundle(currentLocale);
     }
 

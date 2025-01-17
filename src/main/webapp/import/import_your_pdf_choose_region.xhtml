@@ -51,14 +51,12 @@
                                 label="#{text['import_data.general.choose_pdf']}"
                                 mode="advanced"
                                 skinSimple="true"
-                                sizeLimit="100000000" 
                                 sequential="true"
                                 multiple="true"
                                 listener="#{oneFileUploadInMultipleUploadBean.handleFileUpload}"
                                 update=":notifications whenFileUploaded"
-                                allowTypes="/(\.|\/)(pdf)$/"
-                                fileLimit="100"
                                 >
+                                <p:validateFile fileLimit="100" sizeLimit="100000000" allowTypes="/(\.|\/)(pdf)$/"/>
                             </p:fileUpload>
                             <br/>
                             <br/>

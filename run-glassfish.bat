@@ -1,0 +1,1 @@
+java -Xms4g -Xmx15g -XX:+UseParallelGC -jar glassfish-embedded-all-7.0.18.jar ./target/jsf-app-1.0-SNAPSHOT.war

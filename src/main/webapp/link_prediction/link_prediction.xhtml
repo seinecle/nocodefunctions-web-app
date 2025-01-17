@@ -95,7 +95,7 @@
                     <p:fileUpload
                         label="#{text['general.message.choose_gexf_file']}"
                         mode="simple"
-                        auto="false"
+                        auto="true"
                         skinSimple="true"
                         multiple="false"
                         sizeLimit="50000000"
@@ -114,9 +114,6 @@
                     </div>
                     <p>
                         <p:outputLabel value="#{text['network_converter.warning_not_gephi_file']}" escape="false"/>
-                    </p>
-                    <p>
-                        #{text['general.message.max_file_size']}: 100Mb
                     </p>
                     <div>
                         <p:spacer height="15" width="10"/>            

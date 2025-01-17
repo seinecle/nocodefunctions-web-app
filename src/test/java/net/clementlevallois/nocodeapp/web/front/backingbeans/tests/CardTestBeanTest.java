@@ -25,6 +25,7 @@ public class CardTestBeanTest {
     public static void mockEssentialBeans() throws IOException {
         sessionBean = new SessionBean();
         applicationProperties = new ApplicationPropertiesBean();
+        applicationProperties.loadAll();
         sessionBean.setApplicationProperties(applicationProperties);
         sessionBean.init();
         cardTest = new CardTestBean();

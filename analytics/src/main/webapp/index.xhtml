@@ -1,0 +1,57 @@
+<html 
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="jakarta.faces.html"
+    xmlns:p="http://primefaces.org/ui"
+    xmlns:f="jakarta.faces.core">
+
+    <h:head>
+        <h:outputStylesheet name="css/primeflex.css"/>
+    </h:head>
+
+    <h:body>
+        <h:outputScript>
+            const custom_canvas_background_color = {
+            id: 'custom_canvas_background_color',
+            beforeDraw: (chart, args, options) => {
+            const {
+            ctx,
+            chartArea: { top, right, bottom, left, width, height },
+            scales: { x, y },
+            } = chart;
+            ctx.save();
+            ctx.globalCompositeOperation = 'destination-over';
+            ctx.fillStyle = '#E5E5E5';
+            ctx.fillRect(left, top, width, height);
+            ctx.restore();
+            },
+            };
+            function chartExtender() { 
+            //copy the config options into a variable
+            var options = $.extend(true, {}, this.cfg.config);
+
+            options = {
+            options: {
+            plugins: [custom_canvas_background_color]
+            }
+            };
+
+            //merge all options into the main chart options
+            $.extend(true, this.cfg.config, options);
+            };
+        </h:outputScript>
+        <p:panel  style="display:block; text-align:center" >
+            <f:facet name="header">
+                <a href="https://nocodefunctions.com" target="_blank">Nocodefunctions.com</a>
+                <br/>
+                traffic report
+            </f:facet>
+            <p:spacer height="100"/>
+            <h:form>
+                <h:panelGroup style="display:block; text-align:center">
+                    <p:barChart model="#{trafficBean.modelLaunch}" style="height:300px"/>
+                </h:panelGroup>
+            </h:form>
+            <p>NB: traffic by bots is excluded from these counts.</p>
+        </p:panel>
+    </h:body>
+</html>

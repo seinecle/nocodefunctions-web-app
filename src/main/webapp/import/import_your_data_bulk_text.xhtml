@@ -52,30 +52,26 @@
                                 label="#{text['import_data.general.choose_txt_or_pdf']}"
                                 mode="advanced"
                                 skinSimple="true"
-                                sizeLimit="100000000"
                                 multiple="true"
                                 listener="#{oneFileUploadInMultipleUploadBean.handleFileUpload}"
                                 update=":notifications whenFileUploaded"
-                                allowTypes="/(\.|\/)(txt|pdf)$/"
-                                sequential="false"
-                                fileLimit="10"
+                                sequential="false"                                
                                 rendered="#{sessionBean.function != 'pdfmatcher' &amp;&amp; sessionBean.function != 'pdf_region_extractor'}"
                                 >
+                                <p:validateFile fileLimit="10" sizeLimit="100000000" allowTypes="/(\.|\/)(txt|pdf)$/"/>
                             </p:fileUpload>
 
                             <p:fileUpload
                                 label="#{text['import_data.general.choose_pdf']}"
                                 mode="advanced"
                                 skinSimple="true"
-                                sizeLimit="100000000" 
                                 sequential="true"
                                 multiple="true"
                                 listener="#{oneFileUploadInMultipleUploadBean.handleFileUpload}"
                                 update=":notifications whenFileUploaded"
-                                allowTypes="/(\.|\/)(pdf)$/"
                                 rendered="#{sessionBean.function == 'pdfmatcher' || sessionBean.function == 'pdf_region_extractor'}"
-                                fileLimit="120"                                    
                                 >
+                                <p:validateFile fileLimit="120" sizeLimit="100000000" allowTypes="/(\.|\/)(pdf)$/"/>
                             </p:fileUpload>
                             <br/>
                             <br/>

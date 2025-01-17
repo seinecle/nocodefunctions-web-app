@@ -55,10 +55,10 @@
                                 multiple="false"
                                 auto="false"
                                 skinSimple="true"
-                                sizeLimit="100000000"
                                 listener="#{oneFileUploadInMultipleUploadBean.handleFileUpload}"
                                 update=":notifications whenFileUploaded"
-                                allowTypes="/(\.|\/)(csv|tsv|xlsx|txt)$/">                                
+                                >
+                                <p:validateFile sizeLimit="10000000" allowTypes="/(\.|\/)(csv|tsv|xlsx|txt)$/"/>
                             </p:fileUpload>
                             <br/>
                             <!--READ FILE OPERATION-->

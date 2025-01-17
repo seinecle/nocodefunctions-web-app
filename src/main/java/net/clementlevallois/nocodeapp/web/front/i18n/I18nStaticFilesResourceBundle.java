@@ -3,7 +3,9 @@
  */
 package net.clementlevallois.nocodeapp.web.front.i18n;
 
+import jakarta.ejb.Singleton;
 import jakarta.faces.context.FacesContext;
+import jakarta.inject.Inject;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -21,12 +23,19 @@ import net.clementlevallois.nocodeapp.web.front.backingbeans.ApplicationProperti
 
 public class I18nStaticFilesResourceBundle extends ResourceBundle {
 
+    ApplicationPropertiesBean appBean;
+    
     private ResourceBundle rb;
     private Locale current;
 
     public I18nStaticFilesResourceBundle() {
     }
 
+    public void setApplicationPropertiesBean(ApplicationPropertiesBean applicationPropertiesBean) {
+        this.appBean = applicationPropertiesBean;
+    }
+    
+    
     @Override
     public Object handleGetObject(String key) {
         return getCurrentInstance().getObject(key);

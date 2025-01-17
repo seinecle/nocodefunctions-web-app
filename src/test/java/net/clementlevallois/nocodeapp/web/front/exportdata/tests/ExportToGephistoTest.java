@@ -21,11 +21,12 @@ import org.junit.jupiter.api.Test;
 public class ExportToGephistoTest {
 
     private static ApplicationPropertiesBean applicationProperties;
-    
-    
+
     @BeforeAll
     public static void loadProperties() throws IOException {
         applicationProperties = new ApplicationPropertiesBean();
+        applicationProperties.loadAll();
+
     }
 
     @AfterEach
@@ -44,7 +45,7 @@ public class ExportToGephistoTest {
         Path relativePathFromProjectRootToGephistoFolder = applicationProperties.getRelativePathFromProjectRootToGephistoFolder();
         Path gephistoRootFullPath = applicationProperties.getGephistoRootFullPath();
     }
-    
+
     @Test
     public void exportAndReturnLinkOnLinuxOnTestServer() throws URISyntaxException, IOException {
         URL resource = ExportToGephistoTest.class.getClassLoader().getResource("empty-network.gexf");

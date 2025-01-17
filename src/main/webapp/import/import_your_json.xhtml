@@ -7,11 +7,11 @@
     xmlns:p="http://primefaces.org/ui"
     xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
     <f:view locale="#{localeBean.currentLocale}">
-            <f:metadata>
-                <f:viewParam name="function" value="#{sessionBean.function}" />
-                <f:viewAction action="#{dataImportBean.setBulkData(true)}" />
-                <f:viewAction action="#{importSimpleLinesBean.setDataPersistenceUniqueId()}" />
-            </f:metadata>
+        <f:metadata>
+            <f:viewParam name="function" value="#{sessionBean.function}" />
+            <f:viewAction action="#{dataImportBean.setBulkData(true)}" />
+            <f:viewAction action="#{importSimpleLinesBean.setDataPersistenceUniqueId()}" />
+        </f:metadata>
 
         <h:head>
             <title>#{text['import_data.general.choose_json']}</title>
@@ -62,12 +62,11 @@
                                 label="#{text['import_data.general.choose_json']}"
                                 mode="advanced"
                                 skinSimple="true"
-                                sizeLimit="100000000"
                                 multiple="false"
                                 listener="#{oneFileUploadToSimpleLinesBean.handleFileUpload}"
                                 update=":notifications"
-                                allowTypes="/(\.|\/)(json)$/"
                                 >
+                                <p:validateFile sizeLimit="10000000" allowTypes="/(\.|\/)(json)$/"/>
                             </p:fileUpload>
 
                             <br/>

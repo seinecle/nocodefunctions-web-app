@@ -52,14 +52,12 @@
                                 label="#{text['import_data.general.choose_txt_or_pdf']}"
                                 mode="advanced"
                                 skinSimple="true"
-                                sizeLimit="100000000"
                                 multiple="true"
                                 listener="#{oneFileUploadToSimpleLinesBean.handleFileUpload}"
                                 update=":notifications"
-                                allowTypes="/(\.|\/)(txt|pdf)$/"
                                 sequential="false"
-                                fileLimit="1000"
                                 >
+                                <p:validateFile fileLimit="1000" sizeLimit="100000000" allowTypes="/(\.|\/)(txt|pdf)$/"/>
                             </p:fileUpload>
                             <br/>
                             <br/>
