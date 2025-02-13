@@ -204,6 +204,7 @@ public class ConverterBean implements Serializable {
                 gexfAsByteArray = resp.body();
             } else {
                 gexfAsByteArray = null;
+                System.out.println("response from vv converter: " + new String(resp.body(), "UTF-8"));
             }
 
             if (gexfAsByteArray == null) {

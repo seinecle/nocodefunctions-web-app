@@ -177,8 +177,7 @@ public class CowoBean implements Serializable {
 
             if (simpleLinesImportBean.getDataPersistenceUniqueId() != null) {
                 dataPersistenceUniqueId = simpleLinesImportBean.getDataPersistenceUniqueId();
-            }
-            else {
+            } else {
                 dataPersistenceUniqueId = UUID.randomUUID().toString().substring(0, 10);
                 Path tempFolderRelativePath = applicationProperties.getTempFolderFullPath();
                 Path fullPathForFileContainingTextInput = Path.of(tempFolderRelativePath.toString(), dataPersistenceUniqueId);
@@ -191,8 +190,13 @@ public class CowoBean implements Serializable {
                     }
                     sb.append(entry.getValue().trim()).append("\n");
                 }
-                Files.writeString(fullPathForFileContainingTextInput, sb.toString(), StandardCharsets.UTF_8, StandardOpenOption.CREATE,
-                        StandardOpenOption.APPEND);
+                try {
+                    Files.writeString(fullPathForFileContainingTextInput, sb.toString(), StandardCharsets.UTF_8, StandardOpenOption.CREATE,
+                            StandardOpenOption.APPEND);
+                } catch (Exception e) {
+                    logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.data_not_found"));
+                    return;
+                }
             }
             inputData.setDataInSheets(new ArrayList());
 

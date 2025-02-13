@@ -2,9 +2,8 @@ package net.clementlevallois.nocodeapp.web.front.backingbeans;
 
 import jakarta.ejb.Singleton;
 import jakarta.ejb.Startup;
-import java.util.ArrayList;
-import java.util.concurrent.ConcurrentHashMap;
-import net.clementlevallois.nocodeapp.web.front.MessageFromApi;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import net.clementlevallois.nocodeapp.web.front.http.RemoteLocal;
 
 /**
@@ -14,6 +13,11 @@ import net.clementlevallois.nocodeapp.web.front.http.RemoteLocal;
 @Startup
 @Singleton
 public class SingletonBean {
+
+    static {
+        Logger grizzlyLogger = Logger.getLogger("org.glassfish.grizzly.http2");
+        grizzlyLogger.setLevel(Level.SEVERE);
+    }
 
     public SingletonBean() {
         setStage();
