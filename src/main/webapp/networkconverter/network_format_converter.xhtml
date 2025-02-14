@@ -100,12 +100,11 @@
                         auto="false"
                         multiple="false"
                         skinSimple="false"
-                        sizeLimit="100000000"
                         process="@this"
                         listener="#{converterBean.handleFileUpload}"
-                        allowTypes="/(\.|\/)(json|gexf)$/"
                         update="launchButtons"
                         >                                
+                        <p:validateFile sizeLimit="100000000" allowTypes="/\.(json|gexf)$/"/>
                     </p:fileUpload>
                     <p:spacer width="10"/>
                     <p:outputPanel rendered="#{not converterBean.fileNameUploaded.blank}">

@@ -55,7 +55,7 @@
                                 multiple="true"
                                 listener="#{oneFileUploadToSimpleLinesBean.handleFileUpload}"
                                 update=":notifications"
-                                sequential="false"
+                                sequential="true"
                                 >
                                 <p:validateFile fileLimit="1000" sizeLimit="100000000" allowTypes="/(\.|\/)(txt|pdf)$/"/>
                             </p:fileUpload>

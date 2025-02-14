@@ -100,7 +100,7 @@ public class LinkPredictionBean implements Serializable {
 
     public Integer showPredictions() {
         try {
-            if (uploadedFile == null) {
+            if (uploadedFileAsByteArray == null) {
                 System.out.println("no file found for link prediction");
                 return 0;
             }

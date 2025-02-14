@@ -111,11 +111,10 @@
                         auto="false"
                         multiple="false"
                         skinSimple="true"
-                        sizeLimit="1000000000"
                         listener="#{spatializeBean.handleFileUpload}"
-                        allowTypes="/(\.|\/)(gexf)$/"
                         update="launchButtons download"
-                        chooseIcon="ui-icon-person">                                
+                        chooseIcon="ui-icon-person">        
+                        <p:validateFile sizeLimit="1000000000" allowTypes="/\.(gexf)$/"/>                        
                     </p:fileUpload>
                     <p:spacer width="10"/>
                     <p:outputLabel rendered="#{spatializeBean.uploadedFile ne null}" escape="false">#{text['general.message.file_loaded']} <strong style="color:#FF6347">#{spatializeBean.uploadedFile.fileName}</strong>. #{text['spatialize.click_below_to_spatialize']}</p:outputLabel>

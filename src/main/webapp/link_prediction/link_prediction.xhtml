@@ -98,12 +98,11 @@
                         auto="true"
                         skinSimple="true"
                         multiple="false"
-                        sizeLimit="50000000"
                         listener="#{linkPredictionBean.handleFileUpload}"
-                        allowTypes="/(\.|\/)(gexf)$/"
                         update="launchButtons"
                         chooseIcon="ui-icon-person"
-                        style="min-width: 15em;">                                
+                        style="min-width: 15em;">
+                        <p:validateFile sizeLimit="50000000" allowTypes="/\.(gexf)$/"/>
                     </p:fileUpload>
                     <p:spacer width="10"/>
                     <p:outputLabel
