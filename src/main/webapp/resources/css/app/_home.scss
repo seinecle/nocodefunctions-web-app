@@ -1,0 +1,92 @@
+.introduction {
+    background-image: url("\#{resource['primeblocks-app:images/bg-hero.jpg']}");
+    background-repeat: no-repeat;
+    background-size: cover;
+    min-height: calc(100vh - 115px);
+    margin: -2rem -2rem 2rem -2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    .introduction-content {
+        padding: 4rem 12rem;
+        border-radius: 8px;
+        background-color: rgba(255,255,255,.5);
+        backdrop-filter: blur(24px);
+        text-align: center;
+
+        .introduction-title {
+            color: var(--surface-900);
+            font-size: 3rem;
+            font-weight: 700;
+            line-height: 1;
+            margin-bottom: 0.5rem;
+        }
+
+        .introduction-subtitle {
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            line-height: 1;
+            margin-bottom: 1.5rem;
+        }
+
+        p {
+            max-width: 600px;
+            font-size: 1.5rem;
+            margin: 0 auto 1.5rem auto;
+            line-height: 1.5;
+            text-align: center;
+            color: var(--text-secondary-color);
+        }
+
+        button {
+            border-radius: 35px;
+        }
+
+        .bg-drop {
+            border-radius: 50%;
+            position: absolute;
+            left: 50%;
+            width:1200px;
+            height:1200px;
+            margin-left:-600px;
+            bottom:-950px;
+        }
+
+        .introduction-gradient {
+            z-index: -1;
+            opacity: 0.75;
+            filter: blur(100px);
+            background: repeating-linear-gradient(315deg, #00FFFF2E 92%, #073AFF00 100%),repeating-radial-gradient(75% 75% at 238% 218%, #00FFFF12 30%, #073AFF14 39%),radial-gradient(99% 99% at 109% 2%, #00C9FFFF 0%, #073AFF00 100%),radial-gradient(99% 99% at 21% 78%, #7B00FFFF 0%, #073AFF00 100%),radial-gradient(160% 154% at 711px -303px, #2000FFFF 0%, #073AFFFF 100%);
+        }
+    }
+}
+
+.layout-wrapper-dark {
+    .introduction {
+        background-image: url("\#{resource['primeblocks-app:images/bg-hero-dark.jpg']}");
+
+        .introduction-content {
+            background-color: rgba(0, 0, 0, 0.75);
+        }
+    }
+}
+
+@media screen and (max-width: 576px) {
+    .introduction {
+        .introduction-content {
+            padding-left: 2rem;
+            padding-right: 2rem;
+
+            .introduction-title,
+            .introduction-subtitle {
+                font-size: 2rem;
+            }
+
+            p {
+                font-size: 1rem;
+            }
+        }
+    }
+}

@@ -1,0 +1,106 @@
+.layout-config {
+    .p-sidebar {
+        overflow: auto;
+
+        .p-sidebar-content {
+            padding: 2rem;
+        }
+
+        .p-sidebar-close {
+            top: 2rem;
+            right: 2rem;
+        }
+    }
+
+    .grid > div {
+        padding: 1rem;
+        text-align: center;
+    
+        span {
+            display: block;
+        }
+    
+        button {
+            position: relative;
+            display: inline-flex;
+            justify-content: center;
+        }
+    }
+    
+    .themes-grid {
+        img {
+            width: 50px;
+            border-radius: 4px;
+            transition: transform .2s;
+    
+            &:hover {
+                transform: scale(1.1);
+            }
+        }
+    
+        span {
+            font-size: .875rem;
+            margin-top: .25rem;
+        }
+    }
+    
+    .config-title {
+        font-weight: 700;
+        font-size: 1.25rem;
+        margin: 2rem 0rem 1rem 0rem;
+
+        &:first-child {
+            margin-top: 0;
+        }
+    }
+
+    .config-scale {
+        display: flex;
+        align-items: center;
+
+        .ui-button {
+            margin-right: .5rem;
+        }
+
+        i {
+            margin-right: .5rem;
+            font-size: .75rem;
+            color: var(--text-color-secondary);
+
+            &.scale-active {
+                font-size: 1.25rem;
+                color: var(--primary-color);
+            }
+        }
+    }
+}
+
+.layout-config-button {
+    display: block;
+    position: fixed;
+    width: 52px;
+    height: 52px;
+    line-height: 52px;
+    background-color: var(--primary-color);
+    text-align: center;
+    color: var(--primary-color-text);
+    top: 270px;
+    right: 0;
+    z-index: 100;
+    overflow: hidden;
+    cursor: pointer;
+    outline: 0 none;
+    border-top-left-radius: 3px;
+    border-top-right-radius: 3px;
+    border-bottom-left-radius: 3px;
+    border-bottom-right-radius: 3px;
+    box-shadow: 0 5px 5px -3px rgba(0, 0, 0, 0.2), 0 8px 10px 1px rgba(0, 0, 0, 0.14), 0 3px 14px 2px rgba(0, 0, 0, 0.12);
+
+    i {
+        font-size: 26px;
+        line-height: inherit;
+        cursor: pointer;
+        transform: rotate(360deg);
+        transition: transform 1s;
+    }
+}

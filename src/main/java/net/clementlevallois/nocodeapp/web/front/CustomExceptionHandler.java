@@ -9,7 +9,6 @@ package net.clementlevallois.nocodeapp.web.front;
  */
 import jakarta.faces.FacesException;
 import jakarta.faces.context.ExceptionHandler;
-import jakarta.faces.context.ExceptionHandlerFactory;
 import jakarta.faces.application.ViewExpiredException;
 import jakarta.faces.context.ExceptionHandlerWrapper;
 import jakarta.faces.event.ExceptionQueuedEvent;

@@ -95,6 +95,13 @@
             <version>2.4.10</version>
             <scope>provided</scope>
         </dependency>
+        <!--for stripe-->
+        <dependency>
+            <groupId>com.stripe</groupId>
+            <artifactId>stripe-java</artifactId>
+            <version>28.2.0</version>
+        </dependency>
+
     </dependencies>
     <build>
         <plugins>

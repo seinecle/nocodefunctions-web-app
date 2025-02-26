@@ -12,10 +12,14 @@ import net.clementlevallois.nocodeapp.web.front.http.RemoteLocal;
 import net.clementlevallois.nocodeapp.web.front.http.SendReport;
 import jakarta.annotation.PostConstruct;
 import jakarta.faces.application.FacesMessage;
+import jakarta.faces.context.ExternalContext;
 import jakarta.inject.Inject;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
 import net.clementlevallois.nocodeapp.web.front.i18n.I18nStaticFilesResourceBundle;
 
 /**
@@ -33,6 +37,7 @@ public class SessionBean implements Serializable {
     private boolean testServer;
     private String noRobot;
     private Locale currentLocale;
+    private String hash;
 
     @Inject
     ApplicationPropertiesBean applicationProperties;
@@ -185,6 +190,61 @@ public class SessionBean implements Serializable {
         } catch (NullPointerException e) {
             System.out.println("FacesContext.getCurrentInstance was null. Detail: " + detail);
         }
+    }
+
+    public String getHash() {
+        if (hash != null && !hash.isBlank()) {
+            return hash;
+        } else {
+            hash = getHashValueFromCookie();
+            if (hash != null && !hash.isBlank()) {
+                return hash;
+            } else {
+                removeCookie(SingletonBean.serviceName);
+                return "";
+            }
+        }
+    }
+
+    public void setHash(String hash) {
+        this.hash = hash;
+        writeValueToCookie(hash);
+    }
+
+    public boolean isCookiePresent() {
+        Map<String, Object> cookieMap = FacesContext.getCurrentInstance().getExternalContext().getRequestCookieMap();
+        return cookieMap.containsKey(SingletonBean.serviceName);
+    }
+
+    private String getHashValueFromCookie() {
+        Map<String, Object> cookieMap = FacesContext.getCurrentInstance().getExternalContext().getRequestCookieMap();
+        if (((Cookie) cookieMap.get(SingletonBean.serviceName)) == null) {
+            return null;
+        } else {
+            return ((Cookie) cookieMap.get(SingletonBean.serviceName)).getValue();
+        }
+    }
+
+    private void removeCookie(String cookieName) {
+        // Obtain the external context from the current FacesContext
+        ExternalContext externalContext = FacesContext.getCurrentInstance().getExternalContext();
+
+        // Check if the cookie exists in the request
+        if (externalContext.getRequestCookieMap().containsKey(cookieName)) {
+            // Create a cookie with the same name and set its value to null
+            Cookie cookie = new Cookie(cookieName, null);
+            // Set the path to the root or where the cookie was initially set
+            cookie.setPath("/");
+            // Mark the cookie for immediate expiration
+            cookie.setMaxAge(0);
+
+            // Add the cookie to the response to remove it from the client
+            ((HttpServletResponse) externalContext.getResponse()).addCookie(cookie);
+        }
+    }
+
+    private void writeValueToCookie(String value) {
+        FacesContext.getCurrentInstance().getExternalContext().addResponseCookie(SingletonBean.serviceName, value, null);
     }
 
 }

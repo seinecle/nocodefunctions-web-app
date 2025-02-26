@@ -1,0 +1,160 @@
+.layout-topbar {
+    height: 80px;
+    background-color: var(--surface-a);
+    padding: 0 2rem;
+    border-bottom: 1px solid var(--surface-d);
+    display: flex;
+    justify-content: space-between;
+
+    .topbar-logo {
+        display: flex;
+        align-items: center;
+
+        .logo {
+            height: 56px;
+        }
+
+        .icon {
+            display: none;
+        }
+    }
+
+    .topbar-actions {
+        display: flex;
+
+        .topbar-menu-button {
+            cursor: pointer;
+            border-radius: 50%;
+            transition: background-color .2s;
+            height: 56px;
+            width: 56px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+
+            &:hover {
+                background-color: var(--surface-c);
+            }
+
+            i {
+                font-size: 28px;
+            }
+        }
+
+        .topbar-menu {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+
+            li {
+                display: flex;
+
+                a {
+                    color: var(--text-color-secondary);
+                    font-weight: 700;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    border-bottom: 2px solid transparent;
+                    transition: border-bottom-color .2s, color .2s;
+                    text-decoration: none;
+                    min-width: 120px;
+                    outline: 0 none;
+                    padding: 0 1rem;
+        
+                    &:hover, &:focus {
+                        border-bottom-color: var(--surface-d);
+                    }
+        
+                    &.router-link-active {
+                        color: var(--text-color);
+                        border-bottom-color: var(--primary-color);
+                    }
+                }
+            }  
+        }
+
+        .config-btn-container {
+            display: flex;
+            align-items: center;
+
+            .config-btn {
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                border: 1px solid var(--surface-d);
+                border-radius: 4px;
+                padding: .5rem 1rem;
+                font-weight: 700;
+                color: var(--text-color-secondary);
+                transition: background-color .2s;
+                outline: 0 none;
+    
+                i {
+                    color: var(--primary-color);
+                    margin-right: .5rem;
+                }
+
+                &:hover {
+                    background-color: var(--surface-c);
+                }
+            }
+        }
+    }
+}
+
+.topbar-mobile-menu {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+
+    li {
+        a {
+            color: var(--text-color-secondary);
+            font-weight: 700;
+            text-decoration: none;
+            display: block;
+            padding: 1rem;
+            font-size: 1.5rem;
+
+            &.router-link-active {
+                color: var(--primary-color);
+            }
+
+            &:not(.router-link-active):hover {
+                color: var(--text-color);
+            }
+        }
+    }
+}
+
+@media screen and (max-width: 992px) {
+    .layout-topbar {
+        align-items: center;
+
+        .topbar-actions {
+            .topbar-menu {
+                display: none;
+            }
+
+            .topbar-menu-button {
+                display: flex;
+            }
+        }        
+    }
+}
+
+@media screen and (max-width: 576px) {
+    .layout-topbar {
+        .topbar-logo {
+            .logo {
+                display: none;
+            }
+
+            .icon {
+                display: block;
+            }
+        }        
+    }
+}

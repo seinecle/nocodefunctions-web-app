@@ -1,0 +1,13 @@
+.p-link {
+	text-align: left;
+	background-color: transparent;
+	margin: 0;
+	padding: 0;
+	border: none;
+    cursor: pointer;
+    user-select: none;
+}
+
+.p-link:disabled {
+	cursor: default;
+}

@@ -1,0 +1,35 @@
+.layout-content {
+    padding: 2rem;
+}
+
+.badge-new {
+    border-radius: 4px;
+    padding: .25rem .5rem;
+    background-color: var(--green-500);
+    color: white;
+    margin-left: 1rem;
+    font-weight: 700;
+    font-size: .875rem;
+}
+
+
+@media screen and (min-width: 1921px) {
+    .layout-content {
+        .block-category-title, 
+        .block-category,
+        .block-section,
+        .documentation,
+        .pricing-inner {
+            display: block;
+            width: 1478px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+    }
+}
+
+@media screen and (max-width: 992px) {
+    .layout-content {
+        padding: 2rem 1rem;
+    }
+}

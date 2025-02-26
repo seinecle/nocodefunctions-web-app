@@ -1,0 +1,55 @@
+.pricing {
+    background-image: url("\#{resource['primeblocks-app:images/pricing/bg-hero.jpg']}");
+    background-repeat: no-repeat;
+    background-size: cover;
+    height: 450px;
+    margin: -2rem -2rem 4rem -2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    .pricing-content {
+        padding: 4rem;
+        border-radius: 8px;
+        background-color: rgba(255, 255, 255, 0.8);
+        text-align: center;
+
+        .pricing-title {
+            font-size: 3rem;
+            font-weight: 700;
+            line-height: 1;
+            margin-bottom: 0.5rem;
+        }
+
+        .pricing-subtitle {
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            line-height: 1;
+            margin-bottom: 1.5rem;
+        }
+
+        p {
+            max-width: 600px;
+            font-size: 1.5rem;
+            margin: 0 auto 1.5rem auto;
+            line-height: 1.5;
+            text-align: center;
+            color: var(--text-secondary-color);
+        }
+    }
+}
+
+.layout-wrapper-dark {
+    .pricing {
+        background-image: url("\#{resource['primeblocks-app:images/pricing/bg-hero-dark.jpg']}");
+
+        .pricing-content {
+            background-color: rgba(0, 0, 0, 0.75);
+        }
+    }
+}
+
+.pricing-users {
+    margin: 4rem -2rem 4rem -2rem;
+}

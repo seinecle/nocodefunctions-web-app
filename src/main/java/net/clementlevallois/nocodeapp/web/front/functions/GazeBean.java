@@ -405,10 +405,7 @@ public class GazeBean implements Serializable {
 
     public void gotoVV() {
         String apiPort = privateProperties.getProperty("nocode_api_port");
-        Path userGeneratedVosviewerDirectoryFullPath = applicationProperties.getUserGeneratedVosviewerDirectoryFullPath(shareVVPublicly);
-        Path relativePathFromProjectRootToVosviewerFolder = applicationProperties.getRelativePathFromProjectRootToVosviewerFolder();
-        Path vosviewerRootFullPath = applicationProperties.getVosviewerRootFullPath();
-        String linkToVosViewer = ExportToVosViewer.exportAndReturnLinkFromGexf(gexf, apiPort, userGeneratedVosviewerDirectoryFullPath, relativePathFromProjectRootToVosviewerFolder, vosviewerRootFullPath);
+        String linkToVosViewer = ExportToVosViewer.exportAndReturnLinkFromGexf(dataPersistenceUniqueId, apiPort, shareVVPublicly, applicationProperties);
         if (linkToVosViewer != null && !linkToVosViewer.isBlank()) {
             try {
                 ExternalContext externalContext = FacesContext.getCurrentInstance().getExternalContext();
@@ -418,8 +415,20 @@ public class GazeBean implements Serializable {
             }
         }
     }
-
+    
+    
     public void gotoGephiLite() {
+        Path tempFolderRelativePath = Path.of(applicationProperties.getTempFolderFullPath().toString(), dataPersistenceUniqueId + "_result");
+        if (Files.exists(tempFolderRelativePath)) {
+            try {
+                gexf = Files.readString(tempFolderRelativePath, StandardCharsets.UTF_8);
+            } catch (IOException ex) {
+                Logger.getLogger(CowoBean.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        } else {
+            System.out.println("gexf file did not exist in temp folder");
+            return;
+        }
         if (gexf == null || gexf.isBlank()) {
             String errorMessage = "gexf file was null or empty, not possible to go to Gephi Lite";
             logBean.addOneNotificationFromString(errorMessage);

@@ -1,0 +1,36 @@
+.layout-breadcrumb {
+    background-color: var(--surface-a);
+    border-bottom: 1px solid var(--surface-d);
+    padding: .5rem 2rem;
+    height: 35px;
+
+    ul {
+        margin: 0;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        list-style-type: none;
+
+        li {
+            display: flex;
+            align-items: center;
+            
+            a {
+                line-height: 1;
+                color: var(--text-secondary);
+                text-transform: capitalize;
+                text-decoration: none;
+            }
+
+            &:last-child {
+                a {
+                    font-weight: 700;
+                }
+            }
+
+            .chevron {
+                margin:0 .5rem;
+            }
+        }
+    }
+}
