@@ -2,9 +2,6 @@ package net.clementlevallois.nocodeapp.web.front.backingbeans;
 
 import jakarta.ejb.Singleton;
 import jakarta.ejb.Startup;
-import java.util.ArrayList;
-import java.util.concurrent.ConcurrentHashMap;
-import net.clementlevallois.nocodeapp.web.front.MessageFromApi;
 import net.clementlevallois.nocodeapp.web.front.http.RemoteLocal;
 
 /**
@@ -14,6 +11,8 @@ import net.clementlevallois.nocodeapp.web.front.http.RemoteLocal;
 @Startup
 @Singleton
 public class SingletonBean {
+    
+    public static String serviceName = "nocode";
 
     public SingletonBean() {
         setStage();

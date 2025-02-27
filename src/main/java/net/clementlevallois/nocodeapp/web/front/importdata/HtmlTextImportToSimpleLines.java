@@ -61,7 +61,10 @@ public class HtmlTextImportToSimpleLines implements Serializable {
     private List<UrlLink> linksToHarvest = new ArrayList();
     private List<UrlLink> selectedLinks = new ArrayList();
 
-    private Integer maxUrls = 10;
+    private Integer urlsToCrawl = 10;
+    private Integer maxUrlsToCrawl;
+    private Integer MAX_URL_FREE = 10;
+    private Integer MAX_URL_PRO = 100;
     private String commaSeparatedValuesExclusionTerms = "";
 
     private Boolean includeDepthOne = false;
@@ -224,7 +227,7 @@ public class HtmlTextImportToSimpleLines implements Serializable {
                     .withPath("api/import/html/getPagesContainedInWebsite")
                     .addParameter("dataPersistenceId", dataPersistenceUniqueId)
                     .addParameter("url", urlWebSite)
-                    .addParameter("maxUrls", String.valueOf(maxUrls))
+                    .addParameter("maxUrls", String.valueOf(urlsToCrawl))
                     .addParameter("exclusionTerms", commaSeparatedValuesExclusionTerms)
                     .toUri();
 
@@ -317,13 +320,27 @@ public class HtmlTextImportToSimpleLines implements Serializable {
         this.includeDepthOne = includeDepthOne;
     }
 
-    public Integer getMaxUrls() {
-        return maxUrls;
+    public Integer getUrlsToCrawl() {
+        return this.urlsToCrawl;
     }
 
-    public void setMaxUrls(Integer maxUrls) {
-        this.maxUrls = maxUrls;
+    public void setUrlsToCrawl(Integer urlsToCrawl) {
+        this.urlsToCrawl = urlsToCrawl;
     }
+
+    public Integer getMaxUrlsToCrawl() {
+        if (sessionBean.getHash()!= null && !sessionBean.getHash().isBlank()){
+            return MAX_URL_PRO;
+        }else{
+            return MAX_URL_FREE;            
+        }
+    }
+
+    public void setMaxUrlsToCrawl(Integer maxUrlsToCrawl) {
+        this.maxUrlsToCrawl = maxUrlsToCrawl;
+    }
+    
+    
 
     public String getCommaSeparatedValuesExclusionTerms() {
         return commaSeparatedValuesExclusionTerms;
@@ -332,5 +349,7 @@ public class HtmlTextImportToSimpleLines implements Serializable {
     public void setCommaSeparatedValuesExclusionTerms(String commaSeparatedValuesExclusionTerms) {
         this.commaSeparatedValuesExclusionTerms = commaSeparatedValuesExclusionTerms;
     }
+    
+    
 
 }

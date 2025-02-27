@@ -303,7 +303,7 @@ public class TopicsBean implements Serializable {
                     return;
                 }
 
-                progress = 60;
+                progress = 90;
 
                 keywordsPerTopic = new TreeMap();
                 topicsPerLine = new TreeMap();
