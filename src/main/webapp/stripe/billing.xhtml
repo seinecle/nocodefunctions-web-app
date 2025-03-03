@@ -1,0 +1,18 @@
+<html 
+    lang="#{localeBean.languageTag}"
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="jakarta.faces.html"
+    xmlns:f="jakarta.faces.core"
+    >
+    <f:view locale="#{localeBean.currentLocale}">
+        <f:metadata>
+            <f:viewParam name="lang" value="#{localeBean.languageTag}" />
+            <f:viewParam name="hash" value="#{sessionBean.hash}" />
+            <f:event type="preRenderView" listener="#{stripeBean.redirectToStripeBillingPortal}" />
+        </f:metadata>
+        <h:head>
+        </h:head>
+        <h:body>
+        </h:body>
+    </f:view>
+</html>

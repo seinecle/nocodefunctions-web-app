@@ -193,7 +193,7 @@ public class CowoBean implements Serializable {
                 try {
                     Files.writeString(fullPathForFileContainingTextInput, sb.toString(), StandardCharsets.UTF_8, StandardOpenOption.CREATE,
                             StandardOpenOption.APPEND);
-                } catch (Exception e) {
+                } catch (IOException e) {
                     logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.data_not_found"));
                     return;
                 }

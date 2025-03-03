@@ -10,14 +10,6 @@
         <p:growl id="messages" showDetail="true"/>
         
         <div class="flex justify-content-end flex-wrap">
-            <div class="flex align-items-center justify-content-center m-2">
-                <h:selectOneMenu value="#{localeBean.languageTag}" onchange="submit()">
-                    <f:selectItems value="#{localeBean.availableLocales}" var="l"
-                                   itemValue="#{l.toLanguageTag()}"
-                                   itemLabel="#{l.getDisplayLanguage(l)} #{empty l.getDisplayCountry()?'':'('}#{l.getDisplayCountry(l)}#{empty l.getDisplayCountry()?'':')'}">
-                    </f:selectItems>
-                </h:selectOneMenu>
-            </div>
             <p:spacer width="10"/>
             <div class="flex align-items-center justify-content-center m-2">
                 <p><a href="https://nocodefunctions.com">Nocode functions</a> 🔎</p>
@@ -32,6 +24,7 @@
                     <p:menuitem value="#{text['header.menu.getsupport']}" action="/support.html?faces-redirect=true" icon="pi pi-phone" rendered="#{not view.viewId.contains('support')}"/>
                     <p:menuitem value="#{text['header.menu.blog']}" url="https://nocodefunctions.com/blog" target="_blank" icon="pi pi-pencil"/>
                     <p:menuitem value="#{text['header.menu.pricing']}" action="#{indexPageBean.navigateToPricing}" icon="pi pi-dollar"/>
+                    <p:menuitem value="#{text['header.menu.billing']}" url="#{stripeBean.urlBillingPortal}" target="_blank" rendered="#{sessionBean.isHashPresent}" icon="pi pi-wallet"/>
                     <p:menuitem value="#{text['header.menu.isitpopular']}" url="https://public.nocodefunctions.com" target="_blank" icon="pi pi-chart-line"/>
                     <p:menuitem value="Github" url="https://github.com/seinecle/nocodefunctions" target="_blank" icon="pi pi-github"/>
                     <p:menuitem value="#{text['header.menu.acknowledgements']}" action="/acknowledgements.html?faces-redirect=true" icon="pi pi-heart" rendered="#{not view.viewId.contains('acknowledgements')}"/>

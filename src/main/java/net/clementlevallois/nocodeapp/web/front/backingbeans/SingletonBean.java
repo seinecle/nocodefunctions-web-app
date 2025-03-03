@@ -14,6 +14,8 @@ import net.clementlevallois.nocodeapp.web.front.http.RemoteLocal;
 @Singleton
 public class SingletonBean {
 
+    public static String serviceName = "nocode";
+
     static {
         Logger grizzlyLogger = Logger.getLogger("org.glassfish.grizzly.http2");
         grizzlyLogger.setLevel(Level.SEVERE);
