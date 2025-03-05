@@ -14,7 +14,8 @@ import net.clementlevallois.nocodeapp.web.front.http.RemoteLocal;
 @Singleton
 public class SingletonBean {
 
-    public static String serviceName = "nocode";
+    public static final String serviceName = "nocode";
+    public static final String SERVICE_NAME_ALL_CREDITS_USED = "nocode-all-credits-used";
 
     static {
         Logger grizzlyLogger = Logger.getLogger("org.glassfish.grizzly.http2");

@@ -4,10 +4,7 @@
  */
 package net.clementlevallois.nocodeapp.web.front.stripe;
 
-//import com.stripe.Stripe;
-//import com.stripe.model.Customer;
-//import com.stripe.model.LineItem;
-//import com.stripe.model.checkout.Session;
+
 import io.mikael.urlbuilder.UrlBuilder;
 import jakarta.annotation.PostConstruct;
 import jakarta.faces.context.ExternalContext;
@@ -25,7 +22,6 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -55,8 +51,6 @@ public class StripeBean implements Serializable {
     private boolean creditsCheckPerformed = false;
     private boolean eligibleForRefund = true;
     private boolean emailButtonIsDisabled = false;
-    private static final String SERVICE_NAME = "nocode";
-    private static final String SERVICE_NAME_ALL_CREDITS_USED = "nocode-all-credits-used";
     private static final String SERVICE_PAGE = "translate.html";
     private static final String PRICE_PRO_MONTHLY_TEST = "price_0Qwgx037XvgprGmlwZsa8pfS";
     private static final String PRICE_PRO_MONTHLY = "";
@@ -272,7 +266,6 @@ public class StripeBean implements Serializable {
 //        return null;
 //
 //    }
-
     public void addHashFieldAndCreditsToCustomer(String customerId, String hash, String serviceName, String credits) {
         try {
 
@@ -317,7 +310,7 @@ public class StripeBean implements Serializable {
             return "index.html?faces-redirect=true";
         }
 
-        remainingCredits= getRemainingCredits();
+        remainingCredits = getRemainingCredits();
         creditsCheckPerformed = true;
         if (remainingCredits < 1) {
             return "index.html?nocredits=true&faces-redirect=true";
@@ -342,7 +335,6 @@ public class StripeBean implements Serializable {
 //        eligibleForRefund = Integer.valueOf(usedCreditsOverall) <= Integer.valueOf(MAX_USED_CREDITS_FOR_REFUND_ELIGIBILITY);
 //        return eligibleForRefund;
 //    }
-
     public String proceedToRefund(String hashValueFromUrlParam) {
         try {
             String priceIds;
@@ -359,7 +351,7 @@ public class StripeBean implements Serializable {
                     .withPath("/externalapi/proceedToRefund")
                     .addParameter("hash", hashValueFromUrlParam)
                     .addParameter("priceIds", priceIds)
-                    .addParameter("serviceName", SERVICE_NAME)
+                    .addParameter("serviceName", SingletonBean.serviceName)
                     .toUri();
 
             HttpRequest httpRequest = HttpRequest.newBuilder()
@@ -422,33 +414,42 @@ public class StripeBean implements Serializable {
         return "";
     }
 
-//    public void manageCredits() {
-//        String hash = sessionBean.getHash();
-//        if (hash.isBlank()) {
-//            return;
-//        }
-//        Customer customer = getCustomerByHash(hash);
-//        if (customer == null) {
-//            System.out.println("customer not found with hash " + hash + " in method manageCredits");
-//            return;
-//        }
-//        Map<String, String> metadata = customer.getMetadata();
-//        Map<String, String> keyValuesToUpdate = new HashMap();
-//        String serviceCreditsUsedOverall = metadata.getOrDefault(SERVICE_NAME_ALL_CREDITS_USED, "0");
-//        String serviceCreditsLeft = metadata.getOrDefault(SERVICE_NAME, "0");
-//        Integer serviceCreditsUsedOverallInteger = Integer.valueOf(serviceCreditsUsedOverall);
-//        Integer serviceCreditsLeftInteger = Integer.valueOf(serviceCreditsLeft);
-//        Integer serviceCreditsLeftIntegerUpdated = serviceCreditsLeftInteger - 1;
-//        Integer serviceCreditsUsedOverallIntegerUpdated = serviceCreditsUsedOverallInteger + 1;
-//        keyValuesToUpdate.put(SERVICE_NAME_ALL_CREDITS_USED, String.valueOf(serviceCreditsUsedOverallIntegerUpdated));
-//        keyValuesToUpdate.put(SERVICE_NAME, String.valueOf(serviceCreditsLeftIntegerUpdated));
-//
-//        // showing remaining credits on the webpage:
-//        remainingCredits = serviceCreditsLeftIntegerUpdated;
-//
-//        // updating the customer metadata on Stripe
-//        updateCustomerWithMetadata(customer.getId(), keyValuesToUpdate);
-//    }
+    public void manageCredits() {
+        String hash = sessionBean.getHash();
+        if (hash.isBlank()) {
+            return;
+        }
+        try {
+            URI uri = UrlBuilder
+                    .empty()
+                    .withScheme("http")
+                    .withPort(portPayment)
+                    .withHost("localhost")
+                    .withPath("/externalapi/manageCredits")
+                    .addParameter("hash", hash)
+                    .addParameter("serviceName", SingletonBean.serviceName)
+                    .addParameter("serviceNameAllCreditsUsed", SingletonBean.SERVICE_NAME_ALL_CREDITS_USED)
+                    .toUri();
+
+            HttpRequest httpRequest = HttpRequest.newBuilder()
+                    .GET()
+                    .uri(uri)
+                    .build();
+
+            HttpResponse<String> resp = client.send(httpRequest, HttpResponse.BodyHandlers.ofString());
+            if (resp.statusCode() != 200) {
+                String stringError = resp.body();
+                System.out.println("stringError: " + stringError);
+                System.out.println("status code: " + resp.statusCode());
+            } else {
+                remainingCredits = Integer.valueOf(resp.body());
+
+            }
+
+        } catch (IOException | InterruptedException ex) {
+            Logger.getLogger(StripeBean.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
 
     public void updateCustomerWithMetadata(String customerId, Map<String, String> keyValuesToUpdate) {
         try {
@@ -502,7 +503,6 @@ public class StripeBean implements Serializable {
 
         if (hash != null & !hash.isBlank()) {
 
-            
             remainingCredits = getRemainingCredits();
             creditsCheckPerformed = true;
             if (remainingCredits < 1) {
