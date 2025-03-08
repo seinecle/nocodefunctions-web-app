@@ -104,6 +104,109 @@
                     </div>
                 </div>
             </p:panel>
+            <p:panel>
+                <div class="p-4">
+                    <div class="border-2 border-dashed surface-border border-round surface-card"
+                         style="min-height: 20rem">
+                        <div class="surface-section">
+                            <div class="flex flex-column md:flex-row m-6">
+                                <!-- Pro Plan -->
+                                <div class="mb-6 md:mb-0 mr-0 md:mr-4 flex flex-column flex-grow-1">
+                                    <div class="bg-blue-500 text-center p-3"
+                                         style="border-radius: 6px 6px 0 0; border-color: #d61a1a;">
+                                        <!-- Header with "Most popular" badge -->
+                                        <div class="h-4rem flex align-items-center justify-content-center">
+                                            <div class="pricing-container">
+                                                <div class="pricing-plan">
+                                                    <div class="pricing-badge">
+                                                        <div class="text-0 font-bold text-sm inline-block p-2">
+                                                            #{text['billing.message.elevated_access']}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="text-2xl font-bold text-white mb-3">Pro</div>
+                                        <div class="flex align-items-center justify-content-center">
+                                            <span class="font-bold text-white text-5xl mr-2">9$</span>
+                                            <span class="text-2xl text-white"> / #{text['general.nouns.month']}</span>
+                                        </div>
+                                    </div>
+                                    <div class="flex justify-content-center mt-2 mb-2">
+                                        <p:button href="https://example.com" value="#{text['general.verbs.subscribe']}"
+                                                  styleClass="ui-button-secondary w-6 m-1 dark-red-button" style="background-color: #d61a1a; border-radius: 10px;"/>
+                                    </div>
+                                    <div class="bg-blue-500 p-4 flex flex-column flex-grow-1"
+                                         style="box-shadow: inset 0px 2px 8px rgba(0, 0, 0, 0.1); border-radius: 0 0 6px 6px; border-color: #d61a1a;">
+                                        <div class="text-white font-bold line-height-3 mb-4">100 #{text['billing.noun.units']}</div>
+                                        <ul class="list-none p-0 m-0 mb-5 text-white">
+                                            <li class="flex align-items-center mb-3">
+                                                <i class="pi pi-check mr-2 text-sm"/>
+                                                <span>#{text['billing.message.increased_crawling']}</span>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <!-- Patron Plan -->
+                                <div class="mb-6 md:mb-0 mr-0 md:mr-4 flex flex-column flex-grow-1">
+                                    <div class="bg-blue-500 text-center p-3"
+                                         style="border-radius: 6px 6px 0 0; border-color: #d61a1a;">
+                                        <div class="h-4rem flex align-items-center justify-content-center">
+                                            <div class="pricing-container">
+                                                <div class="pricing-plan">
+                                                    <div class="pricing-badge">
+                                                        <div class="text-0 font-bold text-sm inline-block p-2">
+                                                            #{text['billing.message.become_patron_support_nocodefunctions']}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="text-2xl font-bold text-white mb-3">#{text['billing.message.become_patron']}</div>
+                                        <div class="flex align-items-center justify-content-center">
+                                            <span class="font-bold text-white text-5xl mr-2">19$</span>
+                                            <span class="text-2xl text-white"> / #{text['general.nouns.month']}</span>
+                                        </div>
+                                    </div>
+                                    <div class="flex justify-content-center mt-2 mb-2">
+                                        <p:button href="https://example.com" value="#{text['general.verbs.subscribe']}"
+                                                  styleClass="ui-button-secondary w-6 m-1 dark-red-button" style="background-color: #d61a1a; border-radius: 10px;"/>
+                                    </div>
+                                    <div class="bg-blue-500 p-4 flex flex-column flex-grow-1"
+                                         style="box-shadow: inset 0px 2px 8px rgba(0, 0, 0, 0.1); border-radius: 0 0 6px 6px; border-color: #d61a1a;">
+                                        <ul class="list-none p-0 m-0 mb-5 text-white">
+                                            <li class="flex align-items-center mb-3">
+                                                <i class="pi pi-check mr-2 text-sm"/>
+                                                <span>#{text['billing.message.all_features_pro_plan']}</span>
+                                            </li>
+                                            <li class="flex align-items-center mb-3">
+                                                <i class="pi pi-check mr-2 text-sm"/>
+                                                <span>#{text['billing.message.early_access_new_features']}</span>
+                                            </li>
+                                            <li class="flex align-items-center mb-3">
+                                                <i class="pi pi-check mr-2 text-sm"/>
+                                                <span>#{text['billing.message.become_patron_support_nocodefunctions.details']}</span>
+                                            </li>
+                                            <li class="flex align-items-center mb-3">
+                                                <i class="pi pi-check mr-2 text-sm"/>
+                                                <div class="flex flex-column">
+                                                    <div class="flex">
+                                                        <p:outputLabel value="#{text['billing.message.strengthen_open_source_given_back_to_gephi.title']}" escape="false"/>
+                                                    </div>
+                                                    <div class="flex">
+                                                            <p:outputLabel class="text-xs" value="#{text['billing.message.strengthen_open_source_given_back_to_gephi.details']}" escape="false"/>
+                                                    </div>
+                                                </div>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </p:panel>
             <p:spacer height="10" width="10"/>
             <p:panel>
                 <h3 style="text-align: center; opacity: 0.8;">#{text['index.ordosometestshere']}</h3>
@@ -426,7 +529,9 @@
                         </small>
                     </p>
                     <br/>
-                    <p><small><a href="https://nocodefunctions.com/html/privacy_policy.html" target="_blank">#{text['index.datapolicy.link']}</a></small></p>
+                    <p:link style="text-align: center;font-size: 80%"
+                            value="#{text['index.datapolicy.link']}"
+                            href="tos.html?faces-redirect=true"/>
                 </p:fieldset>
                 <p:spacer height="20"/>
                 <p:fieldset legend="#{text['index.academic.title']}">
@@ -447,7 +552,7 @@
                     </p:fieldset>
                 </span>
                 <p:spacer height="20"/>
-                <p:fieldset legend="@2021 Clement Levallois">
+                <p:fieldset legend="@2021-@2025 Clement Levallois">
                     <p>
                         <small>
                             <h:outputText value="#{text['index.contact.details']}" escape="false" />                        
@@ -456,12 +561,9 @@
                 </p:fieldset>
                 <p:spacer height="20"/>
                 <p:fieldset legend="#{text['header.menu.acknowledgements']}">
-                    <h:form>
-                        <p:commandLink
-                            style="text-align: center;font-size: 80%"
+                    <p:link style="text-align: center;font-size: 80%"
                             value="#{text['index.acknowledgements.details']}"
-                            action="acknowledgements.html?faces-redirect=true"/>
-                    </h:form>
+                            href="acknowledgements.html?faces-redirect=true"/>
                 </p:fieldset>
             </p:panel>
             <ui:include src="/WEB-INF/includes/footer.xhtml" />

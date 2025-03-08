@@ -42,6 +42,7 @@ import net.clementlevallois.nocodeapp.web.front.http.RemoteLocal;
 public class StripeBean implements Serializable {
 
     private String urlCheckoutMonthlyProPlan;
+    private String urlCheckoutMonthlyPatronPlan;
     private String urlParamStripeSessionIdReturnedByCheckout;
     private String urlParamEmail;
     private String emailInputField;
@@ -53,8 +54,11 @@ public class StripeBean implements Serializable {
     private boolean emailButtonIsDisabled = false;
     private static final String SERVICE_PAGE = "translate.html";
     private static final String PRICE_PRO_MONTHLY_TEST = "price_0Qwgx037XvgprGmlwZsa8pfS";
+    private static final String PRICE_PATRON_MONTHLY_TEST = "price_0QzbmB37XvgprGmlzLwTUges";
     private static final String PRICE_PRO_MONTHLY = "";
+    private static final String PRICE_PATRON_MONTHLY = "";
     private static final String MONTHLY_CREDITS_PRO = "50";
+    private static final String MONTHLY_CREDITS_PATRON = "50";
     private String MAX_USED_CREDITS_FOR_REFUND_ELIGIBILITY = "5";
     private static final HttpClient client = HttpClient.newHttpClient();
 
@@ -159,8 +163,10 @@ public class StripeBean implements Serializable {
             }
             if (TEST) {
                 urlCheckoutMonthlyProPlan = getCheckoutUrlForServiceAndPrice(PRICE_PRO_MONTHLY_TEST, MONTHLY_CREDITS_PRO, urlParamEmail);
+                urlCheckoutMonthlyPatronPlan = getCheckoutUrlForServiceAndPrice(PRICE_PATRON_MONTHLY_TEST, MONTHLY_CREDITS_PATRON, urlParamEmail);
             } else {
                 urlCheckoutMonthlyProPlan = getCheckoutUrlForServiceAndPrice(PRICE_PRO_MONTHLY, MONTHLY_CREDITS_PRO, urlParamEmail);
+                urlCheckoutMonthlyPatronPlan = getCheckoutUrlForServiceAndPrice(PRICE_PATRON_MONTHLY, MONTHLY_CREDITS_PATRON, urlParamEmail);
 
             }
         }
@@ -832,6 +838,16 @@ https://bsky.app/profile/seinecle.bsky.social""";
     public void setUrlCheckoutMonthlyProPlan(String urlCheckoutMonthlyProPlan) {
         this.urlCheckoutMonthlyProPlan = urlCheckoutMonthlyProPlan;
     }
+
+    public String getUrlCheckoutMonthlyPatronPlan() {
+        return urlCheckoutMonthlyPatronPlan;
+    }
+
+    public void setUrlCheckoutMonthlyPatronPlan(String urlCheckoutMonthlyPatronPlan) {
+        this.urlCheckoutMonthlyPatronPlan = urlCheckoutMonthlyPatronPlan;
+    }
+    
+    
 
     public String getUrlParamStripeSessionIdReturnedByCheckout() {
         return urlParamStripeSessionIdReturnedByCheckout;

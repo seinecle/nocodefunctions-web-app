@@ -211,7 +211,7 @@ public class SessionBean implements Serializable {
             }
         }
     }
-
+    
     public void setHash(String hash) {
         this.hash = hash;
         writeValueToCookie(hash);

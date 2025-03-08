@@ -9,13 +9,13 @@
     <h:form id="header">
         <p:growl id="messages" showDetail="true"/>
         
-        <div class="flex justify-content-end flex-wrap">
+        <div class="flex justify-end flex-wrap">
             <p:spacer width="10"/>
-            <div class="flex align-items-center justify-content-center m-2">
+            <div class="flex items-center justify-center m-2">
                 <p><a href="https://nocodefunctions.com">Nocode functions</a> 🔎</p>
             </div>
             <p:spacer width="10"/>
-            <div class="flex align-items-center justify-content-center m-2">
+            <div class="flex items-center justify-center m-2">
                 <p:commandButton id="dynaButton" value="Menu" type="button" icon="pi pi-bars"/>
                 <p:menu overlay="true" trigger="dynaButton" my="left top" at="left bottom">
                     <p:menuitem value="#{text['header.menu.home']}" action="#{sessionBean.logout}" icon="pi pi-home" rendered="#{not view.viewId.contains('index')}"/>
@@ -24,7 +24,7 @@
                     <p:menuitem value="#{text['header.menu.getsupport']}" action="/support.html?faces-redirect=true" icon="pi pi-phone" rendered="#{not view.viewId.contains('support')}"/>
                     <p:menuitem value="#{text['header.menu.blog']}" url="https://nocodefunctions.com/blog" target="_blank" icon="pi pi-pencil"/>
                     <p:menuitem value="#{text['header.menu.pricing']}" action="#{indexPageBean.navigateToPricing}" icon="pi pi-dollar"/>
-                    <p:menuitem value="#{text['header.menu.billing']}" url="#{stripeBean.urlBillingPortal}" target="_blank" rendered="#{sessionBean.isHashPresent}" icon="pi pi-wallet"/>
+                    <p:menuitem value="#{text['header.menu.billing']}" url="#{stripeBean.urlBillingPortal}" target="_blank" rendered="#{sessionBean.isHashPresent()}" icon="pi pi-wallet"/>
                     <p:menuitem value="#{text['header.menu.isitpopular']}" url="https://public.nocodefunctions.com" target="_blank" icon="pi pi-chart-line"/>
                     <p:menuitem value="Github" url="https://github.com/seinecle/nocodefunctions" target="_blank" icon="pi pi-github"/>
                     <p:menuitem value="#{text['header.menu.acknowledgements']}" action="/acknowledgements.html?faces-redirect=true" icon="pi pi-heart" rendered="#{not view.viewId.contains('acknowledgements')}"/>
@@ -32,4 +32,4 @@
             </div>
         </div>
     </h:form> 
-</ui:composition>     
+</ui:composition>

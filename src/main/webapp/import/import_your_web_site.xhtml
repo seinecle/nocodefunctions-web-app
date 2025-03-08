@@ -3,15 +3,15 @@
     xmlns="http://www.w3.org/1999/xhtml"
     xmlns:h="jakarta.faces.html"
     xmlns:f="jakarta.faces.core"
-
     xmlns:p="http://primefaces.org/ui"
-    xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+    xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+    >
     <f:view locale="#{localeBean.currentLocale}">
         <f:metadata>
             <f:viewParam name="function" value="#{sessionBean.function}" />
             <f:viewAction action="#{dataImportBean.setBulkData(true)}" />
             <f:viewAction action="#{importSimpleLinesBean.setDataPersistenceUniqueId()}" />
-        </f:metadata>.
+        </f:metadata>
 
         <h:head>
             <title>#{text['import_data.general.choose_web_page_title']}</title>
@@ -34,87 +34,110 @@
             <meta name="robots" content="noindex"/>
         </h:head>
         <h:body>
-            <h:outputStylesheet name="css/primeflex.css" />
-            <h:outputStylesheet name="css/custom.css" />
+            <h:outputStylesheet name="css/output.css" />
             <p:panel>
                 <ui:include src="/WEB-INF/includes/header.xhtml"/>
-                <h1>#{text['import_data.website.analyze_website']}</h1>
+                <h1 class="heading-1">#{text['import_data.website.analyze_website']}</h1>
             </p:panel>
-            <p:spacer height="20"/>
+            <div class="h-5"></div>
             <p:panel>
-                <div class="grid" >
-                    <div class="col-12 md:9 lg:col-9">
-                        <h:form enctype="multipart/form-data" id="loadUrlForm">
-                            <b>#{text['general.message.paste_url']}</b>
-                            <br/>
-                            <br/>
-                            <h:graphicImage name="images/round_1_orange.png" width="20" height="20" style="vertical-align: middle;"/>
-                            <p:spacer width="5"/>
-                            <p:inputText
-                                id="urlInput"
-                                value="#{htmlTextImportToSimpleLines.urlWebSite}"
-                                placeholder="https:// ...">
-                                <p:ajax/>
-                            </p:inputText>
-                            <p:spacer width="10"/>
-                            <p:commandButton
-                                id="loadUrlButton"
-                                value="#{text['import_data.website.crawl_website']}"
-                                action="#{htmlTextImportToSimpleLines.crawlPagesOfAWebsite()}"
-                                styleClass="btn btn-primary"
-                                update=":notifications"
-                                />
-                            <br/>
-                            <br/>
-                            <p:outputPanel id="launch">
-                                <h:graphicImage name="images/round_2_orange.png" width="20" height="20" style="vertical-align: middle;"/>
-                                <p:spacer width="5"/>
-                                <p:commandButton
-                                    value="#{text['general.verbs.compute']}"
-                                    action="#{htmlTextImportToSimpleLines.gotToFunctionWithDataInBulk()}"
-                                    styleClass="btn btn-primary"
-                                    update=":notifications"
-                                    />
-                            </p:outputPanel>
-                            <br/>
-                            <br/>
-                            <p:accordionPanel widgetVar="basic" activeIndex="null">
-                                <p:tab title="#{text['general.title.if_you_need_more_parameters']}">
-                                    <br/>
-                                    <br/>
-
-                                    <p:divider align="left">
-                                        <div class="p-d-inline-flex p-ai-center">
-                                            <i class="pi pi-chart-bar p-mr-2"/>
-                                            <b>#{text['import_data.website.max_links']}</b>
+                <div class="flex w-full gap-4">
+                    <div class="w-[70%] flex flex-col"> <!-- Updated column classes -->
+                        <p:panel header="#{text['general.message.paste_url']}">
+                            <h:form enctype="multipart/form-data" id="loadUrlForm">
+                                <div class="flex justify-start items-center">
+                                    <div>
+                                        <h:graphicImage name="images/round_1_orange.png" width="20" height="20"/> <!-- Added Tailwind alignment class -->
+                                    </div>
+                                    <span class="w-2 inline-block"></span>
+                                    <div>
+                                        <p:inputText
+                                            id="urlInput"
+                                            value="#{htmlTextImportToSimpleLines.urlWebSite}"
+                                            placeholder="https:// ...">
+                                            <p:ajax/>
+                                        </p:inputText>
+                                        <span class="w-2 inline-block"></span> <!-- Tailwind spacing -->
+                                    </div>
+                                    <div>
+                                        <p:commandButton
+                                            id="loadUrlButton"
+                                            value="#{text['import_data.website.crawl_website']}"
+                                            action="#{htmlTextImportToSimpleLines.crawlPagesOfAWebsite()}"
+                                            styleClass="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                                            update=":notifications"
+                                            />
+                                    </div>
+                                </div>
+                                <br/>
+                                <br/>
+                                <p:accordionPanel widgetVar="basic" activeIndex="null">
+                                    <p:tab title="#{text['general.title.if_you_need_more_parameters']}">
+                                        <br/>
+                                        <br/>
+                                        <div class="relative flex items-center py-5">
+                                            <div class="flex-grow border-t border-gray-300"></div>
+                                            <div class="flex items-center mx-4">
+                                                <i class="pi pi-chart-bar mr-2"/>
+                                                <b>#{text['import_data.website.max_links']}</b>
+                                            </div>
+                                            <div class="flex-grow border-t border-gray-300"></div>
                                         </div>
-                                    </p:divider>
-                                    #{text['import_data.website.max_links_defaut_value']}
-                                    <br/>
-                                    <br/>
-                                    <p:spinner id="spinner1" value="#{htmlTextImportToSimpleLines.urlsToCrawl}" min="1" max="#{htmlTextImportToSimpleLines.maxUrlsToCrawl}" stepFactor="1">
-                                    </p:spinner>
-                                    <p:slider for="spinner1" minValue="1" maxValue="#{htmlTextImportToSimpleLines.maxUrlsToCrawl}" step="1"/>
-                                    <br/>
-                                    <br/>
-                                    <p:divider align="left">
-                                        <div class="p-d-inline-flex p-ai-center">
-                                            <i class="pi pi-chart-bar p-mr-2"/>
-                                            <b>#{text['import_data.exclude_terms']}</b>
+                                        #{text['import_data.website.max_links_defaut_value']}
+                                        <br/>
+                                        <br/>
+                                        <p:panel rendered="#{not sessionBean.hashPresent}">
+                                            <p class="border border-blue-500 p-4 rounded">
+                                                <p:outputLabel value="#{text['billing.message.get_more_capacity']}"/>
+                                                <span class="w-1 inline-block"></span>
+                                                <p:inputText value="#{stripeBean.emailInputField}" placeholder="your email here"/>
+                                                <span class="w-1 inline-block"></span>
+                                                <p:commandButton value="send" action="#{stripeBean.sendPricingInfoOrLoginUrlViaEmail()}">
+                                                    <p:ajax/>
+                                                </p:commandButton>
+                                            </p>
+                                        </p:panel>
+                                        <br/>
+                                        <br/>
+                                        <p:spinner id="spinner1" value="#{htmlTextImportToSimpleLines.urlsToCrawl}" min="1" max="#{htmlTextImportToSimpleLines.maxUrlsToCrawl}" stepFactor="1">
+                                        </p:spinner>
+                                        <br/>
+                                        <br/>
+                                        <p:slider for="spinner1" minValue="1" maxValue="#{htmlTextImportToSimpleLines.maxUrlsToCrawl}" step="1"/>
+                                        <br/>
+                                        <br/>
+                                        <div class="relative flex items-center py-5">
+                                            <div class="flex-grow border-t border-gray-300"></div>
+                                            <div class="flex items-center mx-4">
+                                                <i class="pi pi-chart-bar mr-2"/>
+                                                <b>#{text['import_data.exclude_terms']}</b>
+                                            </div>
+                                            <div class="flex-grow border-t border-gray-300"></div>
                                         </div>
-                                    </p:divider>
-                                    #{text['import_data.website.exclude_terms_instructions']}
-                                    <br/>
-                                    <br/>
-                                    <p:inputText value="#{htmlTextImportToSimpleLines.commaSeparatedValuesExclusionTerms}" placeholder="login, register, admin" />
-                                </p:tab>
-                            </p:accordionPanel>
-
-                        </h:form>
+                                        #{text['import_data.website.exclude_terms_instructions']}
+                                        <br/>
+                                        <br/>
+                                        <p:inputText value="#{htmlTextImportToSimpleLines.commaSeparatedValuesExclusionTerms}" placeholder="login, register, admin" />
+                                    </p:tab>
+                                </p:accordionPanel>
+                                <br/>
+                                <br/>
+                                <p:outputPanel id="launch" class="flex justify-start items-center">
+                                    <h:graphicImage name="images/round_2_orange.png" width="20" height="20"/>
+                                    <span class="w-2 inline-block"></span>
+                                    <p:commandButton
+                                        value="#{text['general.verbs.compute']}"
+                                        action="#{htmlTextImportToSimpleLines.gotToFunctionWithDataInBulk()}"
+                                        styleClass="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                                        update=":notifications"
+                                        />
+                                </p:outputPanel>
+                            </h:form>
+                        </p:panel>
                     </div>
-                    <div class="col-3 flex-grow-1">
-                        <p:panel header="Log">
-                            <p:scrollPanel id="scrollPanel" mode="native" style="height:100%">
+                    <div class="flex-1 gap-4 h-full"> <!-- Updated column and flex classes -->
+                        <p:panel header="Log" styleClass="flex flex-col">
+                            <div id="scrollPanel" class="flex-1 overflow-auto h-full">
                                 <h:dataTable id="notifications" value="#{backToFrontMessengerBean.notifications}" var="notification">
                                     <h:column>#{notification.message}</h:column>
                                 </h:dataTable>
@@ -123,7 +146,7 @@
                                         <f:ajax event="updateNotifications" render=":notifications" />
                                     </f:websocket>
                                 </h:form>
-                            </p:scrollPanel>
+                            </div>
                         </p:panel>
                     </div>
                 </div>
