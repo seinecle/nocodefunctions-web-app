@@ -21,7 +21,7 @@ public class RemoteLocal {
             path = "nocodefunctions-web-app";
             protocol = "http";
             domain = "localhost";
-            port = 8080;
+            port = 9080;
         } else {
             path = "";
             protocol = "https";

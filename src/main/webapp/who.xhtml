@@ -47,15 +47,17 @@
             <p:outputLabel value="#{sessionBean.noRobot}" escape="false" rendered="#{sessionBean.testServer}"/>
         </h:head>
         <h:body>
-            <h:outputStylesheet name="css/primeflex.css" />
-            <h:outputStylesheet name="css/custom.css" />
-            <p:panel>
+            <h:outputStylesheet name="css/output.css" />
+            <p:panel class="text-center">
                 <ui:include src="/WEB-INF/includes/header.xhtml" />
 
-                <div style="text-align: center; font-size: xx-large">👋</div>
-                <h1 style="text-align: center">#{text['who.tagline']}</h1>
-                <div style="text-align: center">
-                    <img src="https://nocodefunctions.com/html/images/clement.jpg" alt="Picture of Clément Levallois" width="300"/>
+                <div style="font-size: xx-large">👋</div>
+                <h1>#{text['who.tagline']}</h1>
+                <div>
+                    <img src="https://nocodefunctions.com/html/images/clement.jpg"
+                         alt="Picture of Clément Levallois"
+                         width="300"
+                         class="mx-auto"/>
                 </div>
             </p:panel>
             <p:spacer height="20"/>

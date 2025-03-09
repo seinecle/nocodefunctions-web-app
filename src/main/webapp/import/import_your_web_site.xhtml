@@ -37,12 +37,12 @@
             <h:outputStylesheet name="css/output.css" />
             <p:panel>
                 <ui:include src="/WEB-INF/includes/header.xhtml"/>
-                <h1 class="heading-1">#{text['import_data.website.analyze_website']}</h1>
+                <h1>#{text['import_data.website.analyze_website']}</h1>
             </p:panel>
             <div class="h-5"></div>
             <p:panel>
-                <div class="flex w-full gap-4">
-                    <div class="w-[70%] flex flex-col"> <!-- Updated column classes -->
+                <div class="flex w-full gap-4 flew-wrap">
+                    <div class="sm:w-[70%] flex flex-col">
                         <p:panel header="#{text['general.message.paste_url']}">
                             <h:form enctype="multipart/form-data" id="loadUrlForm">
                                 <div class="flex justify-start items-center">
@@ -135,9 +135,9 @@
                             </h:form>
                         </p:panel>
                     </div>
-                    <div class="flex-1 gap-4 h-full"> <!-- Updated column and flex classes -->
+                    <div class="flex-1 gap-4 h-full hide-mobile">
                         <p:panel header="Log" styleClass="flex flex-col">
-                            <div id="scrollPanel" class="flex-1 overflow-auto h-full">
+                            <p:scrollPanel id="scrollPanel" class="flex-1 overflow-auto h-full">
                                 <h:dataTable id="notifications" value="#{backToFrontMessengerBean.notifications}" var="notification">
                                     <h:column>#{notification.message}</h:column>
                                 </h:dataTable>
@@ -146,7 +146,7 @@
                                         <f:ajax event="updateNotifications" render=":notifications" />
                                     </f:websocket>
                                 </h:form>
-                            </div>
+                            </p:scrollPanel>
                         </p:panel>
                     </div>
                 </div>

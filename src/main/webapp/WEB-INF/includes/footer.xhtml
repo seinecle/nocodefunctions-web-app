@@ -5,30 +5,38 @@
     xmlns:f="http://xmlns.jcp.org/jsf/core"
     xmlns:h="http://xmlns.jcp.org/jsf/html"
     xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
-    xmlns:p="http://primefaces.org/ui">
+    xmlns:p="http://primefaces.org/ui"
+    xmlns:c="jakarta.tags.core">
     <p:spacer height="10" width="10"/>
     <p:panel>
-        <div class="flex justify-content-between flex-wrap">
-            <div class="flex align-items-center justify-content-center h-4rem">
+        <div class="flex justify-between">
+            <div>
                 <p:outputLabel value="© 2021-2025 Nocodefunctions by Clément Levallois" escape="false" />       
             </div>
-            <div class="flex align-items-center justify-content-center w-24rem h-4rem">
-                <h:form>
-                    <small></small>
-                    <h:selectOneMenu value="#{localeBean.languageTag}" onchange="submit()">
-                        <f:selectItems value="#{localeBean.availableLocales}" var="l"
-                                       itemValue="#{l.toLanguageTag()}"
-                                       itemLabel="#{l.getDisplayLanguage(l)} #{empty l.getDisplayCountry()?'':'('}#{l.getDisplayCountry(l)}#{empty l.getDisplayCountry()?'':')'}">
-                        </f:selectItems>
-                    </h:selectOneMenu>
-                </h:form>
-            </div>
-            <div class="flex align-items-center justify-content-center w-4rem h-4rem">
-                <a href="https://bsky.app/profile/seinecle.bsky.social" target="_blank"><i class="pi pi-user-plus"></i></a>
-                <p:spacer width="10"/>
-                <a href="mailto:analysis@exploreyourdata.com" target="_blank"><i class="pi pi-envelope"></i></a>
-                <p:spacer width="10"/>
-                <a href="https://github.com/seinecle/nocodefunctions/discussions" target="_blank"><i class="pi pi-github"></i></a>
+            <div class="flex flex-row">
+                <div class="flex">
+                    <h:form>
+                        <h:selectOneMenu value="#{localeBean.languageTag}" onchange="submit()" class="max-h-12 w-full text-sm border rounded-md">
+                            <f:selectItems value="#{localeBean.availableLocales}" var="l"
+                                           itemValue="#{l.toLanguageTag()}"
+                                           itemLabel="#{l.getDisplayLanguage(l)} #{empty l.getDisplayCountry()?'':'('}#{l.getDisplayCountry(l)}#{empty l.getDisplayCountry()?'':')'}">
+                            </f:selectItems>
+                        </h:selectOneMenu>
+                    </h:form>
+                </div>
+                <div class="flex">
+                    <div>
+                        <a href="https://bsky.app/profile/seinecle.bsky.social" target="_blank"><i class="pi pi-user-plus"></i></a>
+                    </div>
+                    <p:spacer width="10"/>
+                    <div>
+                        <a href="mailto:analysis@exploreyourdata.com" target="_blank"><i class="pi pi-envelope"></i></a>
+                    </div>
+                    <p:spacer width="10"/>
+                    <div>
+                        <a href="https://github.com/seinecle/nocodefunctions/discussions" target="_blank"><i class="pi pi-github"></i></a>
+                    </div>
+                </div>
             </div>
         </div>
     </p:panel>

@@ -48,8 +48,7 @@
             <p:outputLabel value="#{sessionBean.noRobot}" escape="false" rendered="#{sessionBean.testServer}"/>
         </h:head>
         <h:body>
-            <h:outputStylesheet name="css/primeflex.css" />
-            <h:outputStylesheet name="css/custom.css" />
+            <h:outputStylesheet name="css/output.css" />
             <script type="text/javascript">
                 //<![CDATA[
                 function start() {
@@ -69,8 +68,6 @@
                 <ui:include src="/WEB-INF/includes/header.xhtml"/>
                 <h1>#{text['network_converter.tagline']}</h1>
             </p:panel>
-            <p:spacer height="10"/>
-            <ui:include src="/WEB-INF/includes/call-form.xhtml" />
             <p:spacer height="10"/>
             <p:panel>
                 <div>

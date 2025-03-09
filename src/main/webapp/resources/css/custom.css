@@ -9,19 +9,33 @@
 @tailwind utilities;
 
 @layer components {
-  .heading-1 {
-    @apply
-    mb-4
-    text-4xl
-    font-bold
-    leading-none
-    tracking-tight
-    text-gray-900
-    md:text-4xl
-    lg:text-5xl
-    dark:text-white;
-  }
+    .heading-1 {
+        @apply
+        mb-4
+        text-4xl
+        font-bold
+        leading-none
+        tracking-tight
+        text-gray-900
+        md:text-4xl
+            lg:text-5xl
+            dark:text-white;
+    }
 }
+
+a {
+    all: revert;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    all: revert;
+}
+
+
+ul, ol {
+    list-style: revert; /* Restore default bullet points */
+}
+
 
 p {
     line-height: 1.5;
@@ -173,7 +187,7 @@ h2 {
 
 
 @media screen and (max-width:930px){
-    #hide-mobile {
+    .hide-mobile {
         display: none !important;
     }
     #reduce-desktop * {
@@ -192,7 +206,7 @@ h2 {
 }
 
 @media screen and (min-width:930px){
-    #hide-desktop {
+    .hide-desktop {
         display: none !important;
     }
     #reduce-desktop * {

@@ -31,8 +31,7 @@
         </h:head>
 
         <h:body>
-            <h:outputStylesheet name="css/primeflex.css" />
-            <h:outputStylesheet name="css/custom.css" />
+            <h:outputStylesheet name="css/output.css" />
 
             <script type="text/javascript">
                 //<![CDATA[
@@ -54,21 +53,17 @@
                 <h1>#{text['pdfregionextractor.results.tagline']}</h1>
             </p:panel>
             <p:spacer height="10"/>
-            <ui:include src="/WEB-INF/includes/call-form.xhtml" />
-            <p:spacer height="10"/>
             <p:panel>
                 <h:form target="_blank">
-                    <div class="grid">
-                        <div class="col-12 md:col-6 lg:col-3 border-1 border-200">
-                            <p:commandButton
-                                value="#{text['general.verbs.download_results']}"
-                                ajax="false"
-                                onclick="PrimeFaces.monitorDownload(start, stop);"
-                                icon="pi pi-arrow-down"
-                                styleClass="p-mr-2">
-                                <p:fileDownload value="#{pdfRegionExtractorBean.fileToSave}"/>
-                            </p:commandButton>
-                        </div>
+                    <div>
+                        <p:commandButton
+                            value="#{text['general.verbs.download_results']}"
+                            ajax="false"
+                            onclick="PrimeFaces.monitorDownload(start, stop);"
+                            icon="pi pi-arrow-down"
+                            styleClass="p-mr-2">
+                            <p:fileDownload value="#{pdfRegionExtractorBean.fileToSave}"/>
+                        </p:commandButton>
                     </div>
                 </h:form>
             </p:panel>

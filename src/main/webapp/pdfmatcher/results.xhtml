@@ -27,8 +27,7 @@
             <meta name="robots" content="noindex"/>
         </h:head>
         <h:body>
-            <h:outputStylesheet name="css/primeflex.css" />
-            <h:outputStylesheet name="css/custom.css" />
+            <h:outputStylesheet name="css/output.css" />
 
             <script type="text/javascript">
                 //<![CDATA[
@@ -49,8 +48,6 @@
                 <ui:include src="/WEB-INF/includes/header.xhtml"/>                
                 <h1>#{text['pdfmatcher.results.tagline']}</h1>
             </p:panel>
-            <p:spacer height="10"/>
-            <ui:include src="/WEB-INF/includes/call-form.xhtml" />
             <p:spacer height="10"/>
             <p:panel>
                 <h:form target="_blank">

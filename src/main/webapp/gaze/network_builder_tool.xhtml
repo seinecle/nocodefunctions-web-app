@@ -50,8 +50,7 @@
         </h:head>
 
         <h:body>
-            <h:outputStylesheet name="css/primeflex.css" />
-            <h:outputStylesheet name="css/custom.css" />
+            <h:outputStylesheet name="css/output.css" />
             <p:panel>
                 <ui:include src="/WEB-INF/includes/header.xhtml" />
                 <h1>#{text['gaze.network_builder.tagline']}</h1>
@@ -154,7 +153,7 @@
                     <f:facet name="legend">
                         <h3>#{text['general.message.read_this_tutorial']}</h3>
                     </f:facet>
-                    <p id="hide-mobile" style="text-align:center;">
+                    <p class="hide-mobile" style="text-align:center;">
                         <p:link href="https://medium.com/@vespinozag/turn-a-list-and-their-targets-into-a-network-with-nocodefunctions-app-and-visualize-it-in-gephi-1d412d1b0820" target="_blank">
                             <p:graphicImage
                                 name="images/ve-gaze.jpg"
@@ -162,6 +161,12 @@
                                 style="-webkit-filter: drop-shadow(5px 5px 5px #222222);
                                 filter: drop-shadow(5px 5px 5px #222222);"/>
                         </p:link>
+                    </p>
+                    <p class="hide-desktop" style="text-align:center;">
+                        <p:link
+                            value="Turn a list of sources and their targets into a network with Nocodefunctions App (and visualize it in Gephi)"
+                            href="https://medium.com/@vespinozag/turn-a-list-and-their-targets-into-a-network-with-nocodefunctions-app-and-visualize-it-in-gephi-1d412d1b0820"
+                            target="_blank"/>
                     </p>
                 </p:fieldset>
             </p:panel>

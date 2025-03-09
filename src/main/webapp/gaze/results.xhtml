@@ -32,8 +32,7 @@
         </h:head>
 
         <h:body>
-            <h:outputStylesheet name="css/primeflex.css" />
-            <h:outputStylesheet name="css/custom.css" />
+            <h:outputStylesheet name="css/output.css" />
 
             <script type="text/javascript">
                 //<![CDATA[
@@ -56,8 +55,6 @@
                 <h1>#{text['gaze.results.tagline']}</h1>
             </p:panel>
             <p:spacer height="10"/>
-            <ui:include src="/WEB-INF/includes/call-form.xhtml" />
-            <p:spacer height="10"/>
             <div id="graphDiv">
             </div>
             <p:spacer height="20"/>
@@ -66,8 +63,8 @@
                     <p:remoteCommand name="onload" action="#{gazeBean.execGraph(20)}" oncomplete="main('#{gazeBean.nodesAsJson}','#{gazeBean.edgesAsJson}','#{gazeBean.minFreqNode}','#{gazeBean.maxFreqNode}');" autoRun="true" />
                 </h:form>
                 <h:form target="_blank">
-                    <div class="grid">
-                        <div class="col-12 md:col-6 lg:col-3 border-1 border-200">
+                    <div class="grid lg:grid-cols-4 md:grid-cols-3 sm:grid-cols-2 gap-4">
+                        <div class="border">
                             <p:graphicImage name="images/gephi.png" style="max-width: 100%;"/>
                             <br/>
                             <br/>
@@ -80,10 +77,7 @@
                                 <p:fileDownload value="#{gazeBean.fileToSave}"/>
                             </p:commandButton>
                         </div>
-                        <div>
-                            <p:spacer width="50"/>
-                        </div>
-                        <div class="col-12 md:col-6 lg:col-3 border-1 border-200">
+                        <div class="border">
                             <p:graphicImage name="images/gephi-logo_lite_new.png" style="max-width: 100%;"/>
                             <br/>
                             <br/>
@@ -100,10 +94,7 @@
                             <br/>
                             <p:outputLabel escape="false" value="#{text['general.message.make_viz_public_details']}"/>
                         </div>
-                        <div>
-                            <p:spacer width="50"/>
-                        </div>
-                        <div class="col-12 md:col-6 lg:col-3 border-1 border-200">
+                        <div class="border">
                             <p:graphicImage name="images/vosviewer_logo.jpg" style="max-width: 100%;"/>
                             <br/>
                             <br/>
@@ -122,11 +113,13 @@
                     </div>
                     <br/>
                     <br/>
-                    <h3><p:outputLabel escape="false" value="#{text['gaze.results.long_explanation_title']}"/></h3>
-                    <p:outputLabel escape="false" value="#{text['gaze.results.long_explanation_details']}"/>
+                    <p:panel>
+                        <h3><p:outputLabel escape="false" value="#{text['gaze.results.long_explanation_title']}"/></h3>
+                        <p:outputLabel escape="false" value="#{text['gaze.results.long_explanation_details']}"/>
 
-                    <h3><p:outputLabel escape="false" value="#{text['general.message.results.options_for_visualization_title']}"/></h3>
-                    <p:outputLabel escape="false" value="#{text['general.message.results.options_for_visualization_details']}"/>
+                        <h3><p:outputLabel escape="false" value="#{text['general.message.results.options_for_visualization_title']}"/></h3>
+                        <p:outputLabel escape="false" value="#{text['general.message.results.options_for_visualization_details']}"/>
+                    </p:panel>
                 </h:form>
             </p:panel>
             <ui:include src="/WEB-INF/includes/footer.xhtml" />

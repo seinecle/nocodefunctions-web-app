@@ -47,162 +47,168 @@
 
             <p:outputLabel value="#{sessionBean.noRobot}" escape="false" rendered="#{sessionBean.testServer}"/>
         </h:head>
-        <h:body>
-            <h:outputStylesheet name="css/primeflex.css"/>
-            <h:outputStylesheet name="css/custom.css" />
-            <p:panel>
+        <h:body class="bg-gray-50">
+            <h:outputStylesheet name="css/output.css" />
+            <p:panel styleClass="shadow-sm rounded-md bg-white mb-3">
                 <ui:include src="/WEB-INF/includes/header.xhtml" />
-                <div style="text-align: center; font-size: xx-large">🔎</div>
-                <h1 style="text-align: center">Nocode functions</h1>
-                <h3 style="text-align: center">#{text['index.tagline']}</h3>
-                <h4 style="text-align: center; opacity: 0.6">#{text['index.argument1']}</h4>
-                <h4 style="text-align: center; opacity: 0.6">#{text['index.argument2']}</h4>
+                <div class="flex flex-col text-center">
+                    <div class="text-5xl">🔎</div>
+                    <h1 class="text-3xl font-bold">Nocode functions</h1>
+                    <h3 class="text-xl">#{text['index.tagline']}</h3>
+                    <h4 class="text-lg opacity-60">#{text['index.argument1']}</h4>
+                    <h4 class="text-lg opacity-60">#{text['index.argument2']}</h4>
+                </div>
             </p:panel>
-            <p:spacer height="10" width="10"/>
-            <p:panel>
-                <h3 style="text-align: center; opacity: 0.8;">#{text['index.calltochooseafunction']}</h3>
-                <p:spacer height="20" width="10"/>
-                <div class="flex justify-content-center flex-wrap" align="center">
-                    <div class="flex justify-content-center justify-content-center buttonIndexPage">
-                        <p:button id="umigonButton" value="#{text['index.button.umigon']}" outcome="umigon/sentiment_analysis_tool.html"/>
+            <div class="h-3"></div>
+            <p:panel styleClass="shadow-sm rounded-md bg-white mb-3">
+                <div class="w-full flex justify-center">
+                    <h3 class="text-center text-xl opacity-80">#{text['index.calltochooseafunction']}</h3>
+                </div>
+                <div class="h-5"></div>
+                <div class="flex justify-center flex-wrap gap-4" align="center">
+                    <div class="flex justify-center items-center">
+                        <p:button id="umigonButton" value="#{text['index.button.umigon']}" outcome="umigon/sentiment_analysis_tool.html" style="padding: 30px;" class="bg-blue-500 hover:bg-blue-600 text-white font-bold p-12 rounded mx-2 mb-2"/>
                     </div>
-                    <p:spacer width="10"/>
-                    <div class="flex justify-content-center justify-content-center buttonIndexPage">
-                        <p:button id="organicButton" value="#{text['index.button.organic']}" outcome="organic/organic_listening_voice_of_customer_tool.html"/>
+                    <div class="flex justify-center items-center">
+                        <p:button id="organicButton" value="#{text['index.button.organic']}" outcome="organic/organic_listening_voice_of_customer_tool.html" style="padding: 30px;" styleClass="bg-blue-500 hover:bg-blue-600 text-white font-bold rounded mx-2 mb-2"/>
                     </div>
-                    <p:spacer width="10"/>
-                    <div class="flex justify-content-center justify-content-center buttonIndexPage">
-                        <p:button id="cowoButton" value="#{text['index.button.cowo']}" outcome="cowo/semantic_networks_tool.html"/>
+                    <div class="flex justify-center items-center">
+                        <p:button id="cowoButton" value="#{text['index.button.cowo']}" outcome="cowo/semantic_networks_tool.html" style="padding: 30px;" styleClass="bg-blue-500 hover:bg-blue-600 text-white font-bold rounded mx-2 mb-2"/>
                     </div>
-                    <p:spacer width="10"/>
-                    <div class="flex justify-content-center justify-content-center buttonIndexPage">
-                        <p:button id="topicsButton" value="#{text['index.button.topics']}" outcome="topics/topic_extraction_tool.html"/>
+                    <div class="flex justify-center items-center">
+                        <p:button id="topicsButton" value="#{text['index.button.topics']}" outcome="topics/topic_extraction_tool.html" style="padding: 30px;" styleClass="bg-blue-500 hover:bg-blue-600 text-white font-bold rounded mx-2 mb-2"/>
                     </div>
-                    <p:spacer width="10"/>
-                    <div class="flex justify-content-center justify-content-center buttonIndexPage">
-                        <p:button id="gazeButton" value="#{text['index.button.gaze']}" outcome="gaze/network_builder_tool.html"/>
+                    <div class="flex justify-center items-center">
+                        <p:button id="gazeButton" value="#{text['index.button.gaze']}" outcome="gaze/network_builder_tool.html" style="padding: 30px;" styleClass="bg-blue-500 hover:bg-blue-600 text-white font-bold rounded mx-2 mb-2"/>
                     </div>
-                    <p:spacer width="10"/>
-                    <div class="flex justify-content-center justify-content-center buttonIndexPage">
-                        <p:button id="networkconverterButton" value="#{text['index.button.networkconverter']}" outcome="networkconverter/network_format_converter.html"/>
+                    <div class="flex justify-center items-center">
+                        <p:button id="networkconverterButton" value="#{text['index.button.networkconverter']}" outcome="networkconverter/network_format_converter.html" style="padding: 30px;" styleClass="bg-blue-500 hover:bg-blue-600 text-white font-bold rounded mx-2 mb-2"/>
                     </div>
-                    <p:spacer width="10"/>
-                    <div class="flex justify-content-center justify-content-center buttonIndexPage">
-                        <p:button id="highlighterButton" value="#{text['index.button.highlighter']}" outcome="highlighter/highlight_word_in_context.html"/>
+                    <div class="flex justify-center items-center">
+                        <p:button id="highlighterButton" value="#{text['index.button.highlighter']}" outcome="highlighter/highlight_word_in_context.html" style="padding: 30px;" styleClass="bg-blue-500 hover:bg-blue-600 text-white font-bold rounded mx-2 mb-2"/>
                     </div>
-                    <p:spacer width="10"/>
-                    <div class="flex justify-content-center justify-content-center buttonIndexPage">
-                        <p:button id="pdfmatcherButton" value="#{text['index.button.pdfmatcher']}" outcome="pdfmatcher/pdf_matcher_tool.html"/>
+                    <div class="flex justify-center items-center">
+                        <p:button id="pdfmatcherButton" value="#{text['index.button.pdfmatcher']}" outcome="pdfmatcher/pdf_matcher_tool.html" style="padding: 30px;" styleClass="bg-blue-500 hover:bg-blue-600 text-white font-bold rounded mx-2 mb-2"/>
                     </div>
-                    <p:spacer width="10"/>
-                    <div class="flex justify-content-center justify-content-center buttonIndexPage">
-                        <p:button id="spatializeButton" value="#{text['index.button.spatialize']}" outcome="spatialize/spatialize_network.html"/>
+                    <div class="flex justify-center items-center">
+                        <p:button id="spatializeButton" value="#{text['index.button.spatialize']}" outcome="spatialize/spatialize_network.html" style="padding: 30px;" styleClass="bg-blue-500 hover:bg-blue-600 text-white font-bold rounded mx-2 mb-2"/>
                     </div>
-                    <p:spacer width="10"/>
-                    <div class="flex justify-content-center justify-content-center buttonIndexPage">
-                        <p:button id="pdf_region_extractorButton" value="#{text['index.button.pdfregionextractor']}" outcome="pdf_region_extractor/pdf_region_text_extractor_tool.html"/>
+                    <div class="flex justify-center items-center">
+                        <p:button id="pdf_region_extractorButton" value="#{text['index.button.pdfregionextractor']}" outcome="pdf_region_extractor/pdf_region_text_extractor_tool.html" style="padding: 30px;" styleClass="bg-blue-500 hover:bg-blue-600 text-white font-bold rounded mx-2 mb-2"/>
                     </div>
                 </div>
             </p:panel>
             <p:panel>
-                <div class="p-4">
-                    <div class="border-2 border-dashed surface-border border-round surface-card"
-                         style="min-height: 20rem">
-                        <div class="surface-section">
-                            <div class="flex flex-column md:flex-row m-6">
-                                <!-- Pro Plan -->
-                                <div class="mb-6 md:mb-0 mr-0 md:mr-4 flex flex-column flex-grow-1">
-                                    <div class="bg-blue-500 text-center p-3"
-                                         style="border-radius: 6px 6px 0 0; border-color: #d61a1a;">
-                                        <!-- Header with "Most popular" badge -->
-                                        <div class="h-4rem flex align-items-center justify-content-center">
-                                            <div class="pricing-container">
-                                                <div class="pricing-plan">
-                                                    <div class="pricing-badge">
-                                                        <div class="text-0 font-bold text-sm inline-block p-2">
-                                                            #{text['billing.message.elevated_access']}
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div class="text-2xl font-bold text-white mb-3">Pro</div>
-                                        <div class="flex align-items-center justify-content-center">
-                                            <span class="font-bold text-white text-5xl mr-2">9$</span>
-                                            <span class="text-2xl text-white"> / #{text['general.nouns.month']}</span>
-                                        </div>
-                                    </div>
-                                    <div class="flex justify-content-center mt-2 mb-2">
-                                        <p:button href="https://example.com" value="#{text['general.verbs.subscribe']}"
-                                                  styleClass="ui-button-secondary w-6 m-1 dark-red-button" style="background-color: #d61a1a; border-radius: 10px;"/>
-                                    </div>
-                                    <div class="bg-blue-500 p-4 flex flex-column flex-grow-1"
-                                         style="box-shadow: inset 0px 2px 8px rgba(0, 0, 0, 0.1); border-radius: 0 0 6px 6px; border-color: #d61a1a;">
-                                        <div class="text-white font-bold line-height-3 mb-4">100 #{text['billing.noun.units']}</div>
-                                        <ul class="list-none p-0 m-0 mb-5 text-white">
-                                            <li class="flex align-items-center mb-3">
-                                                <i class="pi pi-check mr-2 text-sm"/>
-                                                <span>#{text['billing.message.increased_crawling']}</span>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                </div>
-                                <!-- Patron Plan -->
-                                <div class="mb-6 md:mb-0 mr-0 md:mr-4 flex flex-column flex-grow-1">
-                                    <div class="bg-blue-500 text-center p-3"
-                                         style="border-radius: 6px 6px 0 0; border-color: #d61a1a;">
-                                        <div class="h-4rem flex align-items-center justify-content-center">
-                                            <div class="pricing-container">
-                                                <div class="pricing-plan">
-                                                    <div class="pricing-badge">
-                                                        <div class="text-0 font-bold text-sm inline-block p-2">
-                                                            #{text['billing.message.become_patron_support_nocodefunctions']}
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="text-2xl font-bold text-white mb-3">#{text['billing.message.become_patron']}</div>
-                                        <div class="flex align-items-center justify-content-center">
-                                            <span class="font-bold text-white text-5xl mr-2">19$</span>
-                                            <span class="text-2xl text-white"> / #{text['general.nouns.month']}</span>
-                                        </div>
-                                    </div>
-                                    <div class="flex justify-content-center mt-2 mb-2">
-                                        <p:button href="https://example.com" value="#{text['general.verbs.subscribe']}"
-                                                  styleClass="ui-button-secondary w-6 m-1 dark-red-button" style="background-color: #d61a1a; border-radius: 10px;"/>
-                                    </div>
-                                    <div class="bg-blue-500 p-4 flex flex-column flex-grow-1"
-                                         style="box-shadow: inset 0px 2px 8px rgba(0, 0, 0, 0.1); border-radius: 0 0 6px 6px; border-color: #d61a1a;">
-                                        <ul class="list-none p-0 m-0 mb-5 text-white">
-                                            <li class="flex align-items-center mb-3">
-                                                <i class="pi pi-check mr-2 text-sm"/>
-                                                <span>#{text['billing.message.all_features_pro_plan']}</span>
-                                            </li>
-                                            <li class="flex align-items-center mb-3">
-                                                <i class="pi pi-check mr-2 text-sm"/>
-                                                <span>#{text['billing.message.early_access_new_features']}</span>
-                                            </li>
-                                            <li class="flex align-items-center mb-3">
-                                                <i class="pi pi-check mr-2 text-sm"/>
-                                                <span>#{text['billing.message.become_patron_support_nocodefunctions.details']}</span>
-                                            </li>
-                                            <li class="flex align-items-center mb-3">
-                                                <i class="pi pi-check mr-2 text-sm"/>
-                                                <div class="flex flex-column">
-                                                    <div class="flex">
-                                                        <p:outputLabel value="#{text['billing.message.strengthen_open_source_given_back_to_gephi.title']}" escape="false"/>
-                                                    </div>
-                                                    <div class="flex">
-                                                            <p:outputLabel class="text-xs" value="#{text['billing.message.strengthen_open_source_given_back_to_gephi.details']}" escape="false"/>
-                                                    </div>
-                                                </div>
-                                            </li>
-                                        </ul>
-                                    </div>
+                <div class="surface-section">
+                    <p:panel rendered ="#{not sessionBean.hashPresent}" style="border: none; background: none; padding: 0; margin: 0;">
+                        <div id="input-email-container-anchor" class="input-email-container text-center my-6 relative border-round-3xl border-solid border-white p-3" style="border-width: 12px;">
+                            <h:form>
+                                <p:inputText
+                                    id="msg" 
+                                    value="#{stripeBean.emailInputField}"
+                                    placeholder="#{text['general.message.type_your_email']}"
+                                    styleClass="w-full mb-3 border-round-3xl border-solid #{component.valid ? '' : 'email-field-alert'}"
+                                    style="border-width: 12px;"
+                                    required="true"
+                                    requiredMessage="#{text['general.message.email_is_required']}">
+                                    <p:ajax event="blur" process="@this" update="@this"/>
+                                </p:inputText>
+                                <p:commandButton
+                                    value="#{text['general.message.send_email_and_choose_plan']}"
+                                    action="#{stripeBean.sendPricingInfoOrLoginUrlViaEmail()}"
+                                    oncomplete="if (args &amp;&amp; !args.validationFailed &amp;&amp; #{not stripeBean.nocredits.equals('true')}) PF('checkYourEmails').show()"
+                                    update="@form"
+                                    styleClass="w-full mb-1 glow-button"
+                                    disabled="#{stripeBean.emailButtonIsDisabled}">
+                                    <p:ajax async="true" 
+                                            global="true"
+                                            process="@this"
+                                            ignoreAutoUpdate="true"/>
+                                </p:commandButton>
+                                <p:dialog header="📧 nocodefunctions.com" widgetVar="checkYourEmails" modal="true" resizable="false">
+                                    #{text['general.message.check_your_email_at']}<div class="h-2"></div>#{stripeBean.emailInputField}. #{text['general.message.click_link_in_email_for_enhanced_access']} #{text['general.message.check_spam_folder']}
+                                </p:dialog>
+                            </h:form>
+                            <p class="text-xs text-white">If you already have an account, we'll log you in </p>
+                        </div>
+                    </p:panel>
+                </div>
+                <div class="flex flex-col flex-wrap md:flex-row m-6 gap-4">
+                    <!-- Pro Plan -->
+                    <div class="mb-6 md:mb-0 mr-0 md:mr-4 flex flex-col flex-grow-1">
+                        <div class="bg-blue-300 text-center p-3">
+                            <div class="h-4rem flex align-items-center justify-content-center">
+                                <div class="flex-1 text-0 font-bold text-sm p-2">
+                                    #{text['billing.message.enhanced_access']}
                                 </div>
                             </div>
+                            <div class="text-white mb-3">
+                                <div class="text-2xl font-bold">Pro</div>
+                                <span class="font-bold text-5xl">9$</span>
+                                <span class="text-2xl"> / #{text['general.nouns.month']}</span>
+                            </div>
+                        </div>
+                        <div class="flex mt-2 mb-2">
+                            <p:button href="#input-email-container-anchor" value="#{text['general.verbs.subscribe']}"
+                                      styleClass="flex-1 ui-button-secondary w-6 m-1 dark-red-button" style="background-color: #d61a1a; border-radius: 10px;"/>
+                        </div>
+                        <div class="bg-blue-300 p-4 flex flex-col flex-grow-1"
+                             style="box-shadow: inset 0px 2px 8px rgba(0, 0, 0, 0.1); border-radius: 0 0 6px 6px; border-color: #d61a1a;">
+                            <div class="text-white font-bold line-height-3 mb-4">100 #{text['billing.noun.units']}</div>
+                            <ul class="list-none p-0 m-0 mb-5 text-white">
+                                <li class="flex align-items-center mb-3">
+                                    <i class="pi pi-check mr-2 text-sm"/>
+                                    <span>#{text['billing.message.increased_crawling']}</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <!-- Patron Plan -->
+                    <div class="mb-6 md:mb-0 mr-0 md:mr-4 flex flex-col flex-grow-1">
+                        <div class="bg-indigo-500 text-white text-center p-3"
+                             style="border-radius: 6px 6px 0 0; border-color: #d61a1a;">
+                            <div class="h-4rem flex align-items-center items-center justify-content-center">
+                                <div class="flex-1 text-0 font-bold text-sm inline-block p-2">
+                                    #{text['billing.message.become_patron_support_nocodefunctions']}
+                                </div>
+                            </div>
+                            <div class="text-white mb-3">
+                                <div class="text-2xl font-bold">#{text['billing.message.become_patron']}</div>
+                                <span class="font-bold text-5xl">19$</span>
+                                <span class="text-2xl"> / #{text['general.nouns.month']}</span>
+                            </div>
+                        </div>
+                        <div class="flex justify-content-center mt-2 mb-2">
+                            <p:button href="#input-email-container-anchor" value="#{text['general.verbs.subscribe']}"
+                                      styleClass="flex-1 ui-button-secondary w-6 m-1 dark-red-button" style="background-color: #d61a1a; border-radius: 10px;"/>
+                        </div>
+                        <div class="bg-indigo-500 p-4 flex flex-col flex-grow-1"
+                             style="box-shadow: inset 0px 2px 8px rgba(0, 0, 0, 0.1); border-radius: 0 0 6px 6px; border-color: #d61a1a;">
+                            <ul class="list-none p-0 m-0 mb-5 text-white">
+                                <li class="flex align-items-center mb-3">
+                                    <i class="pi pi-check mr-2 text-sm"/>
+                                    <span>#{text['billing.message.all_features_pro_plan']}</span>
+                                </li>
+                                <li class="flex align-items-center mb-3">
+                                    <i class="pi pi-check mr-2 text-sm"/>
+                                    <span>#{text['billing.message.early_access_new_features']}</span>
+                                </li>
+                                <li class="flex align-items-center mb-3">
+                                    <i class="pi pi-check mr-2 text-sm"/>
+                                    <span>#{text['billing.message.become_patron_support_nocodefunctions.details']}</span>
+                                </li>
+                                <li class="flex align-items-center mb-3">
+                                    <i class="pi pi-check mr-2 text-sm"/>
+                                    <div class="flex flex-col">
+                                        <div class="flex">
+                                            <p:outputLabel value="#{text['billing.message.strengthen_open_source_given_back_to_gephi.title']}" escape="false"/>
+                                        </div>
+                                        <div class="flex">
+                                            <p:outputLabel class="text-xs" value="#{text['billing.message.strengthen_open_source_given_back_to_gephi.details']}" escape="false"/>
+                                        </div>
+                                    </div>
+                                </li>
+                            </ul>
                         </div>
                     </div>
                 </div>
@@ -211,7 +217,7 @@
             <p:panel>
                 <h3 style="text-align: center; opacity: 0.8;">#{text['index.ordosometestshere']}</h3>
                 <p:spacer height="10" width="10"/>
-                <div class="grid justify-content-center">
+                <div class="flex justify-center flex-wrap gap-4" align="center">
                     <p:card style="width: 30rem; margin-bottom: 2em">
                         <f:facet name="title">
                             #{text['index.testsentimentanalysisuk']}
@@ -363,7 +369,7 @@
                         </h:form>
                     </p:card>
                 </div>
-                <div class="grid justify-content-center">
+                <div class="flex justify-center flex-wrap gap-4" align="center">
                     <p:card style="width: 30rem; margin-bottom: 2em">
                         <f:facet name="title">
                             #{text['index.button.organic']}<br/>
@@ -477,46 +483,40 @@
             </p:panel>
             <p:spacer height="10" width="10"/>
             <p:panel>
-                <h3 style="text-align: center; opacity: 0.8;">#{text['index.calltochooseafunction']}</h3>
-                <div class="flex justify-content-center flex-wrap" align="center">
-                    <div class="flex justify-content-center justify-content-center buttonIndexPage">
-                        <p:button value="#{text['index.button.umigon']}" outcome="umigon/sentiment_analysis_tool.html"/>
+                <div class="w-full flex justify-center">
+                    <h3 class="text-center text-xl opacity-80">#{text['index.calltochooseafunction']}</h3>
+                </div>
+                <div class="h-5"></div>
+                <div class="flex justify-center flex-wrap gap-4" align="center">
+                    <div class="flex justify-center items-center">
+                        <p:button id="umigonButton_2" value="#{text['index.button.umigon']}" outcome="umigon/sentiment_analysis_tool.html" style="padding: 30px;" class="bg-blue-500 hover:bg-blue-600 text-white font-bold p-12 rounded mx-2 mb-2"/>
                     </div>
-                    <p:spacer width="10"/>
-                    <div class="flex justify-content-center justify-content-center buttonIndexPage">
-                        <p:button value="#{text['index.button.organic']}" outcome="organic/organic_listening_voice_of_customer_tool.html"/>
+                    <div class="flex justify-center items-center">
+                        <p:button id="organicButton_2" value="#{text['index.button.organic']}" outcome="organic/organic_listening_voice_of_customer_tool.html" style="padding: 30px;" styleClass="bg-blue-500 hover:bg-blue-600 text-white font-bold rounded mx-2 mb-2"/>
                     </div>
-                    <p:spacer width="10"/>
-                    <div class="flex justify-content-center justify-content-center buttonIndexPage">
-                        <p:button value="#{text['index.button.cowo']}" outcome="cowo/semantic_networks_tool.html"/>
+                    <div class="flex justify-center items-center">
+                        <p:button id="cowoButton_2" value="#{text['index.button.cowo']}" outcome="cowo/semantic_networks_tool.html" style="padding: 30px;" styleClass="bg-blue-500 hover:bg-blue-600 text-white font-bold rounded mx-2 mb-2"/>
                     </div>
-                    <p:spacer width="10"/>
-                    <div class="flex justify-content-center justify-content-center buttonIndexPage">
-                        <p:button value="#{text['index.button.topics']}" outcome="topics/topic_extraction_tool.html"/>
+                    <div class="flex justify-center items-center">
+                        <p:button id="topicsButton_2" value="#{text['index.button.topics']}" outcome="topics/topic_extraction_tool.html" style="padding: 30px;" styleClass="bg-blue-500 hover:bg-blue-600 text-white font-bold rounded mx-2 mb-2"/>
                     </div>
-                    <p:spacer width="10"/>
-                    <div class="flex justify-content-center justify-content-center buttonIndexPage">
-                        <p:button value="#{text['index.button.gaze']}" outcome="gaze/network_builder_tool.html"/>
+                    <div class="flex justify-center items-center">
+                        <p:button id="gazeButton_2" value="#{text['index.button.gaze']}" outcome="gaze/network_builder_tool.html" style="padding: 30px;" styleClass="bg-blue-500 hover:bg-blue-600 text-white font-bold rounded mx-2 mb-2"/>
                     </div>
-                    <p:spacer width="10"/>
-                    <div class="flex justify-content-center justify-content-center buttonIndexPage">
-                        <p:button value="#{text['index.button.networkconverter']}" outcome="networkconverter/network_format_converter.html"/>
+                    <div class="flex justify-center items-center">
+                        <p:button id="networkconverterButton_2" value="#{text['index.button.networkconverter']}" outcome="networkconverter/network_format_converter.html" style="padding: 30px;" styleClass="bg-blue-500 hover:bg-blue-600 text-white font-bold rounded mx-2 mb-2"/>
                     </div>
-                    <p:spacer width="10"/>
-                    <div class="flex justify-content-center justify-content-center buttonIndexPage">
-                        <p:button value="#{text['index.button.highlighter']}" outcome="highlighter/highlight_word_in_context.html"/>
+                    <div class="flex justify-center items-center">
+                        <p:button id="highlighterButton_2" value="#{text['index.button.highlighter']}" outcome="highlighter/highlight_word_in_context.html" style="padding: 30px;" styleClass="bg-blue-500 hover:bg-blue-600 text-white font-bold rounded mx-2 mb-2"/>
                     </div>
-                    <p:spacer width="10"/>
-                    <div class="flex justify-content-center justify-content-center buttonIndexPage">
-                        <p:button value="#{text['index.button.pdfmatcher']}" outcome="pdfmatcher/pdf_matcher_tool.html"/>
+                    <div class="flex justify-center items-center">
+                        <p:button id="pdfmatcherButton_2" value="#{text['index.button.pdfmatcher']}" outcome="pdfmatcher/pdf_matcher_tool.html" style="padding: 30px;" styleClass="bg-blue-500 hover:bg-blue-600 text-white font-bold rounded mx-2 mb-2"/>
                     </div>
-                    <p:spacer width="10"/>
-                    <div class="flex justify-content-center justify-content-center buttonIndexPage">
-                        <p:button value="#{text['index.button.spatialize']}" outcome="spatialize/spatialize_network.html"/>
+                    <div class="flex justify-center items-center">
+                        <p:button id="spatializeButton_2" value="#{text['index.button.spatialize']}" outcome="spatialize/spatialize_network.html" style="padding: 30px;" styleClass="bg-blue-500 hover:bg-blue-600 text-white font-bold rounded mx-2 mb-2"/>
                     </div>
-                    <p:spacer width="10"/>
-                    <div class="flex justify-content-center justify-content-center buttonIndexPage">
-                        <p:button value="#{text['index.button.pdfregionextractor']}" outcome="pdf_region_extractor/pdf_region_text_extractor_tool.html"/>
+                    <div class="flex justify-center items-center">
+                        <p:button id="pdf_region_extractorButton_2" value="#{text['index.button.pdfregionextractor']}" outcome="pdf_region_extractor/pdf_region_text_extractor_tool.html" style="padding: 30px;" styleClass="bg-blue-500 hover:bg-blue-600 text-white font-bold rounded mx-2 mb-2"/>
                     </div>
                 </div>
             </p:panel>
@@ -551,14 +551,6 @@
                         </p>
                     </p:fieldset>
                 </span>
-                <p:spacer height="20"/>
-                <p:fieldset legend="@2021-@2025 Clement Levallois">
-                    <p>
-                        <small>
-                            <h:outputText value="#{text['index.contact.details']}" escape="false" />                        
-                        </small>
-                    </p>
-                </p:fieldset>
                 <p:spacer height="20"/>
                 <p:fieldset legend="#{text['header.menu.acknowledgements']}">
                     <p:link style="text-align: center;font-size: 80%"

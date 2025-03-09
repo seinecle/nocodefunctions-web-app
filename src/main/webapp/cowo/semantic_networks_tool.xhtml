@@ -49,8 +49,7 @@
         </h:head>
 
         <h:body>
-            <h:outputStylesheet name="css/primeflex.css"/>
-            <h:outputStylesheet name="css/custom.css" />
+            <h:outputStylesheet name="css/output.css" />
             <p:panel>
                 <ui:include src="/WEB-INF/includes/header.xhtml"/>
                 <h1>#{text['cowo.tool.tagline']}</h1>
@@ -126,17 +125,16 @@
                     </h2>
                 </p:fieldset>
                 <p:spacer height="20"/>
-                <p:fieldset>
+                <p:fieldset class="hide-mobile">
                     <f:facet name="legend">
                         <h3>#{text['general.message.import_your_data_get_results_example']}</h3>
                     </f:facet>
-                    <p:graphicImage name="images/bar_of_imports.jpg" width="250" height="63" style="padding: 0; display: block; margin: 0 auto; max-height: 100%; max-width: 100%;"  alt="list of options to import texts"/>
                     <br/>
                     <p style="text-align:left;">
                         #{text['cowo.tool.argument2.details']}
                     </p>
                     <br/>
-                    <p id="hide-mobile" style="text-align:center;">
+                    <p style="text-align:center;">
                         <p:graphicImage name="images/cowo_illustration.jpg" alt="how to import a text and turn it into a network" style="-webkit-filter: drop-shadow(5px 5px 5px #222222);
                                         filter: drop-shadow(5px 5px 5px #222222);"/>
                     </p>
@@ -147,7 +145,7 @@
                     <f:facet name="legend">
                         <h3>#{text['general.message.read_this_tutorial']}</h3>
                     </f:facet>
-                    <p id="hide-mobile" style="text-align:center;">
+                    <p class="hide-mobile" style="text-align:center;">
                         <p:link href="https://medium.com/@vespinozag/transform-any-text-into-a-semantic-network-with-nocodefunctions-app-in-just-4-steps-36621a354cae" target="_blank">
                             <p:graphicImage
                                 name="images/ve-cowo.jpg"
@@ -155,6 +153,12 @@
                                 style="-webkit-filter: drop-shadow(5px 5px 5px #222222);
                                 filter: drop-shadow(5px 5px 5px #222222);"/>
                         </p:link>
+                    </p>
+                    <p class="hide-desktop">
+                        <p:link
+                            value="Transform any text into a semantic network with Nocodefunctions App (in just 4 steps)"
+                            href="https://medium.com/@vespinozag/transform-any-text-into-a-semantic-network-with-nocodefunctions-app-in-just-4-steps-36621a354cae"
+                                target="_blank"/>
                     </p>
                 </p:fieldset>
                 <p:spacer height="20"/>
