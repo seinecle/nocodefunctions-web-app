@@ -97,6 +97,12 @@
                                                 </p:commandButton>
                                             </p>
                                         </p:panel>
+                                        <p:outputPanel rendered="#{sessionBean.hashPresent and stripeBean.remainingCredits > 0}">
+                                            <p>
+                                                ✨ #{text['billing.message.increased_capacity_is_available']}
+                                                
+                                            </p>
+                                        </p:outputPanel>
                                         <br/>
                                         <br/>
                                         <p:spinner id="spinner1" value="#{htmlTextImportToSimpleLines.urlsToCrawl}" min="1" max="#{htmlTextImportToSimpleLines.maxUrlsToCrawl}" stepFactor="1">

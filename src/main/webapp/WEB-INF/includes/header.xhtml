@@ -10,6 +10,9 @@
         <p:growl id="messages" showDetail="true"/>
         
         <div class="flex justify-end flex-wrap">
+            <p:outputPanel class="flex items-center justify-center m-2" rendered="#{sessionBean.hashPresent}">
+                <p>✨ credits: #{stripeBean.remainingCredits}</p>                
+            </p:outputPanel>
             <p:spacer width="10"/>
             <div class="flex items-center justify-center m-2">
                 <p><a href="https://nocodefunctions.com">Nocode functions</a> 🔎</p>

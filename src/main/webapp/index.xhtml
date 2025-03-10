@@ -104,7 +104,7 @@
             <p:panel>
                 <div class="surface-section">
                     <p:panel rendered ="#{not sessionBean.hashPresent}" style="border: none; background: none; padding: 0; margin: 0;">
-                        <div id="input-email-container-anchor" class="input-email-container text-center my-6 relative border-round-3xl border-solid border-white p-3" style="border-width: 12px;">
+                        <div id="input-email-container-anchor" class="input-email-container text-center my-6 relative border-round-3xl border-solid border-white p-3  w-full sm:w-[50%] mx-auto" style="border-width: 12px;">
                             <h:form>
                                 <p:inputText
                                     id="msg" 
@@ -119,7 +119,7 @@
                                 <p:commandButton
                                     value="#{text['general.message.send_email_and_choose_plan']}"
                                     action="#{stripeBean.sendPricingInfoOrLoginUrlViaEmail()}"
-                                    oncomplete="if (args &amp;&amp; !args.validationFailed &amp;&amp; #{not stripeBean.nocredits.equals('true')}) PF('checkYourEmails').show()"
+                                    oncomplete="if (args &amp;&amp; !args.validationFailed) PF('checkYourEmails').show()"
                                     update="@form"
                                     styleClass="w-full mb-1 glow-button"
                                     disabled="#{stripeBean.emailButtonIsDisabled}">
@@ -127,21 +127,22 @@
                                             global="true"
                                             process="@this"
                                             ignoreAutoUpdate="true"/>
+                                    <div class="h-3 w-3"></div>
                                 </p:commandButton>
                                 <p:dialog header="📧 nocodefunctions.com" widgetVar="checkYourEmails" modal="true" resizable="false">
                                     #{text['general.message.check_your_email_at']}<div class="h-2"></div>#{stripeBean.emailInputField}. #{text['general.message.click_link_in_email_for_enhanced_access']} #{text['general.message.check_spam_folder']}
                                 </p:dialog>
                             </h:form>
-                            <p class="text-xs text-white">If you already have an account, we'll log you in </p>
+                            <p class="text-xs text-blue">#{text['billing.message.we_will_log_you_in_if_you_have_an_account']}</p>
                         </div>
                     </p:panel>
                 </div>
-                <div class="flex flex-col flex-wrap md:flex-row m-6 gap-4">
+                <div class="flex flex-col flex-wrap md:flex-row m-6 gap-4 w-full sm:w-[50%] mx-auto">
                     <!-- Pro Plan -->
                     <div class="mb-6 md:mb-0 mr-0 md:mr-4 flex flex-col flex-grow-1">
-                        <div class="bg-blue-300 text-center p-3">
+                        <div class="bg-gray-500 text-center p-3">
                             <div class="h-4rem flex align-items-center justify-content-center">
-                                <div class="flex-1 text-0 font-bold text-sm p-2">
+                                <div class="flex-1 text-0 text-white font-bold text-sm p-2">
                                     #{text['billing.message.enhanced_access']}
                                 </div>
                             </div>
@@ -153,9 +154,9 @@
                         </div>
                         <div class="flex mt-2 mb-2">
                             <p:button href="#input-email-container-anchor" value="#{text['general.verbs.subscribe']}"
-                                      styleClass="flex-1 ui-button-secondary w-6 m-1 dark-red-button" style="background-color: #d61a1a; border-radius: 10px;"/>
+                                      styleClass="flex-1 ui-button-secondary w-6 m-1 rounded-sm bg-gray-950"/>
                         </div>
-                        <div class="bg-blue-300 p-4 flex flex-col flex-grow-1"
+                        <div class="bg-gray-500 p-4 flex flex-col flex-grow-1"
                              style="box-shadow: inset 0px 2px 8px rgba(0, 0, 0, 0.1); border-radius: 0 0 6px 6px; border-color: #d61a1a;">
                             <div class="text-white font-bold line-height-3 mb-4">100 #{text['billing.noun.units']}</div>
                             <ul class="list-none p-0 m-0 mb-5 text-white">
@@ -163,12 +164,16 @@
                                     <i class="pi pi-check mr-2 text-sm"/>
                                     <span>#{text['billing.message.increased_crawling']}</span>
                                 </li>
+                                <li class="flex align-items-center mb-3">
+                                    <i class="pi pi-check mr-2 text-sm"/>
+                                    <span>#{text['billing.message.more_exciting_features_to_come']}</span>
+                                </li>
                             </ul>
                         </div>
                     </div>
                     <!-- Patron Plan -->
                     <div class="mb-6 md:mb-0 mr-0 md:mr-4 flex flex-col flex-grow-1">
-                        <div class="bg-indigo-500 text-white text-center p-3"
+                        <div class="bg-slate-700 text-white text-center p-3"
                              style="border-radius: 6px 6px 0 0; border-color: #d61a1a;">
                             <div class="h-4rem flex align-items-center items-center justify-content-center">
                                 <div class="flex-1 text-0 font-bold text-sm inline-block p-2">
@@ -183,9 +188,9 @@
                         </div>
                         <div class="flex justify-content-center mt-2 mb-2">
                             <p:button href="#input-email-container-anchor" value="#{text['general.verbs.subscribe']}"
-                                      styleClass="flex-1 ui-button-secondary w-6 m-1 dark-red-button" style="background-color: #d61a1a; border-radius: 10px;"/>
+                                      styleClass="flex-1 ui-button-secondary w-6 m-1 rounded-sm bg-gray-950"/>
                         </div>
-                        <div class="bg-indigo-500 p-4 flex flex-col flex-grow-1"
+                        <div class="bg-slate-700 p-4 flex flex-col flex-grow-1"
                              style="box-shadow: inset 0px 2px 8px rgba(0, 0, 0, 0.1); border-radius: 0 0 6px 6px; border-color: #d61a1a;">
                             <ul class="list-none p-0 m-0 mb-5 text-white">
                                 <li class="flex align-items-center mb-3">
@@ -207,7 +212,10 @@
                                             <p:outputLabel value="#{text['billing.message.strengthen_open_source_given_back_to_gephi.title']}" escape="false"/>
                                         </div>
                                         <div class="flex">
-                                            <p:outputLabel class="text-xs" value="#{text['billing.message.strengthen_open_source_given_back_to_gephi.details']}" escape="false"/>
+                                            <p:outputLabel class="text-xs"
+                                                           value="#{text['billing.message.strengthen_open_source_given_back_to_gephi.details']}"
+                                                           escape="false"
+                                                           styleClass="outputLabel-blue-links"/>
                                         </div>
                                     </div>
                                 </li>

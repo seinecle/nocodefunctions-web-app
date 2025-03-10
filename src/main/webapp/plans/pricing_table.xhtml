@@ -1,0 +1,160 @@
+<html 
+    lang="#{localeBean.languageTag}"
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="jakarta.faces.html"
+    xmlns:f="jakarta.faces.core"
+    xmlns:p="http://primefaces.org/ui"
+    xmlns:ui="jakarta.faces.facelets">
+    <f:view locale="#{localeBean.currentLocale}">
+        <f:metadata>
+            <f:viewParam name="lang" value="#{localeBean.languageTag}" />
+            <f:viewParam name="email" value="#{stripeBean.urlParamEmail}" />
+            <f:viewParam name="hash" value="#{sessionBean.hash}" />
+            <f:event type="preRenderView" listener="#{stripeBean.populatePlanUrls}" />
+            <f:viewAction action="#{sessionBean.init()}" />
+        </f:metadata>
+        <h:head>
+            <!-- Primary Meta Tags -->
+            <title>#{text['header.menu.billing']}</title>
+            <meta name="description" content="#{text['index.description']}"/>
+            <meta http-equiv="content-language" content="en-us"/>
+            <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+            <meta http-equiv="cleartype" content="on"/>
+            <meta name="HandheldFriendly" content="true"/>
+
+            <!-- Open Graph / Facebook -->
+            <meta property="og:type" content="website"/>
+            <meta property="og:site_name" content="nocodefunctions"/>
+            <meta property="og:url" content="https://nocodefunctions.com/"/>
+            <meta property="og:title" content="#{text['index.tagline']}"/>
+            <meta property="og:description" content="#{text['index.description']}"/>
+            <meta property="og:image" content="/images/workflow_medium.jpg"/>
+
+            <!-- Twitter -->
+            <meta property="twitter:card" content="summary_large_image"/>
+            <meta property="twitter:url" content="https://nocodefunctions.com/"/>
+            <meta property="twitter:title" content="#{text['index.tagline']}"/>
+            <meta property="twitter:description" content="#{text['index.description']}"/>
+            <meta property="twitter:image" content="/images/workflow_medium.jpg"/>
+            <meta name="HandheldFriendly" content="true"/>
+
+            <!-- Open Graph / Facebook -->
+            <meta property="og:type" content="website"/>
+            <meta property="og:site_name" content="nocodefunctions.com"/>
+
+            <link rel="apple-touch-icon" sizes="180x180" href="#{resource['images/favicons/apple-touch-icon.png']}"/>
+            <link rel="icon" type="image/png" sizes="32x32" href="#{resource['images/favicons/favicon-32x32.png']}"/>
+            <link rel="icon" type="image/png" sizes="16x16" href="#{resource['images/favicons/favicon-16x16.png']}"/>
+            <link rel="manifest" href="#{resource['images/favicons/site.webmanifest']}"/>
+            <link rel="mask-icon" href="#{resource['images/favicons/safari-pinned-tab.svg']}" color="#5bbad5"/>
+            <link rel="shortcut icon" href="#{resource['images/favicons/favicon.ico']}"/>
+            <meta name="msapplication-TileColor" content="#da532c"/>
+            <meta name="msapplication-config" content="#{resource['images/favicons/browserconfig.xml']}"/>
+            <meta name="theme-color" content="#ffffff"/>
+            <link rel="shortcut icon" type="image/x-icon" href="#{resource['images/favicons/favicon.ico']}"/>
+            <meta name="robots" content="noindex"/>
+            <h:outputScript name="js/layout.js"/>
+            <h:outputScript name="js/primeblocks.js"/>
+            <h:outputScript name="js/prism.js"/>
+        </h:head>
+        <h:body>
+            <h:outputStylesheet name="css/output.css"/>
+            <p:panel>
+                <div class="flex flex-col flex-wrap md:flex-row m-6 gap-4 w-full sm:w-[50%] mx-auto">
+                    <!-- Pro Plan -->
+                    <div class="mb-6 md:mb-0 mr-0 md:mr-4 flex flex-col flex-grow-1">
+                        <div class="bg-gray-500 text-center p-3">
+                            <div class="h-4rem flex align-items-center justify-content-center">
+                                <div class="flex-1 text-0 font-bold text-white text-sm p-2">
+                                    #{text['billing.message.enhanced_access']}
+                                </div>
+                            </div>
+                            <div class="text-white mb-3">
+                                <div class="text-2xl font-bold">Pro</div>
+                                <span class="font-bold text-5xl">9$</span>
+                                <span class="text-2xl"> / #{text['general.nouns.month']}</span>
+                            </div>
+                        </div>
+                        <div class="flex mt-2 mb-2">
+                            <p:button href="#{stripeBean.urlCheckoutMonthlyProPlan}" value="#{text['general.verbs.subscribe']}"
+                                      styleClass="flex-1 ui-button-secondary w-6 m-1 rounded-sm bg-gray-950"/>
+                        </div>
+                        <div class="bg-gray-500 p-4 flex flex-col flex-grow-1"
+                             style="box-shadow: inset 0px 2px 8px rgba(0, 0, 0, 0.1); border-radius: 0 0 6px 6px; border-color: #d61a1a;">
+                            <div class="text-white font-bold line-height-3 mb-4">100 #{text['billing.noun.units']}</div>
+                            <ul class="list-none p-0 m-0 mb-5 text-white">
+                                <li class="flex align-items-center mb-3">
+                                    <i class="pi pi-check mr-2 text-sm"/>
+                                    <span>#{text['billing.message.increased_crawling']}</span>
+                                </li>
+                                <li class="flex align-items-center mb-3">
+                                    <i class="pi pi-check mr-2 text-sm"/>
+                                    <span>#{text['billing.message.more_exciting_features_to_come']}</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <!-- Patron Plan -->
+                    <div class="mb-6 md:mb-0 mr-0 md:mr-4 flex flex-col flex-grow-1">
+                        <div class="bg-slate-700  text-white text-center p-3"
+                             style="border-radius: 6px 6px 0 0; border-color: #d61a1a;">
+                            <div class="h-4rem flex align-items-center items-center justify-content-center">
+                                <div class="flex-1 text-0 font-bold text-sm inline-block p-2">
+                                    #{text['billing.message.become_patron_support_nocodefunctions']}
+                                </div>
+                            </div>
+                            <div class="text-white mb-3">
+                                <div class="text-2xl font-bold">#{text['billing.message.become_patron']}</div>
+                                <span class="font-bold text-5xl">19$</span>
+                                <span class="text-2xl"> / #{text['general.nouns.month']}</span>
+                            </div>
+                        </div>
+                        <div class="flex justify-content-center mt-2 mb-2">
+                            <p:button href="#{stripeBean.urlCheckoutMonthlyPatronPlan}" value="#{text['general.verbs.subscribe']}"
+                                      styleClass="flex-1 ui-button-secondary w-6 m-1 rounded-sm bg-gray-950"/>
+                        </div>
+                        <div class="bg-slate-700  p-4 flex flex-col flex-grow-1"
+                             style="box-shadow: inset 0px 2px 8px rgba(0, 0, 0, 0.1); border-radius: 0 0 6px 6px; border-color: #d61a1a;">
+                            <ul class="list-none p-0 m-0 mb-5 text-white">
+                                <li class="flex align-items-center mb-3">
+                                    <i class="pi pi-check mr-2 text-sm"/>
+                                    <span>#{text['billing.message.all_features_pro_plan']}</span>
+                                </li>
+                                <li class="flex align-items-center mb-3">
+                                    <i class="pi pi-check mr-2 text-sm"/>
+                                    <span>#{text['billing.message.early_access_new_features']}</span>
+                                </li>
+                                <li class="flex align-items-center mb-3">
+                                    <i class="pi pi-check mr-2 text-sm"/>
+                                    <span>#{text['billing.message.become_patron_support_nocodefunctions.details']}</span>
+                                </li>
+                                <li class="flex align-items-center mb-3">
+                                    <i class="pi pi-check mr-2 text-sm"/>
+                                    <div class="flex flex-col">
+                                        <div class="flex">
+                                            <p:outputLabel
+                                                value="#{text['billing.message.strengthen_open_source_given_back_to_gephi.title']}"
+                                                escape="false"
+                                                styleClass="outputLabel-blue-links"/>
+                                        </div>
+                                        <div class="flex">
+                                            <p:outputLabel class="text-xs" value="#{text['billing.message.strengthen_open_source_given_back_to_gephi.details']}" escape="false"/>
+                                        </div>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-4">
+                    <div class="border-2 surface-border border-round p-2 surface-card"
+                         style="font-size: 70%">
+                        #{text['billing.message.conditions_purchase']}
+                    </div>
+                </div>
+            </p:panel>
+            <ui:include src="/WEB-INF/includes/footer.xhtml" />
+        </h:body>
+    </f:view>
+</html>

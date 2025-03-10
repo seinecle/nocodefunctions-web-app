@@ -31,7 +31,14 @@ h1, h2, h3, h4, h5, h6 {
     all: revert;
 }
 
+.outputLabel-blue-links a {
+    color: #3b82f6; /* Tailwind 'text-blue-500' */
+    text-decoration: underline;
+}
 
+.outputLabel-blue-links a:hover {
+    color: #1e40af; /* Tailwind 'text-blue-700' */
+}
 ul, ol {
     list-style: revert; /* Restore default bullet points */
 }

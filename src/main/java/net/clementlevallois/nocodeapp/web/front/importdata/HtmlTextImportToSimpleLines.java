@@ -348,7 +348,7 @@ public class HtmlTextImportToSimpleLines implements Serializable {
     }
 
     public Integer getMaxUrlsToCrawl() {
-        if (sessionBean.getHash() != null && !sessionBean.getHash().isBlank()) {
+        if (sessionBean.isHashPresent() && stripeBean.getRemainingCredits() > 0) {
             return MAX_URL_PRO;
         } else {
             return MAX_URL_FREE;

@@ -49,24 +49,21 @@ public class StripeBean implements Serializable {
     private String urlParamEmail;
     private String emailInputField;
     private Integer remainingCredits;
-    private String nocredits = "";
-    private boolean showAlertnoCredits = false;
     private boolean creditsCheckPerformed = false;
     private boolean eligibleForRefund = true;
     private boolean emailButtonIsDisabled = false;
-    private static final String SERVICE_PAGE = "translate.html";
     private static final String PRICE_PRO_MONTHLY_TEST = "price_0Qwgx037XvgprGmlwZsa8pfS";
     private static final String PRICE_PATRON_MONTHLY_TEST = "price_0QzbmB37XvgprGmlzLwTUges";
-    private static final String PRICE_PRO_MONTHLY = "";
-    private static final String PRICE_PATRON_MONTHLY = "";
-    private static final String MONTHLY_CREDITS_PRO = "50";
-    private static final String MONTHLY_CREDITS_PATRON = "50";
+    private static final String PRICE_PRO_MONTHLY = "price_0R1CiN37XvgprGml2moLXgHF";
+    private static final String PRICE_PATRON_MONTHLY = "price_0R1CiH37XvgprGmlxOpPcsWo";
+    private static final String MONTHLY_CREDITS_PRO = "100";
+    private static final String MONTHLY_CREDITS_PATRON = "100";
     private String MAX_USED_CREDITS_FOR_REFUND_ELIGIBILITY = "5";
     private static final HttpClient client = HttpClient.newHttpClient();
 
     private int portPayment;
 
-    private final boolean TEST = true;
+    private static final boolean TEST = RemoteLocal.isLocal();
     private static final String BILLING_PORTAL_URL_TEST = "https://billing.stripe.com/p/login/test_14k5og3L67BEf28eUU";
     private static final String BILLING_PORTAL_URL_PROD = "https://billing.stripe.com/p/login/dR6171e74flG8nK5kk";
 
@@ -88,16 +85,8 @@ public class StripeBean implements Serializable {
         creditsCheckPerformed = false;
     }
 
-    public boolean isShowAlertnoCredits() {
-        return nocredits.equals("true");
-    }
-
     public void initializeRedirectState() {
         this.emailButtonIsDisabled = false;
-    }
-
-    public void setShowAlertnoCredits(boolean showAlertnoCredits) {
-        this.showAlertnoCredits = showAlertnoCredits;
     }
 
     public void decisionTreeBeforeRenderingIndexPage() {
@@ -114,10 +103,10 @@ public class StripeBean implements Serializable {
 
     public void populatePlanUrls() {
         boolean emailParamAbsent = urlParamEmail == null || urlParamEmail.isBlank();
-        if (emailParamAbsent && (sessionBean.getHash() == null || sessionBean.getHash().isBlank())) {
+        if (emailParamAbsent && !sessionBean.isHashPresent()) {
             try {
                 ExternalContext externalContext = FacesContext.getCurrentInstance().getExternalContext();
-                externalContext.redirect(externalContext.getRequestContextPath() + "/" + "index.html?#pricing");
+                externalContext.redirect(externalContext.getRequestContextPath() + "/" + "index.html?#input-email-container-anchor");
             } catch (IOException ex) {
                 Logger.getLogger(StripeBean.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -235,9 +224,7 @@ public class StripeBean implements Serializable {
         remainingCredits = getRemainingCredits();
         creditsCheckPerformed = true;
         if (remainingCredits < 1) {
-            return "index.html?nocredits=true&faces-redirect=true";
-        } else {
-            nocredits = "";
+            return "index.html?faces-redirect=true";
         }
         return "";
     }
@@ -423,12 +410,11 @@ public class StripeBean implements Serializable {
         String subject;
         String bodyEmail;
 
-        if (hash != null & !hash.isBlank()) {
-
+        if (hash != null && !hash.isBlank()) {
             remainingCredits = getRemainingCredits();
             creditsCheckPerformed = true;
             if (remainingCredits < 1) {
-                return "pricing_table.html?hash=" + hash + "&faces-redirect=true";
+                return "plans/pricing_table.html?hash=" + hash + "&faces-redirect=true";
             } else {
                 subject = "👋 Your login link to Nocodefunctions";
                 bodyEmail = """
@@ -443,7 +429,7 @@ public class StripeBean implements Serializable {
 
             }
         } else {
-            String urlPricingPlans = RemoteLocal.getDomain() + "/stripe/pricing_table.html?origin=email&email=" + emailInputField;
+            String urlPricingPlans = RemoteLocal.getDomain() + "/plans/pricing_table.html?email=" + emailInputField;
             subject = "👋 **ACTION REQUIRED** Sign up to Nocodefunctions";
             bodyEmail = """
                           Hi!
@@ -529,7 +515,7 @@ If you have feedback on Nocodefunctions, or come across any bugs, I'd love to he
                                          
 DOWNLOAD INVOICES, SWITCH PLANS, PAUSE OR CANCEL SUBSCRIPTION
 If you'd like to download invoices, switch plans, pause or cancel your subscription, you can do so on the site (click Billing in top right), or click the link below:
-https://nocodefunctions.com/stripe/billing.html?lang=""" + sessionBean.getCurrentLocale().getLanguage() + "&hash=" + hash + """
+https://nocodefunctions.com/plans/billing.html?lang=""" + sessionBean.getCurrentLocale().getLanguage() + "&hash=" + hash + """
 
                                                 
 Nocodefunctions is 100% self service. That means we can not send invoices, switch plans, pause or cancel your subscription for you but you can do it yourself easily.
@@ -577,7 +563,7 @@ https://bsky.app/profile/seinecle.bsky.social""";
 
         JsonObjectBuilder parametersBuilder = Json.createObjectBuilder();
         parametersBuilder.add("baseUrl", RemoteLocal.getDomain());
-        parametersBuilder.add("cancelPath", "/stripe/canceled.html?stripe_session_id={CHECKOUT_SESSION_ID}");
+        parametersBuilder.add("cancelPath", "/plans/canceled.html?stripe_session_id={CHECKOUT_SESSION_ID}");
         parametersBuilder.add("successPath", "/index.html?stripe_session_id={CHECKOUT_SESSION_ID}");
         parametersBuilder.add("priceId", priceId);
         parametersBuilder.add("paymentMode", "subscription");
@@ -730,7 +716,7 @@ https://bsky.app/profile/seinecle.bsky.social""";
     }
 
     public void setUrlParamStripeSessionIdReturnedByCheckout(String urlParamStripeSessionIdReturnedByCheckout) {
-        this.urlParamStripeSessionIdReturnedByCheckout = urlParamStripeSessionIdReturnedByCheckout;
+        this.urlParamStripeSessionIdReturnedByCheckout = getRightmostPart(urlParamStripeSessionIdReturnedByCheckout);
         
     }
 
@@ -739,7 +725,8 @@ https://bsky.app/profile/seinecle.bsky.social""";
     }
 
     public void setUrlParamEmail(String urlParamEmail) {
-        this.urlParamEmail = urlParamEmail;
+        this.urlParamEmail = getRightmostPart(urlParamEmail);
+        
     }
 
     public String getEmailInputField() {
@@ -756,10 +743,11 @@ https://bsky.app/profile/seinecle.bsky.social""";
     }
 
     public Integer getRemainingCredits() {
-        String hash = sessionBean.getHash();
-        if (hash.isBlank()) {
+        if (!sessionBean.isHashPresent()) {
             return 0;
         }
+
+        String hash = sessionBean.getHash();
 
         URI uri = UrlBuilder
                 .empty()
@@ -797,14 +785,6 @@ https://bsky.app/profile/seinecle.bsky.social""";
         this.remainingCredits = remainingCredits;
     }
 
-    public String getNocredits() {
-        return nocredits;
-    }
-
-    public void setNocredits(String nocredits) {
-        this.nocredits = nocredits;
-    }
-
     public boolean isEligibleForRefund() {
         return eligibleForRefund;
     }
@@ -827,6 +807,13 @@ https://bsky.app/profile/seinecle.bsky.social""";
 
     public void setEmailButtonIsDisabled(boolean emailButtonIsDisabled) {
         this.emailButtonIsDisabled = emailButtonIsDisabled;
+    }
+    
+    public static String getRightmostPart(String input) {
+        if (input == null || !input.contains("=")) {
+            return input; // Return as is if no '=' found or input is null
+        }
+        return input.substring(input.lastIndexOf("=") + 1);
     }
 
 }
