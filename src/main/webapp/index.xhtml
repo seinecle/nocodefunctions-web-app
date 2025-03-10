@@ -8,7 +8,10 @@
     <f:view locale="#{localeBean.currentLocale}">
         <f:metadata>
             <f:viewParam name="lang" value="#{localeBean.languageTag}" />
+            <f:viewParam name="hash" value="#{sessionBean.hash}" />
+            <f:viewParam name="stripe_session_id" value="#{stripeBean.urlParamStripeSessionIdReturnedByCheckout}" />
             <f:viewAction action="#{sessionBean.init()}" />
+            <f:event type="preRenderView" listener="#{stripeBean.decisionTreeBeforeRenderingIndexPage()}" />
         </f:metadata>
         <h:head>
             <!-- Primary Meta Tags -->

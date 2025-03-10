@@ -32,6 +32,7 @@ import net.clementlevallois.importers.model.UrlLink;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.ApplicationPropertiesBean;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.logview.BackToFrontMessengerBean;
+import net.clementlevallois.nocodeapp.web.front.stripe.StripeBean;
 
 /**
  *
@@ -46,6 +47,9 @@ public class HtmlTextImportToSimpleLines implements Serializable {
 
     @Inject
     SessionBean sessionBean;
+
+    @Inject
+    StripeBean stripeBean;
 
     @Inject
     ApplicationPropertiesBean applicationProperties;
@@ -218,7 +222,6 @@ public class HtmlTextImportToSimpleLines implements Serializable {
                 return;
             }
 
-
             HttpClient client = HttpClient.newHttpClient();
 
             URI uri = UrlBuilder
@@ -259,6 +262,12 @@ public class HtmlTextImportToSimpleLines implements Serializable {
                         urlOnPage.setLinkText(linkText);
                         selectedLinks.add(urlOnPage);
                     }
+
+                    // decrease credits by one is the user has made use of an elevated capacity
+                    if (urlsToCrawl > MAX_URL_FREE) {
+                        stripeBean.manageCredits();
+                    }
+
                 }
             } catch (HttpTimeoutException e) {
                 logBean.addOneNotificationFromString("💔 " + sessionBean.getLocaleBundle().getString("general.message.error_url_timed_out") + ": " + urlWebPage);
@@ -337,12 +346,12 @@ public class HtmlTextImportToSimpleLines implements Serializable {
     public void setCommaSeparatedValuesExclusionTerms(String commaSeparatedValuesExclusionTerms) {
         this.commaSeparatedValuesExclusionTerms = commaSeparatedValuesExclusionTerms;
     }
-    
-     public Integer getMaxUrlsToCrawl() {
-        if (sessionBean.getHash()!= null && !sessionBean.getHash().isBlank()){
+
+    public Integer getMaxUrlsToCrawl() {
+        if (sessionBean.getHash() != null && !sessionBean.getHash().isBlank()) {
             return MAX_URL_PRO;
-        }else{
-            return MAX_URL_FREE;            
+        } else {
+            return MAX_URL_FREE;
         }
     }
 

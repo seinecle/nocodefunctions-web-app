@@ -56,105 +56,90 @@
             <h:outputScript name="js/prism.js"/>
         </h:head>
         <h:body>
+            <h:outputStylesheet name="css/output.css"/>
+
             <div class="bg-gray-900 px-4 py-5 md:px-6 lg:px-8">
             </div>
-            <div class="p-4">
-                <div class="border-2 border-dashed surface-border border-round surface-card"
-                     style="min-height: 20rem">
-                    <div class="surface-section">
-                        <div class="flex flex-column md:flex-row m-6">
-                            <!-- Pro Plan -->
-                            <div class="mb-6 md:mb-0 mr-0 md:mr-4 flex flex-column flex-grow-1">
-                                <div class="bg-bluegray-800 text-center p-3 border-3 border-bottom-none"
-                                     style="border-radius: 6px 6px 0 0; border-color: #d61a1a;">
-                                    <!-- Header with "Most popular" badge -->
-                                    <div class="h-4rem flex align-items-center justify-content-center">
-                                        <div class="pricing-container">
-                                            <div class="pricing-plan">
-                                                <div class="pricing-badge">
-                                                    <div class="text-0 font-bold text-sm inline-block p-2">
-                                                        #{text['billing.message.elevated_access']}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
 
-                                    <div class="text-2xl font-bold text-white mb-3">Pro</div>
-                                    <div class="flex align-items-center justify-content-center">
-                                        <span class="font-bold text-white text-5xl mr-2">19$</span>
-                                        <span class="text-2xl text-bluegray-400"> / #{text['general.nouns.month']}</span>
-                                    </div>
-                                </div>
-                                <div class="flex justify-content-center mt-2 mb-2">
-                                    <p:button href="#{stripeBean.urlCheckoutMonthlyProPlan}" value="#{text['general.verbs.subscribe']}"
-                                              styleClass="ui-button-secondary w-6 m-1 dark-red-button" style="background-color: #d61a1a; border-radius: 10px;"/>
-                                </div>
-                                <div class="bg-bluegray-900 p-4 flex flex-column flex-grow-1 border-3 border-top-none"
-                                     style="box-shadow: inset 0px 2px 8px rgba(0, 0, 0, 0.1); border-radius: 0 0 6px 6px; border-color: #d61a1a;">
-                                    <div class="text-bluegray-400 font-bold line-height-3 mb-4">100 #{text['billing.noun.units']}</div>
-                                    <ul class="list-none p-0 m-0 mb-5 text-bluegray-100">
-                                        <li class="flex align-items-center mb-3">
-                                            <i class="pi pi-check mr-2 text-sm"/>
-                                            <span>#{text['billing.message.increased_crawling']}</span>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </div>
-                            <!-- Patrron Plan -->
-                            <div class="mb-6 md:mb-0 mr-0 md:mr-4 flex flex-column flex-grow-1">
-                                <div class="bg-bluegray-800 text-center p-3 border-3 border-bottom-none"
-                                     style="border-radius: 6px 6px 0 0; border-color: #d61a1a;">
-                                    <div class="h-4rem flex align-items-center justify-content-center">
-                                        <div class="pricing-container">
-                                            <div class="pricing-plan">
-                                                <div class="pricing-badge">
-                                                    <div class="text-0 font-bold text-sm inline-block p-2">
-                                                        #{text['billing.message.become_patron']}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="text-2xl font-bold text-white mb-3">#{text['billing.message.become_patron_support_nocodefunctions']}</div>
-                                    <div class="flex align-items-center justify-content-center">
-                                        <span class="font-bold text-white text-5xl mr-2">49$</span>
-                                        <span class="text-2xl text-bluegray-400"> / #{text['general.nouns.month']}</span>
-                                    </div>
-                                </div>
-                                <div class="flex justify-content-center mt-2 mb-2">
-                                    <p:button href="#{stripeBean.urlCheckoutMonthlyPatronPlan}" value="#{text['general.verbs.subscribe']}"
-                                              styleClass="ui-button-secondary w-6 m-1 dark-red-button" style="background-color: #d61a1a; border-radius: 10px;"/>
-                                </div>
-                                <div class="bg-bluegray-900 p-4 flex flex-column flex-grow-1 border-3 border-top-none"
-                                     style="box-shadow: inset 0px 2px 8px rgba(0, 0, 0, 0.1); border-radius: 0 0 6px 6px; border-color: #d61a1a;">
-                                    <div class="text-bluegray-400 font-bold line-height-3 mb-4">100 #{text['billing.noun.units']}</div>
-                                    <ul class="list-none p-0 m-0 mb-5 text-bluegray-100">
-                                        <li class="flex align-items-center mb-3">
-                                            <i class="pi pi-check mr-2 text-sm"/>
-                                            <span>#{text['billing.message.all_features_pro_plan']}</span>
-                                        </li>
-                                        <li class="flex align-items-center mb-3">
-                                            <i class="pi pi-check mr-2 text-sm"/>
-                                            <span>#{text['billing.message.early_access_new_features']}</span>
-                                        </li>
-                                        <li class="flex align-items-center mb-3">
-                                            <i class="pi pi-check mr-2 text-sm"/>
-                                            <span>#{text['billing.message.become_patron_support_nocodefunctions.details']}</span>
-                                        </li>
-                                        <li class="flex align-items-center mb-3">
-                                            <i class="pi pi-check mr-2 text-sm"/>
-                                            <span>#{text['billing.message.strengthen_open_source_given_back_to_gephi.title']}</span>
-                                            <p><small>#{text['billing.message.strengthen_open_source_given_back_to_gephi.details']}</small></p>
-                                        </li>
-                                    </ul>
-                                </div>
+            <div class="flex flex-col flex-wrap md:flex-row m-6 gap-4">
+                <!-- Pro Plan -->
+                <div class="mb-6 md:mb-0 mr-0 md:mr-4 flex flex-col flex-grow-1">
+                    <div class="bg-blue-300 text-center p-3">
+                        <div class="h-4rem flex align-items-center justify-content-center">
+                            <div class="flex-1 text-0 font-bold text-sm p-2">
+                                #{text['billing.message.enhanced_access']}
                             </div>
                         </div>
+                        <div class="text-white mb-3">
+                            <div class="text-2xl font-bold">Pro</div>
+                            <span class="font-bold text-5xl">9$</span>
+                            <span class="text-2xl"> / #{text['general.nouns.month']}</span>
+                        </div>
+                    </div>
+                    <div class="flex mt-2 mb-2">
+                        <p:button href="#{stripeBean.urlCheckoutMonthlyProPlan}" value="#{text['general.verbs.subscribe']}"
+                                  styleClass="flex-1 ui-button-secondary w-6 m-1 dark-red-button" style="background-color: #d61a1a; border-radius: 10px;"/>
+                    </div>
+                    <div class="bg-blue-300 p-4 flex flex-col flex-grow-1"
+                         style="box-shadow: inset 0px 2px 8px rgba(0, 0, 0, 0.1); border-radius: 0 0 6px 6px; border-color: #d61a1a;">
+                        <div class="text-white font-bold line-height-3 mb-4">100 #{text['billing.noun.units']}</div>
+                        <ul class="list-none p-0 m-0 mb-5 text-white">
+                            <li class="flex align-items-center mb-3">
+                                <i class="pi pi-check mr-2 text-sm"/>
+                                <span>#{text['billing.message.increased_crawling']}</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <!-- Patron Plan -->
+                <div class="mb-6 md:mb-0 mr-0 md:mr-4 flex flex-col flex-grow-1">
+                    <div class="bg-indigo-500 text-white text-center p-3"
+                         style="border-radius: 6px 6px 0 0; border-color: #d61a1a;">
+                        <div class="h-4rem flex align-items-center items-center justify-content-center">
+                            <div class="flex-1 text-0 font-bold text-sm inline-block p-2">
+                                #{text['billing.message.become_patron_support_nocodefunctions']}
+                            </div>
+                        </div>
+                        <div class="text-white mb-3">
+                            <div class="text-2xl font-bold">#{text['billing.message.become_patron']}</div>
+                            <span class="font-bold text-5xl">19$</span>
+                            <span class="text-2xl"> / #{text['general.nouns.month']}</span>
+                        </div>
+                    </div>
+                    <div class="flex justify-content-center mt-2 mb-2">
+                        <p:button href="#{stripeBean.urlCheckoutMonthlyPatronPlan}" value="#{text['general.verbs.subscribe']}"
+                                  styleClass="flex-1 ui-button-secondary w-6 m-1 dark-red-button" style="background-color: #d61a1a; border-radius: 10px;"/>
+                    </div>
+                    <div class="bg-indigo-500 p-4 flex flex-col flex-grow-1"
+                         style="box-shadow: inset 0px 2px 8px rgba(0, 0, 0, 0.1); border-radius: 0 0 6px 6px; border-color: #d61a1a;">
+                        <ul class="list-none p-0 m-0 mb-5 text-white">
+                            <li class="flex align-items-center mb-3">
+                                <i class="pi pi-check mr-2 text-sm"/>
+                                <span>#{text['billing.message.all_features_pro_plan']}</span>
+                            </li>
+                            <li class="flex align-items-center mb-3">
+                                <i class="pi pi-check mr-2 text-sm"/>
+                                <span>#{text['billing.message.early_access_new_features']}</span>
+                            </li>
+                            <li class="flex align-items-center mb-3">
+                                <i class="pi pi-check mr-2 text-sm"/>
+                                <span>#{text['billing.message.become_patron_support_nocodefunctions.details']}</span>
+                            </li>
+                            <li class="flex align-items-center mb-3">
+                                <i class="pi pi-check mr-2 text-sm"/>
+                                <div class="flex flex-col">
+                                    <div class="flex">
+                                        <p:outputLabel value="#{text['billing.message.strengthen_open_source_given_back_to_gephi.title']}" escape="false"/>
+                                    </div>
+                                    <div class="flex">
+                                        <p:outputLabel class="text-xs" value="#{text['billing.message.strengthen_open_source_given_back_to_gephi.details']}" escape="false"/>
+                                    </div>
+                                </div>
+                            </li>
+                        </ul>
                     </div>
                 </div>
             </div>
-
 
             <div class="p-4">
                 <div class="border-2 surface-border border-round surface-card"
@@ -193,15 +178,6 @@
                     </div>
                 </div>
             </div>
-            <h:outputStylesheet name="css/prism/prism.css"/>
-            <h:outputStylesheet name="css/app/layout.css"/>
-            <h:outputStylesheet name="css/custom.css"/>
-            <h:outputStylesheet name="css/demo/flags.css"/>
-            <h:outputStylesheet name="css/primeicons/primeicons.css"/>
-            <h:outputStylesheet name="css/primeflex/primeflex3.css"/>
-            <h:outputStylesheet name="css/primeflex/extensions.css"/>
-            <h:outputStylesheet name="css/primeflex/themes/#{app.theme}.css"/>
-
         </h:body>
     </f:view>
 </html>

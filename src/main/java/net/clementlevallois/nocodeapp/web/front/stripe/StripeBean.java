@@ -4,7 +4,6 @@
  */
 package net.clementlevallois.nocodeapp.web.front.stripe;
 
-
 import io.mikael.urlbuilder.UrlBuilder;
 import jakarta.annotation.PostConstruct;
 import jakarta.faces.context.ExternalContext;
@@ -14,6 +13,9 @@ import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import jakarta.json.Json;
 import jakarta.json.JsonObjectBuilder;
+import jakarta.json.bind.Jsonb;
+import jakarta.json.bind.JsonbBuilder;
+import jakarta.json.bind.JsonbException;
 import jakarta.servlet.annotation.MultipartConfig;
 import java.io.IOException;
 import java.io.Serializable;
@@ -98,55 +100,18 @@ public class StripeBean implements Serializable {
         this.showAlertnoCredits = showAlertnoCredits;
     }
 
-//    public void decisionTreeBeforeRenderingIndexPage() {
-//
-//        FacesContext context = FacesContext.getCurrentInstance();
-//
-//        String hash = sessionBean.getHash();
-//
-//        // IF NO CREDIT
-//        if (nocredits.equals("true")) {
-//            return;
-//        }
-//
-//        Customer customer = getCustomerByHash(hash);
-//        if (customer != null) {
-//            try {
-//                context.getExternalContext().redirect(SERVICE_PAGE);
-//                context.responseComplete(); // Stop JSF lifecycle after redirect
-//            } catch (IOException ex) {
-//                Logger.getLogger(StripeBean.class.getName()).log(Level.SEVERE, null, ex);
-//            }
-//            return;
-//        }
-//
-//        // IF WE LAND ON INDEX FROM THE STRIPE CHECKOUT PAGE
-//        if (isRedirectFromStripeCheckout()) {
-//            Session stripeSession = getStripeSessionBySessionId(urlParamStripeSessionIdReturnedByCheckout);
-//            if (stripeSession.getStatus().equals("complete")) {
-//                String hashFromCustomerEmail = "";
-//                while (hashFromCustomerEmail.isBlank()) {
-//                    hashFromCustomerEmail = getHashFromCustomerEmail(stripeSession.getCustomerEmail());
-//                    try {
-//                        Thread.sleep(Duration.ofMillis(200));
-//                    } catch (InterruptedException ex) {
-//                        Logger.getLogger(StripeBean.class.getName()).log(Level.SEVERE, null, ex);
-//                    }
-//                }
-//                sessionBean.setHash(hashFromCustomerEmail); // write it to the session
-//                sendWelcomeEmailAfterCheckout(stripeSession.getCustomerEmail(), stripeSession.getCustomerDetails().getName(), hashFromCustomerEmail); // send Welcome email
-//                try {
-//                    context.getExternalContext().redirect(SERVICE_PAGE);
-//                    context.responseComplete(); // Stop JSF lifecycle after redirect
-//                } catch (IOException ex) {
-//                    Logger.getLogger(StripeBean.class.getName()).log(Level.SEVERE, null, ex);
-//                }
-//            } else {
-//                System.out.println("we should never land here because if the checkout was not complete we would have not landed on index.html but on a cancel.html page");
-//                // this case should never happen
-//            }
-//        }
-//    }
+    public void decisionTreeBeforeRenderingIndexPage() {
+
+        // IF WE LAND ON INDEX FROM THE STRIPE CHECKOUT PAGE
+        if (isRedirectFromStripeCheckout()) {
+            Customer customer = getCustomerInfoBySessionId(urlParamStripeSessionIdReturnedByCheckout);
+            sessionBean.setHash(customer.getHash()); // write it to the session
+            sendWelcomeEmailAfterCheckout(customer.getEmail(), customer.getName(), customer.getHash()); // send Welcome email
+            // add welcome pop up
+        }
+
+    }
+
     public void populatePlanUrls() {
         boolean emailParamAbsent = urlParamEmail == null || urlParamEmail.isBlank();
         if (emailParamAbsent && (sessionBean.getHash() == null || sessionBean.getHash().isBlank())) {
@@ -186,7 +151,7 @@ public class StripeBean implements Serializable {
                         .withScheme("http")
                         .withPort(portPayment)
                         .withHost("localhost")
-                        .withPath("/externalapi/getStripeBillingUrl")
+                        .withPath("/stripe/getStripeBillingUrl")
                         .addParameter("hash", hash)
                         .addParameter("successUrl", RemoteLocal.getDomain() + "/index.html?hash=" + hash)
                         .addParameter("lang", sessionBean.getCurrentLocale().getLanguage())
@@ -223,55 +188,6 @@ public class StripeBean implements Serializable {
         return urlParamStripeSessionIdReturnedByCheckout != null && !urlParamStripeSessionIdReturnedByCheckout.isBlank();
     }
 
-//    public Customer getCustomerByHash(String hash) {
-//
-//        if (hash == null || hash.isBlank()) {
-//            System.out.println("hash was null or blank, we don't fetch a customer");
-//            return null;
-//        }
-//        System.out.println("customer to be retrieved from hash: " + hash);
-//
-//        try {
-//
-//            URI uri = UrlBuilder
-//                    .empty()
-//                    .withScheme("http")
-//                    .withPort(portPayment)
-//                    .withHost("localhost")
-//                    .withPath("/externalapi/getCustomerByHash")
-//                    .addParameter("hash", hash)
-//                    .toUri();
-//
-//            HttpRequest httpRequest = HttpRequest.newBuilder()
-//                    .GET()
-//                    .uri(uri)
-//                    .build();
-//
-//            HttpResponse<String> resp = client.send(httpRequest, HttpResponse.BodyHandlers.ofString());
-//            if (resp.statusCode() != 200) {
-//                String stringError = resp.body();
-//                System.out.println("stringError: " + stringError);
-//                System.out.println("status code: " + resp.statusCode());
-//                return null;
-//            } else {
-//                String json = resp.body();
-//                if (json.equals("{}")) {
-////                    System.out.println("no customer for this hash");
-//                    return null;
-//                } else {
-//                    Jsonb jsonb = JsonbBuilder.create();
-//                    Customer currentCustomer = jsonb.fromJson(resp.body(), Customer.class);
-//                    System.out.println("customer for this hash exists: " + currentCustomer.getEmail());
-//                    return currentCustomer;
-//                }
-//
-//            }
-//        } catch (IOException | InterruptedException ex) {
-//            Logger.getLogger(StripeBean.class.getName()).log(Level.SEVERE, null, ex);
-//        }
-//        return null;
-//
-//    }
     public void addHashFieldAndCreditsToCustomer(String customerId, String hash, String serviceName, String credits) {
         try {
 
@@ -280,7 +196,7 @@ public class StripeBean implements Serializable {
                     .withScheme("http")
                     .withPort(portPayment)
                     .withHost("localhost")
-                    .withPath("/externalapi/addHashFieldAndCreditsToCustomer")
+                    .withPath("/stripe/addHashFieldAndCreditsToCustomer")
                     .addParameter("hash", hash)
                     .addParameter("credits", credits)
                     .addParameter("customerId", customerId)
@@ -354,10 +270,10 @@ public class StripeBean implements Serializable {
                     .withScheme("http")
                     .withPort(portPayment)
                     .withHost("localhost")
-                    .withPath("/externalapi/proceedToRefund")
+                    .withPath("/stripe/proceedToRefund")
                     .addParameter("hash", hashValueFromUrlParam)
                     .addParameter("priceIds", priceIds)
-                    .addParameter("serviceName", SingletonBean.serviceName)
+                    .addParameter("serviceName", SingletonBean.SERVICE_NAME)
                     .toUri();
 
             HttpRequest httpRequest = HttpRequest.newBuilder()
@@ -394,7 +310,7 @@ public class StripeBean implements Serializable {
                     .withScheme("http")
                     .withPort(portPayment)
                     .withHost("localhost")
-                    .withPath("/externalapi/resetServiceMetadataForThisCustomer")
+                    .withPath("/stripe/resetServiceMetadataForThisCustomer")
                     .addParameter("hash", hashValueFromUrlParam)
                     .addParameter("serviceName", serviceName)
                     .toUri();
@@ -431,9 +347,9 @@ public class StripeBean implements Serializable {
                     .withScheme("http")
                     .withPort(portPayment)
                     .withHost("localhost")
-                    .withPath("/externalapi/manageCredits")
+                    .withPath("/stripe/manageCredits")
                     .addParameter("hash", hash)
-                    .addParameter("serviceName", SingletonBean.serviceName)
+                    .addParameter("serviceName", SingletonBean.SERVICE_NAME)
                     .addParameter("serviceNameAllCreditsUsed", SingletonBean.SERVICE_NAME_ALL_CREDITS_USED)
                     .toUri();
 
@@ -465,7 +381,7 @@ public class StripeBean implements Serializable {
                     .withScheme("http")
                     .withPort(portPayment)
                     .withHost("localhost")
-                    .withPath("/externalapi/updateCustomerMetadata")
+                    .withPath("/stripe/updateCustomerMetadata")
                     .addParameter("customerId", customerId)
                     .toUri();
 
@@ -527,7 +443,7 @@ public class StripeBean implements Serializable {
 
             }
         } else {
-            String urlPricingPlans = RemoteLocal.getDomain() + "/pricing_table.html?origin=email&email=" + emailInputField;
+            String urlPricingPlans = RemoteLocal.getDomain() + "/stripe/pricing_table.html?origin=email&email=" + emailInputField;
             subject = "👋 **ACTION REQUIRED** Sign up to Nocodefunctions";
             bodyEmail = """
                           Hi!
@@ -548,7 +464,7 @@ public class StripeBean implements Serializable {
                     .withScheme("http")
                     .withPort(portPayment)
                     .withHost("localhost")
-                    .withPath("/externalapi/sendEmail")
+                    .withPath("/stripe/sendEmail")
                     .toUri();
 
             JsonObjectBuilder parametersBuilder = Json.createObjectBuilder();
@@ -556,7 +472,7 @@ public class StripeBean implements Serializable {
             parametersBuilder.add("emailFrom", "for-help-do-not-email-but-go-to-nocodefunctions-dot-com-click-billing@nocodefunctions.com");
             parametersBuilder.add("subject", subject);
             parametersBuilder.add("bodyEmail", bodyEmail);
-            parametersBuilder.add("serviceName", SingletonBean.serviceName);
+            parametersBuilder.add("serviceName", SingletonBean.SERVICE_NAME);
 
             String jsonString = parametersBuilder.build().toString();
 
@@ -590,13 +506,14 @@ public class StripeBean implements Serializable {
                     .withScheme("http")
                     .withPort(portPayment)
                     .withHost("localhost")
-                    .withPath("/externalapi/sendEmail")
+                    .withPath("/stripe/sendEmail")
                     .toUri();
 
             JsonObjectBuilder parametersBuilder = Json.createObjectBuilder();
             parametersBuilder.add("emailTo", email);
             parametersBuilder.add("emailFrom", "for-help-do-not-email-but-go-to-nocodefunctions-dot-com-click-billing@nocodefunctions.com");
             parametersBuilder.add("subject", "Extra capacity for nocodefunctions");
+            parametersBuilder.add("serviceName", SingletonBean.SERVICE_NAME);
 
             String bodyEmail = """
 Hi """ + " " + customerFullName + "! " + """
@@ -611,11 +528,11 @@ If you have feedback on Nocodefunctions, or come across any bugs, I'd love to he
 
                                          
 DOWNLOAD INVOICES, SWITCH PLANS, PAUSE OR CANCEL SUBSCRIPTION
-If you'd like to download invoices, switch plans, pause or cancel your subscription, you can do so on the site (click Billing in top left), or click the link below:
-https://nocodefunctions.com/billing.html?lang=""" + sessionBean.getCurrentLocale().getLanguage() + "&hash=" + hash + """
+If you'd like to download invoices, switch plans, pause or cancel your subscription, you can do so on the site (click Billing in top right), or click the link below:
+https://nocodefunctions.com/stripe/billing.html?lang=""" + sessionBean.getCurrentLocale().getLanguage() + "&hash=" + hash + """
 
                                                 
-Nocodefuctions is 100% self service. That means we can not send invoices, switch plans, pause or cancel your subscription for you but you can do it yourself easily.
+Nocodefunctions is 100% self service. That means we can not send invoices, switch plans, pause or cancel your subscription for you but you can do it yourself easily.
 
 Thank you for choosing our data analytics service—you’re in for exceptional insights.
 
@@ -655,12 +572,12 @@ https://bsky.app/profile/seinecle.bsky.social""";
                 .withScheme("http")
                 .withPort(portPayment)
                 .withHost("localhost")
-                .withPath("/externalapi/getCheckoutUrl")
+                .withPath("/stripe/getCheckoutUrl")
                 .toUri();
 
         JsonObjectBuilder parametersBuilder = Json.createObjectBuilder();
         parametersBuilder.add("baseUrl", RemoteLocal.getDomain());
-        parametersBuilder.add("cancelPath", "/canceled.html?stripe_session_id={CHECKOUT_SESSION_ID}");
+        parametersBuilder.add("cancelPath", "/stripe/canceled.html?stripe_session_id={CHECKOUT_SESSION_ID}");
         parametersBuilder.add("successPath", "/index.html?stripe_session_id={CHECKOUT_SESSION_ID}");
         parametersBuilder.add("priceId", priceId);
         parametersBuilder.add("paymentMode", "subscription");
@@ -699,7 +616,7 @@ https://bsky.app/profile/seinecle.bsky.social""";
                 .withScheme("http")
                 .withPort(portPayment)
                 .withHost("localhost")
-                .withPath("/externalapi/getHashFromCustomerEmail")
+                .withPath("/stripe/getHashFromCustomerEmail")
                 .addParameter("customerEmail", customerEmail)
                 .toUri();
 
@@ -730,7 +647,7 @@ https://bsky.app/profile/seinecle.bsky.social""";
                 .withScheme("http")
                 .withPort(portPayment)
                 .withHost("localhost")
-                .withPath("/externalapi/getCustomerEmailByHash")
+                .withPath("/stripe/getCustomerEmailByHash")
                 .addParameter("hash", hash)
                 .toUri();
 
@@ -754,83 +671,44 @@ https://bsky.app/profile/seinecle.bsky.social""";
         return null;
     }
 
-//    public Session getStripeSessionBySessionId(String stripeSessionId) {
-//
-//        URI uri = UrlBuilder
-//                .empty()
-//                .withScheme("http")
-//                .withPort(portPayment)
-//                .withHost("localhost")
-//                .withPath("/externalapi/getStripeSessionBySessionId")
-//                .addParameter("stripeSessionId", stripeSessionId)
-//                .toUri();
-//
-//        HttpRequest httpRequest = HttpRequest.newBuilder()
-//                .uri(uri)
-//                .build();
-//
-//        try {
-//            HttpResponse<String> resp = client.send(httpRequest, HttpResponse.BodyHandlers.ofString());
-//            if (resp.statusCode() != 200) {
-//                String stringError = resp.body();
-//                System.out.println("stringError: " + stringError);
-//                System.out.println("status code: " + resp.statusCode());
-//            } else {
-//                String json = resp.body();
-//                if (json.equals("{}")) {
-//                    return null;
-//                } else {
-//                    Jsonb jsonb = JsonbBuilder.create();
-//                    Session session = jsonb.fromJson(resp.body(), Session.class);
-//
-//                    return session;
-//
-//                }
-//            }
-//        } catch (IOException | InterruptedException ex) {
-//            Logger.getLogger(StripeBean.class.getName()).log(Level.SEVERE, null, ex);
-//        }
-//        System.out.println("reached the end of the method without a returned session");
-//        return null;
-//    }
-//    public LineItem getLineItemsFromCheckoutSession(String stripeSessionId) {
-//
-//        URI uri = UrlBuilder
-//                .empty()
-//                .withScheme("http")
-//                .withPort(portPayment)
-//                .withHost("localhost")
-//                .withPath("/externalapi/getLineItemsFromCheckoutSession")
-//                .addParameter("stripeSessionId", stripeSessionId)
-//                .toUri();
-//
-//        HttpRequest httpRequest = HttpRequest.newBuilder()
-//                .uri(uri)
-//                .build();
-//
-//        try {
-//            HttpResponse<String> resp = client.send(httpRequest, HttpResponse.BodyHandlers.ofString());
-//            if (resp.statusCode() != 200) {
-//                String stringError = resp.body();
-//                System.out.println("stringError: " + stringError);
-//                System.out.println("status code: " + resp.statusCode());
-//            } else {
-//                String json = resp.body();
-//                if (json.equals("{}")) {
-//                    return null;
-//                } else {
-//                    Jsonb jsonb = JsonbBuilder.create();
-//                    LineItem lineItem = jsonb.fromJson(resp.body(), LineItem.class);
-//                    return lineItem;
-//
-//                }
-//            }
-//        } catch (IOException | InterruptedException ex) {
-//            Logger.getLogger(StripeBean.class.getName()).log(Level.SEVERE, null, ex);
-//        }
-//        System.out.println("reached the end of the method without a returned session");
-//        return null;
-//    }
+    public Customer getCustomerInfoBySessionId(String stripeSessionId) {
+
+        URI uri = UrlBuilder
+                .empty()
+                .withScheme("http")
+                .withPort(portPayment)
+                .withHost("localhost")
+                .withPath("/stripe/getCustomerInfoBySessionId")
+                .addParameter("stripeSessionId", stripeSessionId)
+                .toUri();
+
+        HttpRequest httpRequest = HttpRequest.newBuilder()
+                .uri(uri)
+                .build();
+
+        try {
+            HttpResponse<String> resp = client.send(httpRequest, HttpResponse.BodyHandlers.ofString());
+            if (resp.statusCode() != 200) {
+                String stringError = resp.body();
+                System.out.println("stringError: " + stringError);
+                System.out.println("status code: " + resp.statusCode());
+            } else {
+                try {
+                    Jsonb jb = JsonbBuilder.create();
+                    Customer customer = jb.fromJson(resp.body(), Customer.class);
+                    return customer;
+                } catch (JsonbException e) {
+                    System.out.println("error in deserializing customer info: " + e.getMessage());
+                    return null;
+                }
+            }
+        } catch (IOException | InterruptedException ex) {
+            Logger.getLogger(StripeBean.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        System.out.println("reached the end of the method without a returned customer");
+        return null;
+    }
+
     public String getUrlCheckoutMonthlyProPlan() {
         return urlCheckoutMonthlyProPlan;
     }
@@ -846,8 +724,6 @@ https://bsky.app/profile/seinecle.bsky.social""";
     public void setUrlCheckoutMonthlyPatronPlan(String urlCheckoutMonthlyPatronPlan) {
         this.urlCheckoutMonthlyPatronPlan = urlCheckoutMonthlyPatronPlan;
     }
-    
-    
 
     public String getUrlParamStripeSessionIdReturnedByCheckout() {
         return urlParamStripeSessionIdReturnedByCheckout;
@@ -855,6 +731,7 @@ https://bsky.app/profile/seinecle.bsky.social""";
 
     public void setUrlParamStripeSessionIdReturnedByCheckout(String urlParamStripeSessionIdReturnedByCheckout) {
         this.urlParamStripeSessionIdReturnedByCheckout = urlParamStripeSessionIdReturnedByCheckout;
+        
     }
 
     public String getUrlParamEmail() {
@@ -889,9 +766,9 @@ https://bsky.app/profile/seinecle.bsky.social""";
                 .withScheme("http")
                 .withPort(portPayment)
                 .withHost("localhost")
-                .withPath("/externalapi/getCustomerRemainingCredits")
+                .withPath("/stripe/getCustomerRemainingCredits")
                 .addParameter("hash", hash)
-                .addParameter("serviceName", SingletonBean.serviceName)
+                .addParameter("serviceName", SingletonBean.SERVICE_NAME)
                 .toUri();
 
         HttpRequest httpRequest = HttpRequest.newBuilder()

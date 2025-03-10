@@ -14,7 +14,7 @@ import net.clementlevallois.nocodeapp.web.front.http.RemoteLocal;
 @Singleton
 public class SingletonBean {
 
-    public static final String serviceName = "nocode";
+    public static final String SERVICE_NAME = "NOCODE";
     public static final String SERVICE_NAME_ALL_CREDITS_USED = "nocode-all-credits-used";
 
     static {

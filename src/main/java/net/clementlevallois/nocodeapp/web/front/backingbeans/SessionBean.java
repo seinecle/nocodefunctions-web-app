@@ -193,8 +193,8 @@ public class SessionBean implements Serializable {
             System.out.println("FacesContext.getCurrentInstance was null. Detail: " + detail);
         }
     }
-    
-    public boolean isHashPresent(){
+
+    public boolean isHashPresent() {
         return !getHash().isBlank();
     }
 
@@ -206,28 +206,30 @@ public class SessionBean implements Serializable {
             if (hash != null && !hash.isBlank()) {
                 return hash;
             } else {
-                removeCookie(SingletonBean.serviceName);
+                removeCookie(SingletonBean.SERVICE_NAME);
                 return "";
             }
         }
     }
-    
+
     public void setHash(String hash) {
-        this.hash = hash;
-        writeValueToCookie(hash);
+        if (hash != null && !hash.isBlank()) {
+            this.hash = hash;
+            writeValueToCookie(hash);
+        }
     }
 
     public boolean isCookiePresent() {
         Map<String, Object> cookieMap = FacesContext.getCurrentInstance().getExternalContext().getRequestCookieMap();
-        return cookieMap.containsKey(SingletonBean.serviceName);
+        return cookieMap.containsKey(SingletonBean.SERVICE_NAME);
     }
 
     private String getHashValueFromCookie() {
         Map<String, Object> cookieMap = FacesContext.getCurrentInstance().getExternalContext().getRequestCookieMap();
-        if (((Cookie) cookieMap.get(SingletonBean.serviceName)) == null) {
+        if (((Cookie) cookieMap.get(SingletonBean.SERVICE_NAME)) == null) {
             return null;
         } else {
-            return ((Cookie) cookieMap.get(SingletonBean.serviceName)).getValue();
+            return ((Cookie) cookieMap.get(SingletonBean.SERVICE_NAME)).getValue();
         }
     }
 
@@ -250,7 +252,7 @@ public class SessionBean implements Serializable {
     }
 
     private void writeValueToCookie(String value) {
-        FacesContext.getCurrentInstance().getExternalContext().addResponseCookie(SingletonBean.serviceName, value, null);
+        FacesContext.getCurrentInstance().getExternalContext().addResponseCookie(SingletonBean.SERVICE_NAME, value, null);
     }
 
 }

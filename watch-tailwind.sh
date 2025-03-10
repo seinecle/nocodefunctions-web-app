@@ -1,2 +1,2 @@
 @echo off
-./src/main/webapp/tailwind.exe -i C:/Users/clevallois.GOBELINS/open/nocode-app-web-front/src/main/webapp/resources/css/custom.css -o C:/Users/clevallois.GOBELINS/open/nocode-app-web-front/src/main/webapp/resources/css/output.css --watch --poll
+./tailwind.exe -i C:/Users/clevallois.GOBELINS/open/nocode-app-web-front/src/main/webapp/resources/css/custom.css -o C:/Users/clevallois.GOBELINS/open/nocode-app-web-front/src/main/webapp/resources/css/output.css --watch --poll
