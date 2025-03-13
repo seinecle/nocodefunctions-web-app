@@ -33,6 +33,7 @@ import net.clementlevallois.nocodeapp.web.front.backingbeans.ApplicationProperti
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SingletonBean;
 import net.clementlevallois.nocodeapp.web.front.http.RemoteLocal;
+import net.clementlevallois.nocodeapp.web.front.utils.UrlParamCleaner;
 
 /**
  *
@@ -401,11 +402,13 @@ public class StripeBean implements Serializable {
 
     public String sendPricingInfoOrLoginUrlViaEmail() {
         if (emailInputField == null || emailInputField.isBlank()) {
+            System.out.println("email address was empty, email not sent");
             return "";
         }
 
         emailButtonIsDisabled = true;
         String hash = getHashFromCustomerEmail(emailInputField);
+        sessionBean.setHash(hash);
 
         String subject;
         String bodyEmail;
@@ -414,13 +417,14 @@ public class StripeBean implements Serializable {
             remainingCredits = getRemainingCredits();
             creditsCheckPerformed = true;
             if (remainingCredits < 1) {
-                return "plans/pricing_table.html?hash=" + hash + "&faces-redirect=true";
+                return "plans/pricing_table.html?hash=" + hash + "&email="+emailInputField+"faces-redirect=true";
             } else {
                 subject = "👋 Your login link to Nocodefunctions";
                 bodyEmail = """
                         Hi!
                         
-                        This is your login link to Nocodefunctions: """ + RemoteLocal.getDomain() + "/?hash=" + hash + """
+                        This is your login link to Nocodefunctions: 
+                            """ + RemoteLocal.getDomain() + "/?hash=" + hash + """
                                                                                                          
                                                          
                                                          Enjoy nocodefunctions!
@@ -474,13 +478,16 @@ public class StripeBean implements Serializable {
                 String stringError = resp.body();
                 System.out.println("stringError: " + stringError);
                 System.out.println("status code: " + resp.statusCode());
+                return "";
             } else {
                 System.out.println("email sent with a login link");
+                return "";
             }
         } catch (IOException | InterruptedException ex) {
             Logger.getLogger(StripeBean.class.getName()).log(Level.SEVERE, null, ex);
         }
         emailButtonIsDisabled = false;
+        System.out.println("arrived at end of email sending function without an email sent. Returning.");
         return "";
     }
 
@@ -506,6 +513,7 @@ Hi """ + " " + customerFullName + "! " + """
 
                                    
 Thank you for signing up to Nocodefunctions with elevated access. Here's your link to use it:
+                                         
 https://nocodefunctions.com/?hash=""" + hash + """
 
                                          
@@ -716,7 +724,7 @@ https://bsky.app/profile/seinecle.bsky.social""";
     }
 
     public void setUrlParamStripeSessionIdReturnedByCheckout(String urlParamStripeSessionIdReturnedByCheckout) {
-        this.urlParamStripeSessionIdReturnedByCheckout = getRightmostPart(urlParamStripeSessionIdReturnedByCheckout);
+        this.urlParamStripeSessionIdReturnedByCheckout = UrlParamCleaner.getRightmostPart(urlParamStripeSessionIdReturnedByCheckout);
         
     }
 
@@ -725,7 +733,7 @@ https://bsky.app/profile/seinecle.bsky.social""";
     }
 
     public void setUrlParamEmail(String urlParamEmail) {
-        this.urlParamEmail = getRightmostPart(urlParamEmail);
+        this.urlParamEmail = UrlParamCleaner.getRightmostPart(urlParamEmail);
         
     }
 
@@ -809,11 +817,5 @@ https://bsky.app/profile/seinecle.bsky.social""";
         this.emailButtonIsDisabled = emailButtonIsDisabled;
     }
     
-    public static String getRightmostPart(String input) {
-        if (input == null || !input.contains("=")) {
-            return input; // Return as is if no '=' found or input is null
-        }
-        return input.substring(input.lastIndexOf("=") + 1);
-    }
 
 }

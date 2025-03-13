@@ -21,6 +21,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import net.clementlevallois.nocodeapp.web.front.i18n.I18nStaticFilesResourceBundle;
+import net.clementlevallois.nocodeapp.web.front.utils.UrlParamCleaner;
 
 /**
  *
@@ -214,8 +215,10 @@ public class SessionBean implements Serializable {
 
     public void setHash(String hash) {
         if (hash != null && !hash.isBlank()) {
-            this.hash = hash;
-            writeValueToCookie(hash);
+//            System.out.println("hash from url: " + hash);
+            this.hash = UrlParamCleaner.getRightmostPart(hash);
+//            System.out.println("after cleaning: " + this.hash);
+            writeValueToCookie(this.hash);
         }
     }
 
