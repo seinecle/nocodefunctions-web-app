@@ -46,33 +46,37 @@
                             <b>#{text['general.message.paste_url']}</b>
                             <br/>
                             <br/>
-                            <h:graphicImage name="images/round_1_orange.png" width="20" height="20" style="vertical-align: middle;"/>
-                            <p:spacer width="5"/>
-                            <p:inputText
-                                id="urlInput"
-                                value="#{htmlTextImportToSimpleLines.urlWebPage}"
-                                placeholder="https:// ...">
-                                <p:ajax/>
-                            </p:inputText>
-                            <p:spacer width="10"/>
-                            <p:commandButton
-                                id="loadUrlButton"
-                                value="#{text['import_data.website.crawl_website']}"
-                                action="#{htmlTextImportToSimpleLines.retrieveUrlsContainedOnAPage}"
-                                styleClass="btn btn-primary"
-                                update=":notifications accordion"
-                                />
+                            <div class="flex justify-start items-center flex-wrap gap-2">
+                                <h:graphicImage name="images/round_1_orange.png" width="20" height="20" style="vertical-align: middle;"/>
+                                <p:spacer width="5"/>
+                                <p:inputText
+                                    id="urlInput"
+                                    value="#{htmlTextImportToSimpleLines.urlWebPage}"
+                                    placeholder="https:// ...">
+                                    <p:ajax/>
+                                </p:inputText>
+                                <p:spacer width="10"/>
+                                <p:commandButton
+                                    id="loadUrlButton"
+                                    value="#{text['import_data.website.crawl_website']}"
+                                    action="#{htmlTextImportToSimpleLines.retrieveUrlsContainedOnAPage}"
+                                    styleClass="btn btn-primary"
+                                    update=":notifications accordion"
+                                    />
+                            </div>
                             <br/>
                             <br/>
                             <p:outputPanel id="launch">
-                                <h:graphicImage name="images/round_2_orange.png" width="20" height="20" style="vertical-align: middle;"/>
-                                <p:spacer width="5"/>
-                                <p:commandButton
-                                    value="#{text['general.verbs.compute']}"
-                                    action="#{htmlTextImportToSimpleLines.gotToFunctionWithDataInBulk()}"
-                                    styleClass="btn btn-primary"
-                                    update=":notifications"
-                                    />
+                                <div class="flex justify-start items-center flex-wrap gap-2">
+                                    <h:graphicImage name="images/round_2_orange.png" width="20" height="20" style="vertical-align: middle;"/>
+                                    <p:spacer width="5"/>
+                                    <p:commandButton
+                                        value="#{text['general.verbs.compute']}"
+                                        action="#{htmlTextImportToSimpleLines.gotToFunctionWithDataInBulk()}"
+                                        styleClass="btn btn-primary"
+                                        update=":notifications"
+                                        />
+                                </div>
                             </p:outputPanel>
                             <br/>
                             <br/>

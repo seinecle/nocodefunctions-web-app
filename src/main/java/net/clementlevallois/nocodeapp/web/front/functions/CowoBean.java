@@ -85,6 +85,7 @@ public class CowoBean implements Serializable {
     private boolean removeNonAsciiCharacters = false;
     private String typeCorrection = "none";
     private boolean scientificCorpus;
+    private boolean firstNames = true;
     private boolean okToShareStopwords = false;
     private boolean replaceStopwords = false;
     private boolean lemmatize = true;
@@ -155,6 +156,7 @@ public class CowoBean implements Serializable {
         if (topNodesHaveArrived) {
             WatchTower.getQueueOutcomesProcesses().remove(key);
             runButtonDisabled = false;
+            runButtonText = sessionBean.getLocaleBundle().getString("general.verbs.compute");
             FacesContext context = FacesContext.getCurrentInstance();
             context.getApplication().getNavigationHandler().handleNavigation(context, null, "/cowo/results.xhtml?faces-redirect=true");
         }
@@ -231,6 +233,7 @@ public class CowoBean implements Serializable {
             overallObject.add("removeAccents", removeNonAsciiCharacters);
             overallObject.add("minCoocFreq", minCoocFreqInt);
             overallObject.add("minTermFreq", minTermFreq);
+            overallObject.add("firstNames", firstNames);
             overallObject.add("maxNGram", maxNGram);
             overallObject.add("typeCorrection", typeCorrection);
             overallObject.add("sessionId", sessionId);
@@ -269,6 +272,7 @@ public class CowoBean implements Serializable {
                 logBean.addOneNotificationFromString(errorMessage);
                 sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "💔", errorMessage);
                 runButtonDisabled = false;
+                runButtonText = sessionBean.getLocaleBundle().getString("general.verbs.compute");
             }
 
         } catch (IOException | InterruptedException ex) {
@@ -328,6 +332,7 @@ public class CowoBean implements Serializable {
                     System.out.println("top nodes returned by the API was not a 200 code");
                     System.out.println("error: " + error);
                     runButtonDisabled = false;
+                    runButtonText = sessionBean.getLocaleBundle().getString("general.verbs.compute");
                 } else {
                     byte[] body = resp.body();
                     String jsonResult = new String(body, StandardCharsets.UTF_8);
@@ -337,6 +342,7 @@ public class CowoBean implements Serializable {
                     WatchTower.getQueueOutcomesProcesses().put(dataPersistenceUniqueId + "topnodes", System.currentTimeMillis());
                     progress = 100;
                     runButtonDisabled = false;
+                    runButtonText = sessionBean.getLocaleBundle().getString("general.verbs.compute");
 //                    MessageFromApi msg = new MessageFromApi();
 //                    msg.setSessionId(sessionId);
 //                    msg.setFunction("cowo");
@@ -562,6 +568,15 @@ public class CowoBean implements Serializable {
     public void setLemmatize(boolean lemmatize) {
         this.lemmatize = lemmatize;
     }
+
+    public boolean isFirstNames() {
+        return firstNames;
+    }
+
+    public void setFirstNames(boolean firstNames) {
+        this.firstNames = firstNames;
+    }
+    
 
     public String getDataPersistenceUniqueId() {
         return dataPersistenceUniqueId;

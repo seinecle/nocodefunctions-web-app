@@ -44,8 +44,8 @@
                 <div class="flex w-full gap-4 flew-wrap">
                     <div class="sm:w-[70%] flex flex-col">
                         <p:panel header="#{text['general.message.paste_url']}">
-                            <h:form enctype="multipart/form-data" id="loadUrlForm">
-                                <div class="flex justify-start items-center">
+                            <h:form id="loadUrlForm">
+                                <div class="flex justify-start items-center flex-wrap gap-2">
                                     <div>
                                         <h:graphicImage name="images/round_1_orange.png" width="20" height="20"/> <!-- Added Tailwind alignment class -->
                                     </div>
@@ -66,43 +66,68 @@
                                             action="#{htmlTextImportToSimpleLines.crawlPagesOfAWebsite()}"
                                             styleClass="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
                                             update=":notifications"
+                                            process="@form"
                                             />
                                     </div>
                                 </div>
-                                <br/>
-                                <br/>
-                                <p:accordionPanel widgetVar="basic" activeIndex="null">
-                                    <p:tab title="#{text['general.title.if_you_need_more_parameters']}">
-                                        <br/>
-                                        <br/>
-                                        <div class="relative flex items-center py-5">
-                                            <div class="flex-grow border-t border-gray-300"></div>
-                                            <div class="flex items-center mx-4">
-                                                <i class="pi pi-chart-bar mr-2"/>
-                                                <b>#{text['import_data.website.max_links']}</b>
-                                            </div>
-                                            <div class="flex-grow border-t border-gray-300"></div>
+                            </h:form>
+                            <br/>
+                            <br/>
+                            <p:accordionPanel widgetVar="basic" activeIndex="null">
+                                <p:tab title="#{text['general.title.if_you_need_more_parameters']}">
+                                    <br/>
+                                    <br/>
+                                    <div class="relative flex items-center py-5">
+                                        <div class="flex-grow border-t border-gray-300"></div>
+                                        <div class="flex items-center mx-4">
+                                            <i class="pi pi-chart-bar mr-2"/>
+                                            <b>#{text['import_data.website.max_links']}</b>
                                         </div>
-                                        #{text['import_data.website.max_links_defaut_value']}
-                                        <br/>
-                                        <br/>
-                                        <p:panel rendered="#{not sessionBean.hashPresent}">
-                                            <p class="border border-blue-500 p-4 rounded">
-                                                <p:outputLabel value="#{text['billing.message.get_more_capacity']}"/>
-                                                <span class="w-1 inline-block"></span>
-                                                <p:inputText value="#{stripeBean.emailInputField}" placeholder="your email here"/>
-                                                <span class="w-1 inline-block"></span>
-                                                <p:commandButton value="send" action="#{stripeBean.sendPricingInfoOrLoginUrlViaEmail()}">
-                                                    <p:ajax/>
+                                        <div class="flex-grow border-t border-gray-300"></div>
+                                    </div>
+                                    #{text['import_data.website.max_links_defaut_value']}
+                                    <br/>
+                                    <br/>
+                                    <p:panel rendered="#{not sessionBean.hashPresent}" class="border border-blue-500 p-4 rounded">
+                                        <h:form>
+                                            <strong><p:outputLabel value="#{text['billing.message.get_more_capacity']}"/></strong>
+                                            <div class="w-2 h-2"/>
+                                            <div class="flex items-center flex-wrap gap-2">
+                                                <p:inputText
+                                                    id="msg" 
+                                                    value="#{stripeBean.emailInputField}"
+                                                    placeholder="#{text['general.message.type_your_email']}"
+                                                    styleClass="#{component.valid ? '' : 'email-field-alert'}"
+                                                    required="true"
+                                                    requiredMessage="#{text['general.message.email_is_required']}">
+
+                                                </p:inputText>
+                                                <p:commandButton
+                                                    value="#{text['general.verbs.send']}"
+                                                    action="#{stripeBean.sendPricingInfoOrLoginUrlViaEmail()}"
+                                                    oncomplete="if (args &amp;&amp; !args.validationFailed) PF('checkYourEmails').show()"
+                                                    process="@form"
+                                                    update="@form"
+                                                    >
                                                 </p:commandButton>
-                                            </p>
-                                        </p:panel>
-                                        <p:outputPanel rendered="#{sessionBean.hashPresent and stripeBean.remainingCredits > 0}">
-                                            <p>
-                                                ✨ #{text['billing.message.increased_capacity_is_available']}
-                                                
-                                            </p>
-                                        </p:outputPanel>
+                                                <p:dialog id="email-sent" header="📧 nocodefunctions.com" widgetVar="checkYourEmails" modal="true" resizable="false">
+                                                    #{text['general.message.check_your_email_at']}
+                                                    <div class="h-2">
+                                                    </div>
+                                                    <b><h:outputText value="#{stripeBean.emailInputField}"/></b>
+                                                    <div class="h-2"></div>
+                                                    #{text['general.message.click_link_in_email_for_enhanced_access']} #{text['general.message.check_spam_folder']}
+                                                </p:dialog>
+                                            </div>
+                                        </h:form>
+                                    </p:panel>
+                                    <p:outputPanel rendered="#{sessionBean.hashPresent and stripeBean.remainingCredits > 0}">
+                                        <p>
+                                            ✨ #{text['billing.message.increased_capacity_is_available']}
+
+                                        </p>
+                                    </p:outputPanel>
+                                    <h:form>
                                         <br/>
                                         <br/>
                                         <p:spinner id="spinner1" value="#{htmlTextImportToSimpleLines.urlsToCrawl}" min="1" max="#{htmlTextImportToSimpleLines.maxUrlsToCrawl}" stepFactor="1">
@@ -124,21 +149,27 @@
                                         <br/>
                                         <br/>
                                         <p:inputText value="#{htmlTextImportToSimpleLines.commaSeparatedValuesExclusionTerms}" placeholder="login, register, admin" />
-                                    </p:tab>
-                                </p:accordionPanel>
-                                <br/>
-                                <br/>
-                                <p:outputPanel id="launch" class="flex justify-start items-center">
-                                    <h:graphicImage name="images/round_2_orange.png" width="20" height="20"/>
-                                    <span class="w-2 inline-block"></span>
-                                    <p:commandButton
-                                        value="#{text['general.verbs.compute']}"
-                                        action="#{htmlTextImportToSimpleLines.gotToFunctionWithDataInBulk()}"
-                                        styleClass="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-                                        update=":notifications"
-                                        />
-                                </p:outputPanel>
-                            </h:form>
+                                    </h:form>
+
+                                </p:tab>
+                            </p:accordionPanel>
+                            <br/>
+                            <br/>
+                            <p:outputPanel id="launch" class="flex justify-start items-center">
+                                <h:form>
+                                    <div class="flex items-center flex-wrap gap-2">
+                                        <h:graphicImage name="images/round_2_orange.png" width="20" height="20"/>
+                                        <span class="w-2 inline-block"></span>
+                                        <p:commandButton
+                                            value="#{text['general.verbs.compute']}"
+                                            action="#{htmlTextImportToSimpleLines.gotToFunctionWithDataInBulk()}"
+                                            styleClass="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                                            update=":notifications"
+                                            process="@form"
+                                            />
+                                    </div>                                    
+                                </h:form>
+                            </p:outputPanel>
                         </p:panel>
                     </div>
                     <div class="flex-1 gap-4 h-full hide-mobile">

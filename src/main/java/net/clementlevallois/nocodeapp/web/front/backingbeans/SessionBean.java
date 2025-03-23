@@ -19,6 +19,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.Map;
 import net.clementlevallois.nocodeapp.web.front.i18n.I18nStaticFilesResourceBundle;
 import net.clementlevallois.nocodeapp.web.front.utils.UrlParamCleaner;
@@ -255,7 +256,11 @@ public class SessionBean implements Serializable {
     }
 
     private void writeValueToCookie(String value) {
-        FacesContext.getCurrentInstance().getExternalContext().addResponseCookie(SingletonBean.SERVICE_NAME, value, null);
+        Map<String, Object> properties = new HashMap();
+        properties.put("maxAge", 60 * 60 * 24 * 365); // 1 year
+        properties.put("httpOnly", true);
+        properties.put("secure", true);
+        FacesContext.getCurrentInstance().getExternalContext().addResponseCookie(SingletonBean.SERVICE_NAME, value, properties);
     }
 
 }
