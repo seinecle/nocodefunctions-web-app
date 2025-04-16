@@ -18,7 +18,7 @@ public class MessageFromApi implements Serializable {
     private Information info;
 
     public enum Information {
-        INTERMEDIARY, RESULT_ARRIVED, GOTORESULTS
+        INTERMEDIARY, RESULT_ARRIVED, ERROR, GOTORESULTS
     }
 
     public MessageFromApi() {

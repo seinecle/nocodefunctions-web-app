@@ -82,4 +82,9 @@ public class ImportSimpleLinesBean implements Serializable {
     public void setOneJsonPerLine(Boolean oneJsonPerLine) {
         this.oneJsonPerLine = oneJsonPerLine;
     }
+
+    public Path getPathOfTempData() {
+        return pathOfTempData;
+    }
+    
 }

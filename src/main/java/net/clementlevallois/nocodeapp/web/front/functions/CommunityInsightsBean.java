@@ -2,10 +2,8 @@ package net.clementlevallois.nocodeapp.web.front.functions;
 
 import io.mikael.urlbuilder.UrlBuilder;
 import jakarta.annotation.PostConstruct;
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.ByteArrayInputStream;
 import java.io.Serializable;
 import java.io.StringReader;
@@ -21,8 +19,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.TreeMap;
-import static java.util.stream.Collectors.toList;
 import jakarta.enterprise.context.SessionScoped;
 import jakarta.faces.application.FacesMessage;
 import jakarta.faces.context.FacesContext;
@@ -40,6 +36,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.time.Duration;
+import java.util.HashMap;
 import java.util.Properties;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentLinkedDeque;
@@ -55,14 +52,12 @@ import net.clementlevallois.nocodeapp.web.front.importdata.DataImportBean;
 import net.clementlevallois.nocodeapp.web.front.logview.BackToFrontMessengerBean;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.ApplicationPropertiesBean;
 import net.clementlevallois.nocodeapp.web.front.http.RemoteLocal;
-import net.clementlevallois.nocodeapp.web.front.importdata.ImportSimpleLinesBean;
+import net.clementlevallois.nocodeapp.web.front.importdata.ImportGraphBean;
 import net.clementlevallois.nocodeapp.web.front.utils.Converters;
 import net.clementlevallois.nocodeapp.web.front.utils.GEXFSaver;
 import net.clementlevallois.utils.Multiset;
-import org.primefaces.event.SlideEndEvent;
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
-import org.primefaces.model.file.UploadedFile;
 
 /**
  *
@@ -72,32 +67,24 @@ import org.primefaces.model.file.UploadedFile;
 @SessionScoped
 @MultipartConfig
 
-public class TopicsBean implements Serializable {
+public class CommunityInsightsBean implements Serializable {
 
     private Integer progress = 0;
     private String jsonResultAsString;
-    private Map<Integer, Multiset<String>> keywordsPerTopic;
-    private Map<Integer, Multiset<Integer>> topicsPerLine;
     private Boolean runButtonDisabled = false;
     private StreamedContent excelFileToSave;
-    private StreamedContent fileTopicsPerLineToSave;
     private StreamedContent gexfFile;
     private String selectedLanguage;
-    private int precision = 50;
-    private int minCharNumber = 4;
-    private int minTermFreq = 2;
+    private String selectedAttributeForText;
+    private String selectedAttributeForCommunity;
 
-    private boolean scientificCorpus;
-    private boolean okToShareStopwords = false;
-    private boolean replaceStopwords = false;
-    private boolean lemmatize = true;
-    private boolean removeNonAsciiCharacters = false;
-    private UploadedFile fileUserStopwords;
-
+    private Integer minCommunitySize = 10;
+    private Integer maxKeyNodesPerCommunity = 5;
+    
     private String runButtonText = "";
     private String dataPersistenceUniqueId = "";
     private String sessionId;
-    private boolean topicsHaveArrived = false;
+    private boolean insightsHaveArrived = false;
 
     private Properties privateProperties;
 
@@ -110,7 +97,7 @@ public class TopicsBean implements Serializable {
     DataImportBean inputData;
 
     @Inject
-    ImportSimpleLinesBean simpleLinesImportBean;
+    ImportGraphBean importGraphBean;
 
     @Inject
     SessionBean sessionBean;
@@ -118,7 +105,7 @@ public class TopicsBean implements Serializable {
     @Inject
     ApplicationPropertiesBean applicationProperties;
 
-    public TopicsBean() {
+    public CommunityInsightsBean() {
     }
 
     @PostConstruct
@@ -145,26 +132,26 @@ public class TopicsBean implements Serializable {
         runButtonText = sessionBean.getLocaleBundle().getString("general.message.wait_long_operation");
         progress = 0;
         runButtonDisabled = true;
-        topicsHaveArrived = false;
+        insightsHaveArrived = false;
         sendCallToTopicsFunction();
         formatTopicsInVariousWays();
     }
 
     public void pollingDidEndResultsArrive() {
-        String key = dataPersistenceUniqueId + "topics";
-        boolean topicsHaveArrived = WatchTower.getQueueOutcomesProcesses().containsKey(dataPersistenceUniqueId + "topics");
-        if (topicsHaveArrived) {
+        String key = dataPersistenceUniqueId + "community-insights";
+        insightsHaveArrived = WatchTower.getQueueOutcomesProcesses().containsKey(key);
+        if (insightsHaveArrived) {
             WatchTower.getQueueOutcomesProcesses().remove(key);
             runButtonDisabled = false;
             runButtonText = sessionBean.getLocaleBundle().getString("general.verbs.compute");
             FacesContext context = FacesContext.getCurrentInstance();
-            context.getApplication().getNavigationHandler().handleNavigation(context, null, "/topics/results.xhtml?faces-redirect=true");
+            context.getApplication().getNavigationHandler().handleNavigation(context, null, "/community-insights/results.xhtml?faces-redirect=true");
         }
     }
 
     public void navigatToResults(AjaxBehaviorEvent event) {
         FacesContext context = FacesContext.getCurrentInstance();
-        context.getApplication().getNavigationHandler().handleNavigation(context, null, "/topics/results.xhtml?faces-redirect=true");
+        context.getApplication().getNavigationHandler().handleNavigation(context, null, "/community-insights/results.xhtml?faces-redirect=true");
     }
 
     public void sendCallToTopicsFunction() {
@@ -175,8 +162,8 @@ public class TopicsBean implements Serializable {
             sessionBean.sendFunctionPageReport();
             logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.starting_analysis"));
 
-            if (simpleLinesImportBean.getDataPersistenceUniqueId() != null) {
-                dataPersistenceUniqueId = simpleLinesImportBean.getDataPersistenceUniqueId();
+            if (importGraphBean.getDataPersistenceUniqueId() != null) {
+                dataPersistenceUniqueId = importGraphBean.getDataPersistenceUniqueId();
             } else {
                 dataPersistenceUniqueId = UUID.randomUUID().toString().substring(0, 10);
                 Path tempFolderRelativePath = applicationProperties.getTempFolderFullPath();
@@ -205,29 +192,13 @@ public class TopicsBean implements Serializable {
             client = HttpClient.newBuilder().connectTimeout(Duration.ofMinutes(10)).build();
             JsonObjectBuilder overallObject = Json.createObjectBuilder();
 
-            JsonObjectBuilder userSuppliedStopwordsBuilder = Json.createObjectBuilder();
-            if (fileUserStopwords != null && fileUserStopwords.getFileName() != null) {
-                List<String> userSuppliedStopwords;
-                try (BufferedReader br = new BufferedReader(new InputStreamReader(fileUserStopwords.getInputStream(), StandardCharsets.UTF_8))) {
-                    userSuppliedStopwords = br.lines().collect(toList());
-                }
-                int index = 0;
-                for (String stopword : userSuppliedStopwords) {
-                    userSuppliedStopwordsBuilder.add(String.valueOf(index++), stopword);
-                }
-            }
 
-            String callbackURL = RemoteLocal.getDomain() + "/internalapi/messageFromAPI/topics";
+            String callbackURL = RemoteLocal.getDomain() + "/internalapi/messageFromAPI/community-insights";
             
             overallObject.add("lang", selectedLanguage);
-            overallObject.add("userSuppliedStopwords", userSuppliedStopwordsBuilder);
-            overallObject.add("replaceStopwords", replaceStopwords);
-            overallObject.add("isScientificCorpus", scientificCorpus);
-            overallObject.add("lemmatize", lemmatize);
-            overallObject.add("removeAccents", removeNonAsciiCharacters);
-            overallObject.add("precision", precision);
-            overallObject.add("minCharNumber", minCharNumber);
-            overallObject.add("minTermFreq", minTermFreq);
+            overallObject.add("userSuppliedCommunityFieldName", selectedAttributeForCommunity);
+            overallObject.add("maxKeyNodesPerCommunity", maxKeyNodesPerCommunity);
+            overallObject.add("minCommunitySize", minCommunitySize);
             overallObject.add("sessionId", sessionId);
             overallObject.add("dataPersistenceId", dataPersistenceUniqueId);
             overallObject.add("callbackURL", callbackURL);
@@ -246,7 +217,7 @@ public class TopicsBean implements Serializable {
                     .withScheme("http")
                     .withHost("localhost")
                     .withPort((Integer.valueOf(privateProperties.getProperty("nocode_api_port"))))
-                    .withPath("api/topics")
+                    .withPath("api/graphops/keynodes")
                     .toUri();
 
             request = HttpRequest.newBuilder()
@@ -277,16 +248,16 @@ public class TopicsBean implements Serializable {
 
             try {
 
-                topicsHaveArrived = false;
+                insightsHaveArrived = false;
 
-                while (!topicsHaveArrived && WatchTower.getCurrentSessions().containsKey(sessionId)) {
+                while (!insightsHaveArrived && WatchTower.getCurrentSessions().containsKey(sessionId)) {
                     ConcurrentLinkedDeque<MessageFromApi> messagesFromApi = WatchTower.getDequeAPIMessages().get(sessionId);
                     if (messagesFromApi != null && !messagesFromApi.isEmpty()) {
                         Iterator<MessageFromApi> it = messagesFromApi.iterator();
                         while (it.hasNext()) {
                             MessageFromApi msg = it.next();
                             if (msg.getInfo().equals(MessageFromApi.Information.RESULT_ARRIVED) && msg.getDataPersistenceId().equals(dataPersistenceUniqueId)) {
-                                topicsHaveArrived = true;
+                                insightsHaveArrived = true;
                                 it.remove();
                             }
                         }
@@ -294,10 +265,10 @@ public class TopicsBean implements Serializable {
                     try {
                         Thread.sleep(500);
                     } catch (InterruptedException ex) {
-                        Logger.getLogger(TopicsBean.class.getName()).log(Level.SEVERE, null, ex);
+                        Logger.getLogger(CommunityInsightsBean.class.getName()).log(Level.SEVERE, null, ex);
                     }
                 }
-                topicsHaveArrived = false;
+                insightsHaveArrived = false;
 
                 if (!WatchTower.getCurrentSessions().containsKey(sessionId)) {
                     return;
@@ -305,8 +276,6 @@ public class TopicsBean implements Serializable {
 
                 progress = 80;
 
-                keywordsPerTopic = new TreeMap();
-                topicsPerLine = new TreeMap();
                 Path tempDataPath = Path.of(applicationProperties.getTempFolderFullPath().toString(), dataPersistenceUniqueId + "_result");
                 jsonResultAsString = Files.readString(tempDataPath, StandardCharsets.UTF_8);
 
@@ -323,30 +292,36 @@ public class TopicsBean implements Serializable {
                 String gexfSemanticNetwork = jsonObject.getString("gexf");
                 gexfFile = GEXFSaver.exportGexfAsStreamedFile(gexfSemanticNetwork, "semantic_network");
 
-                JsonObject keywordsPerTopicAsJson = jsonObject.getJsonObject("keywordsPerTopic");
-                for (String keyCommunity : keywordsPerTopicAsJson.keySet()) {
-                    JsonObject termsAndFrequenciesForThisCommunity = keywordsPerTopicAsJson.getJsonObject(keyCommunity);
+                Map<String,Multiset<String>> topNodesPerCommunity = new HashMap();
+                
+                JsonObject topNodesPerCommunityAsJson = jsonObject.getJsonObject("keywordsPerTopic");
+                for (String keyCommunity : topNodesPerCommunityAsJson.keySet()) {
+                    JsonObject termsAndFrequenciesForThisCommunity = topNodesPerCommunityAsJson.getJsonObject(keyCommunity);
                     Iterator<String> iteratorTerms = termsAndFrequenciesForThisCommunity.keySet().iterator();
                     Multiset<String> termsAndFreqs = new Multiset();
                     while (iteratorTerms.hasNext()) {
                         String nextTerm = iteratorTerms.next();
                         termsAndFreqs.addSeveral(nextTerm, termsAndFrequenciesForThisCommunity.getInt(nextTerm));
                     }
-                    keywordsPerTopic.put(Integer.valueOf(keyCommunity), termsAndFreqs);
+                    topNodesPerCommunity.put(keyCommunity, termsAndFreqs);
                 }
-                JsonObject topicsPerLineAsJson = jsonObject.getJsonObject("topicsPerLine");
-                for (String lineNumber : topicsPerLineAsJson.keySet()) {
-                    JsonObject topicsAndTheirCountsForOneLine = topicsPerLineAsJson.getJsonObject(lineNumber);
+                
+                
+                  Map<String,Multiset<Integer>> topicsPerCommunity = new HashMap();
+                  
+                JsonObject topicsPerCommunityAsJson = jsonObject.getJsonObject("topicsPerLine");
+                for (String lineNumber : topicsPerCommunityAsJson.keySet()) {
+                    JsonObject topicsAndTheirCountsForOneLine = topicsPerCommunityAsJson.getJsonObject(lineNumber);
                     Iterator<String> iteratorTopics = topicsAndTheirCountsForOneLine.keySet().iterator();
                     Multiset<Integer> topicsAndFreqs = new Multiset();
                     while (iteratorTopics.hasNext()) {
                         String nextTopic = iteratorTopics.next();
                         topicsAndFreqs.addSeveral(Integer.valueOf(nextTopic), topicsAndTheirCountsForOneLine.getInt(nextTopic));
                     }
-                    topicsPerLine.put(Integer.valueOf(lineNumber), topicsAndFreqs);
+                    topicsPerCommunity.put(lineNumber, topicsAndFreqs);
                 }
 
-                if (keywordsPerTopic.isEmpty()) {
+                if (topicsPerCommunity.isEmpty()) {
                     return;
                 }
                 byte[] topicsAsArray = Converters.byteArraySerializerForAnyObject(jsonResultAsString);
@@ -358,7 +333,7 @@ public class TopicsBean implements Serializable {
                         .withScheme("http")
                         .withPort(Integer.valueOf(privateProperties.getProperty("nocode_import_port")))
                         .withHost("localhost")
-                        .withPath("api/export/xlsx/topics")
+                        .withPath("api/export/xlsx/community_insights")
                         .addParameter("nbTerms", "10")
                         .toUri();
 
@@ -372,7 +347,7 @@ public class TopicsBean implements Serializable {
                 byte[] body = resp.body();
                 InputStream is = new ByteArrayInputStream(body);
                 excelFileToSave = DefaultStreamedContent.builder()
-                        .name("results_topics.xlsx")
+                        .name("community_insights.xlsx")
                         .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
                         .stream(() -> is)
                         .build();
@@ -381,7 +356,7 @@ public class TopicsBean implements Serializable {
                 WatchTower.getQueueOutcomesProcesses().put(dataPersistenceUniqueId + "topics", System.currentTimeMillis());
                 progress = 100;
             } catch (IOException | InterruptedException ex) {
-                Logger.getLogger(TopicsBean.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(CommunityInsightsBean.class.getName()).log(Level.SEVERE, null, ex);
             }
         });
     }
@@ -421,100 +396,6 @@ public class TopicsBean implements Serializable {
         this.gexfFile = gexfFile;
     }
 
-    public Map<Integer, Multiset<String>> getCommunitiesResult() {
-        return keywordsPerTopic;
-    }
-
-    public void setCommunitiesResult(Map<Integer, Multiset<String>> communitiesResult) {
-        this.keywordsPerTopic = communitiesResult;
-    }
-
-    public int getPrecision() {
-        return precision;
-    }
-
-    public void setPrecision(int precision) {
-        this.precision = precision;
-    }
-
-    public void onSlideEnd(SlideEndEvent event) {
-        this.precision = (int) event.getValue();
-    }
-
-    public Boolean getScientificCorpus() {
-        return scientificCorpus;
-    }
-
-    public void setScientificCorpus(Boolean scientificCorpus) {
-        this.scientificCorpus = scientificCorpus;
-    }
-
-    public UploadedFile getFileUserStopwords() {
-        return fileUserStopwords;
-    }
-
-    public void setFileUserStopwords(UploadedFile file) {
-        this.fileUserStopwords = file;
-    }
-
-    public void uploadStopWordFile() {
-        if (fileUserStopwords != null) {
-            String success = sessionBean.getLocaleBundle().getString("general.nouns.success");
-            String is_uploaded = sessionBean.getLocaleBundle().getString("general.verb.is_uploaded");
-            sessionBean.addMessage(FacesMessage.SEVERITY_INFO, success, fileUserStopwords.getFileName() + " " + is_uploaded + ".");
-        }
-    }
-
-    public boolean isOkToShareStopwords() {
-        return okToShareStopwords;
-    }
-
-    public void setOkToShareStopwords(boolean okToShareStopwords) {
-        System.out.println("ok to share stopwords");
-        this.okToShareStopwords = okToShareStopwords;
-    }
-
-    public boolean isReplaceStopwords() {
-        return replaceStopwords;
-    }
-
-    public void setReplaceStopwords(boolean replaceStopwords) {
-        System.out.println("ok to replace stopwords");
-        this.replaceStopwords = replaceStopwords;
-    }
-
-    public boolean isRemoveNonAsciiCharacters() {
-        return removeNonAsciiCharacters;
-    }
-
-    public void setRemoveNonAsciiCharacters(boolean removeNonAsciiCharacters) {
-        this.removeNonAsciiCharacters = removeNonAsciiCharacters;
-    }
-
-    public boolean isLemmatize() {
-        return lemmatize;
-    }
-
-    public void setLemmatize(boolean lemmatize) {
-        this.lemmatize = lemmatize;
-    }
-
-    public int getMinCharNumber() {
-        return minCharNumber;
-    }
-
-    public void setMinCharNumber(int minCharNumber) {
-        this.minCharNumber = minCharNumber;
-    }
-
-    public int getMinTermFreq() {
-        return minTermFreq;
-    }
-
-    public void setMinTermFreq(int minTermFreq) {
-        this.minTermFreq = minTermFreq;
-    }
-
     public String getRunButtonText() {
         return runButtonText;
     }
@@ -533,4 +414,50 @@ public class TopicsBean implements Serializable {
         Collections.sort(available, new LocaleComparator(requestLocale));
         return available;
     }
+
+    public List<String> getNodeAttributesForText() {
+        return importGraphBean.getNamesOfNodeAttributes();
+    }
+
+    public List<String> getNodeAttributesForModularity() {
+        return importGraphBean.getNamesOfNodeAttributes();
+    }
+
+    public String getSelectedAttributeForText() {
+        return selectedAttributeForText;
+    }
+
+    public void setSelectedAttributeForText(String selectedAttributeForText) {
+        this.selectedAttributeForText = selectedAttributeForText;
+    }
+
+    public String getSelectedAttributeForCommunity() {
+        return selectedAttributeForCommunity;
+    }
+
+    public void setSelectedAttributeForCommunity(String selectedAttributeForCommunity) {
+        this.selectedAttributeForCommunity = selectedAttributeForCommunity;
+    }
+
+    public Integer getMinCommunitySize() {
+        return minCommunitySize;
+    }
+
+    public void setMinCommunitySize(Integer minCommunitySize) {
+        this.minCommunitySize = minCommunitySize;
+    }
+
+    public Integer getMaxKeyNodesPerCommunity() {
+        return maxKeyNodesPerCommunity;
+    }
+
+    public void setMaxKeyNodesPerCommunity(Integer maxKeyNodesPerCommunity) {
+        this.maxKeyNodesPerCommunity = maxKeyNodesPerCommunity;
+    }
+    
+    
+    
+    
+    
+    
 }

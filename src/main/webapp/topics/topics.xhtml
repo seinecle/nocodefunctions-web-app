@@ -156,11 +156,6 @@
                                         </p:selectBooleanCheckbox>
                                         <br/>
                                         <br/>
-                                        <p:selectBooleanCheckbox value="#{topicsBean.okToShareStopwords}" itemLabel="#{text['general.message.providing_own_stopwords.details3']}">
-                                            <p:ajax/>
-                                        </p:selectBooleanCheckbox>                                        
-                                        <br/>
-                                        <br/>
                                         <p:commandButton value="#{text['general.verbs.confirm_options']}" ajax="false" action="#{topicsBean.uploadStopWordFile}" styleClass="p-mt-3 ui-button-outlined p-d-block"/> 
                                     </p>
                                 </h:form>
@@ -173,29 +168,38 @@
                             <!--RUN ANALYSIS BUTTON-->
                             <p:commandButton
                                 id="computeButton"
-                                value="#{topicsBean.runButtonText}"
-                                widgetVar="topicsButton"
-                                action="#{topicsBean.runAnalysis}"
-                                onclick="PF('pbAjaxLong').start();PF('topicsButton').disable()"
-                                styleClass="btn btn-primary"
-                                disabled="#{topicsBean.runButtonDisabled}"
-                                update=":notifications"/>
+                                value="#{topicsBean.statusMessage}" action="#{topicsBean.runAnalysis}"
+                                process="@form :paramForm" update=":notifications @form" styleClass="btn btn-primary"
+                                disabled="#{topicsBean.analysisRunning}" rendered="#{!topicsBean.resultsReady}" />
+                            <p:commandButton id="viewResultsButton"
+                                             value="#{text['general.verbs.view_results']}"
+                                             action="#{topicsBean.navigateToResults}"
+                                             rendered="#{topicsBean.resultsReady and topicsBean.completionError == null}" styleClass="ui-button-success"
+                                             icon="pi pi-arrow-right"
+                                             ajax="false" />
+                            <p:outputLabel value="#{topicsBean.statusMessage}"
+                                           rendered="#{topicsBean.resultsReady and topicsBean.completionError != null}"
+                                           style="color: red; display: block; margin-top: 10px;"/>
                             <br/>
                             <br/>
                             <!--PROGRESS BAR FOR RUN ANALYSIS-->
-                            <p:progressBar id="pb" widgetVar="pbAjaxLong" ajax="true" value="#{topicsBean.progress}"
-                                           labelTemplate="{value}%" styleClass="p-mt-3" global="false" interval="500">
+                            <p:progressBar id="pb" rendered="#{topicsBean.analysisRunning}" widgetVar="pbAjaxLong" ajax="true" value="#{topicsBean.progress}"
+                                           labelTemplate="{value}%" styleClass="p-mt-3" global="false" style="height:6px" interval="500">
                                 <p:ajax event="complete" update=":notifications"/>
                             </p:progressBar>
                             <h:panelGroup id="pollingArea">
-                                <p:poll listener="#{topicsBean.pollingDidEndResultsArrive}" process="pollingArea" update="pollingArea :notifications" interval="2" />
+                                <p:poll interval="2"
+                                        stop="#{topicsBean.resultsReady}"
+                                        listener="#{topicsBean.handleCompletion}"
+                                        update="@form :notifications" rendered="#{topicsBean.analysisRunning}"/>
+
                             </h:panelGroup>
                         </p:panel>
                     </h:form>
                 </div>
                 <div class="flex-1 gap-4 h-full hide-mobile">
                     <p:panel header="Log" styleClass="flex flex-col">
-                         <p:scrollPanel id="scrollPanel" mode="native" class="flex-1 overflow-auto h-full">
+                        <p:scrollPanel id="scrollPanel" mode="native" class="flex-1 overflow-auto h-full">
                             <h:dataTable id="notifications" value="#{backToFrontMessengerBean.notifications}" var="notification">
                                 <h:column>#{notification.message}</h:column>
                             </h:dataTable>

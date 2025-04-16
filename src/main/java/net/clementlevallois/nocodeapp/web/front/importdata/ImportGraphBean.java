@@ -3,14 +3,33 @@
  */
 package net.clementlevallois.nocodeapp.web.front.importdata;
 
+import io.mikael.urlbuilder.UrlBuilder;
 import jakarta.enterprise.context.SessionScoped;
+import jakarta.faces.application.FacesMessage;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
+import jakarta.json.Json;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonReader;
+import java.io.IOException;
 import java.io.Serializable;
+import java.io.StringReader;
+import java.net.ConnectException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.net.http.HttpTimeoutException;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
 import java.util.UUID;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.ApplicationPropertiesBean;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
+import net.clementlevallois.nocodeapp.web.front.logview.BackToFrontMessengerBean;
 
 /**
  *
@@ -27,9 +46,14 @@ public class ImportGraphBean implements Serializable {
     @Inject
     SessionBean sessionBean;
 
+    @Inject
+    BackToFrontMessengerBean logBean;
+
     private Boolean bulkData = false;
 
     private String dataPersistenceUniqueId;
+
+    private List<String> namesOfNodeAttributes;
 
     Path pathOfTempData;
 
@@ -42,6 +66,7 @@ public class ImportGraphBean implements Serializable {
     }
 
     public void setDataPersistenceUniqueId(String dataPersistenceUniqueId) {
+        namesOfNodeAttributes = new ArrayList();
         Path tempFolderRelativePath = applicationProperties.getTempFolderFullPath();
         pathOfTempData = Path.of(tempFolderRelativePath.toString(), dataPersistenceUniqueId);
         if (!pathOfTempData.toFile().exists()) {
@@ -50,6 +75,51 @@ public class ImportGraphBean implements Serializable {
             this.dataPersistenceUniqueId = dataPersistenceUniqueId;
         }
         pathOfTempData = Path.of(tempFolderRelativePath.toString(), this.dataPersistenceUniqueId);
+        String currentFunction = sessionBean.getFunction();
+
+        Properties privateProperties = applicationProperties.getPrivateProperties();
+
+        HttpClient client = HttpClient.newHttpClient();
+
+        URI uri = UrlBuilder
+                .empty()
+                .withScheme("http")
+                .withPort(Integer.valueOf(privateProperties.getProperty("nocode_import_port")))
+                .withHost("localhost")
+                .withPath("api/import/graphops/getNamesOfNodeAttributes")
+                .addParameter("dataPersistenceId", dataPersistenceUniqueId)
+                .toUri();
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .GET()
+                .uri(uri)
+                .build();
+
+        try {
+            HttpResponse<String> resp = client.send(request, HttpResponse.BodyHandlers.ofString());
+            String body = resp.body();
+            if (resp.statusCode() != 200) {
+                System.out.println("return of node attributes by the API was not a 200 code");
+                String errorMessage = body;
+                System.out.println(errorMessage);
+                logBean.addOneNotificationFromString(errorMessage);
+                sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "💔", errorMessage);
+            } else {
+                JsonReader reader = Json.createReader(new StringReader(body));
+                JsonObject jsonObject = reader.readObject();
+
+                for (String nextKey : jsonObject.keySet()) {
+                    namesOfNodeAttributes.add(jsonObject.getString(nextKey));
+                }
+            }
+        } catch (HttpTimeoutException e) {
+            logBean.addOneNotificationFromString("💔 " + sessionBean.getLocaleBundle().getString("general.message.error_url_timed_out"));
+        } catch (ConnectException e) {
+            logBean.addOneNotificationFromString("💔 " + sessionBean.getLocaleBundle().getString("general.message.error_no_connection"));
+        } catch (IOException | InterruptedException ex) {
+            Logger.getLogger(ImportGraphBean.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
     }
 
     public void setDataPersistenceUniqueId() {
@@ -62,5 +132,9 @@ public class ImportGraphBean implements Serializable {
 
     public String gotToFunctionWithDataInBulk() {
         return "/" + sessionBean.getFunction() + "/" + sessionBean.getFunction() + ".xhtml?faces-redirect=true";
+    }
+
+    public List<String> getNamesOfNodeAttributes() {
+        return namesOfNodeAttributes;
     }
 }

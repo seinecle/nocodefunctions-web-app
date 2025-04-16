@@ -67,8 +67,8 @@ public class HtmlTextImportToSimpleLines implements Serializable {
 
     private Integer urlsToCrawl = 10;
     private Integer maxUrlsToCrawl;
-    private Integer MAX_URL_FREE = 10;
-    private Integer MAX_URL_PRO = 100;
+    private final Integer MAX_URL_FREE = 10;
+    private final Integer MAX_URL_PRO = 100;
 
     private String commaSeparatedValuesExclusionTerms = "";
 

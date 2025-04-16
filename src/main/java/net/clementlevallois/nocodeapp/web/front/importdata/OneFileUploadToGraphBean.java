@@ -1,15 +1,9 @@
 package net.clementlevallois.nocodeapp.web.front.importdata;
 
-import io.mikael.urlbuilder.UrlBuilder;
 import jakarta.enterprise.context.RequestScoped;
-import jakarta.faces.application.FacesMessage;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import java.io.IOException;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Properties;
