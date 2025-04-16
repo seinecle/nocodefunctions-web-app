@@ -74,7 +74,7 @@ public class CowoBean implements Serializable {
     private Integer progress = 0;
     private Boolean runButtonDisabled = false;
     private StreamedContent fileToSave;
-    private String selectedLanguage;
+    private List<String> selectedLanguages = new ArrayList();
     private String nodesAsJson;
     private String edgesAsJson;
     private int minFreqNode = 1000_000;
@@ -202,8 +202,8 @@ public class CowoBean implements Serializable {
             }
             inputData.setDataInSheets(new ArrayList());
 
-            if (selectedLanguage == null) {
-                selectedLanguage = "en";
+            if (selectedLanguages == null || selectedLanguages.isEmpty()) {
+                selectedLanguages = List.of("en");
             }
 
             JsonObjectBuilder overallObject = Json.createObjectBuilder();
@@ -224,7 +224,7 @@ public class CowoBean implements Serializable {
 
             String callbackURL = RemoteLocal.getDomain() + "/internalapi/messageFromAPI/cowo";
 
-            overallObject.add("lang", selectedLanguage);
+            overallObject.add("lang", String.join(",", selectedLanguages));
             overallObject.add("userSuppliedStopwords", userSuppliedStopwordsBuilder);
             overallObject.add("minCharNumber", minCharNumber);
             overallObject.add("replaceStopwords", replaceStopwords);
@@ -356,13 +356,8 @@ public class CowoBean implements Serializable {
         );
     }
 
-    public String getSelectedLanguage() {
-        return selectedLanguage;
-    }
 
-    public void setSelectedLanguage(String selectedLanguage) {
-        this.selectedLanguage = selectedLanguage;
-    }
+
 
     public Boolean getRunButtonDisabled() {
         return runButtonDisabled;
@@ -482,6 +477,14 @@ public class CowoBean implements Serializable {
 
     public boolean isScientificCorpus() {
         return scientificCorpus;
+    }
+
+    public List<String> getSelectedLanguages() {
+        return selectedLanguages;
+    }
+
+    public void setSelectedLanguages(List<String> selectedLanguages) {
+        this.selectedLanguages = selectedLanguages;
     }
 
     public void setScientificCorpus(boolean scientificCorpus) {

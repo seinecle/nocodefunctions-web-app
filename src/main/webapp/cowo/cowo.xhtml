@@ -35,16 +35,16 @@
                         <br/>
                         <br/>
                         <h:form id="form3">
-                            <p:selectOneListbox
+                            <p:selectManyMenu
                                 id="lang"
-                                value="#{cowoBean.selectedLanguage}"
+                                value="#{cowoBean.selectedLanguages}"
                                 style="width: 50px !important">
                                 <f:selectItems
                                     value="#{cowoBean.available}" var="l"
                                     itemValue="#{l.toLanguageTag()}"
                                     itemLabel="#{l.getDisplayLanguage(localeBean.currentLocale)}"/>
                                 <p:ajax event="change" process="@this"/>
-                            </p:selectOneListbox>
+                            </p:selectManyMenu>
                             <div>
                                 <p:spacer width="30" height="20"/>
                             </div>
