@@ -131,10 +131,13 @@
                                         <br/>
                                         <br/>
                                         <p:spinner id="spinner1" value="#{htmlTextImportToSimpleLines.urlsToCrawl}" min="1" max="#{htmlTextImportToSimpleLines.maxUrlsToCrawl}" stepFactor="1">
+                                            <p:ajax/>
                                         </p:spinner>
                                         <br/>
                                         <br/>
-                                        <p:slider for="spinner1" minValue="1" maxValue="#{htmlTextImportToSimpleLines.maxUrlsToCrawl}" step="1"/>
+                                        <p:slider for="spinner1" minValue="1" maxValue="#{htmlTextImportToSimpleLines.maxUrlsToCrawl}" step="1">
+                                            <p:ajax/>
+                                        </p:slider>
                                         <br/>
                                         <br/>
                                         <div class="relative flex items-center py-5">
@@ -148,7 +151,12 @@
                                         #{text['import_data.website.exclude_terms_instructions']}
                                         <br/>
                                         <br/>
-                                        <p:inputText value="#{htmlTextImportToSimpleLines.commaSeparatedValuesExclusionTerms}" placeholder="login, register, admin" />
+                                        <p:inputText
+                                            value="#{htmlTextImportToSimpleLines.commaSeparatedValuesExclusionTerms}"
+                                            placeholder="login, register, admin"
+                                            >
+                                            <p:ajax/>
+                                        </p:inputText>
                                     </h:form>
 
                                 </p:tab>
