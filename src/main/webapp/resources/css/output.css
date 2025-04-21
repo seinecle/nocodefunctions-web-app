@@ -196,20 +196,17 @@
   }
 }
 @layer utilities {
+  .invisible {
+    visibility: hidden;
+  }
   .visible {
     visibility: visible;
-  }
-  .fixed {
-    position: fixed;
   }
   .relative {
     position: relative;
   }
   .static {
     position: static;
-  }
-  .isolate {
-    isolation: isolate;
   }
   .col-12 {
     grid-column: 12;
@@ -295,9 +292,6 @@
   .grid {
     display: grid;
   }
-  .hidden {
-    display: none;
-  }
   .inline-block {
     display: inline-block;
   }
@@ -327,9 +321,6 @@
   }
   .w-6 {
     width: calc(var(--spacing) * 6);
-  }
-  .w-\[70\%\] {
-    width: 70%;
   }
   .w-full {
     width: 100%;

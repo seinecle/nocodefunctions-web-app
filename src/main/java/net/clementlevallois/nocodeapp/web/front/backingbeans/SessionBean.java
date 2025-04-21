@@ -40,7 +40,6 @@ public class SessionBean implements Serializable {
     private String noRobot;
     private Locale currentLocale;
     private String hash;
-    private String sessionId;
 
     @Inject
     ApplicationPropertiesBean applicationProperties;
@@ -62,7 +61,6 @@ public class SessionBean implements Serializable {
         I18nStaticFilesResourceBundle staticFilesResourceBundle = new I18nStaticFilesResourceBundle();
         staticFilesResourceBundle.setApplicationPropertiesBean(applicationProperties);
         localeBundle = staticFilesResourceBundle.simpleMethodToGetResourceBundle(currentLocale);
-        sessionId = FacesContext.getCurrentInstance().getExternalContext().getSessionId(false);
     }
 
     public void setApplicationProperties(ApplicationPropertiesBean applicationProperties) {
@@ -191,8 +189,7 @@ public class SessionBean implements Serializable {
 
     public void addMessage(FacesMessage.Severity severity, String summary, String detail) {
         try {
-            FacesContext.getCurrentInstance().
-                    addMessage(null, new FacesMessage(severity, summary, detail));
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(severity, summary, detail));
         } catch (NullPointerException e) {
             System.out.println("FacesContext.getCurrentInstance was null. Detail: " + detail);
         }
@@ -224,12 +221,6 @@ public class SessionBean implements Serializable {
             writeValueToCookie(this.hash);
         }
     }
-
-    public String getSessionId() {
-        return sessionId;
-    }
-    
-    
 
     public boolean isCookiePresent() {
         Map<String, Object> cookieMap = FacesContext.getCurrentInstance().getExternalContext().getRequestCookieMap();

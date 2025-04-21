@@ -16,12 +16,19 @@ public class MessageFromApi implements Serializable {
     private String function;
     private String dataPersistenceId;
     private Information info;
+    private boolean success;
 
     public enum Information {
-        INTERMEDIARY, RESULT_ARRIVED, ERROR, GOTORESULTS
+        INTERMEDIARY, RESULT_ARRIVED, WORKFLOW_COMPLETED, ERROR, PROGRESS, FAILED, GOTORESULTS
     }
 
     public MessageFromApi() {
+    }
+
+    public MessageFromApi(String dataPersistenceId, boolean success, String message) {
+        this.dataPersistenceId = dataPersistenceId;
+        this.success = success;
+        this.message = message;
     }
 
     public String getSessionId() {
@@ -64,4 +71,11 @@ public class MessageFromApi implements Serializable {
         this.dataPersistenceId = dataPersistenceId;
     }
 
+    public boolean isSuccess() {
+        return success;
+    }
+
+    public void setSuccess(boolean success) {
+        this.success = success;
+    }
 }

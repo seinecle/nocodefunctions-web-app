@@ -9,10 +9,12 @@
     <f:view locale="#{localeBean.currentLocale}">
 
         <h:head>
+
             <meta http-equiv="content-language" content="en-us"/>
             <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
             <meta http-equiv="cleartype" content="on"/>
             <meta name="HandheldFriendly" content="true"/>
+            <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 
             <link rel="apple-touch-icon" sizes="180x180" href="#{resource['images/favicons/apple-touch-icon.png']}"/>
             <link rel="icon" type="image/png" sizes="32x32" href="#{resource['images/favicons/favicon-32x32.png']}"/>
@@ -25,6 +27,7 @@
             <meta name="theme-color" content="#ffffff"/>
             <link rel="shortcut icon" type="image/x-icon" href="#{resource['images/favicons/favicon.ico']}"/>
             <meta name="robots" content="noindex"/>
+            <h:outputScript name="js/navigation2Results.js" />
         </h:head>
         <h:body>
             <h:outputStylesheet name="css/output.css" />
@@ -168,30 +171,22 @@
                             <!--RUN ANALYSIS BUTTON-->
                             <p:commandButton
                                 id="computeButton"
-                                value="#{topicsBean.statusMessage}" action="#{topicsBean.runAnalysis}"
+                                value="#{topicsBean.runButtonText}" action="#{topicsBean.runAnalysis}"
                                 process="@form :paramForm" update=":notifications @form" styleClass="btn btn-primary"
-                                disabled="#{topicsBean.analysisRunning}" rendered="#{!topicsBean.resultsReady}" />
-                            <p:commandButton id="viewResultsButton"
-                                             value="#{text['general.verbs.view_results']}"
-                                             action="#{topicsBean.navigateToResults}"
-                                             rendered="#{topicsBean.resultsReady and topicsBean.completionError == null}" styleClass="ui-button-success"
-                                             icon="pi pi-arrow-right"
-                                             ajax="false" />
-                            <p:outputLabel value="#{topicsBean.statusMessage}"
-                                           rendered="#{topicsBean.resultsReady and topicsBean.completionError != null}"
-                                           style="color: red; display: block; margin-top: 10px;"/>
+                                disabled="#{topicsBean.runButtonDisabled}" rendered="#{!topicsBean.taskSuccess}" />
+
                             <br/>
                             <br/>
                             <!--PROGRESS BAR FOR RUN ANALYSIS-->
-                            <p:progressBar id="pb" rendered="#{topicsBean.analysisRunning}" widgetVar="pbAjaxLong" ajax="true" value="#{topicsBean.progress}"
+                            <p:progressBar id="pb" rendered="#{topicsBean.runButtonDisabled}" widgetVar="pbAjaxLong" ajax="true" value="#{topicsBean.progress}"
                                            labelTemplate="{value}%" styleClass="p-mt-3" global="false" style="height:6px" interval="500">
                                 <p:ajax event="complete" update=":notifications"/>
                             </p:progressBar>
                             <h:panelGroup id="pollingArea">
                                 <p:poll interval="2"
-                                        stop="#{topicsBean.resultsReady}"
-                                        listener="#{topicsBean.handleCompletion}"
-                                        update="@form :notifications" rendered="#{topicsBean.analysisRunning}"/>
+                                        widgetVar="pollingWidget"
+                                        listener="#{topicsBean.checkTaskStatusForPolling()}"
+                                        update="@form :notifications"/>
 
                             </h:panelGroup>
                         </p:panel>
@@ -216,6 +211,7 @@
                 </div>
             </div>
             <ui:include src="/WEB-INF/includes/footer.xhtml" />
+
         </h:body>
     </f:view>
 </html>
