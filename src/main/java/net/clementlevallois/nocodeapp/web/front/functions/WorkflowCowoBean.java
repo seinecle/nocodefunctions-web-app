@@ -173,7 +173,7 @@ public class WorkflowCowoBean implements Serializable {
         }
     }
 
-    public void navigatToResults(AjaxBehaviorEvent event) {
+    public void navigateToResults(AjaxBehaviorEvent event) {
         FacesContext context = FacesContext.getCurrentInstance();
         context.getApplication().getNavigationHandler().handleNavigation(context, null, "/" + WorkflowCowoProperties.NAME + "/" + CommonExpressions.RESULTS_PAGE + CommonExpressions.FACES_REDIRECT);
     }

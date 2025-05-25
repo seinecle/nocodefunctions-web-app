@@ -2,6 +2,7 @@ package net.clementlevallois.nocodeapp.web.front.functions;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Resource;
+import jakarta.ejb.Asynchronous;
 import jakarta.enterprise.concurrent.ManagedExecutorService;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -25,9 +26,7 @@ import jakarta.inject.Named;
 import jakarta.json.Json;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
-import jakarta.json.JsonReader;
 import jakarta.servlet.annotation.MultipartConfig;
-import java.io.StringReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
@@ -57,15 +56,17 @@ import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
 import org.primefaces.model.file.UploadedFile;
 import java.net.http.HttpResponse;
+import net.clementlevallois.functions.model.CommonExpressions;
+import net.clementlevallois.functions.model.WorkflowTopicsProperties;
 import net.clementlevallois.nocodeapp.web.front.http.MicroserviceHttpClient;
 import net.clementlevallois.nocodeapp.web.front.http.MicroserviceHttpClient.MicroserviceCallException;
 
 @Named
 @SessionScoped
 @MultipartConfig
-public class TopicsBean implements Serializable {
+public class WorkflowTopicsBean implements Serializable {
 
-    private static final Logger LOG = Logger.getLogger(TopicsBean.class.getName());
+    private static final Logger LOG = Logger.getLogger(WorkflowTopicsBean.class.getName());
 
     private Integer progress = 0;
     private Map<Integer, Multiset<String>> keywordsPerTopic;
@@ -90,6 +91,8 @@ public class TopicsBean implements Serializable {
 
     private Map<Integer, String> mapOfLines;
 
+    private WorkflowTopicsProperties props;
+
     @Inject
     BackToFrontMessengerBean logBean;
 
@@ -111,15 +114,16 @@ public class TopicsBean implements Serializable {
     @Resource
     private ManagedExecutorService managedExecutorService;
 
-    public TopicsBean() {
+    public WorkflowTopicsBean() {
     }
 
     @PostConstruct
     public void init() {
-        sessionBean.setFunction("topics");
         runButtonText = sessionBean.getLocaleBundle().getString("general.verbs.compute");
         sessionId = FacesContext.getCurrentInstance().getExternalContext().getSessionId(false);
         logBean.setSessionId(sessionId);
+        props = new WorkflowTopicsProperties(applicationProperties.getTempFolderFullPath());
+        sessionBean.setFunction(WorkflowTopicsProperties.NAME);
     }
 
     public Integer getProgress() {
@@ -166,10 +170,9 @@ public class TopicsBean implements Serializable {
             runButtonDisabled = false;
             taskComplete = false;
             taskSuccess = false;
-            PrimeFaces.current().ajax().update("formComputeButton:computeButton", "notifications");
         }
     }
-
+    
     private JsonObject buildRequestParameters() {
         JsonObjectBuilder overallObject = Json.createObjectBuilder();
         if (selectedLanguage == null) {
@@ -194,9 +197,10 @@ public class TopicsBean implements Serializable {
         return overallObject.build();
     }
 
+    @Asynchronous
     private void sendRequestToMicroserviceAsync(JsonObject parameters) {
-        String callbackURL = RemoteLocal.getDomain() + "/internalapi/messageFromAPI/workflow/topics";
-        microserviceClient.api().post("/api/workflow/topics")
+        String callbackURL = RemoteLocal.getDomain() + RemoteLocal.getInternalMessageApiEndpoint() + WorkflowTopicsProperties.ENDPOINT;
+        microserviceClient.api().post(WorkflowTopicsProperties.ENDPOINT)
                 .withJsonPayload(parameters)
                 .addQueryParameter("lang", selectedLanguage)
                 .addQueryParameter("replaceStopwords", String.valueOf(replaceStopwords))
@@ -213,7 +217,7 @@ public class TopicsBean implements Serializable {
                     if (response.statusCode() != 200) {
                         String errorBody = response.body();
                         LOG.log(Level.SEVERE, "Microservice task submission failed for dataId {0}. Status: {1}, Body: {2}", new Object[]{dataPersistenceUniqueId, response.statusCode(), errorBody});
-                        sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "topics failed", "Could not send to topics microservice: "+ errorBody);
+                        sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "topics failed", "Could not send to topics microservice: " + errorBody);
                     }
                 })
                 .exceptionally(e -> {
@@ -232,46 +236,27 @@ public class TopicsBean implements Serializable {
             return;
         }
 
+        Path pathSignalWorkflowwComplete = props.getTopicsWorkflowCompleteFilePath(dataPersistenceUniqueId);
+        boolean workflowComplete = Files.exists(pathSignalWorkflowwComplete);
+
+        if (workflowComplete) {
+            runButtonDisabled = false;
+            runButtonText = sessionBean.getLocaleBundle().getString("general.verbs.compute");
+            progress = 100;
+            PrimeFaces.current().ajax().update("formComputeButton:computeButton", "notifications", "pollingPanel", "progressComponentId");
+            FacesContext context = FacesContext.getCurrentInstance();
+            context.getApplication().getNavigationHandler().handleNavigation(context, null, "/" + WorkflowTopicsProperties.NAME + "/" + CommonExpressions.RESULTS_PAGE + CommonExpressions.FACES_REDIRECT);
+        }
+
         ConcurrentLinkedDeque<MessageFromApi> messagesFromApi = WatchTower.getDequeAPIMessages().get(sessionId);
+
         if (messagesFromApi != null && !messagesFromApi.isEmpty()) {
             Iterator<MessageFromApi> it = messagesFromApi.iterator();
             while (it.hasNext()) {
                 MessageFromApi msg = it.next();
                 if (msg.getDataPersistenceId() != null && msg.getDataPersistenceId().equals(dataPersistenceUniqueId)) {
                     LOG.log(Level.INFO, "Polling detected message for dataId {0}: {1}", new Object[]{dataPersistenceUniqueId, msg.getInfo()});
-
                     switch (msg.getInfo()) {
-                        case WORKFLOW_COMPLETED -> {
-                            taskComplete = true;
-                            taskSuccess = true;
-                            progress = 100;
-                            runButtonDisabled = false;
-                            it.remove();
-                            PrimeFaces.current().ajax().update("formComputeButton:computeButton", "notifications", "pollingPanel");
-                            LOG.log(Level.INFO, "Task {0} complete, attempting to load results.", dataPersistenceUniqueId);
-                            try {
-                                Path tempFolderForAllTasks = applicationProperties.getTempFolderFullPath();
-                                Path tempFolderForThisTask = Path.of(tempFolderForAllTasks.toString(), dataPersistenceUniqueId);
-                                Path jsonResults = Path.of(tempFolderForThisTask.toString(), dataPersistenceUniqueId + "_result.json");
-
-                                if (Files.exists(jsonResults)) {
-                                    String jsonAsString = Files.readString(jsonResults);
-                                    try (JsonReader jsonReader = Json.createReader(new StringReader(jsonAsString))) {
-                                        JsonObject jsonObject = jsonReader.readObject();
-                                        processParsedResults(jsonObject);
-                                        LOG.info("Processed results from saved JSON file.");
-                                    }
-                                } else {
-                                    LOG.log(Level.SEVERE, "Result file not found for dataId: {0}", dataPersistenceUniqueId);
-                                    logBean.addOneNotificationFromString("Error: Result file not found.");
-                                    taskSuccess = false;
-                                }
-                            } catch (IOException e) {
-                                LOG.log(Level.SEVERE, "Error reading or processing result file for dataId: " + dataPersistenceUniqueId, e);
-                                logBean.addOneNotificationFromString("Error processing results: " + e.getMessage());
-                                taskSuccess = false;
-                            }
-                        }
                         case ERROR -> {
                             LOG.log(Level.WARNING, "Polling detected ERROR message for dataId {0}: {1}", new Object[]{dataPersistenceUniqueId, msg.getMessage()});
                             taskComplete = true;
@@ -280,13 +265,10 @@ public class TopicsBean implements Serializable {
                             progress = 0;
                             logBean.addOneNotificationFromString("Analysis failed: " + msg.getMessage());
                             it.remove();
-                            PrimeFaces.current().ajax().update("formComputeButton:computeButton", "notifications", "pollingPanel");
-                            PrimeFaces.current().executeScript("stopPollingWidget();");
                         }
                         case PROGRESS -> {
-                            if (msg.getMessage() != null) {
-                                this.progress = Integer.valueOf(msg.getMessage());
-                                PrimeFaces.current().ajax().update("progressComponentId");
+                            if (msg.getProgress() != null) {
+                                this.progress = msg.getProgress();
                             }
                             it.remove();
                         }
@@ -298,13 +280,9 @@ public class TopicsBean implements Serializable {
         }
     }
 
-    public void navigatToResults(AjaxBehaviorEvent event) {
-        if (taskComplete && taskSuccess) {
-            FacesContext context = FacesContext.getCurrentInstance();
-            context.getApplication().getNavigationHandler().handleNavigation(context, null, "/topics/results.xhtml?faces-redirect=true");
-        } else if (taskComplete && !taskSuccess) {
-            logBean.addOneNotificationFromString("Cannot navigate to results: Task failed.");
-        }
+     public void navigateToResults(AjaxBehaviorEvent event) {
+        FacesContext context = FacesContext.getCurrentInstance();
+        context.getApplication().getNavigationHandler().handleNavigation(context, null, "/" + WorkflowTopicsProperties.NAME + "/" + CommonExpressions.RESULTS_PAGE + CommonExpressions.FACES_REDIRECT);
     }
 
     public void generateInputDataAndDataId() {
@@ -418,11 +396,7 @@ public class TopicsBean implements Serializable {
             return new DefaultStreamedContent();
         }
         try {
-            Path tempFolderForAllTasks = applicationProperties.getTempFolderFullPath();
-            Path tempFolderForThisTask = Path.of(tempFolderForAllTasks.toString(), dataPersistenceUniqueId);
-
-            Path gexfResults = Path.of(tempFolderForThisTask.toString(), dataPersistenceUniqueId + "_result.gexf");
-
+            Path gexfResults = props.getGexfFilePath(dataPersistenceUniqueId);
             if (Files.exists(gexfResults)) {
                 String gexfAsString = Files.readString(gexfResults);
                 StreamedContent exportGexfAsStreamedFile = GEXFSaver.exportGexfAsStreamedFile(gexfAsString, "network_file_with_topics");
@@ -493,7 +467,7 @@ public class TopicsBean implements Serializable {
                 sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "Warning", "No file uploaded or file is empty.");
             }
         } catch (IOException ex) {
-            Logger.getLogger(TopicsBean.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(WorkflowTopicsBean.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
@@ -580,9 +554,7 @@ public class TopicsBean implements Serializable {
             return new DefaultStreamedContent();
         }
         try {
-            Path tempFolderForAllTasks = applicationProperties.getTempFolderFullPath();
-            Path tempFolderForThisTask = Path.of(tempFolderForAllTasks.toString(), dataPersistenceUniqueId);
-            Path jsonResults = Path.of(tempFolderForThisTask.toString(), dataPersistenceUniqueId + "_result.json");
+            Path jsonResults = props.getGlobalResultsJsonFilePath(dataPersistenceUniqueId);
 
             if (!Files.exists(jsonResults)) {
                 LOG.log(Level.WARNING, "JSON result file not found for dataId: {0}", dataPersistenceUniqueId);
@@ -593,7 +565,6 @@ public class TopicsBean implements Serializable {
             String jsonAsStringString = Files.readString(jsonResults);
             byte[] topicsAsArray = jsonAsStringString.getBytes(StandardCharsets.UTF_8);
 
-            // Use the importService builder and the new withByteArrayPayload method
             CompletableFuture<byte[]> futureBytes = microserviceClient.importService().post("/api/export/xlsx/topics")
                     .addQueryParameter("nbTerms", "10")
                     .withByteArrayPayload(topicsAsArray)
@@ -601,7 +572,6 @@ public class TopicsBean implements Serializable {
 
             byte[] body = futureBytes.join(); // Blocks until the future completes or throws exception
 
-            LOG.info("Export service call successful (async then join).");
             InputStream is = new ByteArrayInputStream(body);
             return DefaultStreamedContent.builder()
                     .name("results_topics.xlsx")

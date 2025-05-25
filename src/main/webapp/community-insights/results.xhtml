@@ -60,7 +60,7 @@
                         onclick="PrimeFaces.monitorDownload(start, stop);"
                         icon="pi pi-arrow-down"
                         styleClass="p-mr-2">
-                        <p:fileDownload value="#{topicsBean.excelFileToSave}"/>
+                        <p:fileDownload value="#{workflowTopicsBean.excelFileToSave}"/>
                     </p:commandButton>
                     <br/>
                     <br/>
@@ -70,7 +70,7 @@
                     <br/>
                     <p:commandButton value="#{text['general.message.download_gexf']}" ajax="false" onclick="PrimeFaces.monitorDownload(start, stop);"
                                      icon="pi pi-arrow-down" styleClass="p-mr-2">
-                        <p:fileDownload value="#{topicsBean.gexfFile}"/>
+                        <p:fileDownload value="#{workflowTopicsBean.gexfFile}"/>
                     </p:commandButton>
                     <br/>
                     <br/>
@@ -80,7 +80,7 @@
                 </h:form>
                 <h:form>
                     <div class="card">
-                        <p:dataTable id ="resultsTable" var="item" value="#{topicsBean.communitiesResult}" widgetVar="resultsTable" paginator="true" rows ="200">
+                        <p:dataTable id ="resultsTable" var="item" value="#{workflowTopicsBean.communitiesResult}" widgetVar="resultsTable" paginator="true" rows ="200">
                             <p:column headerText="#{text['general.nouns.topics']}" >
                                 <h:outputText value="#{text['general.nouns.topic']} #{item.key}" />
                             </p:column>

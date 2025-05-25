@@ -16,6 +16,7 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import net.clementlevallois.functions.model.WorkflowCowoProperties;
+import net.clementlevallois.functions.model.WorkflowTopicsProperties;
 
 /**
  *
@@ -43,7 +44,7 @@ public class ApiMessagesReceiver {
     }
 
     @POST
-    @Path("/workflow/topics") // Assuming this is the callback endpoint for topics
+    @Path("/"+ WorkflowTopicsProperties.ENDPOINT)
     @Consumes(MediaType.APPLICATION_JSON)
     public Response messagesFromTopicsAPI(MessageFromApi msg) {
         LOG.log(Level.INFO, "Received callback for session {0}, task {1}, info {2}",

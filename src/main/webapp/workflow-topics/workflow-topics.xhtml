@@ -43,9 +43,9 @@
 
                         <h:panelGrid columns="1" style="margin-bottom: 10px">
                             <h:form>
-                                <p:inputText id="txt" value="#{topicsBean.precision}"/>
+                                <p:inputText id="txt" value="#{workflowTopicsBean.precision}"/>
                                 <p:slider for="txt" range="false">
-                                    <p:ajax event="slideEnd" listener="#{topicsBean.onSlideEnd}"/>
+                                    <p:ajax event="slideEnd" listener="#{workflowTopicsBean.onSlideEnd}"/>
                                 </p:slider>
                             </h:form>
                         </h:panelGrid>
@@ -54,8 +54,8 @@
                         <br/>
                         <br/>
                         <h:form>
-                            <p:selectOneListbox id="lang" value="#{topicsBean.selectedLanguage}" style="width: 50px !important">
-                                <f:selectItems value="#{topicsBean.available}" var="l"
+                            <p:selectOneListbox id="lang" value="#{workflowTopicsBean.selectedLanguage}" style="width: 50px !important">
+                                <f:selectItems value="#{workflowTopicsBean.available}" var="l"
                                                itemValue="#{l.toLanguageTag()}"
                                                itemLabel="#{l.getDisplayLanguage(localeBean.currentLocale)}">
                                 </f:selectItems>
@@ -81,7 +81,7 @@
                                         #{text['cowo.cowo.remove_smaller_words']} 4
                                         <br/>
                                         <br/>
-                                        <p:spinner id="spinner1" value="#{topicsBean.minCharNumber}" min="0" max="10" stepFactor="1">
+                                        <p:spinner id="spinner1" value="#{workflowTopicsBean.minCharNumber}" min="0" max="10" stepFactor="1">
                                         </p:spinner>
                                         <p:slider for="spinner1" minValue="0" maxValue="10" step="1"/>
 
@@ -95,7 +95,7 @@
                                         #{text['cowo.cowo.remove_infrequent_words']}:
                                         <br/>
                                         <br/>
-                                        <p:spinner id="spinnerFreq" value="#{topicsBean.minTermFreq}" min="2" max="10" stepFactor="1"/>
+                                        <p:spinner id="spinnerFreq" value="#{workflowTopicsBean.minTermFreq}" min="2" max="10" stepFactor="1"/>
 
                                         <p:slider for="spinnerFreq" minValue="2" maxValue="10" step="1"/>
 
@@ -108,7 +108,7 @@
                                         #{text['general.message.lemmatization_explanation']}
                                         <br/>
                                         <br/>
-                                        <p:selectBooleanCheckbox value="#{topicsBean.lemmatize}" itemLabel="#{text['general.verbs.lemmatize']}" escape="false"/>
+                                        <p:selectBooleanCheckbox value="#{workflowTopicsBean.lemmatize}" itemLabel="#{text['general.verbs.lemmatize']}" escape="false"/>
                                         <div>
                                             <p:spacer width="30" height="20"/>
                                         </div>
@@ -122,7 +122,7 @@
                                         #{text['general.message.accents_removal_explanation']}
                                         <br/>
                                         <br/>
-                                        <p:selectBooleanCheckbox value="#{topicsBean.removeNonAsciiCharacters}" itemLabel="#{text['general.verbs.remove_accents']}" escape="false"/>
+                                        <p:selectBooleanCheckbox value="#{workflowTopicsBean.removeNonAsciiCharacters}" itemLabel="#{text['general.verbs.remove_accents']}" escape="false"/>
                                         <div>
                                             <p:spacer width="30" height="20"/>
                                         </div>
@@ -137,7 +137,7 @@
 
                                         <br/>
                                         <br/>
-                                        <p:selectBooleanCheckbox value="#{topicsBean.scientificCorpus}" itemLabel="#{text['general.message.remove_science_stopwords']}">
+                                        <p:selectBooleanCheckbox value="#{workflowTopicsBean.scientificCorpus}" itemLabel="#{text['general.message.remove_science_stopwords']}">
                                         </p:selectBooleanCheckbox>                
                                         <div>
                                             <p:spacer width="30" height="20"/>
@@ -151,15 +151,15 @@
                                         <p:outputLabel value="#{text['general.message.providing_own_stopwords.details1']}" escape="false"/>
                                         <br/>
                                         <br/>
-                                        <p:fileUpload value="#{topicsBean.fileUserStopwords}" mode="simple" skinSimple="true" allowTypes="/(\.|\/)(txt)$/"/>
+                                        <p:fileUpload value="#{workflowTopicsBean.fileUserStopwords}" mode="simple" skinSimple="true" allowTypes="/(\.|\/)(txt)$/"/>
                                         <br/>
                                         <br/>
-                                        <p:selectBooleanCheckbox value="#{topicsBean.replaceStopwords}" itemLabel="#{text['general.message.providing_own_stopwords.details2']}">
+                                        <p:selectBooleanCheckbox value="#{workflowTopicsBean.replaceStopwords}" itemLabel="#{text['general.message.providing_own_stopwords.details2']}">
                                             <p:ajax/>
                                         </p:selectBooleanCheckbox>
                                         <br/>
                                         <br/>
-                                        <p:commandButton value="#{text['general.verbs.confirm_options']}" ajax="false" action="#{topicsBean.uploadStopWordFile}" styleClass="p-mt-3 ui-button-outlined p-d-block"/> 
+                                        <p:commandButton value="#{text['general.verbs.confirm_options']}" ajax="false" action="#{workflowTopicsBean.uploadStopWordFile}" styleClass="p-mt-3 ui-button-outlined p-d-block"/> 
                                     </p>
                                 </h:form>
                             </p:tab>
@@ -171,21 +171,21 @@
                             <!--RUN ANALYSIS BUTTON-->
                             <p:commandButton
                                 id="computeButton"
-                                value="#{topicsBean.runButtonText}" action="#{topicsBean.runAnalysis}"
+                                value="#{workflowTopicsBean.runButtonText}" action="#{workflowTopicsBean.runAnalysis}"
                                 process="@form :paramForm" update=":notifications @form" styleClass="btn btn-primary"
-                                disabled="#{topicsBean.runButtonDisabled}" rendered="#{!topicsBean.taskSuccess}" />
+                                disabled="#{workflowTopicsBean.runButtonDisabled}" rendered="#{!workflowTopicsBean.taskSuccess}" />
 
                             <br/>
                             <br/>
                             <!--PROGRESS BAR FOR RUN ANALYSIS-->
-                            <p:progressBar id="pb" rendered="#{topicsBean.runButtonDisabled}" widgetVar="pbAjaxLong" ajax="true" value="#{topicsBean.progress}"
+                            <p:progressBar id="pb" rendered="#{workflowTopicsBean.runButtonDisabled}" widgetVar="pbAjaxLong" ajax="true" value="#{workflowTopicsBean.progress}"
                                            labelTemplate="{value}%" styleClass="p-mt-3" global="false" style="height:6px" interval="500">
                                 <p:ajax event="complete" update=":notifications"/>
                             </p:progressBar>
                             <h:panelGroup id="pollingArea">
                                 <p:poll interval="2"
                                         widgetVar="pollingWidget"
-                                        listener="#{topicsBean.checkTaskStatusForPolling()}"
+                                        listener="#{workflowTopicsBean.checkTaskStatusForPolling()}"
                                         update="@form :notifications"/>
 
                             </h:panelGroup>
@@ -203,7 +203,7 @@
                                     <p:ajax event="updateNotifications" update=":notifications" />
                                 </f:websocket>
                                 <f:websocket channel="navigationChannel"  scope="session">
-                                    <p:ajax event="navigateToResultscowo" listener="#{topicsBean.navigateToResults}"/>
+                                    <p:ajax event="navigateToResultscowo" listener="#{workflowTopicsBean.navigateToResults}"/>
                                 </f:websocket>
                             </h:form>
                         </p:scrollPanel>

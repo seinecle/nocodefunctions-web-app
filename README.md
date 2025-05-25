@@ -14,8 +14,8 @@ The app is free with no limitation on usage
 Text mining:
 - [sentiment analysis for social media](https://nocodefunctions.com/umigon/sentiment_analysis_tool.html)
 - [detection of voice of the customer](https://nocodefunctions.com/organic/organic_listening_voice_of_customer_tool.html)
-- [find key topics in texts](https://nocodefunctions.com/topics/topic_extraction_tool.html)
-- [turn texts into networks](https://nocodefunctions.com/cowo/semantic_networks_tool.html)
+- [find key topics in texts](https://nocodefunctions.com/workflow-topics/topic_extraction_tool.html)
+- [turn texts into networks](https://nocodefunctions.com/workflow-cowo/semantic_networks_tool.html)
 
 Pdf mining:
 - [extract text from specific regions in pdf files](https://nocodefunctions.com/pdf_region_extractor/pdf_region_text_extractor_tool.html)

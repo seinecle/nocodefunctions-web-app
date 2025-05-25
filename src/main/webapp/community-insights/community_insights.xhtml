@@ -41,7 +41,7 @@
                         <br/>
                         <h:form>
                             <p:selectOneListbox id="lang" value="#{communityInsightsBean.selectedLanguage}" style="width: 50px !important">
-                                <f:selectItems value="#{topicsBean.available}" var="l"
+                                <f:selectItems value="#{workflowTopicsBean.available}" var="l"
                                                itemValue="#{l.toLanguageTag()}"
                                                itemLabel="#{l.getDisplayLanguage(localeBean.currentLocale)}">
                                 </f:selectItems>
@@ -114,22 +114,22 @@
                             <!--RUN ANALYSIS BUTTON-->
                             <p:commandButton
                                 id="computeButton"
-                                value="#{topicsBean.runButtonText}"
+                                value="#{workflowTopicsBean.runButtonText}"
                                 widgetVar="topicsButton"
-                                action="#{topicsBean.runAnalysis}"
+                                action="#{workflowTopicsBean.runAnalysis}"
                                 onclick="PF('pbAjaxLong').start();PF('topicsButton').disable()"
                                 styleClass="btn btn-primary"
-                                disabled="#{topicsBean.runButtonDisabled}"
+                                disabled="#{workflowTopicsBean.runButtonDisabled}"
                                 update=":notifications"/>
                             <br/>
                             <br/>
                             <!--PROGRESS BAR FOR RUN ANALYSIS-->
-                            <p:progressBar id="pb" widgetVar="pbAjaxLong" ajax="true" value="#{topicsBean.progress}"
+                            <p:progressBar id="pb" widgetVar="pbAjaxLong" ajax="true" value="#{workflowTopicsBean.progress}"
                                            labelTemplate="{value}%" styleClass="p-mt-3" global="false" interval="500">
                                 <p:ajax event="complete" update=":notifications"/>
                             </p:progressBar>
                             <h:panelGroup id="pollingArea">
-                                <p:poll listener="#{topicsBean.pollingDidEndResultsArrive}" process="pollingArea" update="pollingArea :notifications" interval="2" />
+                                <p:poll listener="#{workflowTopicsBean.pollingDidEndResultsArrive}" process="pollingArea" update="pollingArea :notifications" interval="2" />
                             </h:panelGroup>
                         </p:panel>
                     </h:form>
@@ -145,7 +145,7 @@
                                     <p:ajax event="updateNotifications" update=":notifications" />
                                 </f:websocket>
                                 <f:websocket channel="navigationChannel"  scope="session">
-                                    <p:ajax event="navigateToResultscowo" listener="#{topicsBean.navigateToResults}"/>
+                                    <p:ajax event="navigateToResultscowo" listener="#{workflowTopicsBean.navigateToResults}"/>
                                 </f:websocket>
                             </h:form>
                         </p:scrollPanel>

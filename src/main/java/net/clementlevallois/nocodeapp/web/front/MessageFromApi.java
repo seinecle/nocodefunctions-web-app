@@ -13,6 +13,7 @@ public class MessageFromApi implements Serializable {
 
     private String sessionId;
     private String message;
+    private Integer progress;
     private String function;
     private String dataPersistenceId;
     private Information info;
@@ -78,4 +79,14 @@ public class MessageFromApi implements Serializable {
     public void setSuccess(boolean success) {
         this.success = success;
     }
+
+    public Integer getProgress() {
+        return progress;
+    }
+
+    public void setProgress(Integer progress) {
+        this.progress = progress;
+    }
+    
+    
 }

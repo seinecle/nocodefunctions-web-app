@@ -85,9 +85,6 @@ public class UmigonBean implements Serializable {
     @Inject
     private MicroserviceHttpClient microserviceClient;
     
-    @Resource
-    private ManagedExecutorService managedExecutorService; // Still useful for other general tasks if needed
-
     public UmigonBean() {
     }
 
@@ -137,8 +134,6 @@ public class UmigonBean implements Serializable {
         logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.starting_analysis"));
         
         PrimeFaces.current().ajax().update("formComputeButton:computeButton", "notifications", "progressComponentId");
-
-        // Call the asynchronous method. CDI will handle the threading and context propagation.
         startAnalysisAsync();
 
         return null; // Return null to stay on the same page
