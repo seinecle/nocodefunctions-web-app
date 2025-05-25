@@ -1,6 +1,5 @@
 package net.clementlevallois.nocodeapp.web.front.functions;
 
-import io.mikael.urlbuilder.UrlBuilder;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Resource;
 import jakarta.enterprise.concurrent.ManagedExecutorService;
@@ -10,11 +9,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.ByteArrayInputStream;
 import java.io.Serializable;
-import java.io.StringWriter;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -32,21 +26,19 @@ import jakarta.json.Json;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.json.JsonReader;
-import jakarta.json.JsonWriter;
 import jakarta.servlet.annotation.MultipartConfig;
 import java.io.StringReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
-import java.time.Duration;
 import java.util.Iterator;
-import java.util.Properties;
 import java.util.TreeMap;
 import java.util.UUID;
-import java.util.concurrent.CompletionException;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.concurrent.CompletionException;
 import net.clementlevallois.importers.model.DataFormatConverter;
 import net.clementlevallois.nocodeapp.web.front.MessageFromApi;
 import net.clementlevallois.nocodeapp.web.front.WatchTower;
@@ -57,7 +49,6 @@ import net.clementlevallois.nocodeapp.web.front.logview.BackToFrontMessengerBean
 import net.clementlevallois.nocodeapp.web.front.backingbeans.ApplicationPropertiesBean;
 import net.clementlevallois.nocodeapp.web.front.http.RemoteLocal;
 import net.clementlevallois.nocodeapp.web.front.importdata.ImportSimpleLinesBean;
-import net.clementlevallois.nocodeapp.web.front.utils.Converters;
 import net.clementlevallois.nocodeapp.web.front.utils.GEXFSaver;
 import net.clementlevallois.utils.Multiset;
 import org.primefaces.PrimeFaces;
@@ -65,16 +56,16 @@ import org.primefaces.event.SlideEndEvent;
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
 import org.primefaces.model.file.UploadedFile;
+import java.net.http.HttpResponse;
+import net.clementlevallois.nocodeapp.web.front.http.MicroserviceHttpClient;
+import net.clementlevallois.nocodeapp.web.front.http.MicroserviceHttpClient.MicroserviceCallException;
 
-/**
- *
- * @author LEVALLOIS
- */
 @Named
 @SessionScoped
 @MultipartConfig
-
 public class TopicsBean implements Serializable {
+
+    private static final Logger LOG = Logger.getLogger(TopicsBean.class.getName());
 
     private Integer progress = 0;
     private Map<Integer, Multiset<String>> keywordsPerTopic;
@@ -97,8 +88,6 @@ public class TopicsBean implements Serializable {
     private volatile boolean taskSuccess = false;
     private String sessionId;
 
-    private Properties privateProperties;
-
     private Map<Integer, String> mapOfLines;
 
     @Inject
@@ -116,6 +105,9 @@ public class TopicsBean implements Serializable {
     @Inject
     ApplicationPropertiesBean applicationProperties;
 
+    @Inject
+    private MicroserviceHttpClient microserviceClient;
+
     @Resource
     private ManagedExecutorService managedExecutorService;
 
@@ -125,7 +117,6 @@ public class TopicsBean implements Serializable {
     @PostConstruct
     public void init() {
         sessionBean.setFunction("topics");
-        privateProperties = applicationProperties.getPrivateProperties();
         runButtonText = sessionBean.getLocaleBundle().getString("general.verbs.compute");
         sessionId = FacesContext.getCurrentInstance().getExternalContext().getSessionId(false);
         logBean.setSessionId(sessionId);
@@ -145,7 +136,7 @@ public class TopicsBean implements Serializable {
 
     public void runAnalysis() {
         runButtonText = sessionBean.getLocaleBundle().getString("general.message.wait_long_operation");
-        progress = 0; // Progress needs rethinking - best if pushed from Javalin via callbacks
+        progress = 0;
         runButtonDisabled = true;
         taskComplete = false;
         taskSuccess = false;
@@ -154,29 +145,28 @@ public class TopicsBean implements Serializable {
             if (simpleLinesImportBean.getDataPersistenceUniqueId() != null) {
                 this.dataPersistenceUniqueId = simpleLinesImportBean.getDataPersistenceUniqueId();
             } else {
-                generateInputDataAndDataId(); // Needs implementation
+                generateInputDataAndDataId();
+                if (this.dataPersistenceUniqueId == null || this.dataPersistenceUniqueId.isEmpty()) {
+                    throw new IllegalStateException("Data persistence ID could not be generated.");
+                }
             }
-            inputData.setDataInSheets(new ArrayList());
 
             final JsonObject parameters = buildRequestParameters();
 
             managedExecutorService.submit(() -> {
-                boolean submitted = sendRequestToMicroserviceAsync(parameters);
-                if (!submitted) {
-                    logBean.addOneNotificationFromString("Failed to submit task to microservice.");
-                }
+                sendRequestToMicroserviceAsync(parameters);
             });
 
             logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.starting_analysis"));
 
-        } catch (Exception e) {
-            Logger.getLogger(TopicsBean.class.getName()).log(Level.SEVERE, "Error initiating analysis", e);
+        } catch (IllegalStateException e) {
+            LOG.log(Level.SEVERE, "Error initiating analysis", e);
             sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Error", "Could not start analysis: " + e.getMessage());
             runButtonText = sessionBean.getLocaleBundle().getString("general.verbs.compute");
             runButtonDisabled = false;
             taskComplete = false;
             taskSuccess = false;
-
+            PrimeFaces.current().ajax().update("formComputeButton:computeButton", "notifications");
         }
     }
 
@@ -192,143 +182,157 @@ public class TopicsBean implements Serializable {
             try (BufferedReader br = new BufferedReader(new InputStreamReader(fileUserStopwords.getInputStream(), StandardCharsets.UTF_8))) {
                 userSuppliedStopwords = br.lines().collect(toList());
             } catch (IOException ex) {
-                Logger.getLogger(TopicsBean.class.getName()).log(Level.SEVERE, null, ex);
+                LOG.log(Level.SEVERE, "Error reading user supplied stopwords file", ex);
+                sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "stopwords", "Could not read stopwords file: " + ex.getMessage());
             }
             int index = 0;
             for (String stopword : userSuppliedStopwords) {
                 userSuppliedStopwordsBuilder.add(String.valueOf(index++), stopword);
             }
         }
-        String callbackURL = RemoteLocal.getDomain() + "/internalapi/messageFromAPI/workflow/topics";
-        overallObject.add("lang", selectedLanguage);
         overallObject.add("userSuppliedStopwords", userSuppliedStopwordsBuilder);
-        overallObject.add("replaceStopwords", replaceStopwords);
-        overallObject.add("isScientificCorpus", scientificCorpus);
-        overallObject.add("lemmatize", lemmatize);
-        overallObject.add("removeAccents", removeNonAsciiCharacters);
-        overallObject.add("precision", precision);
-        overallObject.add("minCharNumber", minCharNumber);
-        overallObject.add("minTermFreq", minTermFreq);
-        overallObject.add("sessionId", sessionId);
-        overallObject.add("dataPersistenceId", dataPersistenceUniqueId);
-        overallObject.add("callbackURL", callbackURL);
         return overallObject.build();
     }
 
-    private boolean sendRequestToMicroserviceAsync(JsonObject parameters) {
-        HttpClient client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(30)).build();
-        StringWriter sw = new StringWriter(128);
-        try (JsonWriter jw = Json.createWriter(sw)) {
-            jw.write(parameters);
-        }
-        String jsonString = sw.toString();
-
-        HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofString(jsonString, StandardCharsets.UTF_8);
-
-        URI uri = UrlBuilder.empty()
-                .withScheme("http").withHost("localhost")
-                .withPort(Integer.valueOf(privateProperties.getProperty("nocode_api_port")))
-                .withPath("api/workflow/topics")
-                .toUri();
-
-        HttpRequest request = HttpRequest.newBuilder()
-                .POST(bodyPublisher)
-                .uri(uri)
-                .header("Content-Type", "application/json")
-                .build();
-
-        try {
-            HttpResponse<String> resp = client.send(request, HttpResponse.BodyHandlers.ofString());
-            if (resp.statusCode() == 200) {
-                logBean.addOneNotificationFromString("Task submitted successfully.");
-                return true;
-            } else {
-                logBean.addOneNotificationFromString("Microservice rejected the task. Status: " + resp.statusCode());
-                sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "Error", "Microservice task submission failed.");
-                runButtonDisabled = false;
-                taskComplete = false;
-                taskSuccess = false;
-                return false;
-            }
-        } catch (IOException | InterruptedException ex) {
-            Logger.getLogger(TopicsBean.class.getName()).log(Level.SEVERE, "Error sending request to microservice", ex);
-            logBean.addOneNotificationFromString("Communication error with microservice: " + ex.getMessage());
-            sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Error", "Communication error.");
-            runButtonDisabled = false;
-            taskComplete = false;
-            taskSuccess = false;
-            Thread.currentThread().interrupt();
-            return false;
-        }
+    private void sendRequestToMicroserviceAsync(JsonObject parameters) {
+        String callbackURL = RemoteLocal.getDomain() + "/internalapi/messageFromAPI/workflow/topics";
+        microserviceClient.api().post("/api/workflow/topics")
+                .withJsonPayload(parameters)
+                .addQueryParameter("lang", selectedLanguage)
+                .addQueryParameter("replaceStopwords", String.valueOf(replaceStopwords))
+                .addQueryParameter("isScientificCorpus", String.valueOf(scientificCorpus))
+                .addQueryParameter("lemmatize", String.valueOf(lemmatize))
+                .addQueryParameter("removeAccents", String.valueOf(removeNonAsciiCharacters))
+                .addQueryParameter("precision", String.valueOf(precision))
+                .addQueryParameter("minCharNumber", String.valueOf(minCharNumber))
+                .addQueryParameter("sessionId", sessionId)
+                .addQueryParameter("dataPersistenceId", dataPersistenceUniqueId)
+                .addQueryParameter("callbackURL", callbackURL)
+                .sendAsync(HttpResponse.BodyHandlers.ofString())
+                .thenAccept(response -> {
+                    if (response.statusCode() != 200) {
+                        String errorBody = response.body();
+                        LOG.log(Level.SEVERE, "Microservice task submission failed for dataId {0}. Status: {1}, Body: {2}", new Object[]{dataPersistenceUniqueId, response.statusCode(), errorBody});
+                        sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "topics failed", "Could not send to topics microservice: "+ errorBody);
+                    }
+                })
+                .exceptionally(e -> {
+                    LOG.log(Level.SEVERE, "Exception during microservice task submission for dataId " + dataPersistenceUniqueId, e);
+                    String errorMessage = "Exception communicating with microservice: " + e.getMessage();
+                    if (e.getCause() instanceof MicroserviceCallException msce) {
+                        errorMessage += " (Status: " + msce.getStatusCode() + ", URI: " + msce.getUri() + ", Body: " + msce.getErrorBody() + ")";
+                    }
+                    sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "topics failed", errorMessage);
+                    return null;
+                });
     }
 
     public void checkTaskStatusForPolling() {
-        if (sessionId == null) {
+        if (sessionId == null || dataPersistenceUniqueId == null || taskComplete) {
             return;
         }
+
         ConcurrentLinkedDeque<MessageFromApi> messagesFromApi = WatchTower.getDequeAPIMessages().get(sessionId);
         if (messagesFromApi != null && !messagesFromApi.isEmpty()) {
             Iterator<MessageFromApi> it = messagesFromApi.iterator();
             while (it.hasNext()) {
                 MessageFromApi msg = it.next();
-                if (msg.getInfo().equals(MessageFromApi.Information.WORKFLOW_COMPLETED) && msg.getDataPersistenceId().equals(dataPersistenceUniqueId)) {
-                    taskComplete = true;
-                    taskSuccess = true;
-                    it.remove();
-                }
-            }
-        }
-        if (taskComplete && taskSuccess && FacesContext.getCurrentInstance() != null) {
-            try {
-                runButtonDisabled = false;
-                // Update components showing button state, status messages etc.
-                PrimeFaces.current().ajax().update("formComputeButton:computeButton", "notifications");
+                if (msg.getDataPersistenceId() != null && msg.getDataPersistenceId().equals(dataPersistenceUniqueId)) {
+                    LOG.log(Level.INFO, "Polling detected message for dataId {0}: {1}", new Object[]{dataPersistenceUniqueId, msg.getInfo()});
 
-                // create the data structure to show results on the results page
-                Path tempFolderForAllTasks = applicationProperties.getTempFolderFullPath();
-                Path tempFolderForThisTask = Path.of(tempFolderForAllTasks.toString(), dataPersistenceUniqueId);
+                    switch (msg.getInfo()) {
+                        case WORKFLOW_COMPLETED -> {
+                            taskComplete = true;
+                            taskSuccess = true;
+                            progress = 100;
+                            runButtonDisabled = false;
+                            it.remove();
+                            PrimeFaces.current().ajax().update("formComputeButton:computeButton", "notifications", "pollingPanel");
+                            LOG.log(Level.INFO, "Task {0} complete, attempting to load results.", dataPersistenceUniqueId);
+                            try {
+                                Path tempFolderForAllTasks = applicationProperties.getTempFolderFullPath();
+                                Path tempFolderForThisTask = Path.of(tempFolderForAllTasks.toString(), dataPersistenceUniqueId);
+                                Path jsonResults = Path.of(tempFolderForThisTask.toString(), dataPersistenceUniqueId + "_result.json");
 
-                Path jsonResults = Path.of(tempFolderForThisTask.toString(), dataPersistenceUniqueId + "_result.json");
-                String jsonAsString = Files.readString(jsonResults);
-                try (JsonReader jsonReader = Json.createReader(new StringReader(jsonAsString))) {
-                    // Read the JsonObject from the JsonReader.
-                    JsonObject jsonObject = jsonReader.readObject();
-
-                    processParsedResults(jsonObject);
-
-                    // Trigger client-side navigation or update results area
-                    String pollWidgetVar = "pollingWidget";
-                    String targetUrl = "results.html";
-                    String scriptToExecute = String.format("stopPollingAndNavigate('%s', '%s');",
-                            pollWidgetVar,
-                            targetUrl);
-                    if (PrimeFaces.current() != null) {
-                        PrimeFaces.current().executeScript(scriptToExecute);
-                        System.out.println("Executed script: " + scriptToExecute); // For debugging
-                    } else {
-                        System.err.println("Could not execute PrimeFaces script - no current context?");
+                                if (Files.exists(jsonResults)) {
+                                    String jsonAsString = Files.readString(jsonResults);
+                                    try (JsonReader jsonReader = Json.createReader(new StringReader(jsonAsString))) {
+                                        JsonObject jsonObject = jsonReader.readObject();
+                                        processParsedResults(jsonObject);
+                                        LOG.info("Processed results from saved JSON file.");
+                                    }
+                                } else {
+                                    LOG.log(Level.SEVERE, "Result file not found for dataId: {0}", dataPersistenceUniqueId);
+                                    logBean.addOneNotificationFromString("Error: Result file not found.");
+                                    taskSuccess = false;
+                                }
+                            } catch (IOException e) {
+                                LOG.log(Level.SEVERE, "Error reading or processing result file for dataId: " + dataPersistenceUniqueId, e);
+                                logBean.addOneNotificationFromString("Error processing results: " + e.getMessage());
+                                taskSuccess = false;
+                            }
+                        }
+                        case ERROR -> {
+                            LOG.log(Level.WARNING, "Polling detected ERROR message for dataId {0}: {1}", new Object[]{dataPersistenceUniqueId, msg.getMessage()});
+                            taskComplete = true;
+                            taskSuccess = false;
+                            runButtonDisabled = false;
+                            progress = 0;
+                            logBean.addOneNotificationFromString("Analysis failed: " + msg.getMessage());
+                            it.remove();
+                            PrimeFaces.current().ajax().update("formComputeButton:computeButton", "notifications", "pollingPanel");
+                            PrimeFaces.current().executeScript("stopPollingWidget();");
+                        }
+                        case PROGRESS -> {
+                            if (msg.getMessage() != null) {
+                                this.progress = Integer.valueOf(msg.getMessage());
+                                PrimeFaces.current().ajax().update("progressComponentId");
+                            }
+                            it.remove();
+                        }
+                        default -> {
+                        }
                     }
                 }
-            } catch (IOException ex) {
-                Logger.getLogger(TopicsBean.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
-
     }
 
     public void navigatToResults(AjaxBehaviorEvent event) {
-        FacesContext context = FacesContext.getCurrentInstance();
-        context.getApplication().getNavigationHandler().handleNavigation(context, null, "/topics/results.xhtml?faces-redirect=true");
+        if (taskComplete && taskSuccess) {
+            FacesContext context = FacesContext.getCurrentInstance();
+            context.getApplication().getNavigationHandler().handleNavigation(context, null, "/topics/results.xhtml?faces-redirect=true");
+        } else if (taskComplete && !taskSuccess) {
+            logBean.addOneNotificationFromString("Cannot navigate to results: Task failed.");
+        }
     }
 
     public void generateInputDataAndDataId() {
         dataPersistenceUniqueId = UUID.randomUUID().toString().substring(0, 10);
+        LOG.log(Level.INFO, "Generating input data for dataId: {0}", dataPersistenceUniqueId);
         try {
             Path tempFolderForAllTasks = applicationProperties.getTempFolderFullPath();
             Path tempFolderForThisTask = Path.of(tempFolderForAllTasks.toString(), dataPersistenceUniqueId);
             Files.createDirectories(tempFolderForThisTask);
-            DataFormatConverter dataFormatConverter = new DataFormatConverter();
-            mapOfLines = dataFormatConverter.convertToMapOfLines(inputData.getBulkData(), inputData.getDataInSheets(), inputData.getSelectedSheetName(), inputData.getSelectedColumnIndex(), inputData.getHasHeaders());
+
+            if (mapOfLines == null || mapOfLines.isEmpty()) {
+                DataFormatConverter dataFormatConverter = new DataFormatConverter();
+                mapOfLines = dataFormatConverter.convertToMapOfLines(
+                        inputData.getBulkData(),
+                        inputData.getDataInSheets(),
+                        inputData.getSelectedSheetName(),
+                        inputData.getSelectedColumnIndex(),
+                        inputData.getHasHeaders()
+                );
+
+                if (mapOfLines == null || mapOfLines.isEmpty()) {
+                    LOG.warning("No data found to generate input file.");
+                    logBean.addOneNotificationFromString("No data found for analysis.");
+                    dataPersistenceUniqueId = null;
+                    return;
+                }
+            }
+
             StringBuilder sb = new StringBuilder();
             for (Map.Entry<Integer, String> entry : mapOfLines.entrySet()) {
                 if (entry.getValue() == null) {
@@ -338,9 +342,14 @@ public class TopicsBean implements Serializable {
             }
             Path fullPathToInputFile = Path.of(tempFolderForThisTask.toString(), dataPersistenceUniqueId);
             Files.writeString(fullPathToInputFile, sb.toString(), StandardCharsets.UTF_8, StandardOpenOption.CREATE,
-                    StandardOpenOption.APPEND);
+                    StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
+
+            LOG.log(Level.INFO, "Input data saved to: {0}", fullPathToInputFile);
+
         } catch (IOException ex) {
-            Logger.getLogger(TopicsBean.class.getName()).log(Level.SEVERE, null, ex);
+            LOG.log(Level.SEVERE, "Error generating input data file", ex);
+            logBean.addOneNotificationFromString("Error preparing input data: " + ex.getMessage());
+            dataPersistenceUniqueId = null;
         }
     }
 
@@ -371,36 +380,64 @@ public class TopicsBean implements Serializable {
     }
 
     private void processParsedResults(JsonObject jsonObject) {
+        LOG.info("Processing parsed results JSON.");
         try {
             this.keywordsPerTopic = new TreeMap<>();
             JsonObject keywordsPerTopicAsJson = jsonObject.getJsonObject("keywordsPerTopic");
-            for (String keyCommunity : keywordsPerTopicAsJson.keySet()) {
-                JsonObject termsAndFrequenciesForThisCommunity = keywordsPerTopicAsJson.getJsonObject(keyCommunity);
-                Multiset<String> termsAndFreqs = new Multiset<>();
-                for (String term : termsAndFrequenciesForThisCommunity.keySet()) {
-                    termsAndFreqs.addSeveral(term, termsAndFrequenciesForThisCommunity.getInt(term));
+            if (keywordsPerTopicAsJson != null) {
+                for (String keyCommunity : keywordsPerTopicAsJson.keySet()) {
+                    JsonObject termsAndFrequenciesForThisCommunity = keywordsPerTopicAsJson.getJsonObject(keyCommunity);
+                    Multiset<String> termsAndFreqs = new Multiset<>();
+                    if (termsAndFrequenciesForThisCommunity != null) {
+                        termsAndFrequenciesForThisCommunity.keySet().forEach(term -> {
+                            termsAndFreqs.addSeveral(term, termsAndFrequenciesForThisCommunity.getInt(term));
+                        });
+                    }
+                    try {
+                        keywordsPerTopic.put(Integer.valueOf(keyCommunity), termsAndFreqs);
+                    } catch (NumberFormatException e) {
+                        LOG.log(Level.WARNING, "Skipping non-integer topic key in JSON: " + keyCommunity, e);
+                    }
                 }
-                keywordsPerTopic.put(Integer.valueOf(keyCommunity), termsAndFreqs);
+                LOG.log(Level.INFO, "Successfully processed {0} topics.", keywordsPerTopic.size());
+            } else {
+                LOG.warning("JSON result did not contain 'keywordsPerTopic' object.");
+                logBean.addOneNotificationFromString("Warning: Results format unexpected.");
             }
-        } catch (NumberFormatException e) {
-            System.out.println("error with the json decoding");
+
+        } catch (Exception e) {
+            LOG.log(Level.SEVERE, "Error processing results JSON", e);
+            logBean.addOneNotificationFromString("Error processing results: " + e.getMessage());
         }
     }
 
     public StreamedContent getGexfFile() {
+        if (dataPersistenceUniqueId == null || dataPersistenceUniqueId.isEmpty()) {
+            LOG.warning("Cannot provide GEXF file, dataPersistenceUniqueId is null or empty.");
+            logBean.addOneNotificationFromString("Cannot download GEXF: Analysis ID not set.");
+            return new DefaultStreamedContent();
+        }
         try {
             Path tempFolderForAllTasks = applicationProperties.getTempFolderFullPath();
             Path tempFolderForThisTask = Path.of(tempFolderForAllTasks.toString(), dataPersistenceUniqueId);
 
             Path gexfResults = Path.of(tempFolderForThisTask.toString(), dataPersistenceUniqueId + "_result.gexf");
-            String gexfAsString = Files.readString(gexfResults);
 
-            StreamedContent exportGexfAsStreamedFile = GEXFSaver.exportGexfAsStreamedFile(gexfAsString, "network_file_with_topics");
-            return exportGexfAsStreamedFile;
+            if (Files.exists(gexfResults)) {
+                String gexfAsString = Files.readString(gexfResults);
+                StreamedContent exportGexfAsStreamedFile = GEXFSaver.exportGexfAsStreamedFile(gexfAsString, "network_file_with_topics");
+                return exportGexfAsStreamedFile;
+            } else {
+                LOG.log(Level.WARNING, "GEXF result file not found for dataId: {0}", dataPersistenceUniqueId);
+                logBean.addOneNotificationFromString("GEXF file not found.");
+                return new DefaultStreamedContent();
+            }
+
         } catch (IOException ex) {
-            Logger.getLogger(TopicsBean.class.getName()).log(Level.SEVERE, null, ex);
+            LOG.log(Level.SEVERE, "Error reading GEXF file", ex);
+            logBean.addOneNotificationFromString("Error providing GEXF file for download.");
+            return new DefaultStreamedContent();
         }
-        return null;
     }
 
     public void setGexfFile(StreamedContent gexfFile) {
@@ -443,10 +480,20 @@ public class TopicsBean implements Serializable {
     }
 
     public void uploadStopWordFile() {
-        if (fileUserStopwords != null) {
-            String success = sessionBean.getLocaleBundle().getString("general.nouns.success");
-            String is_uploaded = sessionBean.getLocaleBundle().getString("general.verb.is_uploaded");
-            sessionBean.addMessage(FacesMessage.SEVERITY_INFO, success, fileUserStopwords.getFileName() + " " + is_uploaded + ".");
+        try {
+            if (fileUserStopwords != null && fileUserStopwords.getFileName() != null && fileUserStopwords.getInputStream() != null) {
+                long fileSize = fileUserStopwords.getSize();
+                String contentType = fileUserStopwords.getContentType();
+                LOG.log(Level.INFO, "Uploaded stopwords file: {0}, size: {1} bytes, type: {2}", new Object[]{fileUserStopwords.getFileName(), fileSize, contentType});
+                String success = sessionBean.getLocaleBundle().getString("general.nouns.success");
+                String is_uploaded = sessionBean.getLocaleBundle().getString("general.verb.is_uploaded");
+                sessionBean.addMessage(FacesMessage.SEVERITY_INFO, success, fileUserStopwords.getFileName() + " " + is_uploaded + ".");
+            } else {
+                LOG.warning("Uploaded stopwords file is null, has no name, or no input stream.");
+                sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "Warning", "No file uploaded or file is empty.");
+            }
+        } catch (IOException ex) {
+            Logger.getLogger(TopicsBean.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
@@ -455,7 +502,6 @@ public class TopicsBean implements Serializable {
     }
 
     public void setOkToShareStopwords(boolean okToShareStopwords) {
-        System.out.println("ok to share stopwords");
         this.okToShareStopwords = okToShareStopwords;
     }
 
@@ -464,7 +510,6 @@ public class TopicsBean implements Serializable {
     }
 
     public void setReplaceStopwords(boolean replaceStopwords) {
-        System.out.println("ok to replace stopwords");
         this.replaceStopwords = replaceStopwords;
     }
 
@@ -522,54 +567,63 @@ public class TopicsBean implements Serializable {
         for (String tag : availableStopwordLists) {
             available.add(Locale.forLanguageTag(tag));
         }
-        Locale requestLocale = FacesContext.getCurrentInstance().getExternalContext().getRequestLocale();
+        FacesContext context = FacesContext.getCurrentInstance();
+        Locale requestLocale = (context != null) ? context.getExternalContext().getRequestLocale() : Locale.getDefault();
         Collections.sort(available, new LocaleComparator(requestLocale));
         return available;
     }
 
     private StreamedContent createExcelFileFromJsonSavedData() {
+        if (dataPersistenceUniqueId == null || dataPersistenceUniqueId.isEmpty()) {
+            LOG.warning("Cannot create Excel file, dataPersistenceUniqueId is null or empty.");
+            logBean.addOneNotificationFromString("Cannot download results: Analysis ID not set.");
+            return new DefaultStreamedContent();
+        }
         try {
             Path tempFolderForAllTasks = applicationProperties.getTempFolderFullPath();
             Path tempFolderForThisTask = Path.of(tempFolderForAllTasks.toString(), dataPersistenceUniqueId);
-
             Path jsonResults = Path.of(tempFolderForThisTask.toString(), dataPersistenceUniqueId + "_result.json");
+
+            if (!Files.exists(jsonResults)) {
+                LOG.log(Level.WARNING, "JSON result file not found for dataId: {0}", dataPersistenceUniqueId);
+                logBean.addOneNotificationFromString("Cannot download Excel: Result file not found.");
+                return new DefaultStreamedContent();
+            }
+
             String jsonAsStringString = Files.readString(jsonResults);
+            byte[] topicsAsArray = jsonAsStringString.getBytes(StandardCharsets.UTF_8);
 
-            byte[] topicsAsArray = Converters.byteArraySerializerForAnyObject(jsonAsStringString);
+            // Use the importService builder and the new withByteArrayPayload method
+            CompletableFuture<byte[]> futureBytes = microserviceClient.importService().post("/api/export/xlsx/topics")
+                    .addQueryParameter("nbTerms", "10")
+                    .withByteArrayPayload(topicsAsArray)
+                    .sendAsyncAndGetBody(HttpResponse.BodyHandlers.ofByteArray());
 
-            HttpRequest.BodyPublisher bodyPublisherTopics = HttpRequest.BodyPublishers.ofByteArray(topicsAsArray);
+            byte[] body = futureBytes.join(); // Blocks until the future completes or throws exception
 
-            URI uriExportTopicsToExcel = UrlBuilder
-                    .empty()
-                    .withScheme("http")
-                    .withPort(Integer.valueOf(privateProperties.getProperty("nocode_import_port")))
-                    .withHost("localhost")
-                    .withPath("api/export/xlsx/topics")
-                    .addParameter("nbTerms", "10")
-                    .toUri();
-
-            HttpRequest requestExportTopicsToExcel = HttpRequest.newBuilder()
-                    .POST(bodyPublisherTopics)
-                    .uri(uriExportTopicsToExcel)
-                    .build();
-            HttpClient client = HttpClient.newBuilder().connectTimeout(Duration.ofMinutes(5)).build();
-
-            HttpResponse<byte[]> resp = client.send(requestExportTopicsToExcel, HttpResponse.BodyHandlers.ofByteArray());
-            byte[] body = resp.body();
+            LOG.info("Export service call successful (async then join).");
             InputStream is = new ByteArrayInputStream(body);
-            DefaultStreamedContent excelFileAsStream = DefaultStreamedContent.builder()
+            return DefaultStreamedContent.builder()
                     .name("results_topics.xlsx")
                     .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
                     .stream(() -> is)
                     .build();
 
-            WatchTower.getQueueOutcomesProcesses().put(dataPersistenceUniqueId + "topics", System.currentTimeMillis());
-            progress = 100;
-            return excelFileAsStream;
-        } catch (IOException | InterruptedException ex) {
-            Logger.getLogger(TopicsBean.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (CompletionException cex) {
+            Throwable cause = cex.getCause();
+            LOG.log(Level.SEVERE, "Error during asynchronous export service call (CompletionException)", cause);
+            String errorMessage = "Error exporting data: " + cause.getMessage();
+            if (cause instanceof MicroserviceCallException msce) {
+                errorMessage = "Error exporting data: Status " + msce.getStatusCode() + ", " + msce.getErrorBody();
+            }
+            logBean.addOneNotificationFromString(errorMessage);
+            sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Export Failed", errorMessage);
+            return new DefaultStreamedContent();
+        } catch (IOException ex) {
+            LOG.log(Level.SEVERE, "Error reading JSON file before export", ex);
+            logBean.addOneNotificationFromString("Error preparing data for export: " + ex.getMessage());
+            sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Export Failed", "Error preparing data for export.");
+            return new DefaultStreamedContent();
         }
-        return null;
-
     }
 }

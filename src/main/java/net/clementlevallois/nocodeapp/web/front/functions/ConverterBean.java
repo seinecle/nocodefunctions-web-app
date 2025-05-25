@@ -26,6 +26,7 @@ import java.util.logging.Logger;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.exportdata.ExportToVosViewer;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.ApplicationPropertiesBean;
+import net.clementlevallois.nocodeapp.web.front.http.MicroserviceHttpClient;
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
@@ -60,6 +61,9 @@ public class ConverterBean implements Serializable {
 
     @Inject
     ApplicationPropertiesBean applicationProperties;
+    
+    @Inject
+    private MicroserviceHttpClient microserviceClient;
 
     public ConverterBean() {
     }
@@ -103,8 +107,7 @@ public class ConverterBean implements Serializable {
     }
 
     public void gotoVV() {
-        String apiPort = privateProperties.getProperty("nocode_api_port");
-        String linkToVosViewer = ExportToVosViewer.exportAndReturnLinkForConversionToVV(dataPersistenceUniqueId, apiPort, shareVVPublicly, applicationProperties, item, link, linkStrength);
+        String linkToVosViewer = ExportToVosViewer.exportAndReturnLinkForConversionToVV(microserviceClient, dataPersistenceUniqueId, shareVVPublicly, applicationProperties, item, link, linkStrength);
         if (linkToVosViewer != null && !linkToVosViewer.isBlank()) {
             try {
                 ExternalContext externalContext = FacesContext.getCurrentInstance().getExternalContext();

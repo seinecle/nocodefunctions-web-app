@@ -6,9 +6,13 @@ package net.clementlevallois.nocodeapp.web.front.importdata;
 import jakarta.enterprise.context.SessionScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
+import java.io.IOException;
 import java.io.Serializable;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.UUID;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.ApplicationPropertiesBean;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 
@@ -45,14 +49,19 @@ public class ImportSimpleLinesBean implements Serializable {
     }
 
     public void setDataPersistenceUniqueId(String dataPersistenceUniqueId) {
-        Path tempFolderRelativePath = applicationProperties.getTempFolderFullPath();
-        pathOfTempData = Path.of(tempFolderRelativePath.toString(), dataPersistenceUniqueId);
-        if (!pathOfTempData.toFile().exists()) {
-            setDataPersistenceUniqueId();
-        } else {
-            this.dataPersistenceUniqueId = dataPersistenceUniqueId;
+        try {
+            Path tempFolderRelativePath = applicationProperties.getTempFolderFullPath();
+            pathOfTempData = Path.of(tempFolderRelativePath.toString(), dataPersistenceUniqueId);
+            if (!pathOfTempData.toFile().exists()) {
+                setDataPersistenceUniqueId();
+            } else {
+                this.dataPersistenceUniqueId = dataPersistenceUniqueId;
+            }
+            pathOfTempData = Path.of(tempFolderRelativePath.toString(), this.dataPersistenceUniqueId);
+            Files.createDirectories(pathOfTempData);
+        } catch (IOException ex) {
+            Logger.getLogger(ImportSimpleLinesBean.class.getName()).log(Level.SEVERE, null, ex);
         }
-        pathOfTempData = Path.of(tempFolderRelativePath.toString(), this.dataPersistenceUniqueId);
     }
 
     public void setDataPersistenceUniqueId() {
@@ -86,5 +95,5 @@ public class ImportSimpleLinesBean implements Serializable {
     public Path getPathOfTempData() {
         return pathOfTempData;
     }
-    
+
 }

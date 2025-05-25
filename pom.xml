@@ -15,8 +15,8 @@
         <jakartaee>10.0.0</jakartaee>
         <java.version>21</java.version>
         <!--the two following properties are useful to NetBeans to detect correct and incorrect java languagage features in the code-->
-        <maven.compiler.source>21</maven.compiler.source>
-        <maven.compiler.target>21</maven.compiler.target>
+        <maven.compiler.source>23</maven.compiler.source>
+        <maven.compiler.target>23</maven.compiler.target>
     </properties>
     
     <dependencies>
@@ -37,6 +37,7 @@
             <artifactId>urlbuilder</artifactId>
             <version>2.0.9</version>
         </dependency>
+        <!--data model to interact with the functions API-->
         <dependency>
             <groupId>net.clementlevallois.functions</groupId>
             <artifactId>functions-model</artifactId>
@@ -52,6 +53,7 @@
             <artifactId>umigon-model-classification</artifactId>
             <version>0.10</version>
         </dependency>
+        <!--data model to interact with the IO API-->
         <dependency>
             <groupId>net.clementlevallois.io</groupId>
             <artifactId>io_model</artifactId>

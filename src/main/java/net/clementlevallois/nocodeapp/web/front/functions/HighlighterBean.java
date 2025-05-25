@@ -1,8 +1,7 @@
 package net.clementlevallois.nocodeapp.web.front.functions;
 
-import io.mikael.urlbuilder.UrlBuilder;
 import jakarta.annotation.PostConstruct;
-import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -12,34 +11,31 @@ import jakarta.enterprise.context.SessionScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.time.Duration;
-import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.concurrent.CompletionException;
+import jakarta.faces.application.FacesMessage;
+import java.util.concurrent.CompletableFuture;
 import net.clementlevallois.importers.model.CellRecord;
 import net.clementlevallois.importers.model.SheetModel;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.importdata.DataImportBean;
 import net.clementlevallois.nocodeapp.web.front.logview.BackToFrontMessengerBean;
-import net.clementlevallois.nocodeapp.web.front.backingbeans.ApplicationPropertiesBean;
 import net.clementlevallois.nocodeapp.web.front.utils.Converters;
+import net.clementlevallois.nocodeapp.web.front.http.MicroserviceHttpClient;
+import net.clementlevallois.nocodeapp.web.front.http.MicroserviceHttpClient.MicroserviceCallException;
+
+
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
 
-/**
- *
- * @author LEVALLOIS
- */
 @Named
 @SessionScoped
-
 public class HighlighterBean implements Serializable {
+
+    private static final Logger LOG = Logger.getLogger(HighlighterBean.class.getName());
 
     @Inject
     BackToFrontMessengerBean logBean;
@@ -51,13 +47,10 @@ public class HighlighterBean implements Serializable {
     SessionBean sessionBean;
 
     @Inject
-    ApplicationPropertiesBean applicationProperties;
-    
-    
+    private MicroserviceHttpClient microserviceClient;
+
     private String colorText = "#ffffff";
     private String colorBackground = "#e81e5b";
-    private Properties privateProperties;
-
 
     private StreamedContent fileToSave;
 
@@ -67,10 +60,8 @@ public class HighlighterBean implements Serializable {
     @PostConstruct
     public void init() {
         sessionBean.setFunction("highlighter");
-        privateProperties = applicationProperties.getPrivateProperties();
     }
-    
-    
+
     public void onload() {
     }
 
@@ -98,12 +89,20 @@ public class HighlighterBean implements Serializable {
         this.fileToSave = fileToSave;
     }
 
-    public void doTheHighlight() throws FileNotFoundException {
+    public void doTheHighlight() {
+        logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.starting_analysis"));
+
         try {
             String sheetName = inputData.getSelectedSheetName();
             String termCol = inputData.getTwoColumnsIndexForColOne();
             String contextCol = inputData.getTwoColumnsIndexForColTwo();
-            logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.starting_analysis"));
+
+            if (sheetName == null || termCol == null || contextCol == null) {
+                 sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "Input Error", "Please select a sheet and two columns.");
+                 logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.data_not_found"));
+                 return;
+            }
+
             List<SheetModel> dataInSheets = inputData.getDataInSheets();
             SheetModel sheetWithData = null;
             for (SheetModel sm : dataInSheets) {
@@ -113,25 +112,27 @@ public class HighlighterBean implements Serializable {
                 }
             }
             if (sheetWithData == null) {
+                sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "Input Error", "Selected sheet not found.");
                 logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.data_not_found") + " (1)");
                 return;
             }
+
             Map<Integer, List<CellRecord>> mapOfCellRecordsPerRow = sheetWithData.getRowIndexToCellRecords();
             if (inputData.getHasHeaders()) {
                 mapOfCellRecordsPerRow.remove(0);
             }
-            Iterator<Map.Entry<Integer, List<CellRecord>>> iterator = mapOfCellRecordsPerRow.entrySet().iterator();
 
-            String term = "";
-            String context = "";
             int termIndexInt = Integer.parseInt(termCol);
             int contextIndexInt = Integer.parseInt(contextCol);
 
             List<String[]> results = new ArrayList();
-            String[] result;
+            Iterator<Map.Entry<Integer, List<CellRecord>>> iterator = mapOfCellRecordsPerRow.entrySet().iterator();
 
             while (iterator.hasNext()) {
                 Map.Entry<Integer, List<CellRecord>> entryCellRecordsInRow = iterator.next();
+                String term = null;
+                String context = null;
+
                 for (CellRecord cr : entryCellRecordsInRow.getValue()) {
                     if (cr.getColIndex() == termIndexInt) {
                         term = cr.getRawValue();
@@ -140,47 +141,63 @@ public class HighlighterBean implements Serializable {
                         context = cr.getRawValue();
                     }
                 }
+
                 if (context != null && term != null && context.toLowerCase().contains(term.toLowerCase())) {
-                    String formattedTerm = "<span style=\"background-color: #" + colorBackground + "; color: #" + colorText + ";\">" + term + "</span>";
+                    String formattedTerm = "<span style=\"background-color: " + colorBackground + "; color: " + colorText + ";\">" + term + "</span>";
                     context = context.toLowerCase().replace(term.toLowerCase(), formattedTerm);
-                    result = new String[]{term, context};
-                    results.add(result);
+                    results.add(new String[]{term, context});
                 }
             }
 
-            HttpRequest request;
-            HttpClient client = HttpClient.newBuilder().connectTimeout(Duration.ofMinutes(10)).build();
+            if (results.isEmpty()) {
+                 sessionBean.addMessage(FacesMessage.SEVERITY_INFO, "No Matches", "No terms found in context for highlighting.");
+                 logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.analysis_complete") + " (no matches)");
+                 fileToSave = new DefaultStreamedContent(); // Provide empty content
+                 return;
+            }
+
             byte[] documentsAsByteArray = Converters.byteArraySerializerForAnyObject(results);
-            HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(documentsAsByteArray);
 
-            URI uri = UrlBuilder
-                    .empty()
-                    .withScheme("http")
-                    .withPort(Integer.valueOf(privateProperties.getProperty("nocode_import_port")))
-                    .withHost("localhost")
-                    .withPath("api/export/xlsx/highlighter")
-                    .toUri();
+            // Use MicroserviceHttpClient to call the export service
+            CompletableFuture<byte[]> futureBytes = microserviceClient.importService().post("/api/export/xlsx/highlighter")
+                 .withByteArrayPayload(documentsAsByteArray) // Send the byte array payload
+                 .sendAsyncAndGetBody(HttpResponse.BodyHandlers.ofByteArray()); // Execute and get body as byte[]
 
-            request = HttpRequest.newBuilder()
-                    .POST(bodyPublisher)
-                    .uri(uri)
-                    .build();
+            // Block to get the result for StreamedContent
+            byte[] body = futureBytes.join();
 
-            HttpResponse<byte[]> resp = client.send(request, HttpResponse.BodyHandlers.ofByteArray());
-            byte[] body = resp.body();
             try (InputStream is = new ByteArrayInputStream(body)) {
                 fileToSave = DefaultStreamedContent.builder()
                         .name("results.xlsx")
                         .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
                         .stream(() -> is)
                         .build();
-                
+
                 logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.analysis_complete"));
+                sessionBean.addMessage(FacesMessage.SEVERITY_INFO, "Success", "Analysis complete. Download ready.");
+
+            } catch (IOException e) {
+                 LOG.log(Level.SEVERE, "Error creating StreamedContent from response body", e);
+                 sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Download Error", "Could not prepare download file.");
             }
 
-        } catch (IOException | InterruptedException ex) {
-            Logger.getLogger(HighlighterBean.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (NumberFormatException ex) {
+            LOG.log(Level.SEVERE, "Error parsing column index", ex);
+            sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Input Error", "Invalid column index format.");
+        } catch (CompletionException cex) {
+            Throwable cause = cex.getCause();
+            LOG.log(Level.SEVERE, "Error during asynchronous export service call (CompletionException)", cause);
+            String errorMessage = "Error exporting data: " + cause.getMessage();
+            if (cause instanceof MicroserviceCallException msce) {
+                 errorMessage = "Error exporting data: Status " + msce.getStatusCode() + ", " + msce.getErrorBody();
+            }
+            sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Export Failed", errorMessage);
+        } catch (IOException ex) {
+            LOG.log(Level.SEVERE, "Error during data processing or export call", ex);
+            sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Analysis Error", "An error occurred during processing: " + ex.getMessage());
+        } catch (Exception ex) {
+             LOG.log(Level.SEVERE, "Unexpected error in doTheHighlight", ex);
+             sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Analysis Error", "An unexpected error occurred: " + ex.getMessage());
         }
     }
-
 }

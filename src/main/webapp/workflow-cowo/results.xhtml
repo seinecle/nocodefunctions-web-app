@@ -66,8 +66,8 @@
                 <h:form>
                     <p:remoteCommand
                         name="onload"
-                        action="#{cowoBean.execGraph(20)}"
-                        oncomplete="main('#{cowoBean.nodesAsJson}','#{cowoBean.edgesAsJson}','#{cowoBean.minFreqNode}','#{cowoBean.maxFreqNode}');"
+                        action="#{workflowCowoBean.execGraph(20)}"
+                        oncomplete="main('#{workflowCowoBean.nodesAsJson}','#{workflowCowoBean.edgesAsJson}','#{workflowCowoBean.minFreqNode}','#{workflowCowoBean.maxFreqNode}');"
                         autoRun="true" />
                 </h:form>
                 <p:spacer height="20"/>
@@ -79,7 +79,7 @@
                             <br/>
                             <p:commandButton value="#{text['general.message.download_gexf']}" ajax="false" onclick="PrimeFaces.monitorDownload(start, stop);"
                                              icon="pi pi-arrow-down" styleClass="p-mr-2">
-                                <p:fileDownload value="#{cowoBean.fileToSave}"/>
+                                <p:fileDownload value="#{workflowCowoBean.fileToSave}"/>
                             </p:commandButton>
                         </div>
                         <div class="border p-2">
@@ -88,13 +88,13 @@
                             <br/>
                             <p:commandButton
                                 value="#{text['general.message.visualize_with_gephi-lite']}"
-                                action ="#{cowoBean.gotoGephiLite()}"
+                                action ="#{workflowCowoBean.gotoGephiLite()}"
                                 icon="pi pi-external-link"
                                 styleClass="p-mr-2"/>
                             <p:spacer width="5"/>
                             <br/>
                             <br/>
-                            <p:selectBooleanCheckbox value="#{cowoBean.shareGephiLitePublicly}" itemLabel="#{text['general.message.make_viz_public_question']}"/>
+                            <p:selectBooleanCheckbox value="#{workflowCowoBean.shareGephiLitePublicly}" itemLabel="#{text['general.message.make_viz_public_question']}"/>
                             <br/>
                             <br/>
                             <p:outputLabel escape="false" value="#{text['general.message.make_viz_public_details']}"/>
@@ -105,13 +105,13 @@
                             <br/>
                             <p:commandButton
                                 value="#{text['general.message.visualize_with_vosviewer']}"
-                                action="#{cowoBean.gotoVV()}"
+                                action="#{workflowCowoBean.gotoVV()}"
                                 icon="pi pi-external-link" styleClass="p-mr-2"/>
                             <br/>
                             <br/>
                             <p:outputLabel escape="false" value="🧐 #{text['vosviewer.warning.zoom_in']}"/>
                             <br/>
-                            <p:selectBooleanCheckbox value="#{cowoBean.shareVVPublicly}" itemLabel="#{text['general.message.make_viz_public_question']}"/>
+                            <p:selectBooleanCheckbox value="#{workflowCowoBean.shareVVPublicly}" itemLabel="#{text['general.message.make_viz_public_question']}"/>
                             <br/>
                             <br/>
                             <p:outputLabel escape="false" value="#{text['general.message.make_viz_public_details']}"/>

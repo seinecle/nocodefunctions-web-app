@@ -1,20 +1,9 @@
 package net.clementlevallois.nocodeapp.web.front.functions;
 
-import io.mikael.urlbuilder.UrlBuilder;
-import java.io.ByteArrayInputStream;
+import jakarta.annotation.PostConstruct;
 import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.io.Serializable;
-import java.io.StringWriter;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpRequest.BodyPublisher;
-import java.net.http.HttpRequest.BodyPublishers;
-import java.net.http.HttpResponse;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -22,18 +11,22 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import jakarta.annotation.PostConstruct;
+import java.util.concurrent.CompletionException;
 import jakarta.enterprise.context.SessionScoped;
 import jakarta.faces.application.FacesMessage;
+import jakarta.faces.context.FacesContext;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import jakarta.json.Json;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
-import jakarta.json.JsonWriter;
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.time.Duration;
-import java.util.Properties;
+import java.io.ObjectInputStream;
+import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.importdata.DataImportBean;
@@ -41,19 +34,20 @@ import net.clementlevallois.functions.model.Occurrence;
 import net.clementlevallois.importers.model.CellRecord;
 import net.clementlevallois.importers.model.SheetModel;
 import net.clementlevallois.nocodeapp.web.front.logview.BackToFrontMessengerBean;
-import net.clementlevallois.nocodeapp.web.front.backingbeans.ApplicationPropertiesBean;
 import net.clementlevallois.nocodeapp.web.front.utils.Converters;
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
 
-/**
- *
- * @author LEVALLOIS
- */
+import net.clementlevallois.nocodeapp.web.front.http.MicroserviceHttpClient;
+import net.clementlevallois.nocodeapp.web.front.http.MicroserviceHttpClient.MicroserviceCallException;
+
+import org.primefaces.PrimeFaces;
+
 @Named
 @SessionScoped
-
 public class PdfMatcherBean implements Serializable {
+
+    private static final Logger LOG = Logger.getLogger(PdfMatcherBean.class.getName());
 
     private Integer progress;
     private Boolean runButtonDisabled = true;
@@ -65,7 +59,7 @@ public class PdfMatcherBean implements Serializable {
     private String searchedTerm;
     ConcurrentHashMap<String, List<Occurrence>> results = new ConcurrentHashMap();
     List<Match> resultsForDisplay = new ArrayList();
-    private Properties privateProperties;
+    private String sessionId;
 
     @Inject
     BackToFrontMessengerBean logBean;
@@ -77,16 +71,17 @@ public class PdfMatcherBean implements Serializable {
     DataImportBean inputData;
 
     @Inject
-    ApplicationPropertiesBean applicationProperties;
-        
+    private MicroserviceHttpClient microserviceClient;
+
     public PdfMatcherBean() {
     }
 
     @PostConstruct
     public void init() {
         sessionBean.setFunction("pdfmatcher");
-        privateProperties = applicationProperties.getPrivateProperties();
         results = new ConcurrentHashMap();
+        sessionId = FacesContext.getCurrentInstance().getExternalContext().getSessionId(false);
+
     }
 
     public Integer getProgress() {
@@ -98,16 +93,20 @@ public class PdfMatcherBean implements Serializable {
     }
 
     public String goToPdfUpload() {
+        if (searchedTerm == null || searchedTerm.isBlank()) {
+            sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "Input Error", sessionBean.getLocaleBundle().getString("pdfmatcher.tool.error.empty_term"));
+            return "";
+        }
         searchedTerm = searchedTerm.replaceAll("\\R", "");
         long countDoubleQuotes = searchedTerm.codePoints().filter(ch -> ch == '"').count();
         long countOpeningBracket = searchedTerm.codePoints().filter(ch -> ch == '(').count();
         long countClosingBracket = searchedTerm.codePoints().filter(ch -> ch == ')').count();
         if ((countDoubleQuotes % 2) != 0) {
-            sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "💔", sessionBean.getLocaleBundle().getString("pdfmatcher.tool.error.quotes"));
+            sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "Input Error", sessionBean.getLocaleBundle().getString("pdfmatcher.tool.error.quotes"));
             return "";
         }
         if (countOpeningBracket != countClosingBracket) {
-            sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "💔", sessionBean.getLocaleBundle().getString("pdfmatcher.tool.error.parentheses"));
+            sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "Input Error", sessionBean.getLocaleBundle().getString("pdfmatcher.tool.error.parentheses"));
             return "";
         }
         return "/import/import_your_data_bulk_text.xhtml?function=pdfmatcher&amp;faces-redirect=true";
@@ -115,41 +114,41 @@ public class PdfMatcherBean implements Serializable {
 
     public void cancel() {
         progress = null;
+        // TODO: Implement actual cancellation logic if microservice supports it
+        sessionBean.addMessage(FacesMessage.SEVERITY_INFO, "Analysis Cancelled", "Analysis cancelled.");
     }
 
-    public String runAnalysis() throws URISyntaxException {
-        String endOfPage = sessionBean.getLocaleBundle().getString("pdfmatcher.tool.end_of_page");
-        String startOfPage = sessionBean.getLocaleBundle().getString("pdfmatcher.tool.start_of_page");
-
+    public String runAnalysis() {
         sessionBean.sendFunctionPageReport();
         logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.starting_analysis"));
-        List<SheetModel> dataInSheets = inputData.getDataInSheets();
-        HttpRequest request;
-        HttpClient client = HttpClient.newBuilder().connectTimeout(Duration.ofMinutes(10)).build();
-        Set<CompletableFuture> futures = new HashSet();
+        progress = 0;
+        runButtonDisabled = true;
         results = new ConcurrentHashMap();
-        BodyPublisher bodyPublisher;
-        URI uri = UrlBuilder
-                .empty()
-                .withScheme("http")
-                .withPort((Integer.valueOf(privateProperties.getProperty("nocode_api_port"))))
-                .withHost("localhost")
-                .withPath("api/pdfmatcher")
-                .toUri();
+        resultsForDisplay = new ArrayList();
+
+        List<SheetModel> dataInSheets = inputData.getDataInSheets();
+        if (dataInSheets == null || dataInSheets.isEmpty()) {
+            sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "Input Error", sessionBean.getLocaleBundle().getString("general.message.data_not_found"));
+            runButtonDisabled = false;
+            return null;
+        }
+
+        Set<CompletableFuture<Void>> futures = new HashSet();
 
         for (SheetModel oneDoc : dataInSheets) {
-
             Map<Integer, String> lines = new HashMap();
             int i = 0;
-            List<CellRecord> cellRecords = oneDoc.getColumnIndexToCellRecords().get(0);
+            List<CellRecord> cellRecords = oneDoc.getColumnIndexToCellRecords().get(0); // Assuming single column input
+            if (cellRecords == null) {
+                LOG.log(Level.WARNING, "No cell records found for document: {0}", oneDoc.getName());
+                continue; // Skip this document
+            }
             for (CellRecord cr : cellRecords) {
                 if (cr.getRawValue() == null || cr.getRawValue().isBlank()) {
                     continue;
                 }
                 lines.put(i++, cr.getRawValue());
             }
-
-            JsonObjectBuilder overallObject = Json.createObjectBuilder();
 
             JsonObjectBuilder linesBuilder = Json.createObjectBuilder();
             for (Map.Entry<Integer, String> entryLines : lines.entrySet()) {
@@ -161,77 +160,152 @@ public class PdfMatcherBean implements Serializable {
 
             JsonObjectBuilder pagesBuilder = Json.createObjectBuilder();
             Map<Integer, Integer> pageAndStartingLine = oneDoc.getPageAndStartingLine();
-            for (Map.Entry<Integer, Integer> entryPages : pageAndStartingLine.entrySet()) {
-                pagesBuilder.add(String.valueOf(entryPages.getKey()), entryPages.getValue());
-            }
-
-            overallObject.add("lines", linesBuilder);
-            overallObject.add("pages", pagesBuilder);
-            overallObject.add("startOfPage", startOfPage);
-            overallObject.add("endOfPage", endOfPage);
-            if (typeOfContext.equals("surroundingWords")) {
-                overallObject.add("nbWords", nbWords);
-            } else {
-                overallObject.add("nbLines", nbLines);
-            }
-            overallObject.add("caseSensitive", caseSensitive);
-            overallObject.add("searchedTerm", searchedTerm);
-
-            JsonObject build = overallObject.build();
-            StringWriter sw = new StringWriter(128);
-            try (JsonWriter jw = Json.createWriter(sw)) {
-                jw.write(build);
-            }
-            String jsonString = sw.toString();
-
-            bodyPublisher = BodyPublishers.ofString(jsonString);
-
-            request = HttpRequest.newBuilder()
-                    .POST(bodyPublisher)
-                    .uri(uri)
-                    .build();
-
-            CompletableFuture<Void> future = client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()).thenAccept(resp -> {
-                byte[] body = resp.body();
-                try (
-                        ByteArrayInputStream bis = new ByteArrayInputStream(body); ObjectInputStream ois = new ObjectInputStream(bis)) {
-                    List<Occurrence> occurrencesFound = (List<Occurrence>) ois.readObject();
-                    results.put(oneDoc.getName(), occurrencesFound);
-                } catch (IOException | ClassNotFoundException ex) {
-                    Logger.getLogger(PdfMatcherBean.class.getName()).log(Level.SEVERE, null, ex);
+            if (pageAndStartingLine != null) {
+                for (Map.Entry<Integer, Integer> entryPages : pageAndStartingLine.entrySet()) {
+                    pagesBuilder.add(String.valueOf(entryPages.getKey()), entryPages.getValue());
                 }
             }
-            );
+
+            JsonObject jsonPayload = Json.createObjectBuilder()
+                    .add("lines", linesBuilder)
+                    .add("pages", pagesBuilder)
+                    .build();
+
+            // Send async call for each document
+            CompletableFuture<Void> future = microserviceClient.api().post("/api/pdfmatcher")
+                    .withJsonPayload(jsonPayload) // Add the core data payload
+                    // Add parameters as query parameters
+                    .addQueryParameter("startOfPage", sessionBean.getLocaleBundle().getString("pdfmatcher.tool.start_of_page"))
+                    .addQueryParameter("endOfPage", sessionBean.getLocaleBundle().getString("pdfmatcher.tool.end_of_page"))
+                    .addQueryParameter("typeOfContext", typeOfContext)
+                    .addQueryParameter("caseSensitive", String.valueOf(caseSensitive))
+                    .addQueryParameter("searchedTerm", searchedTerm)
+                    .addQueryParameter("fileName", oneDoc.getName()) // Pass filename as parameter
+                    .addQueryParameter("sessionId", sessionId) // Pass session ID
+                    // Add context-specific parameters
+                    .addQueryParameter("nbWords", String.valueOf(nbWords)) // Always send both, microservice decides based on typeOfContext
+                    .addQueryParameter("nbLines", String.valueOf(nbLines))
+                    .sendAsync(HttpResponse.BodyHandlers.ofByteArray()) // Expecting byte array (serialized List<Occurrence>)
+                    .thenAccept(resp -> {
+                        // This callback runs on HttpClient's thread pool
+                        if (resp.statusCode() == 200) {
+                            byte[] body = resp.body();
+                            try (ByteArrayInputStream bis = new ByteArrayInputStream(body); ObjectInputStream ois = new ObjectInputStream(bis)) {
+                                List<Occurrence> occurrencesFound = (List<Occurrence>) ois.readObject();
+                                results.put(oneDoc.getName(), occurrencesFound); // Store results by filename
+                                LOG.log(Level.INFO, "Processed document {0}, found {1} occurrences.", new Object[]{oneDoc.getName(), occurrencesFound.size()});
+                            } catch (IOException | ClassNotFoundException ex) {
+                                LOG.log(Level.SEVERE, "Error deserializing Occurrence list for document " + oneDoc.getName(), ex);
+                                // Handle deserialization error - maybe store an empty list or error indicator
+                                results.put(oneDoc.getName(), Collections.emptyList()); // Store empty list on error
+                                sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Processing Error", "Could not process results for " + oneDoc.getName() + ": " + ex.getMessage());
+                            }
+                        } else {
+                            String errorBody = new String(resp.body(), StandardCharsets.UTF_8);
+                            LOG.log(Level.SEVERE, "PdfMatcher microservice call failed for document {0}. Status: {1}, Body: {2}", new Object[]{oneDoc.getName(), resp.statusCode(), errorBody});
+                            // Handle microservice error - store an empty list or error indicator
+                            results.put(oneDoc.getName(), Collections.emptyList()); // Store empty list on error
+                            sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Processing Error", "Microservice error for " + oneDoc.getName() + ": Status " + resp.statusCode() + ", " + errorBody);
+                        }
+                        // Update progress after each document is processed
+                        updateProgress();
+                    })
+                    .exceptionally(exception -> {
+                        // This callback runs on HttpClient's thread pool if an exception occurs during the call
+                        LOG.log(Level.SEVERE, "Exception during async PdfMatcher call for document " + oneDoc.getName(), exception);
+                        String errorMessage = "Communication error for " + oneDoc.getName() + ": " + exception.getMessage();
+                        if (exception.getCause() instanceof MicroserviceCallException) {
+                            MicroserviceCallException msce = (MicroserviceCallException) exception.getCause();
+                            errorMessage = "Communication error for " + oneDoc.getName() + ": Status " + msce.getStatusCode() + ", " + msce.getErrorBody();
+                        }
+                        // Handle communication error - store an empty list or error indicator
+                        results.put(oneDoc.getName(), Collections.emptyList()); // Store empty list on error
+                        sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Processing Error", errorMessage);
+
+                        // Update progress even on exception
+                        updateProgress();
+                        return null;
+                    });
             futures.add(future);
         }
 
-        this.progress = 40;
+        this.progress = 1; // Initial progress after sending requests
         logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.almost_done"));
+        PrimeFaces.current().ajax().update("progressComponentId"); // Update progress component ID
 
-        CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(futures.toArray((new CompletableFuture[0])));
-        combinedFuture.join();
+        // Wait for all futures to complete
+        try {
+            CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
+            combinedFuture.join(); // This blocks until all futures are done
+            LOG.info("All PdfMatcher microservice calls completed.");
 
-        for (Map.Entry<String, List<Occurrence>> entry : results.entrySet()) {
-            List<Occurrence> occurrences = entry.getValue();
-            Match match = new Match();
-            match.setFileName(entry.getKey());
-            StringBuilder sb = new StringBuilder();
-            for (Occurrence occ : occurrences) {
-                sb.append("page ").append(occ.getPage()).append(": ");
-                sb.append("<br/>");
-                sb.append(occ.getContext());
-                sb.append("<br/>");
+            // Process results for display after all async calls are done
+            resultsForDisplay = new ArrayList<>();
+            for (Map.Entry<String, List<Occurrence>> entry : results.entrySet()) {
+                List<Occurrence> occurrences = entry.getValue();
+                Match match = new Match();
+                match.setFileName(entry.getKey());
+                StringBuilder sb = new StringBuilder();
+                if (occurrences != null && !occurrences.isEmpty()) {
+                    for (Occurrence occ : occurrences) {
+                        sb.append("page ").append(occ.getPage()).append(": ");
+                        sb.append("<br/>");
+                        sb.append(occ.getContext());
+                        sb.append("<br/>");
+                    }
+                } else {
+                    sb.append("No matches found or error processing document.");
+                }
+                match.setListOfOccurrences(sb.toString());
+                resultsForDisplay.add(match);
             }
-            match.setListOfOccurrences(sb.toString());
-            resultsForDisplay.add(match);
+
+            this.progress = 100;
+            logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.analysis_complete"));
+            runButtonDisabled = false; // Enable button
+
+            PrimeFaces.current().ajax().update("formComputeButton:computeButton", "notifications", "progressComponentId");
+
+            return "/" + sessionBean.getFunction() + "/results.xhtml?faces-redirect=true";
+
+        } catch (CompletionException cex) {
+            Throwable cause = cex.getCause();
+            LOG.log(Level.SEVERE, "Exception during completion of async PdfMatcher calls", cause);
+            String errorMessage = "Analysis failed: " + cause.getMessage();
+            if (cause instanceof MicroserviceCallException msce) {
+                errorMessage = "Analysis failed: Status " + msce.getStatusCode() + ", " + msce.getErrorBody();
+            }
+            sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Analysis Failed", errorMessage);
+            logBean.addOneNotificationFromString(errorMessage);
+
+            this.progress = 0; // Reset progress on failure
+            runButtonDisabled = false; // Enable button on failure
+            PrimeFaces.current().ajax().update("formComputeButton:computeButton", "notifications", "progressComponentId");
+
+            return null; // Stay on the same page or navigate to error page
+        } catch (Exception ex) {
+            LOG.log(Level.SEVERE, "Unexpected error after sending PdfMatcher calls", ex);
+            sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Analysis Failed", "An unexpected error occurred: " + ex.getMessage());
+            logBean.addOneNotificationFromString("An unexpected error occurred: " + ex.getMessage());
+
+            this.progress = 0; // Reset progress on failure
+            runButtonDisabled = false; // Enable button on failure
+            PrimeFaces.current().ajax().update("formComputeButton:computeButton", "notifications", "progressComponentId");
+
+            return null; // Stay on the same page
         }
+    }
 
-        this.progress = 100;
-
-        logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.analysis_complete"));
-        runButtonDisabled = true;
-
-        return "/" + sessionBean.getFunction() + "/results.xhtml?faces-redirect=true";
+    private synchronized void updateProgress() {
+        int totalDocs = inputData.getDataInSheets().size(); // Assuming dataInSheets size is the total number of documents/calls
+        if (totalDocs > 0) {
+            int currentProgress = (int) ((float) results.size() * 100 / totalDocs);
+            if (currentProgress > progress) {
+                progress = currentProgress;
+                // Trigger UI update for progress
+                PrimeFaces.current().ajax().update("progressComponentId"); // Replace with actual ID
+            }
+        }
     }
 
     public Boolean getRunButtonDisabled() {
@@ -246,45 +320,52 @@ public class PdfMatcherBean implements Serializable {
     }
 
     public StreamedContent getFileToSave() {
-        try {
-            if (results == null || results.isEmpty()) {
-                return null;
-            }
-            byte[] documentsAsByteArray = Converters.byteArraySerializerForAnyObject(results);
-            HttpRequest request;
-            HttpClient client = HttpClient.newBuilder().connectTimeout(Duration.ofMinutes(10)).build();
-            HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(documentsAsByteArray);
-
-            URI uri = UrlBuilder
-                    .empty()
-                    .withScheme("http")
-                    .withPort(Integer.valueOf(privateProperties.getProperty("nocode_import_port")))
-                    .withHost("localhost")
-                    .withPath("api/export/xlsx/pdfmatches")
-                    .toUri();
-
-            request = HttpRequest.newBuilder()
-                    .POST(bodyPublisher)
-                    .uri(uri)
-                    .build();
-
-            HttpResponse<byte[]> resp = client.send(request, HttpResponse.BodyHandlers.ofByteArray());
-            try {
-                byte[] body = resp.body();
-                try (InputStream is = new ByteArrayInputStream(body)) {
-                    fileToSave = DefaultStreamedContent.builder()
-                            .name("results.xlsx")
-                            .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-                            .stream(() -> is)
-                            .build();
-                }
-            } catch (IOException ex) {
-                Logger.getLogger(PdfMatcherBean.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        } catch (IOException | InterruptedException ex) {
-            Logger.getLogger(PdfMatcherBean.class.getName()).log(Level.SEVERE, null, ex);
+        if (results == null || results.isEmpty()) {
+            sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "Download Error", "No results available to export.");
+            return new DefaultStreamedContent();
         }
-        return fileToSave;
+        try {
+            byte[] documentsAsByteArray = Converters.byteArraySerializerForAnyObject(results);
+
+            // Use MicroserviceHttpClient to call the export service
+            CompletableFuture<byte[]> futureBytes = microserviceClient.importService().post("/api/export/xlsx/pdfmatches")
+                    .withByteArrayPayload(documentsAsByteArray) // Send the byte array payload
+                    .sendAsyncAndGetBody(HttpResponse.BodyHandlers.ofByteArray()); // Execute and get body as byte[]
+
+            // Block to get the result for StreamedContent
+            byte[] body = futureBytes.join();
+
+            try (InputStream is = new ByteArrayInputStream(body)) {
+                return DefaultStreamedContent.builder()
+                        .name("results_pdfmatcher.xlsx")
+                        .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                        .stream(() -> is)
+                        .build();
+            } catch (IOException e) {
+                LOG.log(Level.SEVERE, "Error creating StreamedContent from export response body", e);
+                sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Download Error", "Could not prepare download file.");
+                return new DefaultStreamedContent();
+            }
+
+        } catch (CompletionException cex) {
+            Throwable cause = cex.getCause();
+            LOG.log(Level.SEVERE, "Error during asynchronous export service call (CompletionException)", cause);
+            String errorMessage = "Error exporting data: " + cause.getMessage();
+            if (cause instanceof MicroserviceCallException) {
+                MicroserviceCallException msce = (MicroserviceCallException) cause;
+                errorMessage = "Error exporting data: Status " + msce.getStatusCode() + ", " + msce.getErrorBody();
+            }
+            sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Export Failed", errorMessage);
+            return new DefaultStreamedContent();
+        } catch (IOException ex) {
+            LOG.log(Level.SEVERE, "Error serializing results before export", ex);
+            sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Export Failed", "Error preparing data for export: " + ex.getMessage());
+            return new DefaultStreamedContent();
+        } catch (Exception ex) {
+            LOG.log(Level.SEVERE, "Unexpected error in getFileToSave", ex);
+            sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Export Failed", "An unexpected error occurred: " + ex.getMessage());
+            return new DefaultStreamedContent();
+        }
     }
 
     public void setFileToSave(StreamedContent fileToSave) {

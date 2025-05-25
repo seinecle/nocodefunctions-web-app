@@ -52,6 +52,10 @@ public class RemoteLocal {
         return uri.toString();
     }
 
+    public static String getInternalMessageApiEndpoint(){
+        return "/internalapi/messageFromAPI/";
+    }
+    
 
     public static boolean isLocal() {
         return System.getProperty("os.name").toLowerCase().contains("win");

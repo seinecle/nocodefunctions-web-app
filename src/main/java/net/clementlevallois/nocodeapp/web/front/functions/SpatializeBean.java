@@ -1,29 +1,20 @@
 package net.clementlevallois.nocodeapp.web.front.functions;
 
-import io.mikael.urlbuilder.UrlBuilder;
 import jakarta.annotation.PostConstruct;
 import java.io.ByteArrayInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.concurrent.CompletableFuture;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import jakarta.enterprise.context.SessionScoped;
 import jakarta.faces.application.FacesMessage;
 import jakarta.faces.context.FacesContext;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import jakarta.servlet.annotation.MultipartConfig;
-import java.time.Duration;
-import java.util.Properties;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.nio.charset.StandardCharsets;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.ApplicationPropertiesBean;
 import org.primefaces.event.FileUploadEvent;
@@ -31,14 +22,16 @@ import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
 import org.primefaces.model.file.UploadedFile;
 
-/**
- *
- * @author LEVALLOIS
- */
+import net.clementlevallois.nocodeapp.web.front.http.MicroserviceHttpClient;
+import net.clementlevallois.nocodeapp.web.front.http.MicroserviceHttpClient.MicroserviceCallException;
+
+
 @Named
 @SessionScoped
 @MultipartConfig
 public class SpatializeBean implements Serializable {
+
+    private static final Logger LOG = Logger.getLogger(SpatializeBean.class.getName());
 
     private UploadedFile uploadedFile;
     private byte[] uploadedFileAsByteArray;
@@ -49,28 +42,25 @@ public class SpatializeBean implements Serializable {
     private StreamedContent fileToSave;
 
     private Integer progress = 0;
-    private float progressFloat = 0f;
     private Integer durationInSeconds = 20;
-
-    private Properties privateProperties;
 
     @Inject
     SessionBean sessionBean;
 
     @Inject
     ApplicationPropertiesBean applicationProperties;
-            
-    
+
+    @Inject
+    private MicroserviceHttpClient microserviceClient;
+
     public SpatializeBean() {
     }
 
     @PostConstruct
     public void init() {
         sessionBean.setFunction("spatialize");
-        privateProperties = applicationProperties.getPrivateProperties();
     }
-    
-    
+
     public String logout() {
         FacesContext.getCurrentInstance().getExternalContext().invalidateSession();
         return "/index?faces-redirect=true";
@@ -95,7 +85,9 @@ public class SpatializeBean implements Serializable {
 
     public String handleFileUpload(FileUploadEvent event) {
         progress = 0;
-        progressFloat = 0f;
+        displayDownloadButton = false; // Reset download button state
+        gexfAsByteArrayResult = null; // Clear previous results
+
         sessionBean.sendFunctionPageReport();
         String success = sessionBean.getLocaleBundle().getString("general.nouns.success");
         String is_uploaded = sessionBean.getLocaleBundle().getString("general.verb.is_uploaded");
@@ -103,31 +95,29 @@ public class SpatializeBean implements Serializable {
         uploadedFile = event.getFile();
         try {
             uploadedFileAsByteArray = uploadedFile.getInputStream().readAllBytes();
+             LOG.log(Level.INFO, "Uploaded file {0} read into byte array.", uploadedFile.getFileName());
         } catch (IOException ex) {
-            System.out.println("ex:" + ex.getMessage());
+            LOG.log(Level.SEVERE, "Error reading uploaded file into byte array", ex);
+            sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Upload Error", "Could not read uploaded file: " + ex.getMessage());
+            uploadedFileAsByteArray = null; // Ensure byte array is null on error
         }
         return "";
     }
 
-    public StreamedContent getFileToSave() throws FileNotFoundException {
-        progress = 0;
-        progressFloat = 0f;
+    public StreamedContent getFileToSave() {
         if (gexfAsByteArrayResult == null) {
             String error = sessionBean.getLocaleBundle().getString("general.nouns.error");
             String details = sessionBean.getLocaleBundle().getString("general.message.data_not_found");
             sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, error, details);
-            return null;
+            return new DefaultStreamedContent();
         }
-        StreamedContent fileStream = null;
+
         InputStream inputStreamToSave = new ByteArrayInputStream(gexfAsByteArrayResult);
-        fileStream = DefaultStreamedContent.builder()
+        return DefaultStreamedContent.builder()
                 .name("network_spatialized.gexf")
                 .contentType("application/gexf+xml")
                 .stream(() -> inputStreamToSave)
                 .build();
-
-        return fileStream;
-
     }
 
     public void layout() {
@@ -137,59 +127,56 @@ public class SpatializeBean implements Serializable {
             sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, error, details);
             return;
         }
-        HttpRequest request;
-        HttpClient client = HttpClient.newBuilder().connectTimeout(Duration.ofMinutes(10)).build();
-        Set<CompletableFuture> futures = new HashSet();
-        HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(uploadedFileAsByteArray);
-        URI uri = UrlBuilder
-                .empty()
-                .withScheme("http")
-                .withPort(Integer.valueOf(privateProperties.getProperty("nocode_api_port")))
-                .withHost("localhost")
-                .withPath("api/spatialization")
-                .addParameter("durationInSeconds", String.valueOf(durationInSeconds))
-                .toUri();
-        request = HttpRequest.newBuilder()
-                .POST(bodyPublisher)
-                .uri(uri)
-                .build();
-        Runnable progressBarIncrement = () -> {
-            while (gexfAsByteArrayResult == null) {
-                // 90 not 100 to make sure we count down a bit more slowly than the ideal value, just in case
-                float increment = ((float) 90 / (float) durationInSeconds);
-                progressFloat += increment;
-                progress = Math.round(progressFloat);
-                try {
-                    Thread.sleep(1000L);
-                } catch (InterruptedException ex) {
-                    Logger.getLogger(SpatializeBean.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            }
-        };
-        Thread t = new Thread(progressBarIncrement);
-        t.start();
-        CompletableFuture<Void> future = client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray())
-                .thenAccept(
-                        resp -> {
-                            if (resp.statusCode() == 200) {
-                                gexfAsByteArrayResult = resp.body();
-                                displayDownloadButton = true;
-                                progress = 100;
-                                progressFloat = 100f;
-                            } else {
-                                gexfAsByteArrayResult = null;
-                            }
-                        }
-                );
-        futures.add(future);
-        CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(futures.toArray((new CompletableFuture[0])));
-        combinedFuture.join();
-        if (gexfAsByteArrayResult == null) {
-            System.out.println("gexfAsByteArray returned by the API was not a 200 code");
-            String error = sessionBean.getLocaleBundle().getString("general.nouns.error");
-            sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, error, error);
-        }
 
+        progress = 0; // Reset progress
+        displayDownloadButton = false; // Hide download button
+        gexfAsByteArrayResult = null; // Clear previous results
+
+        sessionBean.addMessage(FacesMessage.SEVERITY_INFO, "Starting", "Starting spatialization layout...");
+
+        // Use MicroserviceHttpClient to call the spatialization endpoint
+        microserviceClient.api().post("/api/spatialization")
+            .withByteArrayPayload(uploadedFileAsByteArray) // Send the GEXF file bytes as payload
+            .addQueryParameter("durationInSeconds", String.valueOf(durationInSeconds)) // Add duration as query parameter
+            .sendAsync(HttpResponse.BodyHandlers.ofByteArray()) // Send async, expect byte array (GEXF result)
+            .thenAccept(resp -> {
+                // This block runs on HttpClient's thread pool
+                if (resp.statusCode() == 200) {
+                    gexfAsByteArrayResult = resp.body();
+                    displayDownloadButton = true;
+                    progress = 100; // Set progress to 100 on success
+                    sessionBean.addMessage(FacesMessage.SEVERITY_INFO, "Success", "Spatialization complete. Download ready.");
+                    LOG.info("Spatialization successful.");
+                } else {
+                    gexfAsByteArrayResult = null; // Ensure null on error
+                    displayDownloadButton = false;
+                    progress = 0; // Reset progress on error
+                    String errorBody = new String(resp.body(), StandardCharsets.UTF_8);
+                    LOG.log(Level.SEVERE, "Spatialization microservice call failed. Status: {0}, Body: {1}", new Object[]{resp.statusCode(), errorBody});
+                    sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Spatialization Failed", "Microservice error: Status " + resp.statusCode() + ", " + errorBody);
+                }
+                 // Update UI components (button, progress) - Needs to happen on JSF thread
+                 // Using PrimeFaces RequestContext or similar if not relying on polling
+                 // For simplicity here, assuming sessionBean.addMessage triggers UI update or using p:poll
+            })
+            .exceptionally(exception -> {
+                // This block runs on HttpClient's thread pool if an exception occurs
+                gexfAsByteArrayResult = null; // Ensure null on error
+                displayDownloadButton = false;
+                progress = 0; // Reset progress on error
+                LOG.log(Level.SEVERE, "Exception during async spatialization call", exception);
+                String errorMessage = "Communication error with spatialization service: " + exception.getMessage();
+                 if (exception.getCause() instanceof MicroserviceCallException) {
+                     MicroserviceCallException msce = (MicroserviceCallException) exception.getCause();
+                     errorMessage = "Communication error: Status " + msce.getStatusCode() + ", " + msce.getErrorBody();
+                 }
+                 sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Spatialization Failed", errorMessage);
+                return null;
+            });
+
+        // The method returns immediately after launching the async call.
+        // Progress bar update and button state changes need to be handled by the UI
+        // polling the bean properties (progress, displayDownloadButton).
     }
 
     public void setFileToSave(StreamedContent fileToSave) {
@@ -197,6 +184,7 @@ public class SpatializeBean implements Serializable {
     }
 
     public Integer getProgress() {
+        // This method is polled by the UI to update the progress bar
         return progress;
     }
 
@@ -219,5 +207,4 @@ public class SpatializeBean implements Serializable {
     public void setDisplayDownloadButton(boolean displayDownloadButton) {
         this.displayDownloadButton = displayDownloadButton;
     }
-
 }

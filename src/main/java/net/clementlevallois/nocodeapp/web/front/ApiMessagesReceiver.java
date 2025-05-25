@@ -15,6 +15,7 @@ import jakarta.ws.rs.core.Response;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import net.clementlevallois.functions.model.WorkflowCowoProperties;
 
 /**
  *
@@ -30,8 +31,9 @@ public class ApiMessagesReceiver {
     @Inject
     private Event<MessageFromApi> messageFromApiEvent;
 
+    
     @POST
-    @Path("/cowo")
+    @Path("/"+ WorkflowCowoProperties.ENDPOINT)
     @Consumes(MediaType.APPLICATION_JSON)
     public Response messagesFromCowoAPI(MessageFromApi msg) {
         ConcurrentLinkedDeque<MessageFromApi> messages = WatchTower.getDequeAPIMessages().getOrDefault(msg.getSessionId(), new ConcurrentLinkedDeque());

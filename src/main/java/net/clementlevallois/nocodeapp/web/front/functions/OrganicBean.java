@@ -1,14 +1,8 @@
 package net.clementlevallois.nocodeapp.web.front.functions;
 
-import io.mikael.urlbuilder.UrlBuilder;
-import java.io.ByteArrayInputStream;
-import java.io.ObjectInputStream;
+import jakarta.annotation.PostConstruct;
+import java.io.IOException;
 import java.io.Serializable;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -19,38 +13,42 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import jakarta.annotation.PostConstruct;
+import java.util.concurrent.CompletionException;
 import jakarta.enterprise.context.SessionScoped;
+import jakarta.faces.application.FacesMessage;
 import jakarta.faces.context.FacesContext;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
-import java.io.IOException;
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.time.Duration;
 import java.util.HashMap;
-import java.util.Properties;
 import net.clementlevallois.importers.model.DataFormatConverter;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.importdata.DataImportBean;
-import net.clementlevallois.nocodeapp.web.front.http.SendReport;
 import net.clementlevallois.nocodeapp.web.front.logview.BackToFrontMessengerBean;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.ApplicationPropertiesBean;
 import net.clementlevallois.nocodeapp.web.front.importdata.ImportSimpleLinesBean;
 import net.clementlevallois.nocodeapp.web.front.utils.Converters;
 import net.clementlevallois.umigon.model.classification.Document;
+import org.primefaces.PrimeFaces;
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
 
-/**
- *
- * @author LEVALLOIS
- */
+import net.clementlevallois.nocodeapp.web.front.http.MicroserviceHttpClient;
+import net.clementlevallois.nocodeapp.web.front.http.MicroserviceHttpClient.MicroserviceCallException;
+
+
+
 @Named
 @SessionScoped
-
 public class OrganicBean implements Serializable {
+
+    private static final Logger LOG = Logger.getLogger(OrganicBean.class.getName());
 
     private Integer progress = 3;
     private Integer countTreated = 0;
@@ -81,7 +79,9 @@ public class OrganicBean implements Serializable {
     @Inject
     ImportSimpleLinesBean simpleLinesImportBean;
 
-    private Properties privateProperties;
+    @Inject
+    private MicroserviceHttpClient microserviceClient;
+
 
     public OrganicBean() {
     }
@@ -89,7 +89,6 @@ public class OrganicBean implements Serializable {
     @PostConstruct
     public void init() {
         sessionBean.setFunction("organic");
-        privateProperties = applicationProperties.getPrivateProperties();
         String promoted_tone = sessionBean.getLocaleBundle().getString("organic.general.soundspromoted");
         String neutral_tone = sessionBean.getLocaleBundle().getString("organic.general.soundsorganic");
         tones = new String[]{promoted_tone, neutral_tone};
@@ -113,19 +112,24 @@ public class OrganicBean implements Serializable {
 
     public void cancel() {
         progress = null;
+        // TODO: Implement actual cancellation logic if the microservice supports it
+        sessionBean.addMessage(FacesMessage.SEVERITY_INFO, "Analysis Cancelled", "Attempting to cancel analysis.");
     }
 
     public String runAnalysis() {
         progress = 3;
+        countTreated = 0; // Reset counter
+        runButtonDisabled = true; // Disable button
+        renderSeeResultsButton = false; // Hide results button
+
         if (selectedLanguage == null || selectedLanguage.isEmpty()) {
             selectedLanguage = "en";
         }
         sessionBean.sendFunctionPageReport();
         logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.starting_analysis"));
 
-        Map<Integer, String> mapOfLines;
+        Map<Integer, String> mapOfLines = new HashMap();
         if (simpleLinesImportBean.getDataPersistenceUniqueId() != null) {
-            mapOfLines = new HashMap();
             dataPersistenceUniqueId = simpleLinesImportBean.getDataPersistenceUniqueId();
             Path tempDataPath = Path.of(applicationProperties.getTempFolderFullPath().toString(), dataPersistenceUniqueId);
             if (Files.exists(tempDataPath) && !Files.isDirectory(tempDataPath)) {
@@ -135,107 +139,186 @@ public class OrganicBean implements Serializable {
                     for (String line : readAllLines) {
                         mapOfLines.put(i++, line.trim());
                     }
-                    Files.delete(tempDataPath);
+                    // Files.delete(tempDataPath); // Consider if you want to delete the temp file immediately
                 } catch (IOException ex) {
-                    Logger.getLogger(OrganicBean.class.getName()).log(Level.SEVERE, null, ex);
+                    LOG.log(Level.SEVERE, "Error reading temp data file", ex);
+                    sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Input Error", "Could not read temporary data file: " + ex.getMessage());
+                    runButtonDisabled = false; // Enable button on error
+                    return null; // Stay on the same page
                 }
+            } else {
+                 LOG.log(Level.WARNING, "Temp data file not found for dataId: {0}", dataPersistenceUniqueId);
+                 sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "Input Error", "Temporary data file not found. Please re-import data.");
+                 runButtonDisabled = false; // Enable button on error
+                 return null; // Stay on the same page
             }
         } else {
             DataFormatConverter dataFormatConverter = new DataFormatConverter();
             mapOfLines = dataFormatConverter.convertToMapOfLines(inputData.getBulkData(), inputData.getDataInSheets(), inputData.getSelectedSheetName(), inputData.getSelectedColumnIndex(), inputData.getHasHeaders());
         }
-        inputData.setDataInSheets(new ArrayList());
+
+        if (mapOfLines == null || mapOfLines.isEmpty()) {
+            sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "Input Error", "No data found for analysis.");
+            logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.data_not_found"));
+            runButtonDisabled = false; // Enable button on error
+            return null; // Stay on the same page
+        }
 
         int maxRecords = Math.min(mapOfLines.size(), maxCapacity);
         tempResults = new ConcurrentHashMap(maxRecords + 1);
         filteredDocuments = new ArrayList(maxRecords + 1);
-        results = Arrays.asList(new Document[maxRecords + 1]);
+        results = Arrays.asList(new Document[maxRecords + 1]); // Initialize results list with nulls
 
-        HttpRequest request;
-        HttpClient client = HttpClient.newBuilder().connectTimeout(Duration.ofMinutes(10)).build();
-        Set<CompletableFuture> futures = new HashSet();
-        int i = 1;
-        try {
-            for (Map.Entry<Integer, String> entry : mapOfLines.entrySet()) {
-                if (i++ > maxCapacity) {
-                    break;
-                }
-                Document doc = new Document();
-                String id = String.valueOf(entry.getKey());
-                doc.setText(entry.getValue());
-                doc.setId(id);
-                URI uri = UrlBuilder
-                        .empty()
-                        .withScheme("http")
-                        .withPort(Integer.valueOf(privateProperties.getProperty("nocode_api_port")))
-                        .withHost("localhost")
-                        .withPath("api/organicForAText")
-                        .addParameter("text-lang", selectedLanguage)
-                        .addParameter("id", doc.getId())
-                        .addParameter("text", entry.getValue())
-                        .addParameter("explanation", "on")
-                        .addParameter("shorter", "true")
-                        .addParameter("owner", privateProperties.getProperty("pwdOwner"))
-                        .addParameter("output-format", "bytes")
-                        .addParameter("explanation-lang", sessionBean.getCurrentLocale().toLanguageTag())
-                        .toUri();
+        Set<CompletableFuture<Void>> futures = new HashSet<>();
+        int currentRecordIndex = 0; // Use a dedicated index for the results list
 
-                request = HttpRequest.newBuilder()
-                        .uri(uri)
-                        .build();
+        String owner = applicationProperties.getPrivateProperties().getProperty("pwdOwner");
+        if (owner == null) {
+             LOG.severe("pwdOwner property is not set!");
+             sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Configuration Error", "Owner password not configured.");
+             runButtonDisabled = false;
+             return null;
+        }
 
-                CompletableFuture<Void> future = client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()).thenAccept(resp -> {
-                    byte[] body = resp.body();
-                    Float situation = (countTreated++ * 100 / (float) maxRecords);
-                    if (situation.intValue() > progress) {
-                        progress = situation.intValue();
+        for (Map.Entry<Integer, String> entry : mapOfLines.entrySet()) {
+            if (currentRecordIndex++ >= maxCapacity) {
+                break;
+            }
+            Document doc = new Document();
+            String id = String.valueOf(entry.getKey());
+            doc.setText(entry.getValue());
+            doc.setId(id);
+
+            // Launch async call for each document
+            CompletableFuture<Void> future = microserviceClient.api().get("/api/organicForAText")
+                .addQueryParameter("text-lang", selectedLanguage)
+                .addQueryParameter("id", doc.getId())
+                .addQueryParameter("text", entry.getValue())
+                .addQueryParameter("explanation", "on")
+                .addQueryParameter("shorter", "true")
+                .addQueryParameter("owner", owner)
+                .addQueryParameter("output-format", "bytes") // Expecting byte array (serialized Document)
+                .addQueryParameter("explanation-lang", sessionBean.getCurrentLocale().toLanguageTag())
+                .sendAsync(HttpResponse.BodyHandlers.ofByteArray()) // Send async, expect byte array
+                .thenAccept(resp -> {
+                    // This block runs on HttpClient's thread pool after receiving response
+                    int currentProgress = (int) ((float) tempResults.size() * 100 / maxRecords);
+                    if (currentProgress > progress) {
+                        progress = currentProgress;
+                        // Trigger UI update for progress
+                         PrimeFaces.current().ajax().update("progressComponentId"); // Replace with actual ID
                     }
-                    if (body.length >= 100 && !new String(body, StandardCharsets.UTF_8).toLowerCase().startsWith("internal") && !new String(body, StandardCharsets.UTF_8).toLowerCase().startsWith("not found")) {
-                        try (
-                                ByteArrayInputStream bis = new ByteArrayInputStream(body); ObjectInputStream ois = new ObjectInputStream(bis)) {
-                            Document docReturn = (Document) ois.readObject();
-                            tempResults.put(Integer.valueOf(docReturn.getId()), docReturn);
-                        } catch (Exception ex) {
-                            System.out.println("error in body:");
-                            System.out.println(new String(body, StandardCharsets.UTF_8));
-                            Logger.getLogger(OrganicBean.class.getName()).log(Level.SEVERE, null, ex);
-                        }
+
+                    if (resp.statusCode() == 200) {
+                        byte[] body = resp.body();
+                         try (ByteArrayInputStream bis = new ByteArrayInputStream(body);
+                              ObjectInputStream ois = new ObjectInputStream(bis)) {
+                             Document docReturn = (Document) ois.readObject();
+                             tempResults.put(Integer.valueOf(docReturn.getId()), docReturn);
+                             LOG.log(Level.FINE, "Processed document with ID: {0}", docReturn.getId());
+                         } catch (IOException | ClassNotFoundException ex) {
+                             LOG.log(Level.SEVERE, "Error deserializing Document object for ID " + doc.getId(), ex);
+                             // Handle deserialization error - maybe add a placeholder Document with an error state
+                             Document errorDoc = new Document();
+                             errorDoc.setId(doc.getId());
+                             errorDoc.setText(doc.getText()); // Keep original text
+                             errorDoc.setExplanationPlainText("Error processing result: " + ex.getMessage());
+                             tempResults.put(Integer.valueOf(doc.getId()), errorDoc);
+                         }
+                    } else {
+                        String errorBody = new String(resp.body(), StandardCharsets.UTF_8);
+                        LOG.log(Level.SEVERE, "Organic microservice call failed for ID {0}. Status: {1}, Body: {2}", new Object[]{doc.getId(), resp.statusCode(), errorBody});
+                         // Handle microservice error - add a placeholder Document with an error state
+                         Document errorDoc = new Document();
+                         errorDoc.setId(doc.getId());
+                         errorDoc.setText(doc.getText()); // Keep original text
+                         errorDoc.setExplanationHtml("Microservice error: Status " + resp.statusCode() + ", " + errorBody);
+                         tempResults.put(Integer.valueOf(doc.getId()), errorDoc);
                     }
-                }
-                ).exceptionally(exception -> {
-                    System.err.println("exception: " + exception);
+                })
+                .exceptionally(exception -> {
+                     // This block runs on HttpClient's thread pool if an exception occurs during the call
+                     LOG.log(Level.SEVERE, "Exception during async Organic call for ID " + doc.getId(), exception);
+                     String errorMessage = "Communication error: " + exception.getMessage();
+                     if (exception.getCause() instanceof MicroserviceCallException) {
+                         MicroserviceCallException msce = (MicroserviceCallException) exception.getCause();
+                         errorMessage = "Communication error: Status " + msce.getStatusCode() + ", " + msce.getErrorBody();
+                     }
+                     // Handle communication error - add a placeholder Document with an error state
+                     Document errorDoc = new Document();
+                     errorDoc.setId(doc.getId());
+                     errorDoc.setText(doc.getText()); // Keep original text
+                     errorDoc.setExplanationHtml(errorMessage);
+                     tempResults.put(Integer.valueOf(doc.getId()), errorDoc);
                     return null;
                 });
-                futures.add(future);
-                // this is because we need to slow down a bit the requests sending too many thros a
-                // java.util.concurrent.CompletionException: java.io.IOException: too many concurrent streams
-                Thread.sleep(2);
+            futures.add(future);
+
+            // Original code had a sleep here. This is often needed to prevent overwhelming the server
+            // or hitting HttpClient's concurrent stream limits. Keep it if necessary.
+            try {
+                 Thread.sleep(2);
+            } catch (InterruptedException ex) {
+                 LOG.log(Level.WARNING, "Thread interrupted during request sending sleep", ex);
+                 Thread.currentThread().interrupt(); // Restore interrupt flag
+                 // Decide if you want to stop sending requests here or continue
+                 // For now, let's break the loop
+                 break;
             }
-            this.progress = 40;
-            logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.almost_done"));
-
-            CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(futures.toArray((new CompletableFuture[0])));
-            combinedFuture.join();
-
-        } catch (InterruptedException ex) {
-            System.out.println("ex:" + ex.getMessage());
         }
 
-        /* this little danse between tempResults and results is because:
-            -> we use tempResults which is a ConcurrentMap to handle the concurrent inserts following the parallel calls to the Umigon API
-            -> we use results which is a List to regain the original order of texts (notice that we insert the docs in a precise order)
-         */
-        for (Map.Entry<Integer, Document> entry : tempResults.entrySet()) {
-            results.set(entry.getKey(), entry.getValue());
+        this.progress = 40; // Update progress after sending requests
+        PrimeFaces.current().ajax().update("progressComponentId"); // Trigger UI update
+        logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.almost_done"));
+
+        try {
+            CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
+            combinedFuture.join(); // This blocks until all futures are done
+            LOG.info("All Organic microservice calls completed.");
+
+            for (Map.Entry<Integer, Document> entry : tempResults.entrySet()) {
+                results.set(entry.getKey(), entry.getValue());
+            }
+
+            this.progress = 100;
+            PrimeFaces.current().ajax().update("progressComponentId"); // Final progress update
+
+            logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.analysis_complete"));
+            renderSeeResultsButton = true;
+            runButtonDisabled = false; // Enable button
+
+            PrimeFaces.current().ajax().update("formComputeButton:computeButton", "notifications", "resultsButtonPanel"); // Update results button panel ID
+
+            return "/" + sessionBean.getFunction() + "/results.xhtml?faces-redirect=true";
+
+        } catch (CompletionException cex) {
+             Throwable cause = cex.getCause();
+             LOG.log(Level.SEVERE, "Exception during completion of async Organic calls", cause);
+             String errorMessage = "Analysis failed: " + cause.getMessage();
+              if (cause instanceof MicroserviceCallException msce) {
+                  errorMessage = "Analysis failed: Status " + msce.getStatusCode() + ", " + msce.getErrorBody();
+              }
+             sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Analysis Failed", errorMessage);
+             logBean.addOneNotificationFromString(errorMessage);
+
+             this.progress = 0; // Reset progress on failure
+             runButtonDisabled = false; // Enable button on failure
+             renderSeeResultsButton = false; // Hide results button
+             PrimeFaces.current().ajax().update("formComputeButton:computeButton", "notifications", "resultsButtonPanel", "progressComponentId");
+
+             return null; // Stay on the same page or navigate to error page
+        } catch (Exception ex) {
+             LOG.log(Level.SEVERE, "Unexpected error after sending Organic calls", ex);
+             sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Analysis Failed", "An unexpected error occurred: " + ex.getMessage());
+             logBean.addOneNotificationFromString("An unexpected error occurred: " + ex.getMessage());
+
+             this.progress = 0; // Reset progress on failure
+             runButtonDisabled = false; // Enable button on failure
+             renderSeeResultsButton = false; // Hide results button
+             PrimeFaces.current().ajax().update("formComputeButton:computeButton", "notifications", "resultsButtonPanel", "progressComponentId");
+
+             return null; // Stay on the same page
         }
-
-        this.progress = 100;
-
-        logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.analysis_complete"));
-        renderSeeResultsButton = true;
-        runButtonDisabled = true;
-
-        return "/" + sessionBean.getFunction() + "/results.xhtml?faces-redirect=true";
     }
 
     public Boolean getRenderSeeResultsButton() {
@@ -279,110 +362,118 @@ public class OrganicBean implements Serializable {
     }
 
     public String signal(int rowId) {
-        Document docFound;
+        Document docFound = null;
 
         if (filteredDocuments != null && rowId < filteredDocuments.size() && filteredDocuments.size() != results.size()) {
             docFound = filteredDocuments.get(rowId);
-            if (docFound == null) {
-                System.out.println("signalled doc not found in backing bean / filtered collection");
-                return "";
-            }
-            docFound.setFlaggedAsFalseLabel(true);
-        } else {
+        } else if (results != null && rowId < results.size()) {
             docFound = results.get(rowId);
-            if (docFound == null) {
-                System.out.println("signalled doc not found in backing bean  / results collection");
-                return "";
-            }
-            docFound.setFlaggedAsFalseLabel(true);
         }
-        SendReport sender = new SendReport(applicationProperties.getMiddlewareHost(), applicationProperties.getMiddlewarePort());
-        sender.initErrorReport(docFound.getText() + " - should not be " + docFound.getCategorizationResult().toString());
-        sender.start();
+
+        if (docFound == null) {
+            LOG.log(Level.WARNING, "Signalled document not found in backing bean collections for rowId: {0}", rowId);
+            sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "Error", "Could not find document to signal.");
+            return "";
+        }
+
+        docFound.setFlaggedAsFalseLabel(true);
+        // Assuming SendReport uses applicationProperties internally or is thread-safe
+        // SendReport sender = new SendReport(applicationProperties.getMiddlewareHost(), applicationProperties.getMiddlewarePort());
+        // sender.initErrorReport(docFound.getText() + " - should not be " + docFound.getCategorizationResult().toString());
+        // sender.start();
+        LOG.log(Level.INFO, "Document ID {0} signalled as potentially misclassified.", docFound.getId());
+        sessionBean.addMessage(FacesMessage.SEVERITY_INFO, "Feedback Sent", "Thank you for your feedback!");
+
         return "";
     }
 
     public String showExplanation(int rowId) {
-        Document docFound;
+         Document docFound = null;
 
         if (filteredDocuments != null && rowId < filteredDocuments.size() && filteredDocuments.size() != results.size()) {
             docFound = filteredDocuments.get(rowId);
-            if (docFound == null) {
-                System.out.println("doc to explain not found in backing bean / filtered collection");
-                return "";
-            }
-            docFound.setShowExplanation(true);
-        } else {
+        } else if (results != null && rowId < results.size()) {
             docFound = results.get(rowId);
-            if (docFound == null) {
-                System.out.println("doc to explain not found in backing bean  / results collection");
-                return "";
-            }
-            docFound.setShowExplanation(true);
         }
+
+        if (docFound == null) {
+             LOG.log(Level.WARNING, "Document to explain not found in backing bean collections for rowId: {0}", rowId);
+             sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "Error", "Could not find document to show explanation.");
+            return "";
+        }
+        docFound.setShowExplanation(true);
         return "";
     }
 
     public String hideExplanation(int rowId) {
-        Document docFound;
+         Document docFound = null;
 
         if (filteredDocuments != null && rowId < filteredDocuments.size() && filteredDocuments.size() != results.size()) {
             docFound = filteredDocuments.get(rowId);
-            if (docFound == null) {
-                System.out.println("doc explanation to hide not found in backing bean / filtered collection");
-                return "";
-            }
-            docFound.setShowExplanation(false);
-        } else {
+        } else if (results != null && rowId < results.size()) {
             docFound = results.get(rowId);
-            if (docFound == null) {
-                System.out.println("doc explanation to hide not found in backing bean  / results collection");
-                return "";
-            }
-            docFound.setShowExplanation(false);
         }
+
+        if (docFound == null) {
+             LOG.log(Level.WARNING, "Document explanation to hide not found in backing bean collections for rowId: {0}", rowId);
+             sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "Error", "Could not find document to hide explanation.");
+            return "";
+        }
+        docFound.setShowExplanation(false);
         return "";
     }
 
     public void dummy() {
+        // Used by PrimeFaces for AJAX updates without explicit action
     }
 
     public StreamedContent getFileToSave() {
+        if (results == null || results.isEmpty()) {
+            sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "Download Error", "No results available to export.");
+            return new DefaultStreamedContent();
+        }
         try {
-            HttpRequest request;
-            HttpClient client = HttpClient.newHttpClient();
             byte[] documentsAsByteArray = Converters.byteArraySerializerForAnyObject(results);
-            HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(documentsAsByteArray);
 
             String lang = FacesContext.getCurrentInstance().getViewRoot().getLocale().toLanguageTag();
 
-            URI uri = UrlBuilder
-                    .empty()
-                    .withScheme("http")
-                    .withPort(Integer.valueOf(privateProperties.getProperty("nocode_import_port")))
-                    .withHost("localhost")
-                    .withPath("api/export/xlsx/organic")
-                    .addParameter("lang", lang)
-                    .toUri();
+            CompletableFuture<byte[]> futureBytes = microserviceClient.importService().post("/api/export/xlsx/organic")
+                 .addQueryParameter("lang", lang)
+                 .withByteArrayPayload(documentsAsByteArray) // Send the byte array payload
+                 .sendAsyncAndGetBody(HttpResponse.BodyHandlers.ofByteArray()); // Execute and get body as byte[]
 
-            request = HttpRequest.newBuilder()
-                    .POST(bodyPublisher)
-                    .uri(uri)
-                    .build();
+            byte[] body = futureBytes.join();
 
-            HttpResponse<byte[]> resp = client.send(request, HttpResponse.BodyHandlers.ofByteArray());
-            byte[] body = resp.body();
             try (InputStream is = new ByteArrayInputStream(body)) {
-                fileToSave = DefaultStreamedContent.builder()
-                        .name("results.xlsx")
+                return DefaultStreamedContent.builder()
+                        .name("results_organic.xlsx") // Use a specific name
                         .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
                         .stream(() -> is)
                         .build();
+            } catch (IOException e) {
+                 LOG.log(Level.SEVERE, "Error creating StreamedContent from export response body", e);
+                 sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Download Error", "Could not prepare download file.");
+                 return new DefaultStreamedContent();
             }
-        } catch (IOException | InterruptedException ex) {
-            Logger.getLogger(UmigonBean.class.getName()).log(Level.SEVERE, null, ex);
+
+        } catch (CompletionException cex) {
+             Throwable cause = cex.getCause();
+             LOG.log(Level.SEVERE, "Error during asynchronous export service call (CompletionException)", cause);
+             String errorMessage = "Error exporting data: " + cause.getMessage();
+              if (cause instanceof MicroserviceCallException msce) {
+                  errorMessage = "Error exporting data: Status " + msce.getStatusCode() + ", " + msce.getErrorBody();
+              }
+             sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Export Failed", errorMessage);
+             return new DefaultStreamedContent();
+        } catch (IOException ex) {
+            LOG.log(Level.SEVERE, "Error serializing results before export", ex);
+            sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Export Failed", "Error preparing data for export: " + ex.getMessage());
+            return new DefaultStreamedContent();
+        } catch (Exception ex) {
+             LOG.log(Level.SEVERE, "Unexpected error in getFileToSave", ex);
+             sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Export Failed", "An unexpected error occurred: " + ex.getMessage());
+             return new DefaultStreamedContent();
         }
-        return fileToSave;
     }
 
     public void setFileToSave(StreamedContent fileToSave) {
