@@ -27,6 +27,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
+import net.clementlevallois.functions.model.FunctionOrganic;
 import net.clementlevallois.importers.model.DataFormatConverter;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.importdata.DataImportBean;
@@ -88,7 +89,7 @@ public class OrganicBean implements Serializable {
 
     @PostConstruct
     public void init() {
-        sessionBean.setFunction("organic");
+        sessionBean.setFunction(FunctionOrganic.NAME);
         String promoted_tone = sessionBean.getLocaleBundle().getString("organic.general.soundspromoted");
         String neutral_tone = sessionBean.getLocaleBundle().getString("organic.general.soundsorganic");
         tones = new String[]{promoted_tone, neutral_tone};
@@ -190,7 +191,7 @@ public class OrganicBean implements Serializable {
             doc.setId(id);
 
             // Launch async call for each document
-            CompletableFuture<Void> future = microserviceClient.api().get("/api/organicForAText")
+            CompletableFuture<Void> future = microserviceClient.api().get(FunctionOrganic.ENDPOINT)
                 .addQueryParameter("text-lang", selectedLanguage)
                 .addQueryParameter("id", doc.getId())
                 .addQueryParameter("text", entry.getValue())
@@ -201,11 +202,9 @@ public class OrganicBean implements Serializable {
                 .addQueryParameter("explanation-lang", sessionBean.getCurrentLocale().toLanguageTag())
                 .sendAsync(HttpResponse.BodyHandlers.ofByteArray()) // Send async, expect byte array
                 .thenAccept(resp -> {
-                    // This block runs on HttpClient's thread pool after receiving response
                     int currentProgress = (int) ((float) tempResults.size() * 100 / maxRecords);
                     if (currentProgress > progress) {
                         progress = currentProgress;
-                        // Trigger UI update for progress
                          PrimeFaces.current().ajax().update("progressComponentId"); // Replace with actual ID
                     }
 
@@ -228,7 +227,6 @@ public class OrganicBean implements Serializable {
                     } else {
                         String errorBody = new String(resp.body(), StandardCharsets.UTF_8);
                         LOG.log(Level.SEVERE, "Organic microservice call failed for ID {0}. Status: {1}, Body: {2}", new Object[]{doc.getId(), resp.statusCode(), errorBody});
-                         // Handle microservice error - add a placeholder Document with an error state
                          Document errorDoc = new Document();
                          errorDoc.setId(doc.getId());
                          errorDoc.setText(doc.getText()); // Keep original text
@@ -237,11 +235,9 @@ public class OrganicBean implements Serializable {
                     }
                 })
                 .exceptionally(exception -> {
-                     // This block runs on HttpClient's thread pool if an exception occurs during the call
                      LOG.log(Level.SEVERE, "Exception during async Organic call for ID " + doc.getId(), exception);
                      String errorMessage = "Communication error: " + exception.getMessage();
-                     if (exception.getCause() instanceof MicroserviceCallException) {
-                         MicroserviceCallException msce = (MicroserviceCallException) exception.getCause();
+                     if (exception.getCause() instanceof MicroserviceCallException msce) {
                          errorMessage = "Communication error: Status " + msce.getStatusCode() + ", " + msce.getErrorBody();
                      }
                      // Handle communication error - add a placeholder Document with an error state
@@ -261,8 +257,6 @@ public class OrganicBean implements Serializable {
             } catch (InterruptedException ex) {
                  LOG.log(Level.WARNING, "Thread interrupted during request sending sleep", ex);
                  Thread.currentThread().interrupt(); // Restore interrupt flag
-                 // Decide if you want to stop sending requests here or continue
-                 // For now, let's break the loop
                  break;
             }
         }

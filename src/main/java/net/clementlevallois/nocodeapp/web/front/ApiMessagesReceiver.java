@@ -15,8 +15,8 @@ import jakarta.ws.rs.core.Response;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import net.clementlevallois.functions.model.WorkflowCowoProperties;
-import net.clementlevallois.functions.model.WorkflowTopicsProperties;
+import net.clementlevallois.functions.model.WorkflowCowoProps;
+import net.clementlevallois.functions.model.WorkflowTopicsProps;
 
 /**
  *
@@ -34,7 +34,7 @@ public class ApiMessagesReceiver {
 
     
     @POST
-    @Path("/"+ WorkflowCowoProperties.ENDPOINT)
+    @Path("/"+ WorkflowCowoProps.ENDPOINT)
     @Consumes(MediaType.APPLICATION_JSON)
     public Response messagesFromCowoAPI(MessageFromApi msg) {
         ConcurrentLinkedDeque<MessageFromApi> messages = WatchTower.getDequeAPIMessages().getOrDefault(msg.getSessionId(), new ConcurrentLinkedDeque());
@@ -44,21 +44,21 @@ public class ApiMessagesReceiver {
     }
 
     @POST
-    @Path("/"+ WorkflowTopicsProperties.ENDPOINT)
+    @Path("/"+ WorkflowTopicsProps.ENDPOINT)
     @Consumes(MediaType.APPLICATION_JSON)
     public Response messagesFromTopicsAPI(MessageFromApi msg) {
         LOG.log(Level.INFO, "Received callback for session {0}, task {1}, info {2}",
-                new Object[]{msg.getSessionId(), msg.getDataPersistenceId(), msg.getInfo()});
+                new Object[]{msg.getSessionId(), msg.getjobId(), msg.getInfo()});
 
         ConcurrentLinkedDeque<MessageFromApi> messages = WatchTower.getDequeAPIMessages().getOrDefault(msg.getSessionId(), new ConcurrentLinkedDeque());
         messages.addLast(msg);
         WatchTower.getDequeAPIMessages().put(msg.getSessionId(), messages);
 
         boolean success;
-        if (msg.getInfo() == MessageFromApi.Information.WORKFLOW_COMPLETED && msg.getDataPersistenceId() != null && msg.getSessionId() != null) {
+        if (msg.getInfo() == MessageFromApi.Information.WORKFLOW_COMPLETED && msg.getjobId() != null && msg.getSessionId() != null) {
             success = true;
-            messageFromApiEvent.fire(new MessageFromApi(msg.getDataPersistenceId(), success, msg.getMessage()));
-        } else if (msg.getInfo() == MessageFromApi.Information.ERROR && msg.getDataPersistenceId() != null) {
+            messageFromApiEvent.fire(new MessageFromApi(msg.getjobId(), success, msg.getMessage()));
+        } else if (msg.getInfo() == MessageFromApi.Information.ERROR && msg.getjobId() != null) {
             success = false;
         } else {
             success = false;

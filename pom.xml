@@ -15,8 +15,8 @@
         <jakartaee>10.0.0</jakartaee>
         <java.version>21</java.version>
         <!--the two following properties are useful to NetBeans to detect correct and incorrect java languagage features in the code-->
-        <maven.compiler.source>23</maven.compiler.source>
-        <maven.compiler.target>23</maven.compiler.target>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
     </properties>
     
     <dependencies>

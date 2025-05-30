@@ -33,6 +33,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
+import net.clementlevallois.functions.model.FunctionUmigon;
 import net.clementlevallois.importers.model.DataFormatConverter;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.importdata.DataImportBean;
@@ -90,7 +91,7 @@ public class UmigonBean implements Serializable {
 
     @PostConstruct
     public void init() {
-        sessionBean.setFunction("umigon");
+        sessionBean.setFunction(FunctionUmigon.NAME);
         String positive_tone = sessionBean.getLocaleBundle().getString("general.nouns.sentiment_positive");
         String negative_tone = sessionBean.getLocaleBundle().getString("general.nouns.sentiment_negative");
         String neutral_tone = sessionBean.getLocaleBundle().getString("general.nouns.sentiment_neutral");
@@ -136,7 +137,7 @@ public class UmigonBean implements Serializable {
         PrimeFaces.current().ajax().update("formComputeButton:computeButton", "notifications", "progressComponentId");
         startAnalysisAsync();
 
-        return null; // Return null to stay on the same page
+        return null;
     }
 
     @Asynchronous
@@ -195,7 +196,7 @@ public class UmigonBean implements Serializable {
                 }
                 String id = String.valueOf(entry.getKey());
 
-                CompletableFuture<Void> future = microserviceClient.api().post("/api/sentimentForAText")
+                CompletableFuture<Void> future = microserviceClient.api().post(FunctionUmigon.ENDPOINT)
                         .withByteArrayPayload(text.getBytes(StandardCharsets.UTF_8))
                         .addQueryParameter("text-lang", selectedLanguage)
                         .addQueryParameter("id", id)

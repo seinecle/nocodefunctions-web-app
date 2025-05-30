@@ -87,7 +87,7 @@ public class ImportGraphBean implements Serializable {
                 .withPort(Integer.valueOf(privateProperties.getProperty("nocode_import_port")))
                 .withHost("localhost")
                 .withPath("api/import/graphops/getNamesOfNodeAttributes")
-                .addParameter("dataPersistenceId", dataPersistenceUniqueId)
+                .addParameter("jobId", dataPersistenceUniqueId)
                 .toUri();
 
         HttpRequest request = HttpRequest.newBuilder()

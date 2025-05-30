@@ -32,7 +32,7 @@ import org.primefaces.model.StreamedContent;
 import java.net.http.HttpResponse;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import net.clementlevallois.functions.model.CommonExpressions;
+import net.clementlevallois.functions.model.Globals;
 import net.clementlevallois.nocodeapp.web.front.http.MicroserviceHttpClient;
 import net.clementlevallois.nocodeapp.web.front.http.MicroserviceHttpClient.MicroserviceCallException;
 
@@ -151,7 +151,7 @@ public class CommunityInsightsBean implements Serializable {
                 .addQueryParameter("minCommunitySize", String.valueOf(minCommunitySize))
                 .addQueryParameter("maxKeyNodesPerCommunity", String.valueOf(maxKeyNodesPerCommunity))
                 .addQueryParameter("sessionId", sessionId)
-                .addQueryParameter("dataPersistenceId", dataPersistenceUniqueId)
+                .addQueryParameter("jobId", dataPersistenceUniqueId)
                 .addQueryParameter("callbackURL", callbackURL)
                 .sendAsync(HttpResponse.BodyHandlers.ofString()) // Assuming microservice returns String response on submission
                 .thenAccept(response -> {
@@ -180,7 +180,7 @@ public class CommunityInsightsBean implements Serializable {
         }
 
         Path tempFolderRelativePath = applicationProperties.getTempFolderFullPath();
-        Path pathOfTopNodesData = Path.of(tempFolderRelativePath.toString(), dataPersistenceUniqueId + CommonExpressions.WORKFLOW_COMPLETE_FILE_NAME_EXTENSION);
+        Path pathOfTopNodesData = Path.of(tempFolderRelativePath.toString(), dataPersistenceUniqueId + Globals.WORKFLOW_COMPLETE_FILE_NAME_EXTENSION);
         boolean topNodesHaveArrivedSignal = Files.exists(pathOfTopNodesData);
 
         if (topNodesHaveArrivedSignal) {
@@ -200,7 +200,7 @@ public class CommunityInsightsBean implements Serializable {
             Iterator<MessageFromApi> it = messagesFromApi.iterator();
             while (it.hasNext()) {
                 MessageFromApi msg = it.next();
-                if (msg.getDataPersistenceId() != null && msg.getDataPersistenceId().equals(dataPersistenceUniqueId)) {
+                if (msg.getjobId() != null && msg.getjobId().equals(dataPersistenceUniqueId)) {
                     LOG.log(Level.INFO, "Polling detected message for dataId {0}: {1}", new Object[]{dataPersistenceUniqueId, msg.getInfo()});
 
                     switch (msg.getInfo()) {

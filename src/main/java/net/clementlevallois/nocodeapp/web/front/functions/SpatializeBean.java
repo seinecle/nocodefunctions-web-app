@@ -15,8 +15,8 @@ import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import jakarta.servlet.annotation.MultipartConfig;
 import java.nio.charset.StandardCharsets;
+import net.clementlevallois.functions.model.FunctionSpatialization;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
-import net.clementlevallois.nocodeapp.web.front.backingbeans.ApplicationPropertiesBean;
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
@@ -48,9 +48,6 @@ public class SpatializeBean implements Serializable {
     SessionBean sessionBean;
 
     @Inject
-    ApplicationPropertiesBean applicationProperties;
-
-    @Inject
     private MicroserviceHttpClient microserviceClient;
 
     public SpatializeBean() {
@@ -58,7 +55,7 @@ public class SpatializeBean implements Serializable {
 
     @PostConstruct
     public void init() {
-        sessionBean.setFunction("spatialize");
+        sessionBean.setFunction(FunctionSpatialization.NAME);
     }
 
     public String logout() {
@@ -135,12 +132,11 @@ public class SpatializeBean implements Serializable {
         sessionBean.addMessage(FacesMessage.SEVERITY_INFO, "Starting", "Starting spatialization layout...");
 
         // Use MicroserviceHttpClient to call the spatialization endpoint
-        microserviceClient.api().post("/api/spatialization")
+        microserviceClient.api().post(FunctionSpatialization.ENDPOINT)
             .withByteArrayPayload(uploadedFileAsByteArray) // Send the GEXF file bytes as payload
             .addQueryParameter("durationInSeconds", String.valueOf(durationInSeconds)) // Add duration as query parameter
-            .sendAsync(HttpResponse.BodyHandlers.ofByteArray()) // Send async, expect byte array (GEXF result)
+            .sendAsync(HttpResponse.BodyHandlers.ofByteArray())
             .thenAccept(resp -> {
-                // This block runs on HttpClient's thread pool
                 if (resp.statusCode() == 200) {
                     gexfAsByteArrayResult = resp.body();
                     displayDownloadButton = true;
@@ -148,35 +144,26 @@ public class SpatializeBean implements Serializable {
                     sessionBean.addMessage(FacesMessage.SEVERITY_INFO, "Success", "Spatialization complete. Download ready.");
                     LOG.info("Spatialization successful.");
                 } else {
-                    gexfAsByteArrayResult = null; // Ensure null on error
+                    gexfAsByteArrayResult = null;
                     displayDownloadButton = false;
-                    progress = 0; // Reset progress on error
+                    progress = 0;
                     String errorBody = new String(resp.body(), StandardCharsets.UTF_8);
                     LOG.log(Level.SEVERE, "Spatialization microservice call failed. Status: {0}, Body: {1}", new Object[]{resp.statusCode(), errorBody});
                     sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Spatialization Failed", "Microservice error: Status " + resp.statusCode() + ", " + errorBody);
                 }
-                 // Update UI components (button, progress) - Needs to happen on JSF thread
-                 // Using PrimeFaces RequestContext or similar if not relying on polling
-                 // For simplicity here, assuming sessionBean.addMessage triggers UI update or using p:poll
             })
             .exceptionally(exception -> {
-                // This block runs on HttpClient's thread pool if an exception occurs
                 gexfAsByteArrayResult = null; // Ensure null on error
                 displayDownloadButton = false;
                 progress = 0; // Reset progress on error
                 LOG.log(Level.SEVERE, "Exception during async spatialization call", exception);
                 String errorMessage = "Communication error with spatialization service: " + exception.getMessage();
-                 if (exception.getCause() instanceof MicroserviceCallException) {
-                     MicroserviceCallException msce = (MicroserviceCallException) exception.getCause();
+                 if (exception.getCause() instanceof MicroserviceCallException msce) {
                      errorMessage = "Communication error: Status " + msce.getStatusCode() + ", " + msce.getErrorBody();
                  }
                  sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Spatialization Failed", errorMessage);
                 return null;
             });
-
-        // The method returns immediately after launching the async call.
-        // Progress bar update and button state changes need to be handled by the UI
-        // polling the bean properties (progress, displayDownloadButton).
     }
 
     public void setFileToSave(StreamedContent fileToSave) {
@@ -184,7 +171,6 @@ public class SpatializeBean implements Serializable {
     }
 
     public Integer getProgress() {
-        // This method is polled by the UI to update the progress bar
         return progress;
     }
 

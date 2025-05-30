@@ -83,7 +83,7 @@ public class OneFileUploadToSimpleLinesBean {
                             .withPath("api/import/pdf/simpleLines")
                             .addParameter("fileName", fileName)
                             .addParameter("uniqueFileId", uniqueFileId)
-                            .addParameter("dataPersistenceId", dataPersistenceUniqueId)
+                            .addParameter("jobId", dataPersistenceUniqueId)
                             .toUri();
 
                     request = HttpRequest.newBuilder()
@@ -112,7 +112,7 @@ public class OneFileUploadToSimpleLinesBean {
                             .withPath("api/import/txt/simpleLines")
                             .addParameter("fileName", fileName)
                             .addParameter("uniqueFileId", uniqueFileId)
-                            .addParameter("dataPersistenceId", dataPersistenceUniqueId)
+                            .addParameter("jobId", dataPersistenceUniqueId)
                             .toUri();
 
                     request = HttpRequest.newBuilder()
@@ -147,7 +147,7 @@ public class OneFileUploadToSimpleLinesBean {
                             .withHost("localhost")
                             .withPath("api/import/json/simpleLines")
                             .addParameter("uniqueFileId", uniqueFileId)
-                            .addParameter("dataPersistenceId", dataPersistenceUniqueId)
+                            .addParameter("jobId", dataPersistenceUniqueId)
                             .addParameter("jsonKey", jsonKey)
                             .toUri();
 

@@ -30,6 +30,23 @@ import java.nio.file.Path;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.Executors;
+import net.clementlevallois.functions.model.Globals;
+import static net.clementlevallois.functions.model.Globals.GlobalQueryParams.CALLBACK_URL;
+import static net.clementlevallois.functions.model.Globals.GlobalQueryParams.JOB_ID;
+import static net.clementlevallois.functions.model.Globals.GlobalQueryParams.SESSION_ID;
+import net.clementlevallois.functions.model.WorkflowGazeProps;
+import net.clementlevallois.functions.model.WorkflowGazeProps.BodyJsonKeys;
+import static net.clementlevallois.functions.model.WorkflowGazeProps.BodyJsonKeys.LINES;
+import static net.clementlevallois.functions.model.WorkflowGazeProps.QueryParams.MIN_SHARED_TARGETS;
+import net.clementlevallois.functions.model.WorkflowTopicsProps;
+import static net.clementlevallois.functions.model.WorkflowTopicsProps.QueryParams.IS_SCIENTIFIC_CORPUS;
+import static net.clementlevallois.functions.model.WorkflowTopicsProps.QueryParams.LANG;
+import static net.clementlevallois.functions.model.WorkflowTopicsProps.QueryParams.LEMMATIZE;
+import static net.clementlevallois.functions.model.WorkflowTopicsProps.QueryParams.MIN_CHAR_NUMBER;
+import static net.clementlevallois.functions.model.WorkflowTopicsProps.QueryParams.MIN_TERM_FREQ;
+import static net.clementlevallois.functions.model.WorkflowTopicsProps.QueryParams.PRECISION;
+import static net.clementlevallois.functions.model.WorkflowTopicsProps.QueryParams.REMOVE_ACCENTS;
+import static net.clementlevallois.functions.model.WorkflowTopicsProps.QueryParams.REPLACE_STOPWORDS;
 import net.clementlevallois.importers.model.CellRecord;
 import net.clementlevallois.importers.model.SheetModel;
 import net.clementlevallois.nocodeapp.web.front.MessageFromApi;
@@ -48,14 +65,13 @@ import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
 import net.clementlevallois.nocodeapp.web.front.http.MicroserviceHttpClient;
 import net.clementlevallois.nocodeapp.web.front.http.MicroserviceHttpClient.MicroserviceCallException;
-
-
+import net.clementlevallois.nocodeapp.web.front.http.MicroserviceHttpClient.PostRequestBuilder;
 
 @Named
 @SessionScoped
-public class GazeBean implements Serializable {
+public class WorkflowGazeBean implements Serializable {
 
-    private static final Logger LOG = Logger.getLogger(GazeBean.class.getName());
+    private static final Logger LOG = Logger.getLogger(WorkflowGazeBean.class.getName());
 
     private Integer progress = 0;
     private Integer minSharedTargets = 1;
@@ -69,13 +85,13 @@ public class GazeBean implements Serializable {
     private Boolean shareGephiLitePublicly;
     private boolean applyPMI = false;
 
-    private String dataPersistenceUniqueId;
+    private String jobId;
     private String sessionId;
-    private boolean gexfHasArrived = false;
-
-    // private Properties privateProperties; // No longer needed directly
 
     private String gexf; // Used for export methods
+
+    private WorkflowGazeProps props;
+    private Globals globals;
 
     @Inject
     BackToFrontMessengerBean logBean;
@@ -92,15 +108,15 @@ public class GazeBean implements Serializable {
     @Inject
     private MicroserviceHttpClient microserviceClient;
 
-
-    public GazeBean() {
+    public WorkflowGazeBean() {
     }
 
     @PostConstruct
     public void init() {
-        sessionBean.setFunction("gaze");
-        // privateProperties = applicationProperties.getPrivateProperties(); // Initialized in MicroserviceHttpClient
+        sessionBean.setFunction(WorkflowGazeProps.NAME);
         sessionId = FacesContext.getCurrentInstance().getExternalContext().getSessionId(false);
+        props = new WorkflowGazeProps(applicationProperties.getTempFolderFullPath());
+        globals = new Globals(applicationProperties.getTempFolderFullPath());
     }
 
     public void onTabChange(String sheetName) {
@@ -108,10 +124,9 @@ public class GazeBean implements Serializable {
     }
 
     public void pollingDidTopNodesArrive() {
-        String key = dataPersistenceUniqueId + "topnodes";
-        boolean topNodesHaveArrived = WatchTower.getQueueOutcomesProcesses().containsKey(dataPersistenceUniqueId + "topnodes");
-        if (topNodesHaveArrived) {
-            WatchTower.getQueueOutcomesProcesses().remove(key);
+        Path pathSignalWorkflowComplete = props.getWorkflowCompleteFilePath(jobId);
+        boolean workflowComplete = Files.exists(pathSignalWorkflowComplete);
+        if (workflowComplete) {
             runButtonDisabled = false;
             FacesContext context = FacesContext.getCurrentInstance();
             context.getApplication().getNavigationHandler().handleNavigation(context, null, "/gaze/results.xhtml?faces-redirect=true");
@@ -125,7 +140,7 @@ public class GazeBean implements Serializable {
 
     public void runCoocAnalysis() {
         try {
-            dataPersistenceUniqueId = UUID.randomUUID().toString().substring(0, 10);
+            jobId = UUID.randomUUID().toString().substring(0, 10);
             progress = 0;
             sessionBean.sendFunctionPageReport();
             logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.starting_analysis"));
@@ -165,18 +180,17 @@ public class GazeBean implements Serializable {
             }
 
             callCooc(lines);
-            getTopNodes();
             runButtonDisabled = true;
         } catch (Exception ex) {
             LOG.log(Level.SEVERE, "Error running Cooc analysis", ex);
-             sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Analysis Error", "Could not start Cooc analysis: " + ex.getMessage());
-             runButtonDisabled = false;
+            sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Analysis Error", "Could not start Cooc analysis: " + ex.getMessage());
+            runButtonDisabled = false;
         }
     }
 
     public void runSimAnalysis(String sourceColIndex, String sheetName) {
         try {
-            dataPersistenceUniqueId = UUID.randomUUID().toString().substring(0, 10);
+            jobId = UUID.randomUUID().toString().substring(0, 10);
             sessionBean.sendFunctionPageReport();
             logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.starting_analysis"));
             List<SheetModel> dataInSheets = dataImportBean.getDataInSheets();
@@ -189,8 +203,8 @@ public class GazeBean implements Serializable {
             }
             if (sheetWithData == null) {
                 logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.data_not_found") + " (1)");
-                 runButtonDisabled = false; // Enable button on error
-                 return;
+                runButtonDisabled = false; // Enable button on error
+                return;
             }
             Map<Integer, List<CellRecord>> mapOfCellRecordsPerRow = sheetWithData.getRowIndexToCellRecords();
             if (dataImportBean.getHasHeaders()) {
@@ -222,22 +236,21 @@ public class GazeBean implements Serializable {
             }
             if (sourcesAndTargets.isEmpty()) {
                 logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.data_not_found") + " (2)");
-                 runButtonDisabled = false; // Enable button on error
-                 return;
+                runButtonDisabled = false; // Enable button on error
+                return;
             }
 
             callSim(sourcesAndTargets);
-            getTopNodes();
-             runButtonDisabled = true; // Disable button while processing
+            runButtonDisabled = true; // Disable button while processing
 
         } catch (NumberFormatException ex) {
             LOG.log(Level.SEVERE, "Error parsing source column index", ex);
             sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Analysis Error", "Invalid source column index: " + ex.getMessage());
-             runButtonDisabled = false; // Enable button on error
+            runButtonDisabled = false; // Enable button on error
         } catch (Exception ex) {
-             LOG.log(Level.SEVERE, "Error running Sim analysis", ex);
-             sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Analysis Error", "Could not start Sim analysis: " + ex.getMessage());
-             runButtonDisabled = false; // Enable button on error
+            LOG.log(Level.SEVERE, "Error running Sim analysis", ex);
+            sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Analysis Error", "Could not start Sim analysis: " + ex.getMessage());
+            runButtonDisabled = false; // Enable button on error
         }
     }
 
@@ -253,36 +266,33 @@ public class GazeBean implements Serializable {
         }
 
         JsonObject jsonPayload = Json.createObjectBuilder()
-            .add("lines", linesBuilder)
-            .build();
+                .add(LINES.name(), linesBuilder)
+                .build();
 
-        String callbackURL = RemoteLocal.getDomain() + "/internalapi/messageFromAPI/gaze";
+        var requestBuilder = microserviceClient.api().post(WorkflowGazeProps.ENDPOINT_COOC)
+                .withJsonPayload(jsonPayload);
 
-        microserviceClient.api().post("/api/gaze/cooc")
-            .withJsonPayload(jsonPayload)
-            .addQueryParameter("sessionId", sessionId)
-            .addQueryParameter("dataPersistenceId", dataPersistenceUniqueId)
-            .addQueryParameter("callbackURL", callbackURL)
-            .sendAsync(HttpResponse.BodyHandlers.ofString())
-            .thenAccept(response -> {
-                if (response.statusCode() != 200) {
-                    String error = response.body();
-                    LOG.log(Level.SEVERE, "Cooc call failed. Status: {0}, Body: {1}", new Object[]{response.statusCode(), error});
-                    sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Cooc Failed", "Could not send to Cooc microservice: " + error);
-                } else {
-                    LOG.log(Level.INFO, "Cooc task submitted successfully for dataId: {0}", dataPersistenceUniqueId);
-                }
-            })
-            .exceptionally(e -> {
-                LOG.log(Level.SEVERE, "Exception during async Cooc call for dataId " + dataPersistenceUniqueId, e);
-                String errorMessage = "Exception communicating with Cooc microservice: " + e.getMessage();
-                 if (e.getCause() instanceof MicroserviceCallException msce) {
-                     errorMessage += " (Status: " + msce.getStatusCode() + ", URI: " + msce.getUri() + ", Body: " + msce.getErrorBody() + ")";
-                 }
-                 sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Cooc Failed", errorMessage);
-                 // UI update handled by pollingDidTopNodesArrive on error signal
-                return null;
-            });
+        addGlobalQueryParams(requestBuilder);
+
+        requestBuilder.sendAsync(HttpResponse.BodyHandlers.ofString())
+                .thenAccept(response -> {
+                    if (response.statusCode() != 200) {
+                        String error = response.body();
+                        LOG.log(Level.SEVERE, "Cooc call failed. Status: {0}, Body: {1}", new Object[]{response.statusCode(), error});
+                        sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Cooc Failed", "Could not send to Cooc microservice: " + error);
+                    } else {
+                        LOG.log(Level.INFO, "Cooc task submitted successfully for dataId: {0}", jobId);
+                    }
+                })
+                .exceptionally(e -> {
+                    LOG.log(Level.SEVERE, "Exception during async Cooc call for dataId " + jobId, e);
+                    String errorMessage = "Exception communicating with Cooc microservice: " + e.getMessage();
+                    if (e.getCause() instanceof MicroserviceCallException msce) {
+                        errorMessage += " (Status: " + msce.getStatusCode() + ", URI: " + msce.getUri() + ", Body: " + msce.getErrorBody() + ")";
+                    }
+                    sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Cooc Failed", errorMessage);
+                    return null;
+                });
     }
 
     public void callSim(Map<String, Set<String>> sourcesAndTargets) {
@@ -297,122 +307,73 @@ public class GazeBean implements Serializable {
         }
 
         JsonObject jsonPayload = Json.createObjectBuilder()
-            .add("lines", linesBuilder)
-            .build();
+                .add(LINES.name(), linesBuilder)
+                .build();
 
-        String callbackURL = RemoteLocal.getDomain() + "/internalapi/messageFromAPI/gaze";
+        var requestBuilder = microserviceClient.api().post(WorkflowGazeProps.ENDPOINT_SIM)
+                .withJsonPayload(jsonPayload);
 
-        microserviceClient.api().post("/api/gaze/sim")
-            .withJsonPayload(jsonPayload)
-            // Parameters from the original JSON payload moved to query parameters
-            .addQueryParameter("minSharedTarget", String.valueOf(minSharedTargets))
-            .addQueryParameter("sessionId", sessionId)
-            .addQueryParameter("dataPersistenceId", dataPersistenceUniqueId)
-            .addQueryParameter("callbackURL", callbackURL)
-            .sendAsync(HttpResponse.BodyHandlers.ofString())
-            .thenAccept(response -> {
-                if (response.statusCode() != 200) {
-                    String error = response.body();
-                    LOG.log(Level.SEVERE, "Sim call failed. Status: {0}, Body: {1}", new Object[]{response.statusCode(), error});
-                    sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Sim Failed", "Could not send to Sim microservice: " + error);
-                     // UI update handled by pollingDidTopNodesArrive on error signal
-                } else {
-                    LOG.log(Level.INFO, "Sim task submitted successfully for dataId: {0}", dataPersistenceUniqueId);
-                    // Microservice will send RESULT_ARRIVED via callback
-                }
-            })
-            .exceptionally(e -> {
-                LOG.log(Level.SEVERE, "Exception during async Sim call for dataId " + dataPersistenceUniqueId, e);
-                String errorMessage = "Exception communicating with Sim microservice: " + e.getMessage();
-                 if (e.getCause() instanceof MicroserviceCallException msce) {
-                     errorMessage += " (Status: " + msce.getStatusCode() + ", URI: " + msce.getUri() + ", Body: " + msce.getErrorBody() + ")";
-                 }
-                 sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Sim Failed", errorMessage);
-                 // UI update handled by pollingDidTopNodesArrive on error signal
-                return null;
-            });
-    }
+        addQueryParamsForSim(requestBuilder);
+        addGlobalQueryParams(requestBuilder);
 
-    private void getTopNodes() {
-        Executors.newSingleThreadExecutor().execute(() -> {
-
-            gexfHasArrived = false;
-
-            while (!gexfHasArrived && WatchTower.getCurrentSessions().containsKey(sessionId)) {
-                ConcurrentLinkedDeque<MessageFromApi> messagesFromApi = WatchTower.getDequeAPIMessages().get(sessionId);
-                if (messagesFromApi != null && !messagesFromApi.isEmpty()) {
-                    Iterator<MessageFromApi> it = messagesFromApi.iterator();
-                    while (it.hasNext()) {
-                        MessageFromApi msg = it.next();
-                        if (msg.getInfo().equals(MessageFromApi.Information.RESULT_ARRIVED) && msg.getDataPersistenceId().equals(dataPersistenceUniqueId)) {
-                            gexfHasArrived = true;
-                            it.remove();
-                            LOG.log(Level.INFO, "Polling detected RESULT_ARRIVED message for dataId: {0}", dataPersistenceUniqueId);
-                        }
-                    }
-                }
-                if (!gexfHasArrived) {
-                     try {
-                         Thread.sleep(500);
-                     } catch (InterruptedException ex) {
-                         LOG.log(Level.SEVERE, "Polling thread interrupted", ex);
-                         Thread.currentThread().interrupt();
-                         break;
-                     }
-                }
-            }
-
-            if (!WatchTower.getCurrentSessions().containsKey(sessionId)) {
-                 LOG.warning("Session expired while waiting for GEXF result for dataId: " + dataPersistenceUniqueId);
-                 sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "Analysis Timeout", "Session expired while waiting for results.");
-                 runButtonDisabled = false; // Enable button
-                 // WatchTower.getQueueOutcomesProcesses().put(dataPersistenceUniqueId + "topnodes", System.currentTimeMillis()); // Signal failure to polling?
-                 return;
-            }
-
-            LOG.log(Level.INFO, "Fetching top nodes JSON for dataId: {0}", dataPersistenceUniqueId);
-            microserviceClient.api().get("/api/graphops/topnodes")
-                .addQueryParameter("nbNodes", "30")
-                .addQueryParameter("dataPersistenceId", dataPersistenceUniqueId)
-                .sendAsyncAndGetBody(HttpResponse.BodyHandlers.ofString())
-                .thenAccept(jsonResultString -> {
-                    try {
-                        JsonObject jsonObject = Json.createReader(new StringReader(jsonResultString)).readObject();
-                        nodesAsJson = Converters.turnJsonObjectToString(jsonObject.getJsonObject("nodes"));
-                        edgesAsJson = Converters.turnJsonObjectToString(jsonObject.getJsonObject("edges"));
-
-                        WatchTower.getQueueOutcomesProcesses().put(dataPersistenceUniqueId + "topnodes", System.currentTimeMillis());
-                        LOG.log(Level.INFO, "Top nodes JSON fetched and signal sent for dataId: {0}", dataPersistenceUniqueId);
-
-                    } catch (Exception e) {
-                        LOG.log(Level.SEVERE, "Error processing top nodes JSON response for dataId: " + dataPersistenceUniqueId, e);
-                         sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Results Error", "Error processing results: " + e.getMessage());
-                         // Signal failure to polling?
-                         // WatchTower.getQueueOutcomesProcesses().put(dataPersistenceUniqueId + "topnodes", System.currentTimeMillis());
+        requestBuilder.sendAsync(HttpResponse.BodyHandlers.ofString())
+                .thenAccept(response -> {
+                    if (response.statusCode() != 200) {
+                        String error = response.body();
+                        LOG.log(Level.SEVERE, "Sim call failed. Status: {0}, Body: {1}", new Object[]{response.statusCode(), error});
+                        sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Sim Failed", "Could not send to Sim microservice: " + error);
+                    } else {
+                        LOG.log(Level.INFO, "Sim task submitted successfully for dataId: {0}", jobId);
                     }
                 })
                 .exceptionally(e -> {
-                    LOG.log(Level.SEVERE, "Exception during async getTopNodes call for dataId " + dataPersistenceUniqueId, e);
-                    String errorMessage = "Failed to fetch results: " + e.getMessage();
-                     if (e.getCause() instanceof MicroserviceCallException) {
-                         MicroserviceCallException msce = (MicroserviceCallException) e.getCause();
-                         errorMessage += " (Status: " + msce.getStatusCode() + ", URI: " + msce.getUri() + ", Body: " + msce.getErrorBody() + ")";
-                     }
-                     sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Results Error", errorMessage);
-                     // Signal failure to polling?
-                     // WatchTower.getQueueOutcomesProcesses().put(dataPersistenceUniqueId + "topnodes", System.currentTimeMillis());
-
+                    LOG.log(Level.SEVERE, "Exception during async Sim call for dataId " + jobId, e);
+                    String errorMessage = "Exception communicating with Sim microservice: " + e.getMessage();
+                    if (e.getCause() instanceof MicroserviceCallException msce) {
+                        errorMessage += " (Status: " + msce.getStatusCode() + ", URI: " + msce.getUri() + ", Body: " + msce.getErrorBody() + ")";
+                    }
+                    sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Sim Failed", errorMessage);
                     return null;
                 });
-        });
+    }
+
+    private MicroserviceHttpClient.PostRequestBuilder addQueryParamsForSim(PostRequestBuilder requestBuilder) {
+        for (WorkflowGazeProps.QueryParams param : WorkflowGazeProps.QueryParams.values()) {
+            String paramValue = null;
+            switch (param) {
+                case MIN_SHARED_TARGETS ->
+                    paramValue = String.valueOf(minSharedTargets);
+            }
+            requestBuilder.addQueryParameter(param.name(), paramValue);
+        }
+        return requestBuilder;
+
+    }
+
+    private MicroserviceHttpClient.PostRequestBuilder addGlobalQueryParams(PostRequestBuilder requestBuilder) {
+
+        String callbackURL = RemoteLocal.getDomain() + RemoteLocal.getInternalMessageApiEndpoint() + WorkflowGazeProps.ENDPOINT_GAZE;
+
+        for (Globals.GlobalQueryParams param : Globals.GlobalQueryParams.values()) {
+            String paramValue = null;
+            switch (param) {
+                case SESSION_ID ->
+                    paramValue = sessionId;
+                case JOB_ID ->
+                    paramValue = jobId;
+                case CALLBACK_URL ->
+                    paramValue = callbackURL;
+            }
+            requestBuilder.addQueryParameter(param.name(), paramValue);
+        }
+        return requestBuilder;
     }
 
     public void gotoVV() {
-        String apiPort = applicationProperties.getPrivateProperties().getProperty("nocode_api_port");
         Path userGeneratedVosviewerDirectoryFullPath = applicationProperties.getUserGeneratedVosviewerDirectoryFullPath(shareVVPublicly);
         Path relativePathFromProjectRootToVosviewerFolder = applicationProperties.getRelativePathFromProjectRootToVosviewerFolder();
         Path vosviewerRootFullPath = applicationProperties.getVosviewerRootFullPath();
-        String linkToVosViewer = ExportToVosViewer.finishOpsFromGraphAsJson(dataPersistenceUniqueId, userGeneratedVosviewerDirectoryFullPath, relativePathFromProjectRootToVosviewerFolder, vosviewerRootFullPath);
+        String linkToVosViewer = ExportToVosViewer.finishOpsFromGraphAsJson(jobId, userGeneratedVosviewerDirectoryFullPath, relativePathFromProjectRootToVosviewerFolder, vosviewerRootFullPath);
         if (linkToVosViewer != null && !linkToVosViewer.isBlank()) {
             try {
                 ExternalContext externalContext = FacesContext.getCurrentInstance().getExternalContext();
@@ -422,52 +383,45 @@ public class GazeBean implements Serializable {
                 sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Navigation Error", "Could not navigate to VosViewer.");
             }
         } else {
-             sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "Navigation Error", "Could not generate link to VosViewer. Ensure analysis completed successfully.");
+            sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "Navigation Error", "Could not generate link to VosViewer. Ensure analysis completed successfully.");
         }
     }
 
     public void gotoGephiLite() {
-         if (dataPersistenceUniqueId == null || dataPersistenceUniqueId.isEmpty()) {
-             sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "Navigation Error", "Analysis ID not set. Cannot navigate to Gephi Lite.");
-             return;
-         }
-        // This method uses a helper class that handles the export and link generation.
-        // It does not directly use MicroserviceHttpClient for the export itself,
-        // but the helper might.
+        if (jobId == null || jobId.isEmpty()) {
+            sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "Navigation Error", "Analysis ID not set. Cannot navigate to Gephi Lite.");
+            return;
+        }
         Path userGeneratedGephiLiteDirectoryFullPath = applicationProperties.getUserGeneratedGephiLiteDirectoryFullPath(shareGephiLitePublicly);
         Path relativePathFromProjectRootToGephiLiteFolder = applicationProperties.getRelativePathFromProjectRootToGephiLiteFolder();
         Path gephiLiteRootFullPath = applicationProperties.getGephiLiteRootFullPath();
-        // The original code passed 'gexf' String here, but the refactored code relies on dataPersistenceUniqueId
-        // to locate the GEXF file on disk. Assuming ExportToGephiLite is adapted for this.
-        String urlToGephiLite = ExportToGephiLite.exportAndReturnLink(dataPersistenceUniqueId, userGeneratedGephiLiteDirectoryFullPath, relativePathFromProjectRootToGephiLiteFolder, gephiLiteRootFullPath);
+        String urlToGephiLite = ExportToGephiLite.exportAndReturnLink(jobId, userGeneratedGephiLiteDirectoryFullPath, relativePathFromProjectRootToGephiLiteFolder, gephiLiteRootFullPath);
         if (urlToGephiLite != null && !urlToGephiLite.isBlank()) {
-             ExternalContext externalContext = FacesContext.getCurrentInstance().getExternalContext();
-             try {
-                 externalContext.redirect(urlToGephiLite);
-             } catch (IOException ex) {
-                 LOG.log(Level.SEVERE, "Error redirecting to Gephi Lite", ex);
-                 sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Navigation Error", "Could not navigate to Gephi Lite.");
-             }
+            ExternalContext externalContext = FacesContext.getCurrentInstance().getExternalContext();
+            try {
+                externalContext.redirect(urlToGephiLite);
+            } catch (IOException ex) {
+                LOG.log(Level.SEVERE, "Error redirecting to Gephi Lite", ex);
+                sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Navigation Error", "Could not navigate to Gephi Lite.");
+            }
         } else {
-             sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "Navigation Error", "Could not generate link to Gephi Lite. Ensure analysis completed successfully.");
+            sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "Navigation Error", "Could not generate link to Gephi Lite. Ensure analysis completed successfully.");
         }
     }
 
     public StreamedContent getFileToSave() {
-        if (dataPersistenceUniqueId == null || dataPersistenceUniqueId.isEmpty()) {
-             LOG.warning("Cannot provide GEXF file for download, dataPersistenceUniqueId is null or empty.");
-             sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "Download Error", "Analysis ID not set. Cannot download.");
-             return new DefaultStreamedContent();
-         }
+        if (jobId == null || jobId.isEmpty()) {
+            LOG.warning("Cannot provide GEXF file for download, jobId is null or empty.");
+            sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "Download Error", "Job ID not set. Cannot download.");
+            return new DefaultStreamedContent();
+        }
         try {
-            Path tempFolderForAllTasks = applicationProperties.getTempFolderFullPath();
-            Path gexfFilePath = Path.of(tempFolderForAllTasks.toString(), dataPersistenceUniqueId + "_result.gexf");
-
+            Path gexfFilePath = props.getGexfFilePath(jobId);
             if (Files.exists(gexfFilePath)) {
                 String gexfAsString = Files.readString(gexfFilePath, StandardCharsets.UTF_8);
                 return GEXFSaver.exportGexfAsStreamedFile(gexfAsString, "results_gaze");
             } else {
-                LOG.log(Level.WARNING, "GEXF result file not found for dataId: {0}", dataPersistenceUniqueId);
+                LOG.log(Level.WARNING, "GEXF result file not found for dataId: {0}", jobId);
                 sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "Download Error", "GEXF file not found.");
                 return new DefaultStreamedContent();
             }
@@ -487,6 +441,15 @@ public class GazeBean implements Serializable {
     }
 
     public String getNodesAsJson() {
+        try {
+            Path pathOfTopNodesData = globals.getTopNetworkVivaGraphFormattedFilePath(jobId);
+            String json = Files.readString(pathOfTopNodesData);
+            JsonObject jsonObject = Json.createReader(new StringReader(json)).readObject();
+            nodesAsJson = Converters.turnJsonObjectToString(jsonObject.getJsonObject("nodes"));
+            return nodesAsJson;
+        } catch (IOException ex) {
+            LOG.log(Level.SEVERE, "Error loading nodes as json", ex);
+        }
         return nodesAsJson;
     }
 
@@ -495,6 +458,15 @@ public class GazeBean implements Serializable {
     }
 
     public String getEdgesAsJson() {
+        try {
+            Path pathOfTopNodesData = globals.getTopNetworkVivaGraphFormattedFilePath(jobId);
+            String json = Files.readString(pathOfTopNodesData);
+            JsonObject jsonObject = Json.createReader(new StringReader(json)).readObject();
+            edgesAsJson = Converters.turnJsonObjectToString(jsonObject.getJsonObject("edges"));
+            return edgesAsJson;
+        } catch (IOException ex) {
+            LOG.log(Level.SEVERE, "Error loading edges as json", ex);
+        }
         return edgesAsJson;
     }
 

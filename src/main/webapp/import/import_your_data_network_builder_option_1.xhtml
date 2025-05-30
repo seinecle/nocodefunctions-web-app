@@ -127,13 +127,13 @@
                                 <p:commandButton
                                     value="#{text['general.verbs.compute']}"
                                     widgetVar="gazeLaunchButton"
-                                    action="#{gazeBean.runCoocAnalysis}"
+                                    action="#{workflowGazeBean.runCoocAnalysis}"
                                     onclick="PF('pbAjaxLong').start();PF('gazeLaunchButton').disable()"
                                     styleClass="btn btn-primary"
                                     rendered="#{not empty dataImportBean.dataInSheets}"
                                     update=":notifications" />
                                 <h:panelGroup id="pollingArea">
-                                    <p:poll listener="#{gazeBean.pollingDidTopNodesArrive}" process="pollingArea" update="pollingArea :notifications" interval="2" />
+                                    <p:poll listener="#{workflowGazeBean.pollingDidTopNodesArrive}" process="pollingArea" update="pollingArea :notifications" interval="2" />
                                 </h:panelGroup>
                             </h:form>
                         </p:outputPanel>
@@ -141,7 +141,7 @@
                         <p:spacer height="20"/>
 
                         <p:tabView value="#{dataImportBean.dataInSheets}" var="dataInSheet" id="tab">
-                            <p:ajax event="tabChange" listener="#{gazeBean.onTabChange(dataInSheet.name)}"/>
+                            <p:ajax event="tabChange" listener="#{workflowGazeBean.onTabChange(dataInSheet.name)}"/>
                             <p:tab title="#{dataInSheet.name}">
                                 <div class="card">
                                     <h:form id="formTable">

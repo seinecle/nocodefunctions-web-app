@@ -25,14 +25,14 @@
             <!-- Open Graph / Facebook -->
             <meta property="og:type" content="website"/>
             <meta property="og:site_name" content="Nocode functions"/>
-            <meta property="og:url" content="https://nocodefunctions.com/gaze/network_builder_tool.html"/>
+            <meta property="og:url" content="https://nocodefunctions.com/workflow-gaze/network_builder_tool.html"/>
             <meta property="og:title" content="#{text['gaze.network_builder.title']}"/>
             <meta property="og:description" content="#{text['gaze.network_builder.description']}"/>
             <meta property="og:image" content="/images/workflow_medium.jpg"/>
 
             <!-- Twitter -->
             <meta property="twitter:card" content="summary_large_image"/>
-            <meta property="twitter:url" content="https://nocodefunctions.com/gaze/network_builder_tool.html"/>
+            <meta property="twitter:url" content="https://nocodefunctions.com/workflow-gaze/network_builder_tool.html"/>
             <meta property="twitter:title" content="#{text['gaze.network_builder.title']}"/>
             <meta property="twitter:description" content="#{text['gaze.network_builder.description']}"/>
             <meta property="twitter:image" content="/images/workflow_medium.jpg"/>
@@ -91,7 +91,7 @@
                                 <p:outputLabel escape="false" value="#{text['gaze.network_builder.apply_pmi_correction']}"/>
                                 <br/>
                                 <br/>
-                                <p:selectBooleanCheckbox value="#{gazeBean.applyPMI}" itemLabel="#{text['general.message.use_pmi']}">
+                                <p:selectBooleanCheckbox value="#{workflowGazeBean.applyPMI}" itemLabel="#{text['general.message.use_pmi']}">
                                 </p:selectBooleanCheckbox>                
                             </p>
                         </p:tab>
@@ -113,7 +113,7 @@
                                 <br/>
                                 <br/>
                                 <p:outputLabel for="@next" value="#{text['general.message.at_least']}"/>
-                                <p:spinner value="#{gazeBean.minSharedTargets}">
+                                <p:spinner value="#{workflowGazeBean.minSharedTargets}">
                                     <f:ajax />
                                 </p:spinner>
                             </p>

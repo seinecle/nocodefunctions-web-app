@@ -110,7 +110,7 @@ public class HtmlTextImportToSimpleLines implements Serializable {
                         .withPort(Integer.valueOf(privateProperties.getProperty("nocode_import_port")))
                         .withHost("localhost")
                         .withPath("api/import/html/getRawTextFromLinks")
-                        .addParameter("dataPersistenceId", dataPersistenceUniqueId)
+                        .addParameter("jobId", dataPersistenceUniqueId)
                         .toUri();
 
                 HttpRequest request = HttpRequest.newBuilder()
@@ -165,7 +165,7 @@ public class HtmlTextImportToSimpleLines implements Serializable {
                     .withPort(Integer.valueOf(privateProperties.getProperty("nocode_import_port")))
                     .withHost("localhost")
                     .withPath("api/import/html/getLinksContainedInPage")
-                    .addParameter("dataPersistenceId", dataPersistenceUniqueId)
+                    .addParameter("jobId", dataPersistenceUniqueId)
                     .addParameter("url", urlWebPage)
                     .toUri();
 
@@ -230,7 +230,7 @@ public class HtmlTextImportToSimpleLines implements Serializable {
                     .withPort(Integer.valueOf(privateProperties.getProperty("nocode_import_port")))
                     .withHost("localhost")
                     .withPath("api/import/html/getPagesContainedInWebsite")
-                    .addParameter("dataPersistenceId", dataPersistenceUniqueId)
+                    .addParameter("jobId", dataPersistenceUniqueId)
                     .addParameter("url", urlWebSite)
                     .addParameter("maxUrls", String.valueOf(urlsToCrawl))
                     .addParameter("exclusionTerms", commaSeparatedValuesExclusionTerms)

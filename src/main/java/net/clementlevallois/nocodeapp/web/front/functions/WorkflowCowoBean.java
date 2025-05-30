@@ -31,8 +31,8 @@ import java.nio.file.StandardOpenOption;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import net.clementlevallois.functions.model.CommonExpressions;
-import net.clementlevallois.functions.model.WorkflowCowoProperties;
+import net.clementlevallois.functions.model.Globals;
+import net.clementlevallois.functions.model.WorkflowCowoProps;
 import net.clementlevallois.importers.model.DataFormatConverter;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.LocaleComparator;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
@@ -86,7 +86,8 @@ public class WorkflowCowoBean implements Serializable {
     private String dataPersistenceUniqueId = "";
     private String sessionId;
     private String runButtonText = "";
-    private WorkflowCowoProperties functionProps;
+    private WorkflowCowoProps functionProps;
+    private Globals globals;
 
     @Inject
     BackToFrontMessengerBean logBean;
@@ -111,11 +112,12 @@ public class WorkflowCowoBean implements Serializable {
 
     @PostConstruct
     public void init() {
-        sessionBean.setFunction(WorkflowCowoProperties.NAME);
+        sessionBean.setFunction(WorkflowCowoProps.NAME);
         sessionId = FacesContext.getCurrentInstance().getExternalContext().getSessionId(false);
         logBean.setSessionId(sessionId);
         runButtonText = sessionBean.getLocaleBundle().getString("general.verbs.compute");
-        functionProps = new WorkflowCowoProperties(applicationProperties.getTempFolderFullPath());
+        functionProps = new WorkflowCowoProps(applicationProperties.getTempFolderFullPath());
+        globals = new Globals(applicationProperties.getTempFolderFullPath());
     }
 
     public Integer getProgress() {
@@ -160,7 +162,7 @@ public class WorkflowCowoBean implements Serializable {
     }
 
     public void pollingDidTopNodesArrive() {
-        Path pathOfTopNodesData = functionProps.getTopNetworkFilePath(dataPersistenceUniqueId);
+        Path pathOfTopNodesData = globals.getTopNetworkVivaGraphFormattedFilePath(dataPersistenceUniqueId);
         boolean topNodesHaveArrivedSignal = Files.exists(pathOfTopNodesData);
 
         if (topNodesHaveArrivedSignal) {
@@ -169,13 +171,13 @@ public class WorkflowCowoBean implements Serializable {
             progress = 100;
             PrimeFaces.current().ajax().update("formComputeButton:computeButton", "notifications", "pollingPanel", "progressComponentId");
             FacesContext context = FacesContext.getCurrentInstance();
-            context.getApplication().getNavigationHandler().handleNavigation(context, null, "/" + WorkflowCowoProperties.NAME + "/" + CommonExpressions.RESULTS_PAGE + CommonExpressions.FACES_REDIRECT);
+            context.getApplication().getNavigationHandler().handleNavigation(context, null, "/" + WorkflowCowoProps.NAME + "/" + Globals.RESULTS_PAGE + Globals.FACES_REDIRECT);
         }
     }
 
     public void navigateToResults(AjaxBehaviorEvent event) {
         FacesContext context = FacesContext.getCurrentInstance();
-        context.getApplication().getNavigationHandler().handleNavigation(context, null, "/" + WorkflowCowoProperties.NAME + "/" + CommonExpressions.RESULTS_PAGE + CommonExpressions.FACES_REDIRECT);
+        context.getApplication().getNavigationHandler().handleNavigation(context, null, "/" + WorkflowCowoProps.NAME + "/" + Globals.RESULTS_PAGE + Globals.FACES_REDIRECT);
     }
 
     private void sendCallToCowoWorkflow() {
@@ -198,8 +200,8 @@ public class WorkflowCowoBean implements Serializable {
                 .add("userSuppliedStopwords", userSuppliedStopwordsBuilder)
                 .build();
 
-        String callbackURL = RemoteLocal.getDomain() + RemoteLocal.getInternalMessageApiEndpoint() + WorkflowCowoProperties.ENDPOINT;
-        microserviceClient.api().post(WorkflowCowoProperties.ENDPOINT)
+        String callbackURL = RemoteLocal.getDomain() + RemoteLocal.getInternalMessageApiEndpoint() + WorkflowCowoProps.ENDPOINT;
+        microserviceClient.api().post(WorkflowCowoProps.ENDPOINT)
                 .withJsonPayload(jsonPayload)
                 .addQueryParameter("lang", String.join(",", selectedLanguages))
                 .addQueryParameter("minCharNumber", String.valueOf(minCharNumber))
@@ -213,7 +215,7 @@ public class WorkflowCowoBean implements Serializable {
                 .addQueryParameter("maxNGram", String.valueOf(maxNGram))
                 .addQueryParameter("typeCorrection", correctionType)
                 .addQueryParameter("sessionId", sessionId)
-                .addQueryParameter("dataPersistenceId", dataPersistenceUniqueId)
+                .addQueryParameter("jobId", dataPersistenceUniqueId)
                 .addQueryParameter("callbackURL", callbackURL)
                 .sendAsync(HttpResponse.BodyHandlers.ofString())
                 .thenAccept(response -> {
@@ -329,7 +331,7 @@ public class WorkflowCowoBean implements Serializable {
 
     public String getNodesAsJson() {
         try {
-            Path pathOfTopNodesData = functionProps.getTopNetworkFilePath(dataPersistenceUniqueId);
+            Path pathOfTopNodesData = globals.getTopNetworkVivaGraphFormattedFilePath(dataPersistenceUniqueId);
             String json = Files.readString(pathOfTopNodesData);
             JsonObject jsonObject = Json.createReader(new StringReader(json)).readObject();
             nodesAsJson = Converters.turnJsonObjectToString(jsonObject.getJsonObject("nodes"));
@@ -346,7 +348,7 @@ public class WorkflowCowoBean implements Serializable {
 
     public String getEdgesAsJson() {
         try {
-            Path pathOfTopNodesData = functionProps.getTopNetworkFilePath(dataPersistenceUniqueId);
+            Path pathOfTopNodesData = globals.getTopNetworkVivaGraphFormattedFilePath(dataPersistenceUniqueId);
             String json = Files.readString(pathOfTopNodesData);
             JsonObject jsonObject = Json.createReader(new StringReader(json)).readObject();
             edgesAsJson = Converters.turnJsonObjectToString(jsonObject.getJsonObject("edges"));

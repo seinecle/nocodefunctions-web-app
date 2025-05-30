@@ -170,9 +170,6 @@ public class PdfRegionExtractorBean implements Serializable {
     }
 
     public CroppedImage getSelectedRegion() {
-        // This method is likely called by the UI component renderer.
-        // It needs to return the CroppedImage for the currently displayed page index.
-        // The UI component should pass the index via request parameter.
         FacesContext context = FacesContext.getCurrentInstance();
         String indexStr = context.getExternalContext().getRequestParameterMap().get("rowIndex2");
         int index = 0;
@@ -246,12 +243,7 @@ public class PdfRegionExtractorBean implements Serializable {
         }
 
         // Update button state if a valid region is selected
-        if (selectedRegion != null && (selectedRegion.getWidth() > 0 || selectedRegion.getHeight() > 0)) {
-             runButtonDisabled = false;
-        } else {
-             runButtonDisabled = true;
-        }
-         // Trigger UI update for the button state
+        runButtonDisabled = !(selectedRegion != null && (selectedRegion.getWidth() > 0 || selectedRegion.getHeight() > 0));
         PrimeFaces.current().ajax().update("runButtonId"); // Replace with your button's actual ID
     }
 
@@ -304,7 +296,6 @@ public class PdfRegionExtractorBean implements Serializable {
             // Send async call for each PDF
             CompletableFuture<Void> future = microserviceClient.importService().post("/api/import/pdf/extract-region")
                 .withJsonPayload(jsonPayload) // Add the PDF data payload
-                // Add extraction parameters as query parameters
                 .addQueryParameter("owner", owner)
                 .addQueryParameter("allPages", String.valueOf(allPages))
                 .addQueryParameter("selectedPage", String.valueOf(selectedPage)) // Send even if allPages is true, microservice decides
@@ -460,8 +451,7 @@ public class PdfRegionExtractorBean implements Serializable {
              Throwable cause = cex.getCause();
              LOG.log(Level.SEVERE, "Error during asynchronous export service call (CompletionException)", cause);
              String errorMessage = "Error exporting data: " + cause.getMessage();
-              if (cause instanceof MicroserviceCallException) {
-                  MicroserviceCallException msce = (MicroserviceCallException) cause;
+              if (cause instanceof MicroserviceCallException msce) {
                   errorMessage = "Error exporting data: Status " + msce.getStatusCode() + ", " + msce.getErrorBody();
               }
              sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Export Failed", errorMessage);

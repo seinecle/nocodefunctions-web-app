@@ -21,6 +21,7 @@ import java.util.Properties;
 import java.util.concurrent.CompletableFuture;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import net.clementlevallois.functions.model.Globals;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.ApplicationPropertiesBean;
 
 @ApplicationScoped
@@ -33,7 +34,7 @@ public class MicroserviceHttpClient {
 
     private HttpClient httpClient;
     private Properties privateProperties;
-    private static final String MICROSERVICE_ENDPOINT = "/api/";
+    private static final String MICROSERVICE_ENDPOINT = Globals.API_ENDPOINT_ROOT;
 
     @PostConstruct
     public void init() {

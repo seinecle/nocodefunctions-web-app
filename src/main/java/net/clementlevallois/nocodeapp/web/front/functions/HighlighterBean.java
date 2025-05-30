@@ -18,6 +18,7 @@ import java.util.logging.Logger;
 import java.util.concurrent.CompletionException;
 import jakarta.faces.application.FacesMessage;
 import java.util.concurrent.CompletableFuture;
+import net.clementlevallois.functions.model.FunctionHighlighter;
 import net.clementlevallois.importers.model.CellRecord;
 import net.clementlevallois.importers.model.SheetModel;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
@@ -59,7 +60,7 @@ public class HighlighterBean implements Serializable {
 
     @PostConstruct
     public void init() {
-        sessionBean.setFunction("highlighter");
+        sessionBean.setFunction(FunctionHighlighter.NAME);
     }
 
     public void onload() {

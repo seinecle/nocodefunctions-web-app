@@ -28,6 +28,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
+import net.clementlevallois.functions.model.FunctionPdfMatcher;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.importdata.DataImportBean;
 import net.clementlevallois.functions.model.Occurrence;
@@ -78,7 +79,7 @@ public class PdfMatcherBean implements Serializable {
 
     @PostConstruct
     public void init() {
-        sessionBean.setFunction("pdfmatcher");
+        sessionBean.setFunction(FunctionPdfMatcher.NAME);
         results = new ConcurrentHashMap();
         sessionId = FacesContext.getCurrentInstance().getExternalContext().getSessionId(false);
 
@@ -172,9 +173,8 @@ public class PdfMatcherBean implements Serializable {
                     .build();
 
             // Send async call for each document
-            CompletableFuture<Void> future = microserviceClient.api().post("/api/pdfmatcher")
-                    .withJsonPayload(jsonPayload) // Add the core data payload
-                    // Add parameters as query parameters
+            CompletableFuture<Void> future = microserviceClient.api().post(FunctionPdfMatcher.ENDPOINT)
+                    .withJsonPayload(jsonPayload)
                     .addQueryParameter("startOfPage", sessionBean.getLocaleBundle().getString("pdfmatcher.tool.start_of_page"))
                     .addQueryParameter("endOfPage", sessionBean.getLocaleBundle().getString("pdfmatcher.tool.end_of_page"))
                     .addQueryParameter("typeOfContext", typeOfContext)
@@ -182,12 +182,10 @@ public class PdfMatcherBean implements Serializable {
                     .addQueryParameter("searchedTerm", searchedTerm)
                     .addQueryParameter("fileName", oneDoc.getName()) // Pass filename as parameter
                     .addQueryParameter("sessionId", sessionId) // Pass session ID
-                    // Add context-specific parameters
                     .addQueryParameter("nbWords", String.valueOf(nbWords)) // Always send both, microservice decides based on typeOfContext
                     .addQueryParameter("nbLines", String.valueOf(nbLines))
                     .sendAsync(HttpResponse.BodyHandlers.ofByteArray()) // Expecting byte array (serialized List<Occurrence>)
                     .thenAccept(resp -> {
-                        // This callback runs on HttpClient's thread pool
                         if (resp.statusCode() == 200) {
                             byte[] body = resp.body();
                             try (ByteArrayInputStream bis = new ByteArrayInputStream(body); ObjectInputStream ois = new ObjectInputStream(bis)) {
@@ -214,8 +212,7 @@ public class PdfMatcherBean implements Serializable {
                         // This callback runs on HttpClient's thread pool if an exception occurs during the call
                         LOG.log(Level.SEVERE, "Exception during async PdfMatcher call for document " + oneDoc.getName(), exception);
                         String errorMessage = "Communication error for " + oneDoc.getName() + ": " + exception.getMessage();
-                        if (exception.getCause() instanceof MicroserviceCallException) {
-                            MicroserviceCallException msce = (MicroserviceCallException) exception.getCause();
+                        if (exception.getCause() instanceof MicroserviceCallException msce) {
                             errorMessage = "Communication error for " + oneDoc.getName() + ": Status " + msce.getStatusCode() + ", " + msce.getErrorBody();
                         }
                         // Handle communication error - store an empty list or error indicator

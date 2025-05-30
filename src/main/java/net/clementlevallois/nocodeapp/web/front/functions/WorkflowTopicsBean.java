@@ -56,10 +56,25 @@ import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
 import org.primefaces.model.file.UploadedFile;
 import java.net.http.HttpResponse;
-import net.clementlevallois.functions.model.CommonExpressions;
-import net.clementlevallois.functions.model.WorkflowTopicsProperties;
+import net.clementlevallois.functions.model.Globals;
+import net.clementlevallois.functions.model.Globals.GlobalQueryParams;
+import static net.clementlevallois.functions.model.Globals.GlobalQueryParams.CALLBACK_URL;
+import static net.clementlevallois.functions.model.Globals.GlobalQueryParams.JOB_ID;
+import static net.clementlevallois.functions.model.Globals.GlobalQueryParams.SESSION_ID;
+import net.clementlevallois.functions.model.WorkflowTopicsProps;
+import static net.clementlevallois.functions.model.WorkflowTopicsProps.BodyJsonKeys.USER_SUPPLIED_STOPWORDS;
+import net.clementlevallois.functions.model.WorkflowTopicsProps.QueryParams;
+import static net.clementlevallois.functions.model.WorkflowTopicsProps.QueryParams.IS_SCIENTIFIC_CORPUS;
+import static net.clementlevallois.functions.model.WorkflowTopicsProps.QueryParams.LANG;
+import static net.clementlevallois.functions.model.WorkflowTopicsProps.QueryParams.LEMMATIZE;
+import static net.clementlevallois.functions.model.WorkflowTopicsProps.QueryParams.MIN_CHAR_NUMBER;
+import static net.clementlevallois.functions.model.WorkflowTopicsProps.QueryParams.MIN_TERM_FREQ;
+import static net.clementlevallois.functions.model.WorkflowTopicsProps.QueryParams.PRECISION;
+import static net.clementlevallois.functions.model.WorkflowTopicsProps.QueryParams.REMOVE_ACCENTS;
+import static net.clementlevallois.functions.model.WorkflowTopicsProps.QueryParams.REPLACE_STOPWORDS;
 import net.clementlevallois.nocodeapp.web.front.http.MicroserviceHttpClient;
 import net.clementlevallois.nocodeapp.web.front.http.MicroserviceHttpClient.MicroserviceCallException;
+import net.clementlevallois.nocodeapp.web.front.http.MicroserviceHttpClient.PostRequestBuilder;
 
 @Named
 @SessionScoped
@@ -84,14 +99,14 @@ public class WorkflowTopicsBean implements Serializable {
     private UploadedFile fileUserStopwords;
 
     private String runButtonText = "";
-    private String dataPersistenceUniqueId = "";
+    private String jobId = "";
     private volatile boolean taskComplete = false;
     private volatile boolean taskSuccess = false;
     private String sessionId;
 
     private Map<Integer, String> mapOfLines;
 
-    private WorkflowTopicsProperties props;
+    private WorkflowTopicsProps props;
 
     @Inject
     BackToFrontMessengerBean logBean;
@@ -122,8 +137,8 @@ public class WorkflowTopicsBean implements Serializable {
         runButtonText = sessionBean.getLocaleBundle().getString("general.verbs.compute");
         sessionId = FacesContext.getCurrentInstance().getExternalContext().getSessionId(false);
         logBean.setSessionId(sessionId);
-        props = new WorkflowTopicsProperties(applicationProperties.getTempFolderFullPath());
-        sessionBean.setFunction(WorkflowTopicsProperties.NAME);
+        props = new WorkflowTopicsProps(applicationProperties.getTempFolderFullPath());
+        sessionBean.setFunction(WorkflowTopicsProps.NAME);
     }
 
     public Integer getProgress() {
@@ -147,18 +162,21 @@ public class WorkflowTopicsBean implements Serializable {
 
         try {
             if (simpleLinesImportBean.getDataPersistenceUniqueId() != null) {
-                this.dataPersistenceUniqueId = simpleLinesImportBean.getDataPersistenceUniqueId();
+                this.jobId = simpleLinesImportBean.getDataPersistenceUniqueId();
             } else {
                 generateInputDataAndDataId();
-                if (this.dataPersistenceUniqueId == null || this.dataPersistenceUniqueId.isEmpty()) {
+                if (this.jobId == null || this.jobId.isEmpty()) {
                     throw new IllegalStateException("Data persistence ID could not be generated.");
                 }
             }
 
-            final JsonObject parameters = buildRequestParameters();
+            var requestBuilder = microserviceClient.api().post(WorkflowTopicsProps.ENDPOINT);
+
+            addJsonBody(requestBuilder);
+            addQueryParams(requestBuilder);
 
             managedExecutorService.submit(() -> {
-                sendRequestToMicroserviceAsync(parameters);
+                sendRequestToMicroserviceAsync(requestBuilder);
             });
 
             logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.starting_analysis"));
@@ -172,12 +190,9 @@ public class WorkflowTopicsBean implements Serializable {
             taskSuccess = false;
         }
     }
-    
-    private JsonObject buildRequestParameters() {
+
+    private PostRequestBuilder addJsonBody(PostRequestBuilder requestBuilder) {
         JsonObjectBuilder overallObject = Json.createObjectBuilder();
-        if (selectedLanguage == null) {
-            selectedLanguage = "en";
-        }
 
         JsonObjectBuilder userSuppliedStopwordsBuilder = Json.createObjectBuilder();
         if (fileUserStopwords != null && fileUserStopwords.getFileName() != null) {
@@ -193,35 +208,66 @@ public class WorkflowTopicsBean implements Serializable {
                 userSuppliedStopwordsBuilder.add(String.valueOf(index++), stopword);
             }
         }
-        overallObject.add("userSuppliedStopwords", userSuppliedStopwordsBuilder);
-        return overallObject.build();
+        overallObject.add(USER_SUPPLIED_STOPWORDS.name(), userSuppliedStopwordsBuilder);
+        return requestBuilder.withJsonPayload(overallObject.build());
+    }
+
+    private PostRequestBuilder addQueryParams(PostRequestBuilder requestBuilder) {
+        if (selectedLanguage == null) {
+            selectedLanguage = "en";
+        }
+        for (QueryParams param : QueryParams.values()) {
+            String paramValue = null;
+            switch (param) {
+                case LANG ->
+                    paramValue = selectedLanguage;
+                case REPLACE_STOPWORDS ->
+                    paramValue = String.valueOf(replaceStopwords);
+                case IS_SCIENTIFIC_CORPUS ->
+                    paramValue = String.valueOf(scientificCorpus);
+                case LEMMATIZE ->
+                    paramValue = String.valueOf(lemmatize);
+                case REMOVE_ACCENTS ->
+                    paramValue = String.valueOf(removeNonAsciiCharacters);
+                case PRECISION ->
+                    paramValue = String.valueOf(precision);
+                case MIN_CHAR_NUMBER ->
+                    paramValue = String.valueOf(minCharNumber);
+                case MIN_TERM_FREQ ->
+                    paramValue = String.valueOf(minTermFreq);
+            }
+            requestBuilder.addQueryParameter(param.name(), paramValue);
+        }
+
+        String callbackURL = RemoteLocal.getDomain() + RemoteLocal.getInternalMessageApiEndpoint() + WorkflowTopicsProps.ENDPOINT;
+
+        for (GlobalQueryParams param : GlobalQueryParams.values()) {
+            String paramValue = null;
+            switch (param) {
+                case SESSION_ID ->
+                    paramValue = sessionId;
+                case JOB_ID ->
+                    paramValue = jobId;
+                case CALLBACK_URL ->
+                    paramValue = callbackURL;
+            }
+            requestBuilder.addQueryParameter(param.name(), paramValue);
+        }
+        return requestBuilder;
     }
 
     @Asynchronous
-    private void sendRequestToMicroserviceAsync(JsonObject parameters) {
-        String callbackURL = RemoteLocal.getDomain() + RemoteLocal.getInternalMessageApiEndpoint() + WorkflowTopicsProperties.ENDPOINT;
-        microserviceClient.api().post(WorkflowTopicsProperties.ENDPOINT)
-                .withJsonPayload(parameters)
-                .addQueryParameter("lang", selectedLanguage)
-                .addQueryParameter("replaceStopwords", String.valueOf(replaceStopwords))
-                .addQueryParameter("isScientificCorpus", String.valueOf(scientificCorpus))
-                .addQueryParameter("lemmatize", String.valueOf(lemmatize))
-                .addQueryParameter("removeAccents", String.valueOf(removeNonAsciiCharacters))
-                .addQueryParameter("precision", String.valueOf(precision))
-                .addQueryParameter("minCharNumber", String.valueOf(minCharNumber))
-                .addQueryParameter("sessionId", sessionId)
-                .addQueryParameter("dataPersistenceId", dataPersistenceUniqueId)
-                .addQueryParameter("callbackURL", callbackURL)
-                .sendAsync(HttpResponse.BodyHandlers.ofString())
+    private void sendRequestToMicroserviceAsync(PostRequestBuilder requestBuilder) {
+        requestBuilder.sendAsync(HttpResponse.BodyHandlers.ofString())
                 .thenAccept(response -> {
                     if (response.statusCode() != 200) {
                         String errorBody = response.body();
-                        LOG.log(Level.SEVERE, "Microservice task submission failed for dataId {0}. Status: {1}, Body: {2}", new Object[]{dataPersistenceUniqueId, response.statusCode(), errorBody});
+                        LOG.log(Level.SEVERE, "Microservice task submission failed for dataId {0}. Status: {1}, Body: {2}", new Object[]{jobId, response.statusCode(), errorBody});
                         sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "topics failed", "Could not send to topics microservice: " + errorBody);
                     }
                 })
                 .exceptionally(e -> {
-                    LOG.log(Level.SEVERE, "Exception during microservice task submission for dataId " + dataPersistenceUniqueId, e);
+                    LOG.log(Level.SEVERE, "Exception during microservice task submission for dataId " + jobId, e);
                     String errorMessage = "Exception communicating with microservice: " + e.getMessage();
                     if (e.getCause() instanceof MicroserviceCallException msce) {
                         errorMessage += " (Status: " + msce.getStatusCode() + ", URI: " + msce.getUri() + ", Body: " + msce.getErrorBody() + ")";
@@ -232,12 +278,12 @@ public class WorkflowTopicsBean implements Serializable {
     }
 
     public void checkTaskStatusForPolling() {
-        if (sessionId == null || dataPersistenceUniqueId == null || taskComplete) {
+        if (sessionId == null || jobId == null || taskComplete) {
             return;
         }
 
-        Path pathSignalWorkflowwComplete = props.getTopicsWorkflowCompleteFilePath(dataPersistenceUniqueId);
-        boolean workflowComplete = Files.exists(pathSignalWorkflowwComplete);
+        Path pathSignalWorkflowComplete = props.getWorkflowCompleteFilePath(jobId);
+        boolean workflowComplete = Files.exists(pathSignalWorkflowComplete);
 
         if (workflowComplete) {
             runButtonDisabled = false;
@@ -245,7 +291,7 @@ public class WorkflowTopicsBean implements Serializable {
             progress = 100;
             PrimeFaces.current().ajax().update("formComputeButton:computeButton", "notifications", "pollingPanel", "progressComponentId");
             FacesContext context = FacesContext.getCurrentInstance();
-            context.getApplication().getNavigationHandler().handleNavigation(context, null, "/" + WorkflowTopicsProperties.NAME + "/" + CommonExpressions.RESULTS_PAGE + CommonExpressions.FACES_REDIRECT);
+            context.getApplication().getNavigationHandler().handleNavigation(context, null, "/" + WorkflowTopicsProps.NAME + "/" + Globals.RESULTS_PAGE + Globals.FACES_REDIRECT);
         }
 
         ConcurrentLinkedDeque<MessageFromApi> messagesFromApi = WatchTower.getDequeAPIMessages().get(sessionId);
@@ -254,11 +300,11 @@ public class WorkflowTopicsBean implements Serializable {
             Iterator<MessageFromApi> it = messagesFromApi.iterator();
             while (it.hasNext()) {
                 MessageFromApi msg = it.next();
-                if (msg.getDataPersistenceId() != null && msg.getDataPersistenceId().equals(dataPersistenceUniqueId)) {
-                    LOG.log(Level.INFO, "Polling detected message for dataId {0}: {1}", new Object[]{dataPersistenceUniqueId, msg.getInfo()});
+                if (msg.getjobId() != null && msg.getjobId().equals(jobId)) {
+                    LOG.log(Level.INFO, "Polling detected message for dataId {0}: {1}", new Object[]{jobId, msg.getInfo()});
                     switch (msg.getInfo()) {
                         case ERROR -> {
-                            LOG.log(Level.WARNING, "Polling detected ERROR message for dataId {0}: {1}", new Object[]{dataPersistenceUniqueId, msg.getMessage()});
+                            LOG.log(Level.WARNING, "Polling detected ERROR message for dataId {0}: {1}", new Object[]{jobId, msg.getMessage()});
                             taskComplete = true;
                             taskSuccess = false;
                             runButtonDisabled = false;
@@ -280,17 +326,17 @@ public class WorkflowTopicsBean implements Serializable {
         }
     }
 
-     public void navigateToResults(AjaxBehaviorEvent event) {
+    public void navigateToResults(AjaxBehaviorEvent event) {
         FacesContext context = FacesContext.getCurrentInstance();
-        context.getApplication().getNavigationHandler().handleNavigation(context, null, "/" + WorkflowTopicsProperties.NAME + "/" + CommonExpressions.RESULTS_PAGE + CommonExpressions.FACES_REDIRECT);
+        context.getApplication().getNavigationHandler().handleNavigation(context, null, "/" + WorkflowTopicsProps.NAME + "/" + Globals.RESULTS_PAGE + Globals.FACES_REDIRECT);
     }
 
     public void generateInputDataAndDataId() {
-        dataPersistenceUniqueId = UUID.randomUUID().toString().substring(0, 10);
-        LOG.log(Level.INFO, "Generating input data for dataId: {0}", dataPersistenceUniqueId);
+        jobId = UUID.randomUUID().toString().substring(0, 10);
+        LOG.log(Level.INFO, "Generating input data for dataId: {0}", jobId);
         try {
             Path tempFolderForAllTasks = applicationProperties.getTempFolderFullPath();
-            Path tempFolderForThisTask = Path.of(tempFolderForAllTasks.toString(), dataPersistenceUniqueId);
+            Path tempFolderForThisTask = Path.of(tempFolderForAllTasks.toString(), jobId);
             Files.createDirectories(tempFolderForThisTask);
 
             if (mapOfLines == null || mapOfLines.isEmpty()) {
@@ -306,7 +352,7 @@ public class WorkflowTopicsBean implements Serializable {
                 if (mapOfLines == null || mapOfLines.isEmpty()) {
                     LOG.warning("No data found to generate input file.");
                     logBean.addOneNotificationFromString("No data found for analysis.");
-                    dataPersistenceUniqueId = null;
+                    jobId = null;
                     return;
                 }
             }
@@ -318,7 +364,7 @@ public class WorkflowTopicsBean implements Serializable {
                 }
                 sb.append(entry.getValue().trim()).append("\n");
             }
-            Path fullPathToInputFile = Path.of(tempFolderForThisTask.toString(), dataPersistenceUniqueId);
+            Path fullPathToInputFile = Path.of(tempFolderForThisTask.toString(), jobId);
             Files.writeString(fullPathToInputFile, sb.toString(), StandardCharsets.UTF_8, StandardOpenOption.CREATE,
                     StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
 
@@ -327,7 +373,7 @@ public class WorkflowTopicsBean implements Serializable {
         } catch (IOException ex) {
             LOG.log(Level.SEVERE, "Error generating input data file", ex);
             logBean.addOneNotificationFromString("Error preparing input data: " + ex.getMessage());
-            dataPersistenceUniqueId = null;
+            jobId = null;
         }
     }
 
@@ -390,19 +436,19 @@ public class WorkflowTopicsBean implements Serializable {
     }
 
     public StreamedContent getGexfFile() {
-        if (dataPersistenceUniqueId == null || dataPersistenceUniqueId.isEmpty()) {
+        if (jobId == null || jobId.isEmpty()) {
             LOG.warning("Cannot provide GEXF file, dataPersistenceUniqueId is null or empty.");
             logBean.addOneNotificationFromString("Cannot download GEXF: Analysis ID not set.");
             return new DefaultStreamedContent();
         }
         try {
-            Path gexfResults = props.getGexfFilePath(dataPersistenceUniqueId);
+            Path gexfResults = props.getGexfFilePath(jobId);
             if (Files.exists(gexfResults)) {
                 String gexfAsString = Files.readString(gexfResults);
                 StreamedContent exportGexfAsStreamedFile = GEXFSaver.exportGexfAsStreamedFile(gexfAsString, "network_file_with_topics");
                 return exportGexfAsStreamedFile;
             } else {
-                LOG.log(Level.WARNING, "GEXF result file not found for dataId: {0}", dataPersistenceUniqueId);
+                LOG.log(Level.WARNING, "GEXF result file not found for dataId: {0}", jobId);
                 logBean.addOneNotificationFromString("GEXF file not found.");
                 return new DefaultStreamedContent();
             }
@@ -548,16 +594,16 @@ public class WorkflowTopicsBean implements Serializable {
     }
 
     private StreamedContent createExcelFileFromJsonSavedData() {
-        if (dataPersistenceUniqueId == null || dataPersistenceUniqueId.isEmpty()) {
+        if (jobId == null || jobId.isEmpty()) {
             LOG.warning("Cannot create Excel file, dataPersistenceUniqueId is null or empty.");
             logBean.addOneNotificationFromString("Cannot download results: Analysis ID not set.");
             return new DefaultStreamedContent();
         }
         try {
-            Path jsonResults = props.getGlobalResultsJsonFilePath(dataPersistenceUniqueId);
+            Path jsonResults = props.getGlobalResultsJsonFilePath(jobId);
 
             if (!Files.exists(jsonResults)) {
-                LOG.log(Level.WARNING, "JSON result file not found for dataId: {0}", dataPersistenceUniqueId);
+                LOG.log(Level.WARNING, "JSON result file not found for dataId: {0}", jobId);
                 logBean.addOneNotificationFromString("Cannot download Excel: Result file not found.");
                 return new DefaultStreamedContent();
             }

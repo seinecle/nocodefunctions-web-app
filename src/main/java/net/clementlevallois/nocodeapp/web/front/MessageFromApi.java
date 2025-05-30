@@ -15,7 +15,7 @@ public class MessageFromApi implements Serializable {
     private String message;
     private Integer progress;
     private String function;
-    private String dataPersistenceId;
+    private String jobId;
     private Information info;
     private boolean success;
 
@@ -26,8 +26,8 @@ public class MessageFromApi implements Serializable {
     public MessageFromApi() {
     }
 
-    public MessageFromApi(String dataPersistenceId, boolean success, String message) {
-        this.dataPersistenceId = dataPersistenceId;
+    public MessageFromApi(String jobId, boolean success, String message) {
+        this.jobId = jobId;
         this.success = success;
         this.message = message;
     }
@@ -64,12 +64,12 @@ public class MessageFromApi implements Serializable {
         this.info = info;
     }
 
-    public String getDataPersistenceId() {
-        return dataPersistenceId;
+    public String getjobId() {
+        return jobId;
     }
 
-    public void setDataPersistenceId(String dataPersistenceId) {
-        this.dataPersistenceId = dataPersistenceId;
+    public void setjobId(String jobId) {
+        this.jobId = jobId;
     }
 
     public boolean isSuccess() {
