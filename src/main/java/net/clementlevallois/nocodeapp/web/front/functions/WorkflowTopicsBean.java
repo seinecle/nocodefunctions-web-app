@@ -217,40 +217,35 @@ public class WorkflowTopicsBean implements Serializable {
             selectedLanguage = "en";
         }
         for (QueryParams param : QueryParams.values()) {
-            String paramValue = null;
-            switch (param) {
+            String paramValue = switch (param) {
                 case LANG ->
-                    paramValue = selectedLanguage;
+                    selectedLanguage;
                 case REPLACE_STOPWORDS ->
-                    paramValue = String.valueOf(replaceStopwords);
+                    String.valueOf(replaceStopwords);
                 case IS_SCIENTIFIC_CORPUS ->
-                    paramValue = String.valueOf(scientificCorpus);
+                    String.valueOf(scientificCorpus);
                 case LEMMATIZE ->
-                    paramValue = String.valueOf(lemmatize);
+                    String.valueOf(lemmatize);
                 case REMOVE_ACCENTS ->
-                    paramValue = String.valueOf(removeNonAsciiCharacters);
+                    String.valueOf(removeNonAsciiCharacters);
                 case PRECISION ->
-                    paramValue = String.valueOf(precision);
+                    String.valueOf(precision);
                 case MIN_CHAR_NUMBER ->
-                    paramValue = String.valueOf(minCharNumber);
+                    String.valueOf(minCharNumber);
                 case MIN_TERM_FREQ ->
-                    paramValue = String.valueOf(minTermFreq);
-            }
+                    String.valueOf(minTermFreq);
+            };
             requestBuilder.addQueryParameter(param.name(), paramValue);
         }
 
         String callbackURL = RemoteLocal.getDomain() + RemoteLocal.getInternalMessageApiEndpoint() + WorkflowTopicsProps.ENDPOINT;
 
         for (GlobalQueryParams param : GlobalQueryParams.values()) {
-            String paramValue = null;
-            switch (param) {
-                case SESSION_ID ->
-                    paramValue = sessionId;
-                case JOB_ID ->
-                    paramValue = jobId;
-                case CALLBACK_URL ->
-                    paramValue = callbackURL;
-            }
+            String paramValue = switch (param) {
+                case SESSION_ID -> sessionId;
+                case JOB_ID -> jobId;
+                case CALLBACK_URL -> callbackURL;
+            };
             requestBuilder.addQueryParameter(param.name(), paramValue);
         }
         return requestBuilder;
