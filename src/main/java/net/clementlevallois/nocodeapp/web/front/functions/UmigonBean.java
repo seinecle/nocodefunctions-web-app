@@ -1,16 +1,11 @@
 package net.clementlevallois.nocodeapp.web.front.functions;
 
 import jakarta.annotation.PostConstruct;
-import jakarta.annotation.Resource;
 import jakarta.ejb.Asynchronous; // NEW IMPORT for @Asynchronous
-import jakarta.ejb.Stateless;    // Often @Asynchronous requires a stateless bean, but with CDI 4.0 it might work with @SessionScoped. If not, consider a helper Stateless bean.
-import jakarta.enterprise.concurrent.ManagedExecutorService;
-                                 // Let's try directly within @SessionScoped first as modern containers are more flexible.
 
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -123,7 +118,6 @@ public class UmigonBean implements Serializable {
     }
 
     public String runAnalysis() {
-        // Initial UI state updates on the JSF request thread
         progress = 3;
         countTreated = 0;
         runButtonDisabled = true;
@@ -144,8 +138,8 @@ public class UmigonBean implements Serializable {
     public void startAnalysisAsync() {
         Map<Integer, String> mapOfLines = new HashMap();
         try {
-            if (simpleLinesImportBean.getDataPersistenceUniqueId() != null) {
-                dataPersistenceUniqueId = simpleLinesImportBean.getDataPersistenceUniqueId();
+            if (simpleLinesImportBean.getJobId() != null) {
+                dataPersistenceUniqueId = simpleLinesImportBean.getJobId();
                 Path tempDataPath = Path.of(applicationProperties.getTempFolderFullPath().toString(), dataPersistenceUniqueId);
                 if (Files.exists(tempDataPath) && !Files.isDirectory(tempDataPath)) {
                     List<String> readAllLines = Files.readAllLines(tempDataPath, StandardCharsets.UTF_8);
@@ -266,8 +260,6 @@ public class UmigonBean implements Serializable {
                     break;
                 }
             }
-
-            progress = 40;
             logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.almost_done"));
 
             CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));

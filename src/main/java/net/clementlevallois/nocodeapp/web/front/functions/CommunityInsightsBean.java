@@ -114,8 +114,8 @@ public class CommunityInsightsBean implements Serializable {
         insightsHaveArrived = false; // Reset flag
 
         try {
-            if (importGraphBean.getDataPersistenceUniqueId() != null) {
-                this.dataPersistenceUniqueId = importGraphBean.getDataPersistenceUniqueId();
+            if (importGraphBean.getJobId() != null) {
+                this.dataPersistenceUniqueId = importGraphBean.getJobId();
             } else {
                 logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.data_not_found"));
                 runButtonText = sessionBean.getLocaleBundle().getString("general.verbs.compute");

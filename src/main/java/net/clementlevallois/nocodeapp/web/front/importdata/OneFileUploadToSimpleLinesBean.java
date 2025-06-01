@@ -60,11 +60,12 @@ public class OneFileUploadToSimpleLinesBean {
                 return;
             }
 
-            String dataPersistenceUniqueId = simpleLineImportBean.getDataPersistenceUniqueId();
+            String jobId = simpleLineImportBean.getJobId();
+            Files.createDirectories(applicationProperties.getTempFolderFullPath().resolve(jobId));
 
             String uniqueFileId = UUID.randomUUID().toString().substring(0, 10);
 
-            Path pathToFile = Path.of(applicationProperties.getTempFolderFullPath().toString(), dataPersistenceUniqueId + uniqueFileId);
+            Path pathToFile = applicationProperties.getTempFolderFullPath().resolve(jobId).resolve(jobId + uniqueFileId);
             Files.write(pathToFile, fileAllBytes);
 
             logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("back.import.file_successful_upload.opening") + f.getFileName() + sessionBean.getLocaleBundle().getString("back.import.file_successful_upload.closing"));
@@ -83,7 +84,7 @@ public class OneFileUploadToSimpleLinesBean {
                             .withPath("api/import/pdf/simpleLines")
                             .addParameter("fileName", fileName)
                             .addParameter("uniqueFileId", uniqueFileId)
-                            .addParameter("jobId", dataPersistenceUniqueId)
+                            .addParameter("jobId", jobId)
                             .toUri();
 
                     request = HttpRequest.newBuilder()
@@ -112,7 +113,7 @@ public class OneFileUploadToSimpleLinesBean {
                             .withPath("api/import/txt/simpleLines")
                             .addParameter("fileName", fileName)
                             .addParameter("uniqueFileId", uniqueFileId)
-                            .addParameter("jobId", dataPersistenceUniqueId)
+                            .addParameter("jobId", jobId)
                             .toUri();
 
                     request = HttpRequest.newBuilder()
@@ -147,7 +148,7 @@ public class OneFileUploadToSimpleLinesBean {
                             .withHost("localhost")
                             .withPath("api/import/json/simpleLines")
                             .addParameter("uniqueFileId", uniqueFileId)
-                            .addParameter("jobId", dataPersistenceUniqueId)
+                            .addParameter("jobId", jobId)
                             .addParameter("jsonKey", jsonKey)
                             .toUri();
 

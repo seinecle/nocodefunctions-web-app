@@ -26,7 +26,9 @@ import jakarta.inject.Named;
 import jakarta.json.Json;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
+import jakarta.json.JsonReader;
 import jakarta.servlet.annotation.MultipartConfig;
+import java.io.StringReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
@@ -50,7 +52,6 @@ import net.clementlevallois.nocodeapp.web.front.http.RemoteLocal;
 import net.clementlevallois.nocodeapp.web.front.importdata.ImportSimpleLinesBean;
 import net.clementlevallois.nocodeapp.web.front.utils.GEXFSaver;
 import net.clementlevallois.utils.Multiset;
-import org.primefaces.PrimeFaces;
 import org.primefaces.event.SlideEndEvent;
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
@@ -100,13 +101,12 @@ public class WorkflowTopicsBean implements Serializable {
 
     private String runButtonText = "";
     private String jobId = "";
-    private volatile boolean taskComplete = false;
-    private volatile boolean taskSuccess = false;
     private String sessionId;
 
     private Map<Integer, String> mapOfLines;
 
     private WorkflowTopicsProps props;
+    private Globals globals;
 
     @Inject
     BackToFrontMessengerBean logBean;
@@ -138,6 +138,7 @@ public class WorkflowTopicsBean implements Serializable {
         sessionId = FacesContext.getCurrentInstance().getExternalContext().getSessionId(false);
         logBean.setSessionId(sessionId);
         props = new WorkflowTopicsProps(applicationProperties.getTempFolderFullPath());
+        globals = new Globals(applicationProperties.getTempFolderFullPath());
         sessionBean.setFunction(WorkflowTopicsProps.NAME);
     }
 
@@ -157,16 +158,14 @@ public class WorkflowTopicsBean implements Serializable {
         runButtonText = sessionBean.getLocaleBundle().getString("general.message.wait_long_operation");
         progress = 0;
         runButtonDisabled = true;
-        taskComplete = false;
-        taskSuccess = false;
 
         try {
-            if (simpleLinesImportBean.getDataPersistenceUniqueId() != null) {
-                this.jobId = simpleLinesImportBean.getDataPersistenceUniqueId();
+            if (simpleLinesImportBean.getJobId() != null) {
+                this.jobId = simpleLinesImportBean.getJobId();
             } else {
                 generateInputDataAndDataId();
                 if (this.jobId == null || this.jobId.isEmpty()) {
-                    throw new IllegalStateException("Data persistence ID could not be generated.");
+                    LOG.warning("No data found to generate input file.");
                 }
             }
 
@@ -186,8 +185,6 @@ public class WorkflowTopicsBean implements Serializable {
             sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Error", "Could not start analysis: " + e.getMessage());
             runButtonText = sessionBean.getLocaleBundle().getString("general.verbs.compute");
             runButtonDisabled = false;
-            taskComplete = false;
-            taskSuccess = false;
         }
     }
 
@@ -242,9 +239,12 @@ public class WorkflowTopicsBean implements Serializable {
 
         for (GlobalQueryParams param : GlobalQueryParams.values()) {
             String paramValue = switch (param) {
-                case SESSION_ID -> sessionId;
-                case JOB_ID -> jobId;
-                case CALLBACK_URL -> callbackURL;
+                case SESSION_ID ->
+                    sessionId;
+                case JOB_ID ->
+                    jobId;
+                case CALLBACK_URL ->
+                    callbackURL;
             };
             requestBuilder.addQueryParameter(param.name(), paramValue);
         }
@@ -273,18 +273,18 @@ public class WorkflowTopicsBean implements Serializable {
     }
 
     public void checkTaskStatusForPolling() {
-        if (sessionId == null || jobId == null || taskComplete) {
+        if (sessionId == null || jobId == null) {
             return;
         }
 
-        Path pathSignalWorkflowComplete = props.getWorkflowCompleteFilePath(jobId);
+        Path pathSignalWorkflowComplete = globals.getWorkflowCompleteFilePath(jobId);
         boolean workflowComplete = Files.exists(pathSignalWorkflowComplete);
 
         if (workflowComplete) {
             runButtonDisabled = false;
             runButtonText = sessionBean.getLocaleBundle().getString("general.verbs.compute");
             progress = 100;
-            PrimeFaces.current().ajax().update("formComputeButton:computeButton", "notifications", "pollingPanel", "progressComponentId");
+            processParsedResults();
             FacesContext context = FacesContext.getCurrentInstance();
             context.getApplication().getNavigationHandler().handleNavigation(context, null, "/" + WorkflowTopicsProps.NAME + "/" + Globals.RESULTS_PAGE + Globals.FACES_REDIRECT);
         }
@@ -296,12 +296,9 @@ public class WorkflowTopicsBean implements Serializable {
             while (it.hasNext()) {
                 MessageFromApi msg = it.next();
                 if (msg.getjobId() != null && msg.getjobId().equals(jobId)) {
-                    LOG.log(Level.INFO, "Polling detected message for dataId {0}: {1}", new Object[]{jobId, msg.getInfo()});
                     switch (msg.getInfo()) {
                         case ERROR -> {
                             LOG.log(Level.WARNING, "Polling detected ERROR message for dataId {0}: {1}", new Object[]{jobId, msg.getMessage()});
-                            taskComplete = true;
-                            taskSuccess = false;
                             runButtonDisabled = false;
                             progress = 0;
                             logBean.addOneNotificationFromString("Analysis failed: " + msg.getMessage());
@@ -363,12 +360,129 @@ public class WorkflowTopicsBean implements Serializable {
             Files.writeString(fullPathToInputFile, sb.toString(), StandardCharsets.UTF_8, StandardOpenOption.CREATE,
                     StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
 
-            LOG.log(Level.INFO, "Input data saved to: {0}", fullPathToInputFile);
-
         } catch (IOException ex) {
             LOG.log(Level.SEVERE, "Error generating input data file", ex);
             logBean.addOneNotificationFromString("Error preparing input data: " + ex.getMessage());
             jobId = null;
+        }
+    }
+
+    private void processParsedResults() {
+        try {
+            Path jsonResults = props.getGlobalResultsJsonFilePath(jobId);
+
+            if (!Files.exists(jsonResults)) {
+                LOG.log(Level.WARNING, "JSON result file not found for dataId: {0}", jobId);
+                logBean.addOneNotificationFromString("Cannot download Excel: Result file not found.");
+                return;
+            }
+
+            String jsonResultAsString = Files.readString(jsonResults);
+            JsonReader jsonReader = Json.createReader(new StringReader(jsonResultAsString));
+            JsonObject jsonObject = jsonReader.readObject();
+
+            this.keywordsPerTopic = new TreeMap<>();
+            JsonObject keywordsPerTopicAsJson = jsonObject.getJsonObject("keywordsPerTopic");
+            if (keywordsPerTopicAsJson != null) {
+                for (String keyCommunity : keywordsPerTopicAsJson.keySet()) {
+                    JsonObject termsAndFrequenciesForThisCommunity = keywordsPerTopicAsJson.getJsonObject(keyCommunity);
+                    Multiset<String> termsAndFreqs = new Multiset<>();
+                    if (termsAndFrequenciesForThisCommunity != null) {
+                        termsAndFrequenciesForThisCommunity.keySet().forEach(term -> {
+                            termsAndFreqs.addSeveral(term, termsAndFrequenciesForThisCommunity.getInt(term));
+                        });
+                    }
+                    try {
+                        keywordsPerTopic.put(Integer.valueOf(keyCommunity), termsAndFreqs);
+                    } catch (NumberFormatException e) {
+                        LOG.log(Level.WARNING, "Skipping non-integer topic key in JSON: " + keyCommunity, e);
+                    }
+                }
+            } else {
+                LOG.warning("JSON result did not contain 'keywordsPerTopic' object.");
+                logBean.addOneNotificationFromString("Warning: Results format unexpected.");
+            }
+
+        } catch (IOException e) {
+            LOG.log(Level.SEVERE, "Error processing results JSON", e);
+            logBean.addOneNotificationFromString("Error processing results: " + e.getMessage());
+        }
+    }
+
+    public StreamedContent getGexfFile() {
+        if (jobId == null || jobId.isEmpty()) {
+            LOG.warning("Cannot provide GEXF file, jobId is null or empty.");
+            logBean.addOneNotificationFromString("Cannot download GEXF: Analysis ID not set.");
+            return new DefaultStreamedContent();
+        }
+        try {
+            Path gexfResults = props.getGexfFilePath(jobId);
+            if (Files.exists(gexfResults)) {
+                String gexfAsString = Files.readString(gexfResults);
+                StreamedContent exportGexfAsStreamedFile = GEXFSaver.exportGexfAsStreamedFile(gexfAsString, "network_file_with_topics");
+                return exportGexfAsStreamedFile;
+            } else {
+                LOG.log(Level.WARNING, "GEXF result file not found for dataId: {0}", jobId);
+                logBean.addOneNotificationFromString("GEXF file not found.");
+                return new DefaultStreamedContent();
+            }
+
+        } catch (IOException ex) {
+            LOG.log(Level.SEVERE, "Error reading GEXF file", ex);
+            logBean.addOneNotificationFromString("Error providing GEXF file for download.");
+            return new DefaultStreamedContent();
+        }
+    }
+
+    public void uploadStopWordFile() {
+        try {
+            if (fileUserStopwords != null && fileUserStopwords.getFileName() != null && fileUserStopwords.getInputStream() != null) {
+                long fileSize = fileUserStopwords.getSize();
+                String contentType = fileUserStopwords.getContentType();
+                LOG.log(Level.INFO, "Uploaded stopwords file: {0}, size: {1} bytes, type: {2}", new Object[]{fileUserStopwords.getFileName(), fileSize, contentType});
+                String success = sessionBean.getLocaleBundle().getString("general.nouns.success");
+                String is_uploaded = sessionBean.getLocaleBundle().getString("general.verb.is_uploaded");
+                sessionBean.addMessage(FacesMessage.SEVERITY_INFO, success, fileUserStopwords.getFileName() + " " + is_uploaded + ".");
+            } else {
+                LOG.warning("Uploaded stopwords file is null, has no name, or no input stream.");
+                sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "Warning", "No file uploaded or file is empty.");
+            }
+        } catch (IOException ex) {
+            Logger.getLogger(WorkflowTopicsBean.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    private StreamedContent createExcelFileFromJsonSavedData() {
+        if (jobId == null || jobId.isEmpty()) {
+            LOG.warning("Cannot create Excel file, jobId is null or empty.");
+            logBean.addOneNotificationFromString("Cannot download results: job ID not set.");
+            return new DefaultStreamedContent();
+        }
+        try {
+            CompletableFuture<byte[]> futureBytes = microserviceClient.importService().post("/api/export/xlsx/topics")
+                    .addQueryParameter("nbTerms", "10")
+                    .addQueryParameter("jobId", jobId)
+                    .sendAsyncAndGetBody(HttpResponse.BodyHandlers.ofByteArray());
+
+            byte[] body = futureBytes.join();
+
+            InputStream is = new ByteArrayInputStream(body);
+            return DefaultStreamedContent.builder()
+                    .name("results_topics.xlsx")
+                    .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                    .stream(() -> is)
+                    .build();
+
+        } catch (CompletionException cex) {
+            Throwable cause = cex.getCause();
+            LOG.log(Level.SEVERE, "Error during asynchronous export service call (CompletionException)", cause);
+            String errorMessage = "Error exporting data: " + cause.getMessage();
+            if (cause instanceof MicroserviceCallException msce) {
+                errorMessage = "Error exporting data: Status " + msce.getStatusCode() + ", " + msce.getErrorBody();
+            }
+            logBean.addOneNotificationFromString(errorMessage);
+            sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Export Failed", errorMessage);
+            return new DefaultStreamedContent();
         }
     }
 
@@ -396,63 +510,6 @@ public class WorkflowTopicsBean implements Serializable {
     }
 
     public void setExcelFileToSave(StreamedContent excelFileToSave) {
-    }
-
-    private void processParsedResults(JsonObject jsonObject) {
-        LOG.info("Processing parsed results JSON.");
-        try {
-            this.keywordsPerTopic = new TreeMap<>();
-            JsonObject keywordsPerTopicAsJson = jsonObject.getJsonObject("keywordsPerTopic");
-            if (keywordsPerTopicAsJson != null) {
-                for (String keyCommunity : keywordsPerTopicAsJson.keySet()) {
-                    JsonObject termsAndFrequenciesForThisCommunity = keywordsPerTopicAsJson.getJsonObject(keyCommunity);
-                    Multiset<String> termsAndFreqs = new Multiset<>();
-                    if (termsAndFrequenciesForThisCommunity != null) {
-                        termsAndFrequenciesForThisCommunity.keySet().forEach(term -> {
-                            termsAndFreqs.addSeveral(term, termsAndFrequenciesForThisCommunity.getInt(term));
-                        });
-                    }
-                    try {
-                        keywordsPerTopic.put(Integer.valueOf(keyCommunity), termsAndFreqs);
-                    } catch (NumberFormatException e) {
-                        LOG.log(Level.WARNING, "Skipping non-integer topic key in JSON: " + keyCommunity, e);
-                    }
-                }
-                LOG.log(Level.INFO, "Successfully processed {0} topics.", keywordsPerTopic.size());
-            } else {
-                LOG.warning("JSON result did not contain 'keywordsPerTopic' object.");
-                logBean.addOneNotificationFromString("Warning: Results format unexpected.");
-            }
-
-        } catch (Exception e) {
-            LOG.log(Level.SEVERE, "Error processing results JSON", e);
-            logBean.addOneNotificationFromString("Error processing results: " + e.getMessage());
-        }
-    }
-
-    public StreamedContent getGexfFile() {
-        if (jobId == null || jobId.isEmpty()) {
-            LOG.warning("Cannot provide GEXF file, dataPersistenceUniqueId is null or empty.");
-            logBean.addOneNotificationFromString("Cannot download GEXF: Analysis ID not set.");
-            return new DefaultStreamedContent();
-        }
-        try {
-            Path gexfResults = props.getGexfFilePath(jobId);
-            if (Files.exists(gexfResults)) {
-                String gexfAsString = Files.readString(gexfResults);
-                StreamedContent exportGexfAsStreamedFile = GEXFSaver.exportGexfAsStreamedFile(gexfAsString, "network_file_with_topics");
-                return exportGexfAsStreamedFile;
-            } else {
-                LOG.log(Level.WARNING, "GEXF result file not found for dataId: {0}", jobId);
-                logBean.addOneNotificationFromString("GEXF file not found.");
-                return new DefaultStreamedContent();
-            }
-
-        } catch (IOException ex) {
-            LOG.log(Level.SEVERE, "Error reading GEXF file", ex);
-            logBean.addOneNotificationFromString("Error providing GEXF file for download.");
-            return new DefaultStreamedContent();
-        }
     }
 
     public void setGexfFile(StreamedContent gexfFile) {
@@ -492,24 +549,6 @@ public class WorkflowTopicsBean implements Serializable {
 
     public void setFileUserStopwords(UploadedFile file) {
         this.fileUserStopwords = file;
-    }
-
-    public void uploadStopWordFile() {
-        try {
-            if (fileUserStopwords != null && fileUserStopwords.getFileName() != null && fileUserStopwords.getInputStream() != null) {
-                long fileSize = fileUserStopwords.getSize();
-                String contentType = fileUserStopwords.getContentType();
-                LOG.log(Level.INFO, "Uploaded stopwords file: {0}, size: {1} bytes, type: {2}", new Object[]{fileUserStopwords.getFileName(), fileSize, contentType});
-                String success = sessionBean.getLocaleBundle().getString("general.nouns.success");
-                String is_uploaded = sessionBean.getLocaleBundle().getString("general.verb.is_uploaded");
-                sessionBean.addMessage(FacesMessage.SEVERITY_INFO, success, fileUserStopwords.getFileName() + " " + is_uploaded + ".");
-            } else {
-                LOG.warning("Uploaded stopwords file is null, has no name, or no input stream.");
-                sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "Warning", "No file uploaded or file is empty.");
-            }
-        } catch (IOException ex) {
-            Logger.getLogger(WorkflowTopicsBean.class.getName()).log(Level.SEVERE, null, ex);
-        }
     }
 
     public boolean isOkToShareStopwords() {
@@ -568,14 +607,6 @@ public class WorkflowTopicsBean implements Serializable {
         this.runButtonText = runButtonText;
     }
 
-    public boolean isTaskSuccess() {
-        return taskSuccess;
-    }
-
-    public void setTaskSuccess(boolean taskSuccess) {
-        this.taskSuccess = taskSuccess;
-    }
-
     public List<Locale> getAvailable() {
         List<Locale> available = new ArrayList();
         String[] availableStopwordLists = new String[]{"ar", "bg", "ca", "da", "de", "el", "en", "es", "fr", "it", "ja", "nl", "no", "pl", "pt", "ro", "ru", "tr"};
@@ -586,55 +617,5 @@ public class WorkflowTopicsBean implements Serializable {
         Locale requestLocale = (context != null) ? context.getExternalContext().getRequestLocale() : Locale.getDefault();
         Collections.sort(available, new LocaleComparator(requestLocale));
         return available;
-    }
-
-    private StreamedContent createExcelFileFromJsonSavedData() {
-        if (jobId == null || jobId.isEmpty()) {
-            LOG.warning("Cannot create Excel file, dataPersistenceUniqueId is null or empty.");
-            logBean.addOneNotificationFromString("Cannot download results: Analysis ID not set.");
-            return new DefaultStreamedContent();
-        }
-        try {
-            Path jsonResults = props.getGlobalResultsJsonFilePath(jobId);
-
-            if (!Files.exists(jsonResults)) {
-                LOG.log(Level.WARNING, "JSON result file not found for dataId: {0}", jobId);
-                logBean.addOneNotificationFromString("Cannot download Excel: Result file not found.");
-                return new DefaultStreamedContent();
-            }
-
-            String jsonAsStringString = Files.readString(jsonResults);
-            byte[] topicsAsArray = jsonAsStringString.getBytes(StandardCharsets.UTF_8);
-
-            CompletableFuture<byte[]> futureBytes = microserviceClient.importService().post("/api/export/xlsx/topics")
-                    .addQueryParameter("nbTerms", "10")
-                    .withByteArrayPayload(topicsAsArray)
-                    .sendAsyncAndGetBody(HttpResponse.BodyHandlers.ofByteArray());
-
-            byte[] body = futureBytes.join(); // Blocks until the future completes or throws exception
-
-            InputStream is = new ByteArrayInputStream(body);
-            return DefaultStreamedContent.builder()
-                    .name("results_topics.xlsx")
-                    .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-                    .stream(() -> is)
-                    .build();
-
-        } catch (CompletionException cex) {
-            Throwable cause = cex.getCause();
-            LOG.log(Level.SEVERE, "Error during asynchronous export service call (CompletionException)", cause);
-            String errorMessage = "Error exporting data: " + cause.getMessage();
-            if (cause instanceof MicroserviceCallException msce) {
-                errorMessage = "Error exporting data: Status " + msce.getStatusCode() + ", " + msce.getErrorBody();
-            }
-            logBean.addOneNotificationFromString(errorMessage);
-            sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Export Failed", errorMessage);
-            return new DefaultStreamedContent();
-        } catch (IOException ex) {
-            LOG.log(Level.SEVERE, "Error reading JSON file before export", ex);
-            logBean.addOneNotificationFromString("Error preparing data for export: " + ex.getMessage());
-            sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Export Failed", "Error preparing data for export.");
-            return new DefaultStreamedContent();
-        }
     }
 }

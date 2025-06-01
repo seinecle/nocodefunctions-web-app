@@ -32,6 +32,9 @@ import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import net.clementlevallois.functions.model.Globals;
+import static net.clementlevallois.functions.model.Globals.GlobalQueryParams.CALLBACK_URL;
+import static net.clementlevallois.functions.model.Globals.GlobalQueryParams.JOB_ID;
+import static net.clementlevallois.functions.model.Globals.GlobalQueryParams.SESSION_ID;
 import net.clementlevallois.functions.model.WorkflowCowoProps;
 import net.clementlevallois.importers.model.DataFormatConverter;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.LocaleComparator;
@@ -50,7 +53,6 @@ import org.primefaces.model.StreamedContent;
 import org.primefaces.model.file.UploadedFile;
 import net.clementlevallois.nocodeapp.web.front.http.MicroserviceHttpClient;
 import net.clementlevallois.nocodeapp.web.front.http.MicroserviceHttpClient.MicroserviceCallException;
-
 import org.primefaces.PrimeFaces;
 
 @Named
@@ -83,7 +85,7 @@ public class WorkflowCowoBean implements Serializable {
     private Boolean shareGephiLitePublicly;
     private Integer minCharNumber = 4;
     private Map<Integer, String> mapOfLines;
-    private String dataPersistenceUniqueId = "";
+    private String jobId = "";
     private String sessionId;
     private String runButtonText = "";
     private WorkflowCowoProps functionProps;
@@ -137,11 +139,11 @@ public class WorkflowCowoBean implements Serializable {
         progress = 0;
         runButtonDisabled = true;
         try {
-            if (simpleLinesImportBean.getDataPersistenceUniqueId() != null) {
-                this.dataPersistenceUniqueId = simpleLinesImportBean.getDataPersistenceUniqueId();
+            if (simpleLinesImportBean.getJobId() != null) {
+                this.jobId = simpleLinesImportBean.getJobId();
             } else {
                 generateInputDataAndDataId();
-                if (this.dataPersistenceUniqueId == null || this.dataPersistenceUniqueId.isEmpty()) {
+                if (this.jobId == null || this.jobId.isEmpty()) {
                     throw new IllegalStateException("Input data could not be prepared.");
                 }
             }
@@ -151,25 +153,22 @@ public class WorkflowCowoBean implements Serializable {
             sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Error", "Could not prepare data for analysis: " + e.getMessage());
             runButtonText = sessionBean.getLocaleBundle().getString("general.verbs.compute");
             runButtonDisabled = false;
-            PrimeFaces.current().ajax().update("formComputeButton:computeButton", "notifications");
         } catch (Exception e) { // Catch any other unexpected errors during initiation
             LOG.log(Level.SEVERE, "Unexpected error initiating analysis", e);
             sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Error", "An unexpected error occurred: " + e.getMessage());
             runButtonText = sessionBean.getLocaleBundle().getString("general.verbs.compute");
             runButtonDisabled = false;
-            PrimeFaces.current().ajax().update("formComputeButton:computeButton", "notifications");
         }
     }
 
     public void pollingDidTopNodesArrive() {
-        Path pathOfTopNodesData = globals.getTopNetworkVivaGraphFormattedFilePath(dataPersistenceUniqueId);
+        Path pathOfTopNodesData = globals.getTopNetworkVivaGraphFormattedFilePath(jobId);
         boolean topNodesHaveArrivedSignal = Files.exists(pathOfTopNodesData);
 
         if (topNodesHaveArrivedSignal) {
             runButtonDisabled = false;
             runButtonText = sessionBean.getLocaleBundle().getString("general.verbs.compute");
             progress = 100;
-            PrimeFaces.current().ajax().update("formComputeButton:computeButton", "notifications", "pollingPanel", "progressComponentId");
             FacesContext context = FacesContext.getCurrentInstance();
             context.getApplication().getNavigationHandler().handleNavigation(context, null, "/" + WorkflowCowoProps.NAME + "/" + Globals.RESULTS_PAGE + Globals.FACES_REDIRECT);
         }
@@ -201,36 +200,63 @@ public class WorkflowCowoBean implements Serializable {
                 .build();
 
         String callbackURL = RemoteLocal.getDomain() + RemoteLocal.getInternalMessageApiEndpoint() + WorkflowCowoProps.ENDPOINT;
-        microserviceClient.api().post(WorkflowCowoProps.ENDPOINT)
-                .withJsonPayload(jsonPayload)
-                .addQueryParameter("lang", String.join(",", selectedLanguages))
-                .addQueryParameter("minCharNumber", String.valueOf(minCharNumber))
-                .addQueryParameter("replaceStopwords", String.valueOf(replaceStopwords))
-                .addQueryParameter("isScientificCorpus", String.valueOf(scientificCorpus))
-                .addQueryParameter("lemmatize", String.valueOf(lemmatize))
-                .addQueryParameter("removeAccents", String.valueOf(removeNonAsciiCharacters))
-                .addQueryParameter("minCoocFreq", String.valueOf(minCoocFreqInt))
-                .addQueryParameter("minTermFreq", String.valueOf(minTermFreq))
-                .addQueryParameter("firstNames", String.valueOf(firstNames))
-                .addQueryParameter("maxNGram", String.valueOf(maxNGram))
-                .addQueryParameter("typeCorrection", correctionType)
-                .addQueryParameter("sessionId", sessionId)
-                .addQueryParameter("jobId", dataPersistenceUniqueId)
-                .addQueryParameter("callbackURL", callbackURL)
+
+        var requestBuilder = microserviceClient.api().post(WorkflowCowoProps.ENDPOINT).withJsonPayload(jsonPayload);
+
+        for (WorkflowCowoProps.QueryParams param : WorkflowCowoProps.QueryParams.values()) {
+            String paramValue = switch (param) {
+                case LANG ->
+                    String.join(",", selectedLanguages);
+                case MIN_CHAR_NUMBER ->
+                    String.valueOf(minCharNumber);
+                case REPLACE_STOPWORDS ->
+                    String.valueOf(replaceStopwords);
+                case IS_SCIENTIFIC_CORPUS ->
+                    String.valueOf(scientificCorpus);
+                case LEMMATIZE ->
+                    String.valueOf(lemmatize);
+                case REMOVE_ACCENTS ->
+                    String.valueOf(removeNonAsciiCharacters);
+                case MIN_TERM_FREQ ->
+                    String.valueOf(minTermFreq);
+                case MIN_COOC_FREQ ->
+                    String.valueOf(minCoocFreqInt);
+                case REMOVE_FIRST_NAMES ->
+                    String.valueOf(firstNames);
+                case MAX_NGRAMS ->
+                    String.valueOf(getMaxNGram());
+                case TYPE_CORRECTION ->
+                    correctionType;
+            };
+            requestBuilder.addQueryParameter(param.name(), paramValue);
+        }
+
+        for (Globals.GlobalQueryParams param : Globals.GlobalQueryParams.values()) {
+            String paramValue = switch (param) {
+                case SESSION_ID ->
+                    sessionId;
+                case JOB_ID ->
+                    jobId;
+                case CALLBACK_URL ->
+                    callbackURL;
+            };
+            requestBuilder.addQueryParameter(param.name(), paramValue);
+        }
+        requestBuilder
                 .sendAsync(HttpResponse.BodyHandlers.ofString())
                 .thenAccept(response -> {
                     if (response.statusCode() != 200) {
                         String errorBody = response.body();
-                        LOG.log(Level.SEVERE, "Cowo task submission failed for dataId {0}. Status: {1}, Body: {2}", new Object[]{dataPersistenceUniqueId, response.statusCode(), errorBody});
+                        LOG.log(Level.SEVERE, "Cowo task submission failed for dataId {0}. Status: {1}, Body: {2}", new Object[]{jobId, response.statusCode(), errorBody});
                         sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Cowo Failed", "Could not send to Cowo microservice: " + errorBody);
                         logBean.addOneNotificationFromString("Cowo submission failed. Status: " + response.statusCode() + ", Error: " + errorBody);
-                        runButtonDisabled = false; // Enable button on failure
+                        runButtonDisabled = false;
                         runButtonText = sessionBean.getLocaleBundle().getString("general.verbs.compute");
                         PrimeFaces.current().ajax().update("formComputeButton:computeButton", "notifications");
                     }
                 })
                 .exceptionally(e -> {
-                    LOG.log(Level.SEVERE, "Exception during Cowo task submission for dataId " + dataPersistenceUniqueId, e);
+                    LOG.log(Level.SEVERE, "Exception during Cowo task submission for dataId " + jobId, e);
                     String errorMessage = "Exception communicating with Cowo microservice: " + e.getMessage();
                     if (e.getCause() instanceof MicroserviceCallException msce) {
                         errorMessage += " (Status: " + msce.getStatusCode() + ", URI: " + msce.getUri() + ", Body: " + msce.getErrorBody() + ")";
@@ -238,7 +264,7 @@ public class WorkflowCowoBean implements Serializable {
                     sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Cowo Failed", "Communication error with Cowo microservice.");
                     logBean.addOneNotificationFromString(errorMessage);
 
-                    runButtonDisabled = false; // Enable button on failure
+                    runButtonDisabled = false;
                     runButtonText = sessionBean.getLocaleBundle().getString("general.verbs.compute");
                     PrimeFaces.current().ajax().update("formComputeButton:computeButton", "notifications");
 
@@ -247,11 +273,11 @@ public class WorkflowCowoBean implements Serializable {
     }
 
     public void generateInputDataAndDataId() {
-        dataPersistenceUniqueId = UUID.randomUUID().toString().substring(0, 10);
-        LOG.log(Level.INFO, "Generating input data for dataId: {0}", dataPersistenceUniqueId);
+        jobId = UUID.randomUUID().toString().substring(0, 10);
+        LOG.log(Level.INFO, "Generating input data for dataId: {0}", jobId);
         try {
             Path tempFolderForAllTasks = applicationProperties.getTempFolderFullPath();
-            Path tempFolderForThisTask = Path.of(tempFolderForAllTasks.toString(), dataPersistenceUniqueId);
+            Path tempFolderForThisTask = Path.of(tempFolderForAllTasks.toString(), jobId);
             Files.createDirectories(tempFolderForThisTask);
 
             DataFormatConverter dataFormatConverter = new DataFormatConverter();
@@ -266,7 +292,7 @@ public class WorkflowCowoBean implements Serializable {
             if (mapOfLines == null || mapOfLines.isEmpty()) {
                 LOG.warning("No data found to generate input file.");
                 logBean.addOneNotificationFromString("No data found for analysis.");
-                dataPersistenceUniqueId = null;
+                jobId = null;
                 return;
             }
 
@@ -277,13 +303,13 @@ public class WorkflowCowoBean implements Serializable {
                 }
                 sb.append(entry.getValue().trim()).append("\n");
             }
-            Path fullPathToInputFile = functionProps.getOriginalTextInputFilePath(dataPersistenceUniqueId);
+            Path fullPathToInputFile = functionProps.getOriginalTextInputFilePath(jobId);
             Files.writeString(fullPathToInputFile, sb.toString(), StandardCharsets.UTF_8, StandardOpenOption.CREATE,
                     StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
         } catch (IOException ex) {
             LOG.log(Level.SEVERE, "Error generating input data file", ex);
             logBean.addOneNotificationFromString("Error preparing input data: " + ex.getMessage());
-            dataPersistenceUniqueId = null;
+            jobId = null;
         }
     }
 
@@ -300,18 +326,18 @@ public class WorkflowCowoBean implements Serializable {
     }
 
     public StreamedContent getFileToSave() {
-        if (dataPersistenceUniqueId == null || dataPersistenceUniqueId.isEmpty()) {
+        if (jobId == null || jobId.isEmpty()) {
             LOG.warning("Cannot provide GEXF file for download, dataPersistenceUniqueId is null or empty.");
             sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "Download Error", "Analysis ID not set. Cannot download.");
             return new DefaultStreamedContent();
         }
         try {
-            Path gexfFilePath = functionProps.getGexfFilePath(dataPersistenceUniqueId);
+            Path gexfFilePath = functionProps.getGexfFilePath(jobId);
             if (Files.exists(gexfFilePath)) {
                 String gexfAsString = Files.readString(gexfFilePath, StandardCharsets.UTF_8);
                 return GEXFSaver.exportGexfAsStreamedFile(gexfAsString, "results_cowo");
             } else {
-                LOG.log(Level.WARNING, "GEXF result file not found for dataId: {0}", dataPersistenceUniqueId);
+                LOG.log(Level.WARNING, "GEXF result file not found for dataId: {0}", jobId);
                 sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "Download Error", "GEXF file not found.");
                 return new DefaultStreamedContent();
             }
@@ -331,7 +357,7 @@ public class WorkflowCowoBean implements Serializable {
 
     public String getNodesAsJson() {
         try {
-            Path pathOfTopNodesData = globals.getTopNetworkVivaGraphFormattedFilePath(dataPersistenceUniqueId);
+            Path pathOfTopNodesData = globals.getTopNetworkVivaGraphFormattedFilePath(jobId);
             String json = Files.readString(pathOfTopNodesData);
             JsonObject jsonObject = Json.createReader(new StringReader(json)).readObject();
             nodesAsJson = Converters.turnJsonObjectToString(jsonObject.getJsonObject("nodes"));
@@ -348,7 +374,7 @@ public class WorkflowCowoBean implements Serializable {
 
     public String getEdgesAsJson() {
         try {
-            Path pathOfTopNodesData = globals.getTopNetworkVivaGraphFormattedFilePath(dataPersistenceUniqueId);
+            Path pathOfTopNodesData = globals.getTopNetworkVivaGraphFormattedFilePath(jobId);
             String json = Files.readString(pathOfTopNodesData);
             JsonObject jsonObject = Json.createReader(new StringReader(json)).readObject();
             edgesAsJson = Converters.turnJsonObjectToString(jsonObject.getJsonObject("edges"));
@@ -382,10 +408,10 @@ public class WorkflowCowoBean implements Serializable {
     public int getMaxNGram() {
         try {
             // These are defensive measures based on input file size
-            if (dataPersistenceUniqueId == null || dataPersistenceUniqueId.isEmpty()) {
+            if (jobId == null || jobId.isEmpty()) {
                 return 3; // Default if data ID is not set
             }
-            Path fullPathForFileContainingTextInput = functionProps.getOriginalTextInputFilePath(dataPersistenceUniqueId);
+            Path fullPathForFileContainingTextInput = functionProps.getOriginalTextInputFilePath(jobId);
             if (Files.notExists(fullPathForFileContainingTextInput)) {
                 return 3;
             }
@@ -406,7 +432,7 @@ public class WorkflowCowoBean implements Serializable {
     }
 
     public void gotoVV() {
-        String linkToVosViewer = ExportToVosViewer.exportAndReturnLinkFromGexfWithGet(microserviceClient, dataPersistenceUniqueId, shareVVPublicly, applicationProperties);
+        String linkToVosViewer = ExportToVosViewer.exportAndReturnLinkFromGexfWithGet(microserviceClient, jobId, shareVVPublicly, applicationProperties);
         if (linkToVosViewer != null && !linkToVosViewer.isBlank()) {
             try {
                 ExternalContext externalContext = FacesContext.getCurrentInstance().getExternalContext();
@@ -421,11 +447,11 @@ public class WorkflowCowoBean implements Serializable {
     }
 
     public void gotoGephiLite() {
-        if (dataPersistenceUniqueId == null || dataPersistenceUniqueId.isEmpty()) {
+        if (jobId == null || jobId.isEmpty()) {
             sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "Navigation Error", "Analysis ID not set. Cannot navigate to Gephi Lite.");
             return;
         }
-        String urlToGephiLite = ExportToGephiLite.exportAndReturnLink(shareGephiLitePublicly, dataPersistenceUniqueId, applicationProperties);
+        String urlToGephiLite = ExportToGephiLite.exportAndReturnLink(shareGephiLitePublicly, jobId, applicationProperties);
         if (urlToGephiLite != null && !urlToGephiLite.isBlank()) {
             ExternalContext externalContext = FacesContext.getCurrentInstance().getExternalContext();
             try {
@@ -576,11 +602,11 @@ public class WorkflowCowoBean implements Serializable {
         this.firstNames = firstNames;
     }
 
-    public String getDataPersistenceUniqueId() {
-        return dataPersistenceUniqueId;
+    public String getJobId() {
+        return jobId;
     }
 
-    public void setDataPersistenceUniqueId(String dataPersistenceUniqueId) {
-        this.dataPersistenceUniqueId = dataPersistenceUniqueId;
+    public void setJobId(String jobId) {
+        this.jobId = jobId;
     }
 }

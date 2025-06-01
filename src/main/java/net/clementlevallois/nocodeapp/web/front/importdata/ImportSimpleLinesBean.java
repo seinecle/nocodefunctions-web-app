@@ -33,7 +33,7 @@ public class ImportSimpleLinesBean implements Serializable {
 
     private Boolean bulkData = false;
 
-    private String dataPersistenceUniqueId;
+    private String jobId;
 
     private String jsonKey;
     private Boolean oneJsonPerLine = false;
@@ -48,16 +48,16 @@ public class ImportSimpleLinesBean implements Serializable {
         this.bulkData = bulkData;
     }
 
-    public void setDataPersistenceUniqueId(String dataPersistenceUniqueId) {
+    public void setJobId(String jobId) {
         try {
             Path tempFolderRelativePath = applicationProperties.getTempFolderFullPath();
-            pathOfTempData = Path.of(tempFolderRelativePath.toString(), dataPersistenceUniqueId);
+            pathOfTempData = Path.of(tempFolderRelativePath.toString(), jobId);
             if (!pathOfTempData.toFile().exists()) {
                 setDataPersistenceUniqueId();
             } else {
-                this.dataPersistenceUniqueId = dataPersistenceUniqueId;
+                this.jobId = jobId;
             }
-            pathOfTempData = Path.of(tempFolderRelativePath.toString(), this.dataPersistenceUniqueId);
+            pathOfTempData = Path.of(tempFolderRelativePath.toString(), this.jobId);
             Files.createDirectories(pathOfTempData);
         } catch (IOException ex) {
             Logger.getLogger(ImportSimpleLinesBean.class.getName()).log(Level.SEVERE, null, ex);
@@ -65,11 +65,11 @@ public class ImportSimpleLinesBean implements Serializable {
     }
 
     public void setDataPersistenceUniqueId() {
-        this.dataPersistenceUniqueId = UUID.randomUUID().toString().substring(0, 10);
+        this.jobId = UUID.randomUUID().toString().substring(0, 10);
     }
 
-    public String getDataPersistenceUniqueId() {
-        return dataPersistenceUniqueId;
+    public String getJobId() {
+        return jobId;
     }
 
     public String gotToFunctionWithDataInBulk() {

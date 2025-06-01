@@ -28,29 +28,16 @@ import jakarta.json.JsonObjectBuilder;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentLinkedDeque;
-import java.util.concurrent.Executors;
 import net.clementlevallois.functions.model.Globals;
 import static net.clementlevallois.functions.model.Globals.GlobalQueryParams.CALLBACK_URL;
 import static net.clementlevallois.functions.model.Globals.GlobalQueryParams.JOB_ID;
 import static net.clementlevallois.functions.model.Globals.GlobalQueryParams.SESSION_ID;
 import net.clementlevallois.functions.model.WorkflowGazeProps;
-import net.clementlevallois.functions.model.WorkflowGazeProps.BodyJsonKeys;
 import static net.clementlevallois.functions.model.WorkflowGazeProps.BodyJsonKeys.LINES;
 import static net.clementlevallois.functions.model.WorkflowGazeProps.QueryParams.MIN_SHARED_TARGETS;
 import net.clementlevallois.functions.model.WorkflowTopicsProps;
-import static net.clementlevallois.functions.model.WorkflowTopicsProps.QueryParams.IS_SCIENTIFIC_CORPUS;
-import static net.clementlevallois.functions.model.WorkflowTopicsProps.QueryParams.LANG;
-import static net.clementlevallois.functions.model.WorkflowTopicsProps.QueryParams.LEMMATIZE;
-import static net.clementlevallois.functions.model.WorkflowTopicsProps.QueryParams.MIN_CHAR_NUMBER;
-import static net.clementlevallois.functions.model.WorkflowTopicsProps.QueryParams.MIN_TERM_FREQ;
-import static net.clementlevallois.functions.model.WorkflowTopicsProps.QueryParams.PRECISION;
-import static net.clementlevallois.functions.model.WorkflowTopicsProps.QueryParams.REMOVE_ACCENTS;
-import static net.clementlevallois.functions.model.WorkflowTopicsProps.QueryParams.REPLACE_STOPWORDS;
 import net.clementlevallois.importers.model.CellRecord;
 import net.clementlevallois.importers.model.SheetModel;
-import net.clementlevallois.nocodeapp.web.front.MessageFromApi;
-import net.clementlevallois.nocodeapp.web.front.WatchTower;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.exportdata.ExportToVosViewer;
 import net.clementlevallois.nocodeapp.web.front.importdata.DataImportBean;
@@ -124,23 +111,24 @@ public class WorkflowGazeBean implements Serializable {
     }
 
     public void pollingDidTopNodesArrive() {
-        Path pathSignalWorkflowComplete = props.getWorkflowCompleteFilePath(jobId);
+        Path pathSignalWorkflowComplete = globals.getWorkflowCompleteFilePath(jobId);
         boolean workflowComplete = Files.exists(pathSignalWorkflowComplete);
         if (workflowComplete) {
             runButtonDisabled = false;
             FacesContext context = FacesContext.getCurrentInstance();
-            context.getApplication().getNavigationHandler().handleNavigation(context, null, "/gaze/results.xhtml?faces-redirect=true");
+        context.getApplication().getNavigationHandler().handleNavigation(context, null, "/" + WorkflowGazeProps.NAME + "/" + Globals.RESULTS_PAGE + Globals.FACES_REDIRECT);
         }
     }
 
     public void navigatToResults(AjaxBehaviorEvent event) {
         FacesContext context = FacesContext.getCurrentInstance();
-        context.getApplication().getNavigationHandler().handleNavigation(context, null, "/gaze/results.xhtml?faces-redirect=true");
+        context.getApplication().getNavigationHandler().handleNavigation(context, null, "/" + WorkflowGazeProps.NAME + "/" + Globals.RESULTS_PAGE + Globals.FACES_REDIRECT);
     }
 
     public void runCoocAnalysis() {
         try {
             jobId = UUID.randomUUID().toString().substring(0, 10);
+            Files.createDirectories(applicationProperties.getTempFolderFullPath().resolve(jobId));
             progress = 0;
             sessionBean.sendFunctionPageReport();
             logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.starting_analysis"));
@@ -181,7 +169,7 @@ public class WorkflowGazeBean implements Serializable {
 
             callCooc(lines);
             runButtonDisabled = true;
-        } catch (Exception ex) {
+        } catch (IOException ex) {
             LOG.log(Level.SEVERE, "Error running Cooc analysis", ex);
             sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Analysis Error", "Could not start Cooc analysis: " + ex.getMessage());
             runButtonDisabled = false;
@@ -191,6 +179,7 @@ public class WorkflowGazeBean implements Serializable {
     public void runSimAnalysis(String sourceColIndex, String sheetName) {
         try {
             jobId = UUID.randomUUID().toString().substring(0, 10);
+            Files.createDirectories(applicationProperties.getTempFolderFullPath().resolve(jobId));
             sessionBean.sendFunctionPageReport();
             logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.starting_analysis"));
             List<SheetModel> dataInSheets = dataImportBean.getDataInSheets();
@@ -236,21 +225,21 @@ public class WorkflowGazeBean implements Serializable {
             }
             if (sourcesAndTargets.isEmpty()) {
                 logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.data_not_found") + " (2)");
-                runButtonDisabled = false; // Enable button on error
+                runButtonDisabled = false;
                 return;
             }
 
             callSim(sourcesAndTargets);
-            runButtonDisabled = true; // Disable button while processing
+            runButtonDisabled = true;
 
         } catch (NumberFormatException ex) {
             LOG.log(Level.SEVERE, "Error parsing source column index", ex);
             sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Analysis Error", "Invalid source column index: " + ex.getMessage());
-            runButtonDisabled = false; // Enable button on error
-        } catch (Exception ex) {
+            runButtonDisabled = false;
+        } catch (IOException ex) {
             LOG.log(Level.SEVERE, "Error running Sim analysis", ex);
             sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Analysis Error", "Could not start Sim analysis: " + ex.getMessage());
-            runButtonDisabled = false; // Enable button on error
+            runButtonDisabled = false;
         }
     }
 
@@ -280,8 +269,6 @@ public class WorkflowGazeBean implements Serializable {
                         String error = response.body();
                         LOG.log(Level.SEVERE, "Cooc call failed. Status: {0}, Body: {1}", new Object[]{response.statusCode(), error});
                         sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Cooc Failed", "Could not send to Cooc microservice: " + error);
-                    } else {
-                        LOG.log(Level.INFO, "Cooc task submitted successfully for dataId: {0}", jobId);
                     }
                 })
                 .exceptionally(e -> {
@@ -339,11 +326,10 @@ public class WorkflowGazeBean implements Serializable {
 
     private MicroserviceHttpClient.PostRequestBuilder addQueryParamsForSim(PostRequestBuilder requestBuilder) {
         for (WorkflowGazeProps.QueryParams param : WorkflowGazeProps.QueryParams.values()) {
-            String paramValue = null;
-            switch (param) {
+            String paramValue = switch (param) {
                 case MIN_SHARED_TARGETS ->
-                    paramValue = String.valueOf(minSharedTargets);
-            }
+                    String.valueOf(minSharedTargets);
+            };
             requestBuilder.addQueryParameter(param.name(), paramValue);
         }
         return requestBuilder;
@@ -355,15 +341,14 @@ public class WorkflowGazeBean implements Serializable {
         String callbackURL = RemoteLocal.getDomain() + RemoteLocal.getInternalMessageApiEndpoint() + WorkflowGazeProps.ENDPOINT_GAZE;
 
         for (Globals.GlobalQueryParams param : Globals.GlobalQueryParams.values()) {
-            String paramValue = null;
-            switch (param) {
+            String paramValue = switch (param) {
                 case SESSION_ID ->
-                    paramValue = sessionId;
+                    sessionId;
                 case JOB_ID ->
-                    paramValue = jobId;
+                    jobId;
                 case CALLBACK_URL ->
-                    paramValue = callbackURL;
-            }
+                    callbackURL;
+            };
             requestBuilder.addQueryParameter(param.name(), paramValue);
         }
         return requestBuilder;

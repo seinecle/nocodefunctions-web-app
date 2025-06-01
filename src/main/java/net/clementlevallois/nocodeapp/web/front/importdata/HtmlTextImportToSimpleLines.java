@@ -143,7 +143,7 @@ public class HtmlTextImportToSimpleLines implements Serializable {
     }
 
     public void retrieveUrlsContainedOnAPage() {
-        dataPersistenceUniqueId = simpleLineImportBean.getDataPersistenceUniqueId();
+        dataPersistenceUniqueId = simpleLineImportBean.getJobId();
         selectedLinks = new ArrayList();
         linksToHarvest = new ArrayList();
 
@@ -208,7 +208,7 @@ public class HtmlTextImportToSimpleLines implements Serializable {
     }
 
     public void crawlPagesOfAWebsite() {
-        dataPersistenceUniqueId = simpleLineImportBean.getDataPersistenceUniqueId();
+        dataPersistenceUniqueId = simpleLineImportBean.getJobId();
         selectedLinks = new ArrayList();
         linksToHarvest = new ArrayList();
 

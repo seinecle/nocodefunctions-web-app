@@ -54,11 +54,11 @@ public class OneFileUploadToGraphBean {
                 return;
             }
 
-            String dataPersistenceUniqueId = importGraphBean.getDataPersistenceUniqueId();
+            String jobId = importGraphBean.getJobId();
 
             String uniqueFileId = UUID.randomUUID().toString().substring(0, 10);
 
-            Path pathToFile = Path.of(applicationProperties.getTempFolderFullPath().toString(), dataPersistenceUniqueId + uniqueFileId);
+            Path pathToFile = Path.of(applicationProperties.getTempFolderFullPath().toString(), jobId + uniqueFileId);
             Files.write(pathToFile, fileAllBytes);
 
             logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("back.import.file_successful_upload.opening") + f.getFileName() + sessionBean.getLocaleBundle().getString("back.import.file_successful_upload.closing"));

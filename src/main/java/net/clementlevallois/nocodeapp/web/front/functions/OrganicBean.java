@@ -130,8 +130,8 @@ public class OrganicBean implements Serializable {
         logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.starting_analysis"));
 
         Map<Integer, String> mapOfLines = new HashMap();
-        if (simpleLinesImportBean.getDataPersistenceUniqueId() != null) {
-            dataPersistenceUniqueId = simpleLinesImportBean.getDataPersistenceUniqueId();
+        if (simpleLinesImportBean.getJobId() != null) {
+            dataPersistenceUniqueId = simpleLinesImportBean.getJobId();
             Path tempDataPath = Path.of(applicationProperties.getTempFolderFullPath().toString(), dataPersistenceUniqueId);
             if (Files.exists(tempDataPath) && !Files.isDirectory(tempDataPath)) {
                 try {
