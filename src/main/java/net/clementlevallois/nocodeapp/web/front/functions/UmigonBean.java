@@ -1,7 +1,7 @@
 package net.clementlevallois.nocodeapp.web.front.functions;
 
 import jakarta.annotation.PostConstruct;
-import jakarta.ejb.Asynchronous; // NEW IMPORT for @Asynchronous
+import jakarta.ejb.Asynchronous;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -28,8 +28,16 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.concurrent.ConcurrentLinkedDeque;
 import net.clementlevallois.functions.model.FunctionUmigon;
+import net.clementlevallois.functions.model.Globals;
+import net.clementlevallois.functions.model.WorkflowTopicsProps;
 import net.clementlevallois.importers.model.DataFormatConverter;
+import net.clementlevallois.nocodeapp.web.front.MessageFromApi;
+import static net.clementlevallois.nocodeapp.web.front.MessageFromApi.Information.ERROR;
+import static net.clementlevallois.nocodeapp.web.front.MessageFromApi.Information.PROGRESS;
+import net.clementlevallois.nocodeapp.web.front.WatchTower;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.importdata.DataImportBean;
 import net.clementlevallois.nocodeapp.web.front.logview.BackToFrontMessengerBean;
@@ -61,7 +69,8 @@ public class UmigonBean implements Serializable {
     private List<Document> filteredDocuments;
     private Integer maxCapacity = 10_000;
 
-    private String dataPersistenceUniqueId = "";
+    private String jobId = "";
+    private Globals globals;
 
     @Inject
     BackToFrontMessengerBean logBean;
@@ -80,7 +89,7 @@ public class UmigonBean implements Serializable {
 
     @Inject
     private MicroserviceHttpClient microserviceClient;
-    
+
     public UmigonBean() {
     }
 
@@ -91,6 +100,8 @@ public class UmigonBean implements Serializable {
         String negative_tone = sessionBean.getLocaleBundle().getString("general.nouns.sentiment_negative");
         String neutral_tone = sessionBean.getLocaleBundle().getString("general.nouns.sentiment_neutral");
         sentiments = new String[]{positive_tone, negative_tone, neutral_tone};
+        globals = new Globals(applicationProperties.getTempFolderFullPath());
+
     }
 
     public Integer getProgress() {
@@ -127,7 +138,7 @@ public class UmigonBean implements Serializable {
         }
         sessionBean.sendFunctionPageReport();
         logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.starting_analysis"));
-        
+
         PrimeFaces.current().ajax().update("formComputeButton:computeButton", "notifications", "progressComponentId");
         startAnalysisAsync();
 
@@ -136,168 +147,98 @@ public class UmigonBean implements Serializable {
 
     @Asynchronous
     public void startAnalysisAsync() {
-        Map<Integer, String> mapOfLines = new HashMap();
-        try {
-            if (simpleLinesImportBean.getJobId() != null) {
-                dataPersistenceUniqueId = simpleLinesImportBean.getJobId();
-                Path tempDataPath = Path.of(applicationProperties.getTempFolderFullPath().toString(), dataPersistenceUniqueId);
-                if (Files.exists(tempDataPath) && !Files.isDirectory(tempDataPath)) {
-                    List<String> readAllLines = Files.readAllLines(tempDataPath, StandardCharsets.UTF_8);
-                    int i = 0;
-                    for (String line : readAllLines) {
-                        mapOfLines.put(i++, line.trim());
+        tempResults = new ConcurrentHashMap();
+        filteredDocuments = new ArrayList();
+        results = new ArrayList();
+
+        String owner = applicationProperties.getPrivateProperties().getProperty("pwdOwner");
+        if (owner == null) {
+            LOG.severe("pwdOwner property is not set!");
+            sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Configuration Error", "Owner password not configured.");
+            return; // Exit the async task
+        }
+
+        microserviceClient.api().post(FunctionUmigon.ENDPOINT)
+                .addQueryParameter("text-lang", selectedLanguage)
+                .addQueryParameter("explanation", "on")
+                .addQueryParameter("jobId", jobId)
+                .addQueryParameter("shorter", "true")
+                .addQueryParameter("owner", owner)
+                .addQueryParameter("output-format", "bytes")
+                .addQueryParameter("explanation-lang", sessionBean.getCurrentLocale().toLanguageTag())
+                .sendAsync(HttpResponse.BodyHandlers.ofByteArray())
+                .thenAccept(resp -> {
+                    if (resp.statusCode() == 200) {
+                    } else {
+                        LOG.log(Level.SEVERE, "Umigon microservice call failed");
+                        sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Processing Error", "Microservice error");
                     }
-                } else {
-                    LOG.log(Level.WARNING, "Temp data file not found for dataId: {0}", dataPersistenceUniqueId);
-                    sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "Input Error", "Temporary data file not found. Please re-import data.");
-                    PrimeFaces.current().ajax().update("formComputeButton:computeButton", "notifications");
-                    return; // Exit the async task
-                }
-            } else {
-                DataFormatConverter dataFormatConverter = new DataFormatConverter();
-                mapOfLines = dataFormatConverter.convertToMapOfLines(inputData.getBulkData(), inputData.getDataInSheets(), inputData.getSelectedSheetName(), inputData.getSelectedColumnIndex(), inputData.getHasHeaders());
-            }
+                })
+                .exceptionally(exception -> {
+                    LOG.log(Level.SEVERE, "Exception during async Umigon call");
+                    String errorMessage = "Communication error: " + exception.getMessage();
+                    if (exception.getCause() instanceof MicroserviceCallException msce) {
+                        errorMessage = "Communication error: Status " + msce.getStatusCode() + ", " + msce.getErrorBody();
+                    }
+                    sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Processing Error", errorMessage);
 
-            if (mapOfLines == null || mapOfLines.isEmpty()) {
-                sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "Input Error", "No data found for analysis.");
-                logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.data_not_found"));
-                PrimeFaces.current().ajax().update("formComputeButton:computeButton", "notifications");
-                return; // Exit the async task
-            }
-
-            int maxRecords = Math.min(mapOfLines.size(), maxCapacity);
-            tempResults = new ConcurrentHashMap(maxRecords);
-            filteredDocuments = new ArrayList();
-            results = new ArrayList();
-
-            Set<CompletableFuture<Void>> futures = new HashSet<>();
-
-            String owner = applicationProperties.getPrivateProperties().getProperty("pwdOwner");
-            if (owner == null) {
-                LOG.severe("pwdOwner property is not set!");
-                sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Configuration Error", "Owner password not configured.");
-                return; // Exit the async task
-            }
-
-            for (Map.Entry<Integer, String> entry : mapOfLines.entrySet()) {
-                if (countTreated >= maxCapacity) {
-                    break;
-                }
-                String text = entry.getValue();
-                if (text == null || text.isBlank()) {
                     countTreated++;
-                    continue;
-                }
-                String id = String.valueOf(entry.getKey());
+                    return null;
+                });
 
-                CompletableFuture<Void> future = microserviceClient.api().post(FunctionUmigon.ENDPOINT)
-                        .withByteArrayPayload(text.getBytes(StandardCharsets.UTF_8))
-                        .addQueryParameter("text-lang", selectedLanguage)
-                        .addQueryParameter("id", id)
-                        .addQueryParameter("explanation", "on")
-                        .addQueryParameter("shorter", "true")
-                        .addQueryParameter("owner", owner)
-                        .addQueryParameter("output-format", "bytes")
-                        .addQueryParameter("explanation-lang", sessionBean.getCurrentLocale().toLanguageTag())
-                        .sendAsync(HttpResponse.BodyHandlers.ofByteArray())
-                        .thenAccept(resp -> {
-                            // This block runs on HttpClient's thread pool
-                            int currentProgress = (int) ((float) tempResults.size() * 100 / maxRecords);
-                            if (currentProgress > progress) {
-                                progress = currentProgress;
+    }
+
+    public void checkTaskStatusForPolling() {
+        if (jobId == null) {
+            return;
+        }
+
+        Path pathSignalWorkflowComplete = globals.getWorkflowCompleteFilePath(jobId);
+        boolean workflowComplete = Files.exists(pathSignalWorkflowComplete);
+
+        if (workflowComplete) {
+            processResults();
+            FacesContext context = FacesContext.getCurrentInstance();
+            context.getApplication().getNavigationHandler().handleNavigation(context, null, "/" + WorkflowTopicsProps.NAME + "/" + Globals.RESULTS_PAGE + Globals.FACES_REDIRECT);
+        }
+
+        ConcurrentLinkedDeque<MessageFromApi> messagesFromApi = WatchTower.getDequeAPIMessages().get("");
+
+        if (messagesFromApi != null && !messagesFromApi.isEmpty()) {
+            Iterator<MessageFromApi> it = messagesFromApi.iterator();
+            while (it.hasNext()) {
+                MessageFromApi msg = it.next();
+                if (msg.getjobId() != null && msg.getjobId().equals(jobId)) {
+                    switch (msg.getInfo()) {
+                        case ERROR -> {
+                            LOG.log(Level.WARNING, "Polling detected ERROR message for dataId {0}: {1}", new Object[]{jobId, msg.getMessage()});
+                            runButtonDisabled = false;
+                            progress = 0;
+                            logBean.addOneNotificationFromString("Analysis failed: " + msg.getMessage());
+                            it.remove();
+                        }
+                        case PROGRESS -> {
+                            if (msg.getProgress() != null) {
+                                this.progress = msg.getProgress();
                             }
-
-                            if (resp.statusCode() == 200) {
-                                byte[] body = resp.body();
-                                try (ByteArrayInputStream bis = new ByteArrayInputStream(body); ObjectInputStream ois = new ObjectInputStream(bis)) {
-                                    Document docReturn = (Document) ois.readObject();
-                                    tempResults.put(Integer.valueOf(docReturn.getId()), docReturn);
-                                    LOG.log(Level.FINE, "Processed document with ID: {0}", docReturn.getId());
-                                } catch (IOException | ClassNotFoundException ex) {
-                                    LOG.log(Level.SEVERE, "Error deserializing Document object for ID " + id, ex);
-                                    Document errorDoc = new Document();
-                                    errorDoc.setId(id);
-                                    errorDoc.setText(text);
-                                    errorDoc.setExplanationPlainText("Error processing result: " + ex.getMessage());
-                                    tempResults.put(Integer.valueOf(id), errorDoc);
-                                    sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Processing Error", "Could not process result for ID " + id);
-                                }
-                            } else {
-                                String errorBody = new String(resp.body(), StandardCharsets.UTF_8);
-                                LOG.log(Level.SEVERE, "Umigon microservice call failed for ID {0}. Status: {1}, Body: {2}", new Object[]{id, resp.statusCode(), errorBody});
-                                Document errorDoc = new Document();
-                                errorDoc.setId(id);
-                                errorDoc.setText(text);
-                                errorDoc.setExplanationPlainText("Microservice error: Status " + resp.statusCode() + ", " + errorBody);
-                                tempResults.put(Integer.valueOf(id), errorDoc);
-                                sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Processing Error", "Microservice error for ID " + id);
-                            }
-                            countTreated++;
-                        })
-                        .exceptionally(exception -> {
-                            LOG.log(Level.SEVERE, "Exception during async Umigon call for ID " + id, exception);
-                            String errorMessage = "Communication error: " + exception.getMessage();
-                            if (exception.getCause() instanceof MicroserviceCallException msce) {
-                                errorMessage = "Communication error: Status " + msce.getStatusCode() + ", " + msce.getErrorBody();
-                            }
-                            Document errorDoc = new Document();
-                            errorDoc.setId(id);
-                            errorDoc.setText(text);
-                            errorDoc.setExplanationPlainText(errorMessage);
-                            tempResults.put(Integer.valueOf(id), errorDoc);
-                            sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Processing Error", errorMessage);
-
-                            countTreated++;
-                            return null;
-                        });
-                futures.add(future);
-
-                try {
-                    Thread.sleep(8);
-                } catch (InterruptedException ex) {
-                    LOG.log(Level.WARNING, "Thread interrupted during request sending sleep", ex);
-                    Thread.currentThread().interrupt();
-                    break;
+                            it.remove();
+                        }
+                        default -> {
+                        }
+                    }
                 }
             }
-            logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.almost_done"));
-
-            CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
-            combinedFuture.join(); // This blocking call is now on the @Asynchronous thread
-
-            for (Map.Entry<Integer, Document> entry : tempResults.entrySet()) {
-                results.add(entry.getKey(), entry.getValue());
-            }
-
-            progress = 100;
-            logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.analysis_complete"));
-            runButtonDisabled = false;
-
-            PrimeFaces.current().executeScript("window.location.href = '" + FacesContext.getCurrentInstance().getExternalContext().getRequestContextPath() + "/" + sessionBean.getFunction() + "/results.html?faces-redirect=true';");
-
-        } catch (IOException ex) {
-            LOG.log(Level.SEVERE, "Error during data loading or file operations in UmigonBean", ex);
-            sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Input Error", "Failed to prepare data for analysis: " + ex.getMessage());
-            handleAnalysisFailure();
-        } catch (CompletionException cex) {
-            Throwable cause = cex.getCause();
-            LOG.log(Level.SEVERE, "Exception during completion of async Umigon calls", cause);
-            String errorMessage = "Analysis failed: " + cause.getMessage();
-            if (cause instanceof MicroserviceCallException msce) {
-                errorMessage = "Analysis failed: Status " + msce.getStatusCode() + ", " + msce.getErrorBody();
-            }
-            sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Analysis Failed", errorMessage);
-            logBean.addOneNotificationFromString(errorMessage);
-            handleAnalysisFailure();
-        } catch (Exception ex) {
-            LOG.log(Level.SEVERE, "Unexpected error in Umigon analysis", ex);
-            sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Analysis Failed", "An unexpected error occurred: " + ex.getMessage());
-            logBean.addOneNotificationFromString("An unexpected error occurred: " + ex.getMessage());
-            handleAnalysisFailure();
         }
     }
 
-    // Helper method to reset UI state on analysis failure
+    private void processResults() {
+        // open the binary results file, extract the list of Docs and populate tempResult and results
+        for (Map.Entry<Integer, Document> entry : tempResults.entrySet()) {
+            results.add(entry.getKey(), entry.getValue());
+        }
+
+    }
+
     private void handleAnalysisFailure() {
         progress = 0;
         runButtonDisabled = false;

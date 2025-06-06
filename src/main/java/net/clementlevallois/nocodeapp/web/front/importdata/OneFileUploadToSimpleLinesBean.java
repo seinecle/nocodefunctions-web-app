@@ -1,23 +1,19 @@
 package net.clementlevallois.nocodeapp.web.front.importdata;
 
-import io.mikael.urlbuilder.UrlBuilder;
 import jakarta.enterprise.context.RequestScoped;
-import jakarta.faces.application.FacesMessage;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import java.io.IOException;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Properties;
 import java.util.UUID;
+import java.util.concurrent.CompletionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.ApplicationPropertiesBean;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
+import net.clementlevallois.nocodeapp.web.front.http.MicroserviceHttpClient;
 import net.clementlevallois.nocodeapp.web.front.logview.BackToFrontMessengerBean;
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.file.UploadedFile;
@@ -42,18 +38,19 @@ public class OneFileUploadToSimpleLinesBean {
     @Inject
     ApplicationPropertiesBean applicationProperties;
 
+    @Inject
+    MicroserviceHttpClient microserviceHttpClient;
+
     public void handleFileUpload(FileUploadEvent event) {
         try {
             UploadedFile f = event.getFile();
             if (f == null) {
                 return;
             }
+
             byte[] fileAllBytes = f.getInputStream().readAllBytes();
             String fileName = f.getFileName();
-
             String currentFunction = sessionBean.getFunction();
-
-            Properties privateProperties = applicationProperties.getPrivateProperties();
 
             if (currentFunction == null) {
                 logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.error_function_not_set"));
@@ -62,118 +59,54 @@ public class OneFileUploadToSimpleLinesBean {
 
             String jobId = simpleLineImportBean.getJobId();
             Files.createDirectories(applicationProperties.getTempFolderFullPath().resolve(jobId));
-
             String uniqueFileId = UUID.randomUUID().toString().substring(0, 10);
-
             Path pathToFile = applicationProperties.getTempFolderFullPath().resolve(jobId).resolve(jobId + uniqueFileId);
             Files.write(pathToFile, fileAllBytes);
 
-            logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("back.import.file_successful_upload.opening") + f.getFileName() + sessionBean.getLocaleBundle().getString("back.import.file_successful_upload.closing"));
+            logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("back.import.file_successful_upload.opening")
+                    + fileName + sessionBean.getLocaleBundle().getString("back.import.file_successful_upload.closing"));
 
-            HttpClient client = HttpClient.newHttpClient();
-            HttpRequest request = null;
-            URI uri = null;
-            switch (fileName.substring(fileName.lastIndexOf(".") + 1)) {
+            var importClient = microserviceHttpClient.importService();
 
-                case "pdf" -> {
-                    uri = UrlBuilder
-                            .empty()
-                            .withScheme("http")
-                            .withPort(Integer.valueOf(privateProperties.getProperty("nocode_import_port")))
-                            .withHost("localhost")
-                            .withPath("api/import/pdf/simpleLines")
-                            .addParameter("fileName", fileName)
-                            .addParameter("uniqueFileId", uniqueFileId)
-                            .addParameter("jobId", jobId)
-                            .toUri();
+            String extension = fileName.substring(fileName.lastIndexOf('.') + 1).toLowerCase();
+            String apiPath;
+            MicroserviceHttpClient.GetRequestBuilder builder;
 
-                    request = HttpRequest.newBuilder()
-                            .GET()
-                            .uri(uri)
-                            .build();
-
-                    HttpResponse<String> resp = client.send(request, HttpResponse.BodyHandlers.ofString());
-                    String body = resp.body();
-                    if (resp.statusCode() != 200) {
-                        System.out.println("return of pdf reader by the API was not a 200 code");
-                        String errorMessage = body;
-                        System.out.println(errorMessage);
-                        logBean.addOneNotificationFromString(errorMessage);
-                        sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "💔", errorMessage);
-                    }
-
-                }
-
-                case "txt" -> {
-                    uri = UrlBuilder
-                            .empty()
-                            .withScheme("http")
-                            .withPort(Integer.valueOf(privateProperties.getProperty("nocode_import_port")))
-                            .withHost("localhost")
-                            .withPath("api/import/txt/simpleLines")
-                            .addParameter("fileName", fileName)
-                            .addParameter("uniqueFileId", uniqueFileId)
-                            .addParameter("jobId", jobId)
-                            .toUri();
-
-                    request = HttpRequest.newBuilder()
-                            .GET()
-                            .uri(uri)
-                            .build();
-
-                    HttpResponse<String> resp = client.send(request, HttpResponse.BodyHandlers.ofString());
-                    String body = resp.body();
-                    if (resp.statusCode() != 200) {
-                        System.out.println("return of txt reader by the API was not a 200 code");
-                        String errorMessage = body;
-                        System.out.println(errorMessage);
-                        logBean.addOneNotificationFromString(errorMessage);
-                        sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "💔", errorMessage);
-                    }
-                }
-
+            switch (extension) {
+                case "pdf" ->
+                    apiPath = "import/pdf/simpleLines";
+                case "txt" ->
+                    apiPath = "import/txt/simpleLines";
                 case "json" -> {
                     String jsonKey = simpleLineImportBean.getJsonKey();
                     if (jsonKey == null || jsonKey.isBlank()) {
                         logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("back.import.json_key_missing"));
-                        if (!applicationProperties.getTempFolderFullPath().equals(pathToFile)) {
-                            Files.deleteIfExists(pathToFile);
-                        }
+                        Files.deleteIfExists(pathToFile);
                         return;
                     }
-                    uri = UrlBuilder
-                            .empty()
-                            .withScheme("http")
-                            .withPort(Integer.valueOf(privateProperties.getProperty("nocode_import_port")))
-                            .withHost("localhost")
-                            .withPath("api/import/json/simpleLines")
-                            .addParameter("uniqueFileId", uniqueFileId)
-                            .addParameter("jobId", jobId)
-                            .addParameter("jsonKey", jsonKey)
-                            .toUri();
-
-                    request = HttpRequest.newBuilder()
-                            .GET()
-                            .uri(uri)
-                            .build();
-
-                    HttpResponse<String> resp = client.send(request, HttpResponse.BodyHandlers.ofString());
-                    String body = resp.body();
-                    if (resp.statusCode() != 200) {
-                        System.out.println("return of json reader by the API was not a 200 code");
-                        String errorMessage = body;
-                        System.out.println(errorMessage);
-                        logBean.addOneNotificationFromString(errorMessage);
-                        sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "💔", errorMessage);
-                    }
+                    apiPath = "import/json/simpleLines";
                 }
-
                 default -> {
                     logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.file_extension_not_recognized"));
                     return;
                 }
             }
-        } catch (IOException | InterruptedException ex) {
+
+            builder = importClient.get(apiPath)
+                    .addQueryParameter("jobId", jobId)
+                    .addQueryParameter("uniqueFileId", uniqueFileId)
+                    .addQueryParameter("fileName", fileName);
+
+            if (extension.equals("json")) {
+                builder.addQueryParameter("jsonKey", simpleLineImportBean.getJsonKey());
+            }
+
+            builder.sendAsyncAndGetBody(HttpResponse.BodyHandlers.ofString()).join();
+
+            // handled errors will already throw
+            logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("back.import.api_call_success"));
+
+        } catch (IOException | CompletionException ex) {
             logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.encoding_error"));
             Logger.getLogger(OneFileUploadToSimpleLinesBean.class.getName()).log(Level.SEVERE, null, ex);
         }

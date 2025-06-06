@@ -24,7 +24,7 @@ import org.primefaces.model.file.UploadedFile;
 
 import net.clementlevallois.nocodeapp.web.front.http.MicroserviceHttpClient;
 import net.clementlevallois.nocodeapp.web.front.http.MicroserviceHttpClient.MicroserviceCallException;
-
+import net.clementlevallois.nocodeapp.web.front.http.MicroserviceHttpClient.PostRequestBuilder;
 
 @Named
 @SessionScoped
@@ -82,8 +82,8 @@ public class SpatializeBean implements Serializable {
 
     public String handleFileUpload(FileUploadEvent event) {
         progress = 0;
-        displayDownloadButton = false; // Reset download button state
-        gexfAsByteArrayResult = null; // Clear previous results
+        displayDownloadButton = false;
+        gexfAsByteArrayResult = null;
 
         sessionBean.sendFunctionPageReport();
         String success = sessionBean.getLocaleBundle().getString("general.nouns.success");
@@ -92,11 +92,11 @@ public class SpatializeBean implements Serializable {
         uploadedFile = event.getFile();
         try {
             uploadedFileAsByteArray = uploadedFile.getInputStream().readAllBytes();
-             LOG.log(Level.INFO, "Uploaded file {0} read into byte array.", uploadedFile.getFileName());
+            LOG.log(Level.INFO, "Uploaded file {0} read into byte array.", uploadedFile.getFileName());
         } catch (IOException ex) {
             LOG.log(Level.SEVERE, "Error reading uploaded file into byte array", ex);
             sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Upload Error", "Could not read uploaded file: " + ex.getMessage());
-            uploadedFileAsByteArray = null; // Ensure byte array is null on error
+            uploadedFileAsByteArray = null;
         }
         return "";
     }
@@ -125,45 +125,56 @@ public class SpatializeBean implements Serializable {
             return;
         }
 
-        progress = 0; // Reset progress
-        displayDownloadButton = false; // Hide download button
-        gexfAsByteArrayResult = null; // Clear previous results
+        progress = 0;
+        displayDownloadButton = false;
+        gexfAsByteArrayResult = null;
 
         sessionBean.addMessage(FacesMessage.SEVERITY_INFO, "Starting", "Starting spatialization layout...");
 
-        // Use MicroserviceHttpClient to call the spatialization endpoint
-        microserviceClient.api().post(FunctionSpatialization.ENDPOINT)
-            .withByteArrayPayload(uploadedFileAsByteArray) // Send the GEXF file bytes as payload
-            .addQueryParameter("durationInSeconds", String.valueOf(durationInSeconds)) // Add duration as query parameter
-            .sendAsync(HttpResponse.BodyHandlers.ofByteArray())
-            .thenAccept(resp -> {
-                if (resp.statusCode() == 200) {
-                    gexfAsByteArrayResult = resp.body();
-                    displayDownloadButton = true;
-                    progress = 100; // Set progress to 100 on success
-                    sessionBean.addMessage(FacesMessage.SEVERITY_INFO, "Success", "Spatialization complete. Download ready.");
-                    LOG.info("Spatialization successful.");
-                } else {
+        PostRequestBuilder requestBuilder = microserviceClient.api().post(FunctionSpatialization.ENDPOINT)
+                .withByteArrayPayload(uploadedFileAsByteArray);
+        addQueryParams(requestBuilder);
+        requestBuilder.sendAsync(HttpResponse.BodyHandlers.ofByteArray())
+                .thenAccept(resp -> {
+                    if (resp.statusCode() == 200) {
+                        gexfAsByteArrayResult = resp.body();
+                        displayDownloadButton = true;
+                        progress = 100;
+                        sessionBean.addMessage(FacesMessage.SEVERITY_INFO, "Success", "Spatialization complete. Download ready.");
+                        LOG.info("Spatialization successful.");
+                    } else {
+                        gexfAsByteArrayResult = null;
+                        displayDownloadButton = false;
+                        progress = 0;
+                        String errorBody = new String(resp.body(), StandardCharsets.UTF_8);
+                        LOG.log(Level.SEVERE, "Spatialization microservice call failed. Status: {0}, Body: {1}", new Object[]{resp.statusCode(), errorBody});
+                        sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Spatialization Failed", "Microservice error: Status " + resp.statusCode() + ", " + errorBody);
+                    }
+                })
+                .exceptionally(exception -> {
                     gexfAsByteArrayResult = null;
                     displayDownloadButton = false;
                     progress = 0;
-                    String errorBody = new String(resp.body(), StandardCharsets.UTF_8);
-                    LOG.log(Level.SEVERE, "Spatialization microservice call failed. Status: {0}, Body: {1}", new Object[]{resp.statusCode(), errorBody});
-                    sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Spatialization Failed", "Microservice error: Status " + resp.statusCode() + ", " + errorBody);
-                }
-            })
-            .exceptionally(exception -> {
-                gexfAsByteArrayResult = null; // Ensure null on error
-                displayDownloadButton = false;
-                progress = 0; // Reset progress on error
-                LOG.log(Level.SEVERE, "Exception during async spatialization call", exception);
-                String errorMessage = "Communication error with spatialization service: " + exception.getMessage();
-                 if (exception.getCause() instanceof MicroserviceCallException msce) {
-                     errorMessage = "Communication error: Status " + msce.getStatusCode() + ", " + msce.getErrorBody();
-                 }
-                 sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Spatialization Failed", errorMessage);
-                return null;
-            });
+                    LOG.log(Level.SEVERE, "Exception during async spatialization call", exception);
+                    String errorMessage = "Communication error with spatialization service: " + exception.getMessage();
+                    if (exception.getCause() instanceof MicroserviceCallException msce) {
+                        errorMessage = "Communication error: Status " + msce.getStatusCode() + ", " + msce.getErrorBody();
+                    }
+                    sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Spatialization Failed", errorMessage);
+                    return null;
+                });
+    }
+
+    private PostRequestBuilder addQueryParams(PostRequestBuilder requestBuilder) {
+        for (FunctionSpatialization.QueryParams param : FunctionSpatialization.QueryParams.values()) {
+            String paramValue = switch (param) {
+                case DURATION_IN_SECONDS ->
+                    String.valueOf(durationInSeconds);
+            };
+            requestBuilder.addQueryParameter(param.name(), paramValue);
+        }
+        return requestBuilder;
+
     }
 
     public void setFileToSave(StreamedContent fileToSave) {
