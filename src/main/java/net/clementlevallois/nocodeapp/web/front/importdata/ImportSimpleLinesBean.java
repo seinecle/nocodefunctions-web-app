@@ -49,23 +49,16 @@ public class ImportSimpleLinesBean implements Serializable {
     }
 
     public void setJobId(String jobId) {
+        this.jobId = jobId;
+        if (this.jobId == null) {
+            this.jobId = UUID.randomUUID().toString().substring(0, 10);
+        }
         try {
-            Path tempFolderRelativePath = applicationProperties.getTempFolderFullPath();
-            pathOfTempData = Path.of(tempFolderRelativePath.toString(), jobId);
-            if (!pathOfTempData.toFile().exists()) {
-                setDataPersistenceUniqueId();
-            } else {
-                this.jobId = jobId;
-            }
-            pathOfTempData = Path.of(tempFolderRelativePath.toString(), this.jobId);
+            pathOfTempData = applicationProperties.getTempFolderFullPath().resolve(this.jobId);
             Files.createDirectories(pathOfTempData);
         } catch (IOException ex) {
             Logger.getLogger(ImportSimpleLinesBean.class.getName()).log(Level.SEVERE, null, ex);
         }
-    }
-
-    public void setDataPersistenceUniqueId() {
-        this.jobId = UUID.randomUUID().toString().substring(0, 10);
     }
 
     public String getJobId() {

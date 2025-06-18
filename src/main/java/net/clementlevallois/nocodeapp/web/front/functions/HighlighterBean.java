@@ -161,8 +161,8 @@ public class HighlighterBean implements Serializable {
 
             // Use MicroserviceHttpClient to call the export service
             CompletableFuture<byte[]> futureBytes = microserviceClient.importService().post("/api/export/xlsx/highlighter")
-                 .withByteArrayPayload(documentsAsByteArray) // Send the byte array payload
-                 .sendAsyncAndGetBody(HttpResponse.BodyHandlers.ofByteArray()); // Execute and get body as byte[]
+                 .withByteArrayPayload(documentsAsByteArray)
+                 .sendAsyncAndGetBody(HttpResponse.BodyHandlers.ofByteArray());
 
             // Block to get the result for StreamedContent
             byte[] body = futureBytes.join();

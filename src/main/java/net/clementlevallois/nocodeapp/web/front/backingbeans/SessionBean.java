@@ -21,6 +21,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 import net.clementlevallois.nocodeapp.web.front.i18n.I18nStaticFilesResourceBundle;
 import net.clementlevallois.nocodeapp.web.front.utils.UrlParamCleaner;
 
@@ -40,6 +41,7 @@ public class SessionBean implements Serializable {
     private String noRobot;
     private Locale currentLocale;
     private String hash;
+    private String jobId;
 
     @Inject
     ApplicationPropertiesBean applicationProperties;
@@ -187,6 +189,14 @@ public class SessionBean implements Serializable {
         this.currentLocale = currentLocale;
     }
 
+    public String getJobId() {
+        return jobId;
+    }
+
+    public void createJobId() {
+        this.jobId = UUID.randomUUID().toString().substring(0, 12);
+    }
+
     public void addMessage(FacesMessage.Severity severity, String summary, String detail) {
         try {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(severity, summary, detail));
@@ -237,18 +247,13 @@ public class SessionBean implements Serializable {
     }
 
     private void removeCookie(String cookieName) {
-        // Obtain the external context from the current FacesContext
         ExternalContext externalContext = FacesContext.getCurrentInstance().getExternalContext();
-
-        // Check if the cookie exists in the request
         if (externalContext.getRequestCookieMap().containsKey(cookieName)) {
-            // Create a cookie with the same name and set its value to null
             Cookie cookie = new Cookie(cookieName, null);
             // Set the path to the root or where the cookie was initially set
             cookie.setPath("/");
             // Mark the cookie for immediate expiration
             cookie.setMaxAge(0);
-
             // Add the cookie to the response to remove it from the client
             ((HttpServletResponse) externalContext.getResponse()).addCookie(cookie);
         }

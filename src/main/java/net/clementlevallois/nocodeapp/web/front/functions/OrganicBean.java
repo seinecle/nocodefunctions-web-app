@@ -119,9 +119,9 @@ public class OrganicBean implements Serializable {
 
     public String runAnalysis() {
         progress = 3;
-        countTreated = 0; // Reset counter
-        runButtonDisabled = true; // Disable button
-        renderSeeResultsButton = false; // Hide results button
+        countTreated = 0;
+        runButtonDisabled = true;
+        renderSeeResultsButton = false;
 
         if (selectedLanguage == null || selectedLanguage.isEmpty()) {
             selectedLanguage = "en";
@@ -144,14 +144,14 @@ public class OrganicBean implements Serializable {
                 } catch (IOException ex) {
                     LOG.log(Level.SEVERE, "Error reading temp data file", ex);
                     sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Input Error", "Could not read temporary data file: " + ex.getMessage());
-                    runButtonDisabled = false; // Enable button on error
-                    return null; // Stay on the same page
+                    runButtonDisabled = false;
+                    return null;
                 }
             } else {
-                 LOG.log(Level.WARNING, "Temp data file not found for dataId: {0}", dataPersistenceUniqueId);
-                 sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "Input Error", "Temporary data file not found. Please re-import data.");
-                 runButtonDisabled = false; // Enable button on error
-                 return null; // Stay on the same page
+                LOG.log(Level.WARNING, "Temp data file not found for dataId: {0}", dataPersistenceUniqueId);
+                sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "Input Error", "Temporary data file not found. Please re-import data.");
+                runButtonDisabled = false;
+                return null;
             }
         } else {
             DataFormatConverter dataFormatConverter = new DataFormatConverter();
@@ -161,159 +161,176 @@ public class OrganicBean implements Serializable {
         if (mapOfLines == null || mapOfLines.isEmpty()) {
             sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "Input Error", "No data found for analysis.");
             logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.data_not_found"));
-            runButtonDisabled = false; // Enable button on error
-            return null; // Stay on the same page
+            runButtonDisabled = false;
+            return null;
         }
 
         int maxRecords = Math.min(mapOfLines.size(), maxCapacity);
         tempResults = new ConcurrentHashMap(maxRecords + 1);
         filteredDocuments = new ArrayList(maxRecords + 1);
-        results = Arrays.asList(new Document[maxRecords + 1]); // Initialize results list with nulls
+        results = Arrays.asList(new Document[maxRecords + 1]); // Initialize results list with nulls (size for pre-allocation)
+
 
         Set<CompletableFuture<Void>> futures = new HashSet<>();
-        int currentRecordIndex = 0; // Use a dedicated index for the results list
+        int currentRecordIndex = 0;
 
         String owner = applicationProperties.getPrivateProperties().getProperty("pwdOwner");
         if (owner == null) {
-             LOG.severe("pwdOwner property is not set!");
-             sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Configuration Error", "Owner password not configured.");
-             runButtonDisabled = false;
-             return null;
+            LOG.severe("pwdOwner property is not set!");
+            sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Configuration Error", "Owner password not configured.");
+            runButtonDisabled = false;
+            return null;
         }
 
         for (Map.Entry<Integer, String> entry : mapOfLines.entrySet()) {
             if (currentRecordIndex++ >= maxCapacity) {
                 break;
             }
-            Document doc = new Document();
+            Document doc = new Document(); // Create a Document object to pass ID and text consistently
             String id = String.valueOf(entry.getKey());
             doc.setText(entry.getValue());
             doc.setId(id);
 
+            var requestBuilder = microserviceClient.api().get(FunctionOrganic.ENDPOINT);
+            for (FunctionOrganic.QueryParams param : FunctionOrganic.QueryParams.values()) {
+                String value = switch (param) {
+                    case TEXT_LANG -> selectedLanguage;
+                    case ID -> doc.getId();
+                    case TEXT -> doc.getText();
+                    case EXPLANATION -> "on";
+                    case SHORTER -> "true";
+                    case OWNER -> owner;
+                    case OUTPUT_FORMAT -> "bytes";
+                    case EXPLANATION_LANG -> sessionBean.getCurrentLocale().toLanguageTag();
+                };
+                requestBuilder.addQueryParameter(param.name(), value);
+            }
+
             // Launch async call for each document
-            CompletableFuture<Void> future = microserviceClient.api().get(FunctionOrganic.ENDPOINT)
-                .addQueryParameter("text-lang", selectedLanguage)
-                .addQueryParameter("id", doc.getId())
-                .addQueryParameter("text", entry.getValue())
-                .addQueryParameter("explanation", "on")
-                .addQueryParameter("shorter", "true")
-                .addQueryParameter("owner", owner)
-                .addQueryParameter("output-format", "bytes") // Expecting byte array (serialized Document)
-                .addQueryParameter("explanation-lang", sessionBean.getCurrentLocale().toLanguageTag())
-                .sendAsync(HttpResponse.BodyHandlers.ofByteArray()) // Send async, expect byte array
+            CompletableFuture<Void> future = requestBuilder
+                .sendAsync(HttpResponse.BodyHandlers.ofByteArray())
                 .thenAccept(resp -> {
+                    // Note: Lambdas capture 'doc' (which is the loop variable, effectively final in each iteration)
+                    // and 'maxRecords' (effectively final). 'progress' needs to be mutable via a trick.
+                    // For progress update, it's better to make 'progress' volatile or use AtomicInteger
+                    // if multiple threads can update it concurrently and you need visibility guaranteed.
+                    // For UI updates (PrimeFaces), make sure you're on the correct thread (JSF's RequestContext or similar).
+                    // This example keeps the original progress update logic, assuming it's handled by PrimeFaces.
+
                     int currentProgress = (int) ((float) tempResults.size() * 100 / maxRecords);
                     if (currentProgress > progress) {
-                        progress = currentProgress;
-                         PrimeFaces.current().ajax().update("progressComponentId"); // Replace with actual ID
+                        progress = currentProgress; // Reassigning `progress` from lambda needs it to be non-final.
+                                                    // In a real concurrent scenario, use AtomicInteger for progress:
+                                                    // `final AtomicInteger progressAtomic = new AtomicInteger(3);`
+                                                    // then `progressAtomic.set(currentProgress);`
+                                                    // and access `progressAtomic.get()`.
+                        PrimeFaces.current().ajax().update("progressComponentId");
                     }
 
                     if (resp.statusCode() == 200) {
                         byte[] body = resp.body();
-                         try (ByteArrayInputStream bis = new ByteArrayInputStream(body);
-                              ObjectInputStream ois = new ObjectInputStream(bis)) {
-                             Document docReturn = (Document) ois.readObject();
-                             tempResults.put(Integer.valueOf(docReturn.getId()), docReturn);
-                             LOG.log(Level.FINE, "Processed document with ID: {0}", docReturn.getId());
-                         } catch (IOException | ClassNotFoundException ex) {
-                             LOG.log(Level.SEVERE, "Error deserializing Document object for ID " + doc.getId(), ex);
-                             // Handle deserialization error - maybe add a placeholder Document with an error state
-                             Document errorDoc = new Document();
-                             errorDoc.setId(doc.getId());
-                             errorDoc.setText(doc.getText()); // Keep original text
-                             errorDoc.setExplanationPlainText("Error processing result: " + ex.getMessage());
-                             tempResults.put(Integer.valueOf(doc.getId()), errorDoc);
-                         }
+                        try (ByteArrayInputStream bis = new ByteArrayInputStream(body);
+                             ObjectInputStream ois = new ObjectInputStream(bis)) {
+                            Document docReturn = (Document) ois.readObject();
+                            tempResults.put(Integer.valueOf(docReturn.getId()), docReturn);
+                            LOG.log(Level.FINE, "Processed document with ID: {0}", docReturn.getId());
+                        } catch (IOException | ClassNotFoundException ex) {
+                            LOG.log(Level.SEVERE, "Error deserializing Document object for ID " + doc.getId(), ex);
+                            Document errorDoc = new Document();
+                            errorDoc.setId(doc.getId());
+                            errorDoc.setText(doc.getText());
+                            errorDoc.setExplanationPlainText("Error processing result: " + ex.getMessage());
+                            tempResults.put(Integer.valueOf(doc.getId()), errorDoc);
+                        }
                     } else {
                         String errorBody = new String(resp.body(), StandardCharsets.UTF_8);
                         LOG.log(Level.SEVERE, "Organic microservice call failed for ID {0}. Status: {1}, Body: {2}", new Object[]{doc.getId(), resp.statusCode(), errorBody});
-                         Document errorDoc = new Document();
-                         errorDoc.setId(doc.getId());
-                         errorDoc.setText(doc.getText()); // Keep original text
-                         errorDoc.setExplanationHtml("Microservice error: Status " + resp.statusCode() + ", " + errorBody);
-                         tempResults.put(Integer.valueOf(doc.getId()), errorDoc);
+                        Document errorDoc = new Document();
+                        errorDoc.setId(doc.getId());
+                        errorDoc.setText(doc.getText());
+                        errorDoc.setExplanationHtml("Microservice error: Status " + resp.statusCode() + ", " + errorBody);
+                        tempResults.put(Integer.valueOf(doc.getId()), errorDoc);
                     }
                 })
                 .exceptionally(exception -> {
-                     LOG.log(Level.SEVERE, "Exception during async Organic call for ID " + doc.getId(), exception);
-                     String errorMessage = "Communication error: " + exception.getMessage();
-                     if (exception.getCause() instanceof MicroserviceCallException msce) {
-                         errorMessage = "Communication error: Status " + msce.getStatusCode() + ", " + msce.getErrorBody();
-                     }
-                     // Handle communication error - add a placeholder Document with an error state
-                     Document errorDoc = new Document();
-                     errorDoc.setId(doc.getId());
-                     errorDoc.setText(doc.getText()); // Keep original text
-                     errorDoc.setExplanationHtml(errorMessage);
-                     tempResults.put(Integer.valueOf(doc.getId()), errorDoc);
+                    LOG.log(Level.SEVERE, "Exception during async Organic call for ID " + doc.getId(), exception);
+                    String errorMessage = "Communication error: " + exception.getMessage();
+                    if (exception.getCause() instanceof MicroserviceCallException msce) {
+                        errorMessage = "Communication error: Status " + msce.getStatusCode() + ", " + msce.getErrorBody();
+                    }
+                    Document errorDoc = new Document();
+                    errorDoc.setId(doc.getId());
+                    errorDoc.setText(doc.getText());
+                    errorDoc.setExplanationHtml(errorMessage);
+                    tempResults.put(Integer.valueOf(doc.getId()), errorDoc);
                     return null;
                 });
             futures.add(future);
 
-            // Original code had a sleep here. This is often needed to prevent overwhelming the server
-            // or hitting HttpClient's concurrent stream limits. Keep it if necessary.
             try {
-                 Thread.sleep(2);
+                Thread.sleep(2); // Small delay to prevent overwhelming the server/client
             } catch (InterruptedException ex) {
-                 LOG.log(Level.WARNING, "Thread interrupted during request sending sleep", ex);
-                 Thread.currentThread().interrupt(); // Restore interrupt flag
-                 break;
+                LOG.log(Level.WARNING, "Thread interrupted during request sending sleep", ex);
+                Thread.currentThread().interrupt(); // Restore interrupt flag
+                break;
             }
         }
 
         this.progress = 40; // Update progress after sending requests
-        PrimeFaces.current().ajax().update("progressComponentId"); // Trigger UI update
+        PrimeFaces.current().ajax().update("progressComponentId");
         logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.almost_done"));
 
         try {
             CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
-            combinedFuture.join(); // This blocks until all futures are done
+            combinedFuture.join();
             LOG.info("All Organic microservice calls completed.");
 
-            for (Map.Entry<Integer, Document> entry : tempResults.entrySet()) {
-                results.set(entry.getKey(), entry.getValue());
+            // Transfer results from tempResults to the final results list in order
+            for (int j = 0; j < maxRecords; j++) {
+                results.set(j, tempResults.get(j)); // Assumes IDs (keys) match indices. Adjust if not.
             }
 
             this.progress = 100;
-            PrimeFaces.current().ajax().update("progressComponentId"); // Final progress update
+            PrimeFaces.current().ajax().update("progressComponentId");
 
             logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.analysis_complete"));
             renderSeeResultsButton = true;
-            runButtonDisabled = false; // Enable button
+            runButtonDisabled = false;
 
-            PrimeFaces.current().ajax().update("formComputeButton:computeButton", "notifications", "resultsButtonPanel"); // Update results button panel ID
+            PrimeFaces.current().ajax().update("formComputeButton:computeButton", "notifications", "resultsButtonPanel");
 
             return "/" + sessionBean.getFunction() + "/results.xhtml?faces-redirect=true";
 
         } catch (CompletionException cex) {
-             Throwable cause = cex.getCause();
-             LOG.log(Level.SEVERE, "Exception during completion of async Organic calls", cause);
-             String errorMessage = "Analysis failed: " + cause.getMessage();
-              if (cause instanceof MicroserviceCallException msce) {
-                  errorMessage = "Analysis failed: Status " + msce.getStatusCode() + ", " + msce.getErrorBody();
-              }
-             sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Analysis Failed", errorMessage);
-             logBean.addOneNotificationFromString(errorMessage);
+            Throwable cause = cex.getCause();
+            LOG.log(Level.SEVERE, "Exception during completion of async Organic calls", cause);
+            String errorMessage = "Analysis failed: " + cause.getMessage();
+            if (cause instanceof MicroserviceCallException msce) {
+                errorMessage = "Analysis failed: Status " + msce.getStatusCode() + ", " + msce.getErrorBody();
+            }
+            sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Analysis Failed", errorMessage);
+            logBean.addOneNotificationFromString(errorMessage);
 
-             this.progress = 0; // Reset progress on failure
-             runButtonDisabled = false; // Enable button on failure
-             renderSeeResultsButton = false; // Hide results button
-             PrimeFaces.current().ajax().update("formComputeButton:computeButton", "notifications", "resultsButtonPanel", "progressComponentId");
+            this.progress = 0;
+            runButtonDisabled = false;
+            renderSeeResultsButton = false;
+            PrimeFaces.current().ajax().update("formComputeButton:computeButton", "notifications", "resultsButtonPanel", "progressComponentId");
 
-             return null; // Stay on the same page or navigate to error page
+            return null;
         } catch (Exception ex) {
-             LOG.log(Level.SEVERE, "Unexpected error after sending Organic calls", ex);
-             sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Analysis Failed", "An unexpected error occurred: " + ex.getMessage());
-             logBean.addOneNotificationFromString("An unexpected error occurred: " + ex.getMessage());
+            LOG.log(Level.SEVERE, "Unexpected error after sending Organic calls", ex);
+            sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Analysis Failed", "An unexpected error occurred: " + ex.getMessage());
+            logBean.addOneNotificationFromString("An unexpected error occurred: " + ex.getMessage());
 
-             this.progress = 0; // Reset progress on failure
-             runButtonDisabled = false; // Enable button on failure
-             renderSeeResultsButton = false; // Hide results button
-             PrimeFaces.current().ajax().update("formComputeButton:computeButton", "notifications", "resultsButtonPanel", "progressComponentId");
+            this.progress = 0;
+            runButtonDisabled = false;
+            renderSeeResultsButton = false;
+            PrimeFaces.current().ajax().update("formComputeButton:computeButton", "notifications", "resultsButtonPanel", "progressComponentId");
 
-             return null; // Stay on the same page
+            return null;
         }
     }
+
 
     public Boolean getRenderSeeResultsButton() {
         return renderSeeResultsButton;

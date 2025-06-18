@@ -75,7 +75,7 @@ public class WorkflowGazeBean implements Serializable {
     private String jobId;
     private String sessionId;
 
-    private String gexf; // Used for export methods
+    private String gexf;
 
     private WorkflowGazeProps props;
     private Globals globals;

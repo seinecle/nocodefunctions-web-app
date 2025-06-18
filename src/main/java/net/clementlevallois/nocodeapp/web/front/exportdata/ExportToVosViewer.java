@@ -93,8 +93,7 @@ public class ExportToVosViewer {
             Throwable cause = e.getCause();
             LOG.log(Level.SEVERE, "Exception during synchronous VOSviewer conversion GET call with custom params", cause);
              String errorMessage = "Error converting to VOSviewer: " + cause.getMessage();
-             if (cause instanceof MicroserviceCallException) {
-                 MicroserviceCallException msce = (MicroserviceCallException) cause;
+             if (cause instanceof MicroserviceCallException msce) {
                  errorMessage = "Error converting to VOSviewer: Status " + msce.getStatusCode() + ", " + msce.getErrorBody();
              }
              LOG.log(Level.SEVERE, errorMessage);
@@ -119,18 +118,18 @@ public class ExportToVosViewer {
         try {
             // Use the MicroserviceHttpClient for the POST request and block using .join()
             String graphAsJsonVosViewer = client.api().post("/api/convert2vv")
-                .withByteArrayPayload(gexf.getBytes(StandardCharsets.UTF_8)) // Send GEXF string as byte array payload
+                .withByteArrayPayload(gexf.getBytes(StandardCharsets.UTF_8))
                 // Add parameters as query parameters
-                .addQueryParameter("item", "Term") // Fixed string as per original
-                .addQueryParameter("items", "Terms") // Fixed string as per original
-                .addQueryParameter("link", "Co-occurrence link") // Fixed string as per original
-                .addQueryParameter("links", "Co-occurrence links") // Fixed string as per original
-                .addQueryParameter("linkStrength", "Number of co-occurrences") // Fixed string as per original
-                .addQueryParameter("totalLinkStrength", "Total number of co-occurrences") // Fixed string as per original
-                .addQueryParameter("descriptionData", "Made with nocodefunctions.com") // Fixed string as per original
+                .addQueryParameter("item", "Term")
+                .addQueryParameter("items", "Terms")
+                .addQueryParameter("link", "Co-occurrence link")
+                .addQueryParameter("links", "Co-occurrence links")
+                .addQueryParameter("linkStrength", "Number of co-occurrences")
+                .addQueryParameter("totalLinkStrength", "Total number of co-occurrences")
+                .addQueryParameter("descriptionData", "Made with nocodefunctions.com")
                 // Note: original method didn't send dataPersistenceUniqueId in POST from GEXF string
                 .sendAsyncAndGetBody(HttpResponse.BodyHandlers.ofString()) // Expect String response body
-                .join(); // Block and wait
+                .join();
 
             return finishOpsFromGraphAsJson(graphAsJsonVosViewer, userGeneratedVosviewerDirectoryFullPath, relativePathFromProjectRootToVosviewerFolder, vosviewerRootFullPath);
 
@@ -190,8 +189,7 @@ public class ExportToVosViewer {
             Throwable cause = e.getCause();
             LOG.log(Level.SEVERE, "Exception during synchronous VOSviewer conversion POST call with UploadedFile", cause);
              String errorMessage = "Error converting to VOSviewer: " + cause.getMessage();
-             if (cause instanceof MicroserviceCallException) {
-                 MicroserviceCallException msce = (MicroserviceCallException) cause;
+             if (cause instanceof MicroserviceCallException msce) {
                  errorMessage = "Error converting to VOSviewer: Status " + msce.getStatusCode() + ", " + msce.getErrorBody();
              }
              LOG.log(Level.SEVERE, errorMessage);

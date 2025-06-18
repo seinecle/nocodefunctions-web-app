@@ -1,13 +1,9 @@
 package net.clementlevallois.nocodeapp.web.front.functions;
 
-import io.mikael.urlbuilder.UrlBuilder;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.SessionScoped;
@@ -21,12 +17,20 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Properties;
 import java.util.UUID;
+import java.util.concurrent.CompletionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import net.clementlevallois.functions.model.FunctionNetworkConverter;
+import net.clementlevallois.functions.model.Globals;
+import static net.clementlevallois.functions.model.Globals.GlobalQueryParams.CALLBACK_URL;
+import static net.clementlevallois.functions.model.Globals.GlobalQueryParams.JOB_ID;
+import static net.clementlevallois.functions.model.Globals.GlobalQueryParams.SESSION_ID;
+import net.clementlevallois.functions.model.WorkflowGazeProps;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.exportdata.ExportToVosViewer;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.ApplicationPropertiesBean;
 import net.clementlevallois.nocodeapp.web.front.http.MicroserviceHttpClient;
+import net.clementlevallois.nocodeapp.web.front.http.RemoteLocal;
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
@@ -48,31 +52,32 @@ public class ConverterBean implements Serializable {
     private String uploadButtonMessage;
     private boolean renderGephiWarning = true;
 
-    private byte[] gexfAsByteArray;
     private boolean shareVVPublicly;
 
-    private StreamedContent fileToSave;
+    private StreamedContent gexfFileToSave;
     private Properties privateProperties;
 
-    private String dataPersistenceUniqueId = "";
+    private String jobId;
+    private String sessionId;
 
     @Inject
     SessionBean sessionBean;
 
     @Inject
     ApplicationPropertiesBean applicationProperties;
-    
+
     @Inject
-    private MicroserviceHttpClient microserviceClient;
+    private MicroserviceHttpClient httpClient;
 
     public ConverterBean() {
     }
 
     @PostConstruct
     public void init() {
-        sessionBean.setFunction("networkconverter");
+        sessionBean.setFunction(FunctionNetworkConverter.NAME);
         privateProperties = applicationProperties.getPrivateProperties();
         uploadButtonMessage = sessionBean.getLocaleBundle().getString("general.message.choose_gexf_file");
+        sessionId = FacesContext.getCurrentInstance().getExternalContext().getSessionId(false);
     }
 
     public String logout() {
@@ -85,11 +90,11 @@ public class ConverterBean implements Serializable {
             byte[] readAllBytes = event.getFile().getInputStream().readAllBytes();
             fileNameUploaded = event.getFile().getFileName();
             sessionBean.sendFunctionPageReport();
-            dataPersistenceUniqueId = UUID.randomUUID().toString().substring(0, 10);
+            jobId = UUID.randomUUID().toString().substring(0, 10);
             Path tempFolderRelativePath = applicationProperties.getTempFolderFullPath();
 
             // as an obscure convention, gexf files are persisted with a _result extension - but not other files like json files
-            String fileNameToPersist = fileNameUploaded.endsWith("gexf") ? dataPersistenceUniqueId + "_result" : dataPersistenceUniqueId;
+            String fileNameToPersist = fileNameUploaded.endsWith("gexf") ? jobId + "_result" : jobId;
             Path fullPathForFileContainingGexf = Path.of(tempFolderRelativePath.toString(), fileNameToPersist);
 
             String success = sessionBean.getLocaleBundle().getString("general.nouns.success");
@@ -107,7 +112,7 @@ public class ConverterBean implements Serializable {
     }
 
     public void gotoVV() {
-        String linkToVosViewer = ExportToVosViewer.exportAndReturnLinkForConversionToVV(microserviceClient, dataPersistenceUniqueId, shareVVPublicly, applicationProperties, item, link, linkStrength);
+        String linkToVosViewer = ExportToVosViewer.exportAndReturnLinkForConversionToVV(httpClient, jobId, shareVVPublicly, applicationProperties, item, link, linkStrength);
         if (linkToVosViewer != null && !linkToVosViewer.isBlank()) {
             try {
                 ExternalContext externalContext = FacesContext.getCurrentInstance().getExternalContext();
@@ -182,56 +187,58 @@ public class ConverterBean implements Serializable {
         this.renderGephiWarning = renderGephiWarning;
     }
 
-    public StreamedContent getFileToSave() {
-        StreamedContent fileStream = null;
+    public StreamedContent getGexfFileToSave() {
         try {
-            HttpRequest request;
-            HttpClient client = HttpClient.newBuilder().build();
+            MicroserviceHttpClient.PostRequestBuilder requestBuilder = httpClient.api()
+                    .post(FunctionNetworkConverter.ENDPOINT_VV_TO_GEXF);
+            addGlobalQueryParams(requestBuilder);
+            HttpResponse<byte[]> response = requestBuilder.sendAsync(HttpResponse.BodyHandlers.ofByteArray())
+                    .join();
 
-            URI uri = UrlBuilder
-                    .empty()
-                    .withScheme("http")
-                    .withPort((Integer.valueOf(privateProperties.getProperty("nocode_api_port"))))
-                    .withHost("localhost")
-                    .withPath("api/convert2gexf")
-                    .addParameter("dataPersistenceUniqueId", dataPersistenceUniqueId)
-                    .toUri();
-
-            request = HttpRequest.newBuilder()
-                    .GET()
-                    .uri(uri)
-                    .build();
-
-            HttpResponse<byte[]> resp = client.send(request, HttpResponse.BodyHandlers.ofByteArray());
-            if (resp.statusCode() == 200) {
-                gexfAsByteArray = resp.body();
-            } else {
-                gexfAsByteArray = null;
-                System.out.println("response from vv converter: " + new String(resp.body(), "UTF-8"));
-            }
-
-            if (gexfAsByteArray == null) {
-                System.out.println("gexfAsByteArray returned by the API was not a 200 code");
-                String error = sessionBean.getLocaleBundle().getString("general.nouns.error");
-                sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, error, error);
-                return null;
-            }
-
-            InputStream inputStreamToSave = new ByteArrayInputStream(gexfAsByteArray);
-            fileStream = DefaultStreamedContent.builder()
+            InputStream inputStreamToSave = new ByteArrayInputStream(response.body());
+            return DefaultStreamedContent.builder()
                     .name("results.gexf")
                     .contentType("application/gexf+xml")
                     .stream(() -> inputStreamToSave)
                     .build();
 
-        } catch (IOException | InterruptedException ex) {
-            System.out.println("ex:" + ex.getMessage());
+        } catch (CompletionException e) {
+            if (e.getCause() instanceof MicroserviceHttpClient.MicroserviceCallException ex) {
+                System.err.println("Response Body: " + ex.getErrorBody());
+            } else {
+                System.err.println("An unexpected error occurred: " + e.getMessage());
+            }
+            String error = sessionBean.getLocaleBundle().getString("general.nouns.error");
+            sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, error, "Failed to retrieve the GEXF file.");
+            return null;
+        } catch (Exception e) {
+            System.err.println("An unexpected error occurred: " + e.getMessage());
+            String error = sessionBean.getLocaleBundle().getString("general.nouns.error");
+            sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, error, "An unexpected error occurred while processing your request.");
+            return null;
         }
-        return fileStream;
     }
 
-    public void setFileToSave(StreamedContent fileToSave) {
-        this.fileToSave = fileToSave;
+    private MicroserviceHttpClient.PostRequestBuilder addGlobalQueryParams(MicroserviceHttpClient.PostRequestBuilder requestBuilder) {
+
+        String callbackURL = RemoteLocal.getDomain() + RemoteLocal.getInternalMessageApiEndpoint() + FunctionNetworkConverter.ENDPOINT;
+
+        for (Globals.GlobalQueryParams param : Globals.GlobalQueryParams.values()) {
+            String paramValue = switch (param) {
+                case SESSION_ID ->
+                    sessionId;
+                case JOB_ID ->
+                    jobId;
+                case CALLBACK_URL ->
+                    callbackURL;
+            };
+            requestBuilder.addQueryParameter(param.name(), paramValue);
+        }
+        return requestBuilder;
+    }
+
+    public void setGexfFileToSave(StreamedContent gexfFileToSave) {
+        this.gexfFileToSave = gexfFileToSave;
     }
 
     public String displayNameForSingleUploadedFileOrSeveralFiles() {

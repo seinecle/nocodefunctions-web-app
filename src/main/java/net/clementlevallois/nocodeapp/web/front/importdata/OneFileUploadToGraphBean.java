@@ -6,7 +6,6 @@ import jakarta.inject.Named;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Properties;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -42,12 +41,9 @@ public class OneFileUploadToGraphBean {
             if (f == null) {
                 return;
             }
-            byte[] fileAllBytes = f.getInputStream().readAllBytes();
-            String fileName = f.getFileName();
+            FileUploaded fileUploaded = new FileUploaded(f.getInputStream(), f.getFileName());
 
             String currentFunction = sessionBean.getFunction();
-
-            Properties privateProperties = applicationProperties.getPrivateProperties();
 
             if (currentFunction == null) {
                 logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.error_function_not_set"));
@@ -55,12 +51,9 @@ public class OneFileUploadToGraphBean {
             }
 
             String jobId = importGraphBean.getJobId();
-
             String uniqueFileId = UUID.randomUUID().toString().substring(0, 10);
-
-            Path pathToFile = Path.of(applicationProperties.getTempFolderFullPath().toString(), jobId + uniqueFileId);
-            Files.write(pathToFile, fileAllBytes);
-
+            Path pathToFile = applicationProperties.getTempFolderFullPath().resolve(jobId).resolve(jobId + uniqueFileId);
+            Files.write(pathToFile, fileUploaded.bytes());
             logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("back.import.file_successful_upload.opening") + f.getFileName() + sessionBean.getLocaleBundle().getString("back.import.file_successful_upload.closing"));
         } catch (IOException ex) {
             logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.encoding_error"));

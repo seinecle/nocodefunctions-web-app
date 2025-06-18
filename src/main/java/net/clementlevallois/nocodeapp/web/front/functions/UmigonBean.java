@@ -6,10 +6,8 @@ import jakarta.ejb.Asynchronous;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
@@ -22,27 +20,25 @@ import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.io.ObjectInputStream;
 import java.net.http.HttpResponse;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import net.clementlevallois.functions.model.FunctionUmigon;
 import net.clementlevallois.functions.model.Globals;
 import net.clementlevallois.functions.model.WorkflowTopicsProps;
-import net.clementlevallois.importers.model.DataFormatConverter;
 import net.clementlevallois.nocodeapp.web.front.MessageFromApi;
 import static net.clementlevallois.nocodeapp.web.front.MessageFromApi.Information.ERROR;
+import static net.clementlevallois.nocodeapp.web.front.MessageFromApi.Information.FAILED;
+import static net.clementlevallois.nocodeapp.web.front.MessageFromApi.Information.GOTORESULTS;
 import static net.clementlevallois.nocodeapp.web.front.MessageFromApi.Information.PROGRESS;
+import static net.clementlevallois.nocodeapp.web.front.MessageFromApi.Information.RESULT_ARRIVED;
+import static net.clementlevallois.nocodeapp.web.front.MessageFromApi.Information.WORKFLOW_COMPLETED;
 import net.clementlevallois.nocodeapp.web.front.WatchTower;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
-import net.clementlevallois.nocodeapp.web.front.importdata.DataImportBean;
 import net.clementlevallois.nocodeapp.web.front.logview.BackToFrontMessengerBean;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.ApplicationPropertiesBean;
-import net.clementlevallois.nocodeapp.web.front.importdata.ImportSimpleLinesBean;
 import net.clementlevallois.nocodeapp.web.front.utils.Converters;
 import net.clementlevallois.umigon.model.classification.Document;
 import org.primefaces.PrimeFaces;
@@ -51,6 +47,7 @@ import org.primefaces.model.StreamedContent;
 
 import net.clementlevallois.nocodeapp.web.front.http.MicroserviceHttpClient;
 import net.clementlevallois.nocodeapp.web.front.http.MicroserviceHttpClient.MicroserviceCallException;
+import net.clementlevallois.nocodeapp.web.front.http.RemoteLocal;
 
 @Named
 @SessionScoped
@@ -68,9 +65,11 @@ public class UmigonBean implements Serializable {
     private StreamedContent fileToSave;
     private List<Document> filteredDocuments;
     private Integer maxCapacity = 10_000;
+    private String sessionId;
 
-    private String jobId = "";
+    private String jobId;
     private Globals globals;
+    private FunctionUmigon props;
 
     @Inject
     BackToFrontMessengerBean logBean;
@@ -79,13 +78,7 @@ public class UmigonBean implements Serializable {
     SessionBean sessionBean;
 
     @Inject
-    DataImportBean inputData;
-
-    @Inject
     ApplicationPropertiesBean applicationProperties;
-
-    @Inject
-    ImportSimpleLinesBean simpleLinesImportBean;
 
     @Inject
     private MicroserviceHttpClient microserviceClient;
@@ -96,11 +89,13 @@ public class UmigonBean implements Serializable {
     @PostConstruct
     public void init() {
         sessionBean.setFunction(FunctionUmigon.NAME);
+        sessionId = FacesContext.getCurrentInstance().getExternalContext().getSessionId(false);
         String positive_tone = sessionBean.getLocaleBundle().getString("general.nouns.sentiment_positive");
         String negative_tone = sessionBean.getLocaleBundle().getString("general.nouns.sentiment_negative");
         String neutral_tone = sessionBean.getLocaleBundle().getString("general.nouns.sentiment_neutral");
         sentiments = new String[]{positive_tone, negative_tone, neutral_tone};
         globals = new Globals(applicationProperties.getTempFolderFullPath());
+        props = new FunctionUmigon(applicationProperties.getTempFolderFullPath());
 
     }
 
@@ -147,29 +142,55 @@ public class UmigonBean implements Serializable {
 
     @Asynchronous
     public void startAnalysisAsync() {
-        tempResults = new ConcurrentHashMap();
-        filteredDocuments = new ArrayList();
-        results = new ArrayList();
+        tempResults = new ConcurrentHashMap<>();
+        filteredDocuments = new ArrayList<>();
+        results = new ArrayList<>();
 
         String owner = applicationProperties.getPrivateProperties().getProperty("pwdOwner");
         if (owner == null) {
             LOG.severe("pwdOwner property is not set!");
             sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Configuration Error", "Owner password not configured.");
-            return; // Exit the async task
+            return;
         }
 
-        microserviceClient.api().post(FunctionUmigon.ENDPOINT)
-                .addQueryParameter("text-lang", selectedLanguage)
-                .addQueryParameter("explanation", "on")
-                .addQueryParameter("jobId", jobId)
-                .addQueryParameter("shorter", "true")
-                .addQueryParameter("owner", owner)
-                .addQueryParameter("output-format", "bytes")
-                .addQueryParameter("explanation-lang", sessionBean.getCurrentLocale().toLanguageTag())
+        String callbackURL = RemoteLocal.getDomain() + RemoteLocal.getInternalMessageApiEndpoint() + FunctionUmigon.ENDPOINT;
+
+        var requestBuilder = microserviceClient.api().post(FunctionUmigon.ENDPOINT);
+
+        for (FunctionUmigon.QueryParams param : FunctionUmigon.QueryParams.values()) {
+            String value = switch (param) {
+                case TEXT_LANG ->
+                    selectedLanguage;
+                case EXPLANATION ->
+                    "on";
+                case SHORTER ->
+                    "true";
+                case OWNER ->
+                    owner;
+                case OUTPUT_FORMAT ->
+                    "bytes";
+                case EXPLANATION_LANG ->
+                    sessionBean.getCurrentLocale().toLanguageTag();
+            };
+            requestBuilder.addQueryParameter(param.name(), value);
+        }
+
+        for (Globals.GlobalQueryParams param : Globals.GlobalQueryParams.values()) {
+            String value = switch (param) {
+                case JOB_ID ->
+                    jobId;
+                case SESSION_ID ->
+                    sessionId;
+                case CALLBACK_URL ->
+                    callbackURL;
+            };
+            requestBuilder.addQueryParameter(param.name(), value);
+        }
+
+        requestBuilder
                 .sendAsync(HttpResponse.BodyHandlers.ofByteArray())
                 .thenAccept(resp -> {
-                    if (resp.statusCode() == 200) {
-                    } else {
+                    if (resp.statusCode() != 200) {
                         LOG.log(Level.SEVERE, "Umigon microservice call failed");
                         sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Processing Error", "Microservice error");
                     }
@@ -181,11 +202,9 @@ public class UmigonBean implements Serializable {
                         errorMessage = "Communication error: Status " + msce.getStatusCode() + ", " + msce.getErrorBody();
                     }
                     sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Processing Error", errorMessage);
-
                     countTreated++;
                     return null;
                 });
-
     }
 
     public void checkTaskStatusForPolling() {
@@ -223,7 +242,7 @@ public class UmigonBean implements Serializable {
                             }
                             it.remove();
                         }
-                        default -> {
+                        case INTERMEDIARY, RESULT_ARRIVED, WORKFLOW_COMPLETED, FAILED, GOTORESULTS -> {
                         }
                     }
                 }

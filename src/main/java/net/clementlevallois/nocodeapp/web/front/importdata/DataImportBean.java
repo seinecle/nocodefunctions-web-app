@@ -28,18 +28,26 @@ import jakarta.faces.context.FacesContext;
 import jakarta.faces.event.PhaseId;
 import jakarta.inject.Inject;
 import jakarta.servlet.annotation.MultipartConfig;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Base64;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Properties;
 import java.util.UUID;
+import java.util.stream.Stream;
+import net.clementlevallois.functions.model.FunctionPdfMatcher;
+import net.clementlevallois.functions.model.FunctionPdfRegionExtract;
+import net.clementlevallois.functions.model.Globals;
 import net.clementlevallois.importers.model.ImagesPerFile;
 import net.clementlevallois.importers.model.SheetModel;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.functions.UmigonBean;
 import net.clementlevallois.nocodeapp.web.front.logview.BackToFrontMessengerBean;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.ApplicationPropertiesBean;
+import net.clementlevallois.nocodeapp.web.front.http.MicroserviceHttpClient;
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
 
@@ -60,6 +68,9 @@ public class DataImportBean implements Serializable {
 
     @Inject
     ApplicationPropertiesBean applicationProperties;
+
+    @Inject
+    private MicroserviceHttpClient microserviceClient;
 
     private Integer progress = 0;
 
@@ -91,6 +102,7 @@ public class DataImportBean implements Serializable {
 
     private int tabIndex;
     private Properties privateProperties;
+    private Globals globals;
 
     public enum Source {
         TXT,
@@ -107,11 +119,14 @@ public class DataImportBean implements Serializable {
         dataInSheets = new ArrayList();
         pdfsToBeExtracted = new HashMap();
         privateProperties = applicationProperties.getPrivateProperties();
+        globals = new Globals(applicationProperties.getTempFolderFullPath());
+
     }
 
     public String readData() throws IOException, URISyntaxException {
         currentFunction = sessionBean.getFunction();
         dataInSheets = new ArrayList();
+        sessionBean.createJobId();
         pdfsToBeExtracted = new HashMap();
         progress = 0;
         if (filesUploaded.isEmpty()) {
@@ -132,28 +147,29 @@ public class DataImportBean implements Serializable {
             if (f == null) {
                 continue;
             }
-            if (f.getFileName().endsWith("xlsx")) {
+            Files.write(globals.getInputFileCompletePath(sessionBean.getJobId(), f.fileUniqueId()), f.bytes());
+            if (f.fileName().endsWith("xlsx")) {
                 source = Source.XLSX;
-            } else if (f.getFileName().endsWith("txt")) {
+            } else if (f.fileName().endsWith("txt")) {
                 source = Source.TXT;
-            } else if (f.getFileName().endsWith("csv") || f.getFileName().endsWith("tsv")) {
+            } else if (f.fileName().endsWith("csv") || f.fileName().endsWith("tsv")) {
                 source = Source.CSV;
-            } else if (f.getFileName().endsWith("pdf")) {
+            } else if (f.fileName().endsWith("pdf")) {
                 source = Source.PDF;
             } else {
-                logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("back.import.file_successful_upload.opening") + f.getFileName() + sessionBean.getLocaleBundle().getString("back.import.file_extension_not_recognized"));
+                logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("back.import.file_successful_upload.opening") + f.fileName() + sessionBean.getLocaleBundle().getString("back.import.file_extension_not_recognized"));
                 continue;
             }
-            logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.reading_file") + f.getFileName());
+            logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.reading_file") + f.fileName());
             switch (source) {
                 case XLSX -> {
                     readExcelFile(f);
                 }
                 case TXT -> {
-                    readTextFile(f, currentFunction, gazeOption);
+                    readTextFile(f, gazeOption);
                 }
                 case CSV ->
-                    readCsvFile(f, currentFunction, gazeOption);
+                    readCsvFile(f, gazeOption);
                 case PDF -> {
                     readPdfFile(f);
                 }
@@ -170,192 +186,88 @@ public class DataImportBean implements Serializable {
         return "";
     }
 
-    private void readTextFile(FileUploaded f, String functionName, String gazeOption) {
+    private void readTextFile(FileUploaded f, String gazeOption) {
 
-        if (functionName.equals("gaze") && gazeOption.equals("1")) {
+        setSelectedSheetName(f.fileName());
+        if (currentFunction.equals("gaze") && gazeOption.equals("1")) {
             setSelectedColumnIndex("0");
-            setSelectedSheetName(f.getFileName());
-        }
-        HttpRequest request;
-        HttpClient client = HttpClient.newHttpClient();
-        Set<CompletableFuture> futures = new HashSet();
-        HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(f.getBytes());
-        URI uri = UrlBuilder
-                .empty()
-                .withScheme("http")
-                .withPort(Integer.valueOf(privateProperties.getProperty("nocode_import_port")))
-                .withHost("localhost")
-                .withPath("api/import/txt")
-                .addParameter("fileName", f.getFileName())
-                .addParameter("functionName", functionName)
-                .addParameter("gazeOption", gazeOption)
-                .toUri();
-        request = HttpRequest.newBuilder()
-                .POST(bodyPublisher)
-                .uri(uri)
-                .build();
-        CompletableFuture<Void> future = client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()).thenAccept(
-                resp -> {
-                    byte[] body = resp.body();
-                    if (resp.statusCode() == 200) {
-                        try (
-                        ByteArrayInputStream bis = new ByteArrayInputStream(body); ObjectInputStream ois = new ObjectInputStream(bis)) {
-                            List<SheetModel> tempResult = (List<SheetModel>) ois.readObject();
-                            dataInSheets.addAll(tempResult);
-                        } catch (IOException | ClassNotFoundException ex) {
-                            Logger.getLogger(DataImportBean.class.getName()).log(Level.SEVERE, null, ex);
-                        }
-                    } else {
-                        System.out.println("return of txt reader by the API was not a 200 code");
-                        String errorMessage = new String(body, StandardCharsets.UTF_8);
-                        System.out.println(errorMessage);
-                        logBean.addOneNotificationFromString(errorMessage);
-                        sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "💔", errorMessage);
-                    }
+            microserviceClient.importService().post("/api/import/txt_cooc")
+                    .addQueryParameter("jobId", sessionBean.getJobId())
+                    .addQueryParameter("fileUniqueId", f.fileUniqueId())
+                    .addQueryParameter("fileName", f.fileName())
+                    .sendAsync(HttpResponse.BodyHandlers.ofString());
 
-                }
-        );
-        futures.add(future);
-        CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(futures.toArray((new CompletableFuture[0])));
-        combinedFuture.join();
+        } else {
+            microserviceClient.importService().post("/api/import/txt/simpleLines")
+                    .addQueryParameter("jobId", sessionBean.getJobId())
+                    .addQueryParameter("fileUniqueId", f.fileUniqueId())
+                    .sendAsync(HttpResponse.BodyHandlers.ofString());
+
+        }
         progress = 100;
 
     }
 
     public void storePdFile(FileUploaded f) {
-        String pdfEncodedAsString = Base64.getEncoder().encodeToString(f.getBytes());
-        pdfsToBeExtracted.put(f.getFileName(), pdfEncodedAsString);
+        String pdfEncodedAsString = Base64.getEncoder().encodeToString(f.bytes());
+        pdfsToBeExtracted.put(f.fileName(), pdfEncodedAsString);
     }
 
     private void readPdfFile(FileUploaded f) {
-        try {
-            String localizedEmptyLineMessage = sessionBean.getLocaleBundle().getString("general.message.empty_line");
-            HttpRequest request;
-            HttpClient client = HttpClient.newHttpClient();
-            HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(f.getBytes());
-            URI uri;
-            if (currentFunction.equals("pdf_region_extractor")) {
-                imagesPerFiles = new ArrayList();
-                imageNamesOfCurrentFile = new ArrayList();
-                uri = UrlBuilder
-                        .empty()
-                        .withScheme("http")
-                        .withPort(Integer.valueOf(privateProperties.getProperty("nocode_import_port")))
-                        .withHost("localhost")
-                        .withPath("api/import/pdf/return-png")
-                        .addParameter("fileName", f.getFileName())
-                        .addParameter("localizedEmptyLineMessage", localizedEmptyLineMessage)
-                        .toUri();
-                
-            } else {
-                uri = UrlBuilder
-                        .empty()
-                        .withScheme("http")
-                        .withPort(Integer.valueOf(privateProperties.getProperty("nocode_import_port")))
-                        .withHost("localhost")
-                        .withPath("api/import/pdf")
-                        .addParameter("fileName", f.getFileName())
-                        .toUri();
-            }
-            request = HttpRequest.newBuilder()
-                    .POST(bodyPublisher)
-                    .uri(uri)
-                    .build();
-            HttpResponse<byte[]> resp = client.send(request, HttpResponse.BodyHandlers.ofByteArray());
-            byte[] body = resp.body();
-            if (resp.statusCode() == 200) {
-                if (currentFunction.equals("pdf_region_extractor")) {
-                    try (
-                            ByteArrayInputStream bis = new ByteArrayInputStream(body); ObjectInputStream ois = new ObjectInputStream(bis)) {
-                        ImagesPerFile imagesPerOneFile = (ImagesPerFile) ois.readObject();
-                        imagesPerFiles.add(imagesPerOneFile);
-                    } catch (IOException | ClassNotFoundException ex) {
-                        Logger.getLogger(DataImportBean.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-                } else {
-                    try (
-                            ByteArrayInputStream bis = new ByteArrayInputStream(body); ObjectInputStream ois = new ObjectInputStream(bis)) {
-                        List<SheetModel> tempResult = (List<SheetModel>) ois.readObject();
-                        dataInSheets.addAll(tempResult);
-                    } catch (IOException | ClassNotFoundException ex) {
-                        Logger.getLogger(DataImportBean.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-                }
-            } else {
-                System.out.println("return of pdf reader by the API was not a 200 code");
-                String errorMessage = new String(body, StandardCharsets.UTF_8);
-                System.out.println(errorMessage);
-                logBean.addOneNotificationFromString(errorMessage);
-                sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "💔", errorMessage);
-                
-            }
-            progress = 100;
-        } catch (IOException | InterruptedException ex) {
-            Logger.getLogger(DataImportBean.class.getName()).log(Level.SEVERE, null, ex);
+        String localizedEmptyLineMessage = sessionBean.getLocaleBundle().getString("general.message.empty_line");
+        switch (currentFunction) {
+            case FunctionPdfRegionExtract.NAME ->
+                microserviceClient.importService().post("/api/pdf/return-png")
+                        .addQueryParameter("jobId", sessionBean.getJobId())
+                        .addQueryParameter("fileUniqueId", f.fileUniqueId())
+                        .addQueryParameter("fileName", f.fileName())
+                        .addQueryParameter("localizedEmptyLineMessage", localizedEmptyLineMessage)
+                        .sendAsync(HttpResponse.BodyHandlers.ofString());
+
+            case FunctionPdfMatcher.NAME ->
+                microserviceClient.importService().post("/api/pdf/linesPerPage")
+                        .addQueryParameter("jobId", sessionBean.getJobId())
+                        .addQueryParameter("fileUniqueId", f.fileUniqueId())
+                        .addQueryParameter("fileName", f.fileName())
+                        .addQueryParameter("localizedEmptyLineMessage", localizedEmptyLineMessage)
+                        .sendAsync(HttpResponse.BodyHandlers.ofString());
+            default ->
+                microserviceClient.importService().post("/api/pdf/simpleLines")
+                        .addQueryParameter("jobId", sessionBean.getJobId())
+                        .addQueryParameter("fileUniqueId", f.fileUniqueId())
+                        .sendAsync(HttpResponse.BodyHandlers.ofString());
         }
     }
 
-    private void readCsvFile(FileUploaded f, String functionName, String gazeOption) {
-        /* since we DONT do a bulk import in a CSV import,
-        we have no concept of "selected sheet" among several sheets.
-        we need to set the file name of the unique file for a sheet name
-         */
-        setSelectedSheetName(f.getFileName());
+    private void readCsvFile(FileUploaded f, String gazeOption) {
+
+        setSelectedSheetName(f.fileName());
         // for co-occurrences, we consider all columns, starting from column zero.
-        if (functionName.equals("gaze") && gazeOption.equals("1")) {
+        if (currentFunction.equals("gaze") && gazeOption.equals("1")) {
             setSelectedColumnIndex("0");
         }
-        HttpRequest request;
-        HttpClient client = HttpClient.newHttpClient();
-        Set<CompletableFuture> futures = new HashSet();
-        HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(f.getBytes());
-        URI uri = UrlBuilder
-                .empty()
-                .withScheme("http")
-                .withPort(Integer.valueOf(privateProperties.getProperty("nocode_import_port")))
-                .withHost("localhost")
-                .withPath("api/import/csv")
-                .addParameter("fileName", f.getFileName())
-                .addParameter("functionName", functionName)
-                .addParameter("gazeOption", gazeOption)
-                .toUri();
-        request = HttpRequest.newBuilder()
-                .POST(bodyPublisher)
-                .uri(uri)
-                .build();
-        CompletableFuture<Void> future = client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()).thenAccept(
-                resp -> {
-                    byte[] body = resp.body();
-                    if (resp.statusCode() == 200) {
-                        try (
-                        ByteArrayInputStream bis = new ByteArrayInputStream(body); ObjectInputStream ois = new ObjectInputStream(bis)) {
-                            List<SheetModel> tempResult = (List<SheetModel>) ois.readObject();
-                            dataInSheets.addAll(tempResult);
 
-                        } catch (IOException | ClassNotFoundException ex) {
-                            Logger.getLogger(DataImportBean.class
-                                    .getName()).log(Level.SEVERE, null, ex);
-                        }
-                    } else {
-                        System.out.println("return of csv reader by the API was not a 200 code");
-                        String errorMessage = new String(body, StandardCharsets.UTF_8);
-                        System.out.println(errorMessage);
-                        logBean.addOneNotificationFromString(errorMessage);
-                        sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "💔", errorMessage);
-                    }
-                }
-        );
-        futures.add(future);
-        CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(futures.toArray((new CompletableFuture[0])));
-        combinedFuture.join();
-        progress = 100;
+        if (bulkData) {
+            microserviceClient.importService().post("/api/import/csv/simpleLines")
+                    .addQueryParameter("jobId", sessionBean.getJobId())
+                    .addQueryParameter("fileUniqueId", f.fileUniqueId())
+                    .addQueryParameter("colIndex", selectedColumnIndex)
+                    .addQueryParameter("hasHeaders", String.valueOf(hasHeaders))
+                    .sendAsync(HttpResponse.BodyHandlers.ofString());
+
+        } else {
+            microserviceClient.importService().post("/api/import/csv")
+                    .addQueryParameter("jobId", sessionBean.getJobId())
+                    .addQueryParameter("fileName", f.fileName())
+                    .sendAsync(HttpResponse.BodyHandlers.ofString());
+        }
     }
 
     private void readExcelFile(FileUploaded file) {
         HttpRequest request;
         HttpClient client = HttpClient.newHttpClient();
         Set<CompletableFuture> futures = new HashSet();
-        HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(file.getBytes());
+        HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(file.bytes());
         String gaze_option = "cooc";
         if (sessionBean.getGazeOption().equals("2")) {
             gaze_option = "sim";
@@ -636,7 +548,7 @@ public class DataImportBean implements Serializable {
     public String displayNameForSingleUploadedFileOrSeveralFiles() {
         if (filesUploaded != null) {
             if (filesUploaded.size() == 1) {
-                return "🚚 " + sessionBean.getLocaleBundle().getString("back.import.one_file_uploaded") + ": " + filesUploaded.get(0).getFileName();
+                return "🚚 " + sessionBean.getLocaleBundle().getString("back.import.one_file_uploaded") + ": " + filesUploaded.get(0).fileName();
             } else {
                 return "🚚 " + String.valueOf(filesUploaded.size()) + " " + sessionBean.getLocaleBundle().getString("back.import.files_uploaded");
             }
@@ -654,6 +566,27 @@ public class DataImportBean implements Serializable {
     }
 
     public List<ImagesPerFile> getImagesPerFiles() {
+        imagesPerFiles = new ArrayList<>();
+        Path jobDirectory = globals.getJobDirectory(sessionBean.getJobId());
+        String UPLOADED_FILE_PREFIX = Globals.UPLOADED_FILE_PREFIX;
+        String PNG_EXTENSION = Globals.PNG_EXTENSION;
+
+        try (Stream<Path> walk = Files.walk(jobDirectory)) {
+            walk.filter(Files::isRegularFile)
+                    .filter(path -> path.getFileName().toString().startsWith(UPLOADED_FILE_PREFIX))
+                    .filter(path -> path.getFileName().toString().endsWith(PNG_EXTENSION))
+                    .forEach(path -> {
+                        try (InputStream is = Files.newInputStream(path); ObjectInputStream ois = new ObjectInputStream(is)) {
+                            ImagesPerFile imagesPerOneFile = (ImagesPerFile) ois.readObject();
+                            imagesPerFiles.add(imagesPerOneFile);
+                        } catch (IOException | ClassNotFoundException ex) {
+                            Logger.getLogger(DataImportBean.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+                    });
+        } catch (IOException ex) {
+            Logger.getLogger(DataImportBean.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
         return imagesPerFiles;
     }
 

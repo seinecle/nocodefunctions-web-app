@@ -28,6 +28,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 import net.clementlevallois.functions.model.FunctionPdfMatcher;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.importdata.DataImportBean;
@@ -119,6 +120,7 @@ public class PdfMatcherBean implements Serializable {
         sessionBean.addMessage(FacesMessage.SEVERITY_INFO, "Analysis Cancelled", "Analysis cancelled.");
     }
 
+      // --- Refactored runAnalysis method ---
     public String runAnalysis() {
         sessionBean.sendFunctionPageReport();
         logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.starting_analysis"));
@@ -151,6 +153,7 @@ public class PdfMatcherBean implements Serializable {
                 lines.put(i++, cr.getRawValue());
             }
 
+            // Prepare JSON builders for 'lines' and 'pages' sub-objects
             JsonObjectBuilder linesBuilder = Json.createObjectBuilder();
             for (Map.Entry<Integer, String> entryLines : lines.entrySet()) {
                 if (entryLines.getKey() == null || entryLines.getValue() == null) {
@@ -167,23 +170,38 @@ public class PdfMatcherBean implements Serializable {
                 }
             }
 
-            JsonObject jsonPayload = Json.createObjectBuilder()
-                    .add("lines", linesBuilder)
-                    .add("pages", pagesBuilder)
-                    .build();
+            // Refactored: Create JSON payload using FunctionPdfMatcher.BodyParams enum for exhaustiveness
+            JsonObjectBuilder jsonPayloadBuilder = Json.createObjectBuilder();
+
+            for (FunctionPdfMatcher.BodyParams param : FunctionPdfMatcher.BodyParams.values()) {
+                Consumer<JsonObjectBuilder> jsonSetter = switch (param) {
+                    case LINES -> builder -> builder.add(param.name(), linesBuilder);
+                    case PAGES -> builder -> builder.add(param.name(), pagesBuilder);
+                };
+                jsonSetter.accept(jsonPayloadBuilder);
+            }
+            JsonObject jsonPayload = jsonPayloadBuilder.build();
 
             // Send async call for each document
-            CompletableFuture<Void> future = microserviceClient.api().post(FunctionPdfMatcher.ENDPOINT)
-                    .withJsonPayload(jsonPayload)
-                    .addQueryParameter("startOfPage", sessionBean.getLocaleBundle().getString("pdfmatcher.tool.start_of_page"))
-                    .addQueryParameter("endOfPage", sessionBean.getLocaleBundle().getString("pdfmatcher.tool.end_of_page"))
-                    .addQueryParameter("typeOfContext", typeOfContext)
-                    .addQueryParameter("caseSensitive", String.valueOf(caseSensitive))
-                    .addQueryParameter("searchedTerm", searchedTerm)
-                    .addQueryParameter("fileName", oneDoc.getName()) // Pass filename as parameter
-                    .addQueryParameter("sessionId", sessionId) // Pass session ID
-                    .addQueryParameter("nbWords", String.valueOf(nbWords)) // Always send both, microservice decides based on typeOfContext
-                    .addQueryParameter("nbLines", String.valueOf(nbLines))
+            var requestBuilder = microserviceClient.api().post(FunctionPdfMatcher.ENDPOINT)
+                    .withJsonPayload(jsonPayload);
+
+            // Refactored: Add query parameters using FunctionPdfMatcher.QueryParams enum for exhaustiveness
+            for (FunctionPdfMatcher.QueryParams param : FunctionPdfMatcher.QueryParams.values()) {
+                String value = switch (param) {
+                    case START_OF_PAGE -> sessionBean.getLocaleBundle().getString("pdfmatcher.tool.start_of_page");
+                    case END_OF_PAGE -> sessionBean.getLocaleBundle().getString("pdfmatcher.tool.end_of_page");
+                    case TYPE_OF_CONTEXT -> typeOfContext;
+                    case CASE_SENSITIVE -> String.valueOf(caseSensitive);
+                    case SEARCHED_TERM -> searchedTerm;
+                    case FILE_NAME -> oneDoc.getName();
+                    case NB_WORDS -> String.valueOf(nbWords);
+                    case NB_LINES -> String.valueOf(nbLines);
+                };
+                requestBuilder.addQueryParameter(param.name(), value);
+            }
+
+            CompletableFuture<Void> future = requestBuilder
                     .sendAsync(HttpResponse.BodyHandlers.ofByteArray()) // Expecting byte array (serialized List<Occurrence>)
                     .thenAccept(resp -> {
                         if (resp.statusCode() == 200) {
@@ -194,46 +212,38 @@ public class PdfMatcherBean implements Serializable {
                                 LOG.log(Level.INFO, "Processed document {0}, found {1} occurrences.", new Object[]{oneDoc.getName(), occurrencesFound.size()});
                             } catch (IOException | ClassNotFoundException ex) {
                                 LOG.log(Level.SEVERE, "Error deserializing Occurrence list for document " + oneDoc.getName(), ex);
-                                // Handle deserialization error - maybe store an empty list or error indicator
                                 results.put(oneDoc.getName(), Collections.emptyList()); // Store empty list on error
                                 sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Processing Error", "Could not process results for " + oneDoc.getName() + ": " + ex.getMessage());
                             }
                         } else {
                             String errorBody = new String(resp.body(), StandardCharsets.UTF_8);
                             LOG.log(Level.SEVERE, "PdfMatcher microservice call failed for document {0}. Status: {1}, Body: {2}", new Object[]{oneDoc.getName(), resp.statusCode(), errorBody});
-                            // Handle microservice error - store an empty list or error indicator
                             results.put(oneDoc.getName(), Collections.emptyList()); // Store empty list on error
                             sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Processing Error", "Microservice error for " + oneDoc.getName() + ": Status " + resp.statusCode() + ", " + errorBody);
                         }
-                        // Update progress after each document is processed
                         updateProgress();
                     })
                     .exceptionally(exception -> {
-                        // This callback runs on HttpClient's thread pool if an exception occurs during the call
                         LOG.log(Level.SEVERE, "Exception during async PdfMatcher call for document " + oneDoc.getName(), exception);
                         String errorMessage = "Communication error for " + oneDoc.getName() + ": " + exception.getMessage();
                         if (exception.getCause() instanceof MicroserviceCallException msce) {
                             errorMessage = "Communication error for " + oneDoc.getName() + ": Status " + msce.getStatusCode() + ", " + msce.getErrorBody();
                         }
-                        // Handle communication error - store an empty list or error indicator
                         results.put(oneDoc.getName(), Collections.emptyList()); // Store empty list on error
                         sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Processing Error", errorMessage);
-
-                        // Update progress even on exception
                         updateProgress();
                         return null;
                     });
             futures.add(future);
         }
 
-        this.progress = 1; // Initial progress after sending requests
+        this.progress = 1;
         logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.almost_done"));
-        PrimeFaces.current().ajax().update("progressComponentId"); // Update progress component ID
+        PrimeFaces.current().ajax().update("progressComponentId");
 
-        // Wait for all futures to complete
         try {
             CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
-            combinedFuture.join(); // This blocks until all futures are done
+            combinedFuture.join();
             LOG.info("All PdfMatcher microservice calls completed.");
 
             // Process results for display after all async calls are done
@@ -259,7 +269,7 @@ public class PdfMatcherBean implements Serializable {
 
             this.progress = 100;
             logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.analysis_complete"));
-            runButtonDisabled = false; // Enable button
+            runButtonDisabled = false;
 
             PrimeFaces.current().ajax().update("formComputeButton:computeButton", "notifications", "progressComponentId");
 
@@ -275,21 +285,21 @@ public class PdfMatcherBean implements Serializable {
             sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Analysis Failed", errorMessage);
             logBean.addOneNotificationFromString(errorMessage);
 
-            this.progress = 0; // Reset progress on failure
-            runButtonDisabled = false; // Enable button on failure
+            this.progress = 0;
+            runButtonDisabled = false;
             PrimeFaces.current().ajax().update("formComputeButton:computeButton", "notifications", "progressComponentId");
 
-            return null; // Stay on the same page or navigate to error page
+            return null;
         } catch (Exception ex) {
             LOG.log(Level.SEVERE, "Unexpected error after sending PdfMatcher calls", ex);
             sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Analysis Failed", "An unexpected error occurred: " + ex.getMessage());
             logBean.addOneNotificationFromString("An unexpected error occurred: " + ex.getMessage());
 
-            this.progress = 0; // Reset progress on failure
-            runButtonDisabled = false; // Enable button on failure
+            this.progress = 0;
+            runButtonDisabled = false;
             PrimeFaces.current().ajax().update("formComputeButton:computeButton", "notifications", "progressComponentId");
 
-            return null; // Stay on the same page
+            return null;
         }
     }
 

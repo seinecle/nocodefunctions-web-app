@@ -103,7 +103,6 @@ public class OneFileUploadToSimpleLinesBean {
 
             builder.sendAsyncAndGetBody(HttpResponse.BodyHandlers.ofString()).join();
 
-            // handled errors will already throw
             logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("back.import.api_call_success"));
 
         } catch (IOException | CompletionException ex) {

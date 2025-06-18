@@ -44,7 +44,7 @@ public class OneFileUploadInMultipleUploadBean {
 
             FileUploaded oneFile = new FileUploaded(f.getInputStream(), f.getFileName());
 
-            logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("back.import.file_successful_upload.opening") + oneFile.getFileName() + sessionBean.getLocaleBundle().getString("back.import.file_successful_upload.closing"));
+            logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("back.import.file_successful_upload.opening") + oneFile.fileName() + sessionBean.getLocaleBundle().getString("back.import.file_successful_upload.closing"));
 
             dataImportBean.getFilesUploaded().add(oneFile);
             dataImportBean.setReadButtonDisabled(Boolean.FALSE);

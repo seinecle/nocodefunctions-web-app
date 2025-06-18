@@ -17,6 +17,7 @@ import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import jakarta.json.Json;
 import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -25,6 +26,8 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.imageio.ImageIO;
+import net.clementlevallois.functions.model.FunctionPdfRegionExtract;
+import net.clementlevallois.functions.model.Globals;
 import net.clementlevallois.importers.model.SheetModel;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.importdata.DataImportBean;
@@ -40,7 +43,6 @@ import net.clementlevallois.nocodeapp.web.front.http.MicroserviceHttpClient.Micr
 
 import org.primefaces.PrimeFaces;
 
-
 @Named
 @SessionScoped
 public class PdfRegionExtractorBean implements Serializable {
@@ -54,8 +56,8 @@ public class PdfRegionExtractorBean implements Serializable {
     private Boolean renderSeeResultsButton = false;
     private CroppedImage[] selectedRegions;
     private boolean allPages;
-    private boolean selectPage; // This seems to be a flag, not the page number itself
-    private int selectedPage; // This holds the actual page number
+    private boolean selectPage;
+    private int selectedPage;
     private float proportionTopLeftX;
     private float proportionTopLeftY;
     private float proportionWidth;
@@ -82,7 +84,7 @@ public class PdfRegionExtractorBean implements Serializable {
 
     @PostConstruct
     public void init() {
-        sessionBean.setFunction("pdf_region_extractor");
+        sessionBean.setFunction(FunctionPdfRegionExtract.NAME);
         results = new ConcurrentHashMap();
     }
 
@@ -100,31 +102,31 @@ public class PdfRegionExtractorBean implements Serializable {
 
     public void fillInCoordinates() {
         if (inputData.getImagesPerFiles() == null || inputData.getImagesPerFiles().isEmpty()) {
-             LOG.warning("No images found in inputData.");
-             sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "Input Error", "No PDF images available to select region.");
-             return;
+            LOG.warning("No images found in inputData.");
+            sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "Input Error", "No PDF images available to select region.");
+            return;
         }
         if (selectedRegions == null || selectedRegions.length == 0) {
-             LOG.warning("No regions selected.");
-             sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "Input Error", "Please select a region on at least one page.");
-             return;
+            LOG.warning("No regions selected.");
+            sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "Input Error", "Please select a region on at least one page.");
+            return;
         }
 
         try {
             // Use the image from the first file, and the appropriate page (0 for allPages, selectedPage for single)
             byte[] imageBytes = inputData.getImagesPerFiles().get(0).getImages()[allPages ? 0 : selectedPage];
             if (imageBytes == null) {
-                 LOG.warning("Image bytes are null for selected page.");
-                 sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "Input Error", "Could not load image for the selected page.");
-                 return;
+                LOG.warning("Image bytes are null for selected page.");
+                sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "Input Error", "Could not load image for the selected page.");
+                return;
             }
 
             try (InputStream is = new ByteArrayInputStream(imageBytes)) {
                 BufferedImage buf = ImageIO.read(is);
                 if (buf == null) {
-                     LOG.warning("Could not read BufferedImage from bytes.");
-                     sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "Processing Error", "Could not process image data.");
-                     return;
+                    LOG.warning("Could not read BufferedImage from bytes.");
+                    sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "Processing Error", "Could not process image data.");
+                    return;
                 }
                 int heightImage = buf.getHeight();
                 int widthImage = buf.getWidth();
@@ -134,9 +136,9 @@ public class PdfRegionExtractorBean implements Serializable {
                     selectedRegion = selectedRegions[0];
                 } else {
                     if (selectedPage < 0 || selectedPage >= selectedRegions.length) {
-                         LOG.warning("Selected page index out of bounds for selectedRegions array.");
-                         sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "Input Error", "Invalid page selection.");
-                         return;
+                        LOG.warning("Selected page index out of bounds for selectedRegions array.");
+                        sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "Input Error", "Invalid page selection.");
+                        return;
                     }
                     selectedRegion = selectedRegions[selectedPage];
                 }
@@ -164,8 +166,8 @@ public class PdfRegionExtractorBean implements Serializable {
             LOG.log(Level.SEVERE, "Error reading image or calculating proportions", ex);
             sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Processing Error", "Could not process image for coordinates: " + ex.getMessage());
         } catch (Exception ex) {
-             LOG.log(Level.SEVERE, "Unexpected error in fillInCoordinates", ex);
-             sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Processing Error", "An unexpected error occurred.");
+            LOG.log(Level.SEVERE, "Unexpected error in fillInCoordinates", ex);
+            sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Processing Error", "An unexpected error occurred.");
         }
     }
 
@@ -177,13 +179,12 @@ public class PdfRegionExtractorBean implements Serializable {
             try {
                 index = Integer.parseInt(indexStr);
             } catch (NumberFormatException e) {
-                 LOG.log(Level.WARNING, "Invalid rowIndex2 parameter: " + indexStr, e);
-                 // Default to 0 or handle error
+                LOG.log(Level.WARNING, "Invalid rowIndex2 parameter: " + indexStr, e);
             }
         }
 
         if (inputData.getImagesPerFiles() == null || inputData.getImagesPerFiles().isEmpty()) {
-             return null; // Cannot initialize if no images
+            return null;
         }
 
         // Initialize selectedRegions array if null or size mismatch
@@ -191,16 +192,16 @@ public class PdfRegionExtractorBean implements Serializable {
         if (selectedRegions == null || selectedRegions.length != expectedSize) {
             selectedRegions = new CroppedImage[expectedSize];
             for (int i = 0; i < expectedSize; i++) {
-                selectedRegions[i] = new CroppedImage(); // Initialize with empty CroppedImage
+                selectedRegions[i] = new CroppedImage();
             }
-             LOG.log(Level.INFO, "Initialized selectedRegions array with size: {0}", expectedSize);
+            LOG.log(Level.INFO, "Initialized selectedRegions array with size: {0}", expectedSize);
         }
 
         if (index >= 0 && index < selectedRegions.length) {
             return selectedRegions[index];
         } else {
             LOG.log(Level.WARNING, "Requested region index {0} out of bounds (array size {1}).", new Object[]{index, selectedRegions.length});
-            return new CroppedImage(); // Return empty CroppedImage on error/out of bounds
+            return new CroppedImage();
         }
     }
 
@@ -209,26 +210,25 @@ public class PdfRegionExtractorBean implements Serializable {
         // It needs the index of the page where the region was selected.
         FacesContext context = FacesContext.getCurrentInstance();
         String indexStr = context.getExternalContext().getRequestParameterMap().get("rowIndex2");
-        int index = -1;
-         if (indexStr != null) {
+        int index;
+        if (indexStr != null) {
             try {
                 index = Integer.parseInt(indexStr);
             } catch (NumberFormatException e) {
-                 LOG.log(Level.WARNING, "Invalid rowIndex2 parameter for setSelectedRegion: " + indexStr, e);
-                 sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Input Error", "Invalid page index for selected region.");
-                 return;
+                LOG.log(Level.WARNING, "Invalid rowIndex2 parameter for setSelectedRegion: " + indexStr, e);
+                sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Input Error", "Invalid page index for selected region.");
+                return;
             }
         } else {
-             LOG.warning("Missing rowIndex2 parameter for setSelectedRegion.");
-             sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Input Error", "Missing page index for selected region.");
-             return;
+            LOG.warning("Missing rowIndex2 parameter for setSelectedRegion.");
+            sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Input Error", "Missing page index for selected region.");
+            return;
         }
 
-
         if (selectedRegions == null || index < 0 || index >= selectedRegions.length) {
-             LOG.log(Level.WARNING, "selectedRegions array not initialized or index {0} out of bounds (array size {1}).", new Object[]{index, selectedRegions != null ? selectedRegions.length : "null"});
-             sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Processing Error", "Could not save selected region.");
-             return;
+            LOG.log(Level.WARNING, "selectedRegions array not initialized or index {0} out of bounds (array size {1}).", new Object[]{index, selectedRegions != null ? selectedRegions.length : "null"});
+            sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Processing Error", "Could not save selected region.");
+            return;
         }
 
         selectedRegions[index] = selectedRegion;
@@ -236,24 +236,23 @@ public class PdfRegionExtractorBean implements Serializable {
 
         // If "all pages" is selected, copy the selected region from page 0 to all other pages
         if (allPages && index == 0) {
-             for (int i = 1; i < selectedRegions.length; i++) {
-                 selectedRegions[i] = selectedRegion;
-             }
-             LOG.info("Copied selected region from page 0 to all pages.");
+            for (int i = 1; i < selectedRegions.length; i++) {
+                selectedRegions[i] = selectedRegion;
+            }
+            LOG.info("Copied selected region from page 0 to all pages.");
         }
 
         // Update button state if a valid region is selected
         runButtonDisabled = !(selectedRegion != null && (selectedRegion.getWidth() > 0 || selectedRegion.getHeight() > 0));
-        PrimeFaces.current().ajax().update("runButtonId"); // Replace with your button's actual ID
+        PrimeFaces.current().ajax().update("runButtonId");
     }
-
 
     public String extract() {
         fillInCoordinates(); // Calculate proportions based on selected region
 
         if (proportionWidth == 0 || proportionHeight == 0) {
-             sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "Input Error", "Please select a valid region before extracting.");
-             return null; // Stay on the same page
+            sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "Input Error", "Please select a valid region before extracting.");
+            return null; // Stay on the same page
         }
 
         sessionBean.sendFunctionPageReport();
@@ -266,138 +265,148 @@ public class PdfRegionExtractorBean implements Serializable {
 
         Map<String, String> pdfs = inputData.getPdfsToBeExtracted();
         if (pdfs == null || pdfs.isEmpty()) {
-             sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "Input Error", sessionBean.getLocaleBundle().getString("general.message.data_not_found"));
-             runButtonDisabled = false;
-             renderProgressBar = false;
-             return null;
+            sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "Input Error", sessionBean.getLocaleBundle().getString("general.message.data_not_found"));
+            runButtonDisabled = false;
+            renderProgressBar = false;
+            return null;
         }
 
         Set<CompletableFuture<Void>> futures = new HashSet();
         String owner = applicationProperties.getPrivateProperties().getProperty("pwdOwner");
-         if (owner == null) {
-             LOG.severe("pwdOwner property is not set!");
-             sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Configuration Error", "Owner password not configured.");
-             runButtonDisabled = false;
-             renderProgressBar = false;
-             return null;
-         }
+        if (owner == null) {
+            LOG.severe("pwdOwner property is not set!");
+            sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Configuration Error", "Owner password not configured.");
+            runButtonDisabled = false;
+            renderProgressBar = false;
+            return null;
+        }
 
         for (Map.Entry<String, String> pdf : pdfs.entrySet()) {
-             String fileName = pdf.getKey();
-             String pdfBytesBase64 = pdf.getValue(); // Assuming this is base64 encoded PDF bytes
+            String fileName = pdf.getKey();
+            String pdfBytesBase64 = pdf.getValue(); // Assuming this is base64 encoded PDF bytes
 
-             // Create JSON payload with PDF bytes and filename
-             JsonObject jsonPayload = Json.createObjectBuilder()
-                 .add("pdfBytes", pdfBytesBase64)
-                 .add("fileName", fileName)
-                 .build();
+            JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
 
+            for (FunctionPdfRegionExtract.BodyParams param : FunctionPdfRegionExtract.BodyParams.values()) {
+                String value = switch (param) {
+                    case PDF_BYTES ->
+                        pdfBytesBase64;
+                    case FILE_NAME ->
+                        fileName;
+                };
+                jsonObjectBuilder.add(param.name(), value);
+            }
+            JsonObject jsonPayload = jsonObjectBuilder.build();
+
+            var requestBuilder = microserviceClient.importService().post("/api/import/pdf/extract-region")
+                    .withJsonPayload(jsonPayload);
+
+            for (FunctionPdfRegionExtract.QueryParams param : FunctionPdfRegionExtract.QueryParams.values()) {
+                String value = switch (param) {
+                    case OWNER ->
+                        owner;
+                    case ALL_PAGES ->
+                        String.valueOf(allPages);
+                    case SELECTED_PAGES ->
+                        String.valueOf(selectedPage);
+                    case LEFT_CORNER_X ->
+                        String.valueOf(proportionTopLeftX);
+                    case LEFT_CORNER_Y ->
+                        String.valueOf(proportionTopLeftY);
+                    case WIDTH ->
+                        String.valueOf(proportionWidth);
+                    case HEIGHT ->
+                        String.valueOf(proportionHeight);
+                };
+                requestBuilder.addQueryParameter(param.name(), value);
+            }
 
             // Send async call for each PDF
-            CompletableFuture<Void> future = microserviceClient.importService().post("/api/import/pdf/extract-region")
-                .withJsonPayload(jsonPayload) // Add the PDF data payload
-                .addQueryParameter("owner", owner)
-                .addQueryParameter("allPages", String.valueOf(allPages))
-                .addQueryParameter("selectedPage", String.valueOf(selectedPage)) // Send even if allPages is true, microservice decides
-                .addQueryParameter("leftCornerX", String.valueOf(proportionTopLeftX))
-                .addQueryParameter("leftCornerY", String.valueOf(proportionTopLeftY))
-                .addQueryParameter("width", String.valueOf(proportionWidth))
-                .addQueryParameter("height", String.valueOf(proportionHeight))
-                .sendAsync(HttpResponse.BodyHandlers.ofByteArray()) // Expecting byte array (serialized SheetModel)
-                .thenAccept(resp -> {
-                    // This callback runs on HttpClient's thread pool
-                    if (resp.statusCode() == 200) {
-                        byte[] body = resp.body();
-                        try (ByteArrayInputStream bis = new ByteArrayInputStream(body);
-                             ObjectInputStream ois = new ObjectInputStream(bis)) {
-                            SheetModel resultsAsSheet = (SheetModel) ois.readObject();
-                            results.put(resultsAsSheet.getName(), resultsAsSheet); // Store results by filename
-                            LOG.log(Level.INFO, "Processed PDF {0}.", resultsAsSheet.getName());
-                        } catch (IOException | ClassNotFoundException ex) {
-                            LOG.log(Level.SEVERE, "Error deserializing SheetModel for PDF " + fileName, ex);
-                             // Handle deserialization error - maybe store an empty SheetModel or error indicator
-                             results.put(fileName, new SheetModel(fileName)); // Store empty SheetModel on error
-                             sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Processing Error", "Could not process results for " + fileName + ": " + ex.getMessage());
-                        }
-                    } else {
-                        String errorBody = new String(resp.body(), StandardCharsets.UTF_8);
-                        LOG.log(Level.SEVERE, "PdfRegionExtractor microservice call failed for PDF {0}. Status: {1}, Body: {2}", new Object[]{fileName, resp.statusCode(), errorBody});
-                         // Handle microservice error - store an empty SheetModel or error indicator
-                         results.put(fileName, new SheetModel(fileName)); // Store empty SheetModel on error
-                         sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Processing Error", "Microservice error for " + fileName + ": Status " + resp.statusCode() + ", " + errorBody);
-                    }
-                    // Update progress after each PDF is processed
-                    updateProgress();
-                })
-                .exceptionally(exception -> {
-                    // This callback runs on HttpClient's thread pool if an exception occurs during the call
-                    LOG.log(Level.SEVERE, "Exception during async PdfRegionExtractor call for PDF " + fileName, exception);
-                    String errorMessage = "Communication error for " + fileName + ": " + exception.getMessage();
-                     if (exception.getCause() instanceof MicroserviceCallException) {
-                         MicroserviceCallException msce = (MicroserviceCallException) exception.getCause();
-                         errorMessage = "Communication error for " + fileName + ": Status " + msce.getStatusCode() + ", " + msce.getErrorBody();
-                     }
-                     // Handle communication error - store an empty SheetModel or error indicator
-                     results.put(fileName, new SheetModel(fileName)); // Store empty SheetModel on error
-                     sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Processing Error", errorMessage);
+            CompletableFuture<Void> future = requestBuilder
+                    .sendAsync(HttpResponse.BodyHandlers.ofByteArray())
+                    .thenAccept(resp -> {
+                        if (resp.statusCode() == 200) {
+                            byte[] body = resp.body();
+                            try (ByteArrayInputStream bis = new ByteArrayInputStream(body); ObjectInputStream ois = new ObjectInputStream(bis)) {
+                                SheetModel resultsAsSheet = (SheetModel) ois.readObject();
+                                results.put(resultsAsSheet.getName(), resultsAsSheet); // Store results by filename
+                                LOG.log(Level.INFO, "Processed PDF {0}.", resultsAsSheet.getName());
+                            } catch (IOException | ClassNotFoundException ex) {
+                                LOG.log(Level.SEVERE, "Error deserializing SheetModel for PDF " + fileName, ex);
+                                results.put(fileName, new SheetModel(fileName));
+                                sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Processing Error", "Could not process results for " + fileName + ": " + ex.getMessage());
+                            }
+                        } else {
+                            String errorBody = new String(resp.body(), StandardCharsets.UTF_8);
+                            LOG.log(Level.SEVERE, "PdfRegionExtractor microservice call failed for PDF {0}. Status: {1}, Body: {2}", new Object[]{fileName, resp.statusCode(), errorBody});
 
-                    // Update progress even on exception
-                    updateProgress();
-                    return null;
-                });
+                            results.put(fileName, new SheetModel(fileName)); // Store empty SheetModel on error
+                            sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Processing Error", "Microservice error for " + fileName + ": Status " + resp.statusCode() + ", " + errorBody);
+                        }
+                        updateProgress();
+                    })
+                    .exceptionally(exception -> {
+                        LOG.log(Level.SEVERE, "Exception during async PdfRegionExtractor call for PDF " + fileName, exception);
+                        String errorMessage = "Communication error for " + fileName + ": " + exception.getMessage();
+                        if (exception.getCause() instanceof MicroserviceCallException msce) {
+                            errorMessage = "Communication error for " + fileName + ": Status " + msce.getStatusCode() + ", " + msce.getErrorBody();
+                        }
+                        results.put(fileName, new SheetModel(fileName)); // Store empty SheetModel on error
+                        sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Processing Error", errorMessage);
+                        updateProgress();
+                        return null;
+                    });
             futures.add(future);
         }
 
-        this.progress = 1; // Initial progress after sending requests
+        this.progress = 1;
         logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.almost_done"));
-         PrimeFaces.current().ajax().update("progressComponentId"); // Update progress component ID
+        PrimeFaces.current().ajax().update("progressComponentId"); // Update progress component ID
 
-        // Wait for all futures to complete
         try {
-            CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
+            CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(futures.toArray(CompletableFuture[]::new));
             combinedFuture.join(); // This blocks until all futures are done
             LOG.info("All PdfRegionExtractor microservice calls completed.");
 
             this.progress = 100;
             logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.analysis_complete"));
-            runButtonDisabled = false; // Enable button
-            renderSeeResultsButton = true; // Show results button
+            runButtonDisabled = false;
+            renderSeeResultsButton = true;
 
             PrimeFaces.current().ajax().update("formComputeButton:computeButton", "notifications", "progressComponentId", "resultsButtonPanel");
 
             // Navigate to the results page
-            return "/" + sessionBean.getFunction() + "/results.xhtml?faces-redirect=true";
+            return "/" + sessionBean.getFunction() + "/" + Globals.RESULTS_PAGE + Globals.FACES_REDIRECT;
 
         } catch (CompletionException cex) {
-             Throwable cause = cex.getCause();
-             LOG.log(Level.SEVERE, "Exception during completion of async PdfRegionExtractor calls", cause);
-             String errorMessage = "Extraction failed: " + cause.getMessage();
-              if (cause instanceof MicroserviceCallException) {
-                  MicroserviceCallException msce = (MicroserviceCallException) cause;
-                  errorMessage = "Extraction failed: Status " + msce.getStatusCode() + ", " + msce.getErrorBody();
-              }
-             sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Extraction Failed", errorMessage);
-             logBean.addOneNotificationFromString(errorMessage);
+            Throwable cause = cex.getCause();
+            LOG.log(Level.SEVERE, "Exception during completion of async PdfRegionExtractor calls", cause);
+            String errorMessage = "Extraction failed: " + cause.getMessage();
+            if (cause instanceof MicroserviceCallException msce) {
+                errorMessage = "Extraction failed: Status " + msce.getStatusCode() + ", " + msce.getErrorBody();
+            }
+            sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Extraction Failed", errorMessage);
+            logBean.addOneNotificationFromString(errorMessage);
 
-             this.progress = 0; // Reset progress on failure
-             renderProgressBar = false;
-             runButtonDisabled = false; // Enable button on failure
-             renderSeeResultsButton = false; // Hide results button
-             PrimeFaces.current().ajax().update("formComputeButton:computeButton", "notifications", "progressComponentId", "resultsButtonPanel");
+            this.progress = 0;
+            renderProgressBar = false;
+            runButtonDisabled = false;
+            renderSeeResultsButton = false;
+            PrimeFaces.current().ajax().update("formComputeButton:computeButton", "notifications", "progressComponentId", "resultsButtonPanel");
 
-             return null; // Stay on the same page or navigate to error page
+            return null;
         } catch (Exception ex) {
-             LOG.log(Level.SEVERE, "Unexpected error after sending PdfRegionExtractor calls", ex);
-             sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Extraction Failed", "An unexpected error occurred: " + ex.getMessage());
-             logBean.addOneNotificationFromString("An unexpected error occurred: " + ex.getMessage());
+            LOG.log(Level.SEVERE, "Unexpected error after sending PdfRegionExtractor calls", ex);
+            sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Extraction Failed", "An unexpected error occurred: " + ex.getMessage());
+            logBean.addOneNotificationFromString("An unexpected error occurred: " + ex.getMessage());
 
-             this.progress = 0; // Reset progress on failure
-             renderProgressBar = false;
-             runButtonDisabled = false; // Enable button on failure
-             renderSeeResultsButton = false; // Hide results button
-             PrimeFaces.current().ajax().update("formComputeButton:computeButton", "notifications", "progressComponentId", "resultsButtonPanel");
+            this.progress = 0;
+            renderProgressBar = false;
+            runButtonDisabled = false;
+            renderSeeResultsButton = false;
+            PrimeFaces.current().ajax().update("formComputeButton:computeButton", "notifications", "progressComponentId", "resultsButtonPanel");
 
-             return null; // Stay on the same page
+            return null;
         }
     }
 
@@ -408,11 +417,10 @@ public class PdfRegionExtractorBean implements Serializable {
             if (currentProgress > progress) {
                 progress = currentProgress;
                 // Trigger UI update for progress
-                 PrimeFaces.current().ajax().update("progressComponentId"); // Replace with actual ID
+                PrimeFaces.current().ajax().update("progressComponentId"); // Replace with actual ID
             }
         }
     }
-
 
     public StreamedContent getFileToSave() {
         if (results == null || results.isEmpty()) {
@@ -420,17 +428,13 @@ public class PdfRegionExtractorBean implements Serializable {
             return new DefaultStreamedContent();
         }
         try {
-            // Convert the ConcurrentHashMap<String, SheetModel> to a format the export service expects
-            // Assuming the export service expects a serialized object containing the results map
             byte[] resultsAsByteArray = Converters.byteArraySerializerForAnyObject(results);
 
-            // Use MicroserviceHttpClient to call the export service
             CompletableFuture<byte[]> futureBytes = microserviceClient.importService().post("/api/export/xlsx/pdf_region_extractor")
-                 .withByteArrayPayload(resultsAsByteArray) // Send the serialized results
-                 // Original code had placeholder query parameters, keeping them for now
-                 .addQueryParameter("file name", FacesContext.getCurrentInstance().getViewRoot().getLocale().toLanguageTag()) // Placeholder?
-                 .addQueryParameter("text extracted", FacesContext.getCurrentInstance().getViewRoot().getLocale().toLanguageTag()) // Placeholder?
-                 .sendAsyncAndGetBody(HttpResponse.BodyHandlers.ofByteArray()); // Execute and get body as byte[]
+                    .withByteArrayPayload(resultsAsByteArray) // Send the serialized results
+                    .addQueryParameter("file name", FacesContext.getCurrentInstance().getViewRoot().getLocale().toLanguageTag()) // Placeholder?
+                    .addQueryParameter("text extracted", FacesContext.getCurrentInstance().getViewRoot().getLocale().toLanguageTag()) // Placeholder?
+                    .sendAsyncAndGetBody(HttpResponse.BodyHandlers.ofByteArray());
 
             // Block to get the result for StreamedContent
             byte[] body = futureBytes.join();
@@ -442,28 +446,28 @@ public class PdfRegionExtractorBean implements Serializable {
                         .stream(() -> is)
                         .build();
             } catch (IOException e) {
-                 LOG.log(Level.SEVERE, "Error creating StreamedContent from export response body", e);
-                 sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Download Error", "Could not prepare download file.");
-                 return new DefaultStreamedContent();
+                LOG.log(Level.SEVERE, "Error creating StreamedContent from export response body", e);
+                sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Download Error", "Could not prepare download file.");
+                return new DefaultStreamedContent();
             }
 
         } catch (CompletionException cex) {
-             Throwable cause = cex.getCause();
-             LOG.log(Level.SEVERE, "Error during asynchronous export service call (CompletionException)", cause);
-             String errorMessage = "Error exporting data: " + cause.getMessage();
-              if (cause instanceof MicroserviceCallException msce) {
-                  errorMessage = "Error exporting data: Status " + msce.getStatusCode() + ", " + msce.getErrorBody();
-              }
-             sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Export Failed", errorMessage);
-             return new DefaultStreamedContent();
+            Throwable cause = cex.getCause();
+            LOG.log(Level.SEVERE, "Error during asynchronous export service call (CompletionException)", cause);
+            String errorMessage = "Error exporting data: " + cause.getMessage();
+            if (cause instanceof MicroserviceCallException msce) {
+                errorMessage = "Error exporting data: Status " + msce.getStatusCode() + ", " + msce.getErrorBody();
+            }
+            sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Export Failed", errorMessage);
+            return new DefaultStreamedContent();
         } catch (IOException ex) {
             LOG.log(Level.SEVERE, "Error serializing results before export", ex);
             sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Export Failed", "Error preparing data for export: " + ex.getMessage());
             return new DefaultStreamedContent();
         } catch (Exception ex) {
-             LOG.log(Level.SEVERE, "Unexpected error in getFileToSave", ex);
-             sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Export Failed", "An unexpected error occurred: " + ex.getMessage());
-             return new DefaultStreamedContent();
+            LOG.log(Level.SEVERE, "Unexpected error in getFileToSave", ex);
+            sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Export Failed", "An unexpected error occurred: " + ex.getMessage());
+            return new DefaultStreamedContent();
         }
     }
 
@@ -476,7 +480,6 @@ public class PdfRegionExtractorBean implements Serializable {
     }
 
     // Duplicate cancel method removed
-
     public Boolean getRenderSeeResultsButton() {
         return renderSeeResultsButton;
     }
@@ -514,16 +517,16 @@ public class PdfRegionExtractorBean implements Serializable {
         String index = context.getExternalContext().getRequestParameterMap().get("rowIndex3");
         if (index != null) {
             try {
-                 selectedPage = Integer.parseInt(index);
-                 this.selectPage = selectPage;
-                 LOG.log(Level.INFO, "Selected page set to: {0}", selectedPage);
+                selectedPage = Integer.parseInt(index);
+                this.selectPage = selectPage;
+                LOG.log(Level.INFO, "Selected page set to: {0}", selectedPage);
             } catch (NumberFormatException e) {
-                 LOG.log(Level.WARNING, "Invalid rowIndex3 parameter for setSelectPage: " + index, e);
-                 sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Input Error", "Invalid page number selected.");
+                LOG.log(Level.WARNING, "Invalid rowIndex3 parameter for setSelectPage: " + index, e);
+                sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Input Error", "Invalid page number selected.");
             }
         } else {
-             LOG.warning("Missing rowIndex3 parameter for setSelectPage.");
-             sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Input Error", "Missing page number for selection.");
+            LOG.warning("Missing rowIndex3 parameter for setSelectPage.");
+            sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Input Error", "Missing page number for selection.");
         }
     }
 

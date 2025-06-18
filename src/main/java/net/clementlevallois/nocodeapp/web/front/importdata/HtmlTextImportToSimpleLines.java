@@ -1,43 +1,20 @@
 package net.clementlevallois.nocodeapp.web.front.importdata;
 
-import io.mikael.urlbuilder.UrlBuilder;
 import jakarta.enterprise.context.SessionScoped;
-import jakarta.faces.application.FacesMessage;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
-import jakarta.json.Json;
-import jakarta.json.JsonArray;
-import jakarta.json.JsonArrayBuilder;
-import jakarta.json.JsonObject;
-import jakarta.json.JsonObjectBuilder;
-import jakarta.json.JsonReader;
-import jakarta.json.JsonValue;
-import java.io.IOException;
-import java.io.Serializable;
-import java.io.StringReader;
-import java.net.ConnectException;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpRequest.BodyPublishers;
-import java.net.http.HttpResponse;
-import java.net.http.HttpTimeoutException;
-import java.time.Duration;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import jakarta.json.*;
 import net.clementlevallois.importers.model.UrlLink;
-import net.clementlevallois.nocodeapp.web.front.backingbeans.ApplicationPropertiesBean;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
+import net.clementlevallois.nocodeapp.web.front.http.MicroserviceHttpClient;
 import net.clementlevallois.nocodeapp.web.front.logview.BackToFrontMessengerBean;
 import net.clementlevallois.nocodeapp.web.front.stripe.StripeBean;
 
-/**
- *
- * @author LEVALLOIS
- */
+import java.io.Serializable;
+import java.io.StringReader;
+import java.net.http.HttpResponse;
+import java.util.*;
+
 @Named
 @SessionScoped
 public class HtmlTextImportToSimpleLines implements Serializable {
@@ -52,236 +29,136 @@ public class HtmlTextImportToSimpleLines implements Serializable {
     StripeBean stripeBean;
 
     @Inject
-    ApplicationPropertiesBean applicationProperties;
-
-    @Inject
     ImportSimpleLinesBean simpleLineImportBean;
 
-    private String dataPersistenceUniqueId;
+    @Inject
+    MicroserviceHttpClient microserviceHttpClient;
+
+    private String jobId;
 
     private String urlWebPage;
     private String urlWebSite;
 
-    private List<UrlLink> linksToHarvest = new ArrayList();
-    private List<UrlLink> selectedLinks = new ArrayList();
+    private List<UrlLink> linksToHarvest = new ArrayList<>();
+    private List<UrlLink> selectedLinks = new ArrayList<>();
 
     private Integer urlsToCrawl = 10;
-    private Integer maxUrlsToCrawl;
     private final Integer MAX_URL_FREE = 10;
     private final Integer MAX_URL_PRO = 100;
+
+    private Integer maxUrlsToCrawl;
 
     private String commaSeparatedValuesExclusionTerms = "";
 
     private Boolean includeDepthOne = false;
 
     public void getRawTextFromUrls() {
-
         try {
             String currentFunction = sessionBean.getFunction();
-
-            Properties privateProperties = applicationProperties.getPrivateProperties();
-
             if (currentFunction == null) {
                 logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.error_function_not_set"));
                 return;
             }
 
             UrlLink linkOriginal = new UrlLink();
-            if (urlWebPage == null || urlWebPage.isBlank()) {
-                linkOriginal.setLink(urlWebSite);
-            } else {
-                linkOriginal.setLink(urlWebPage);
-            }
+            linkOriginal.setLink((urlWebPage == null || urlWebPage.isBlank()) ? urlWebSite : urlWebPage);
             linkOriginal.setLinkText(sessionBean.getLocaleBundle().getString("import_data.web_link_user_provided"));
-
             selectedLinks.add(0, linkOriginal);
 
             for (UrlLink link : selectedLinks) {
-                JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
-                JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
-                jsonObjectBuilder.add(link.getLink(), link.getLinkText());
-                jsonArrayBuilder.add(jsonObjectBuilder);
-
-                HttpClient client = HttpClient.newHttpClient();
-
-                URI uri = UrlBuilder
-                        .empty()
-                        .withScheme("http")
-                        .withPort(Integer.valueOf(privateProperties.getProperty("nocode_import_port")))
-                        .withHost("localhost")
-                        .withPath("api/import/html/getRawTextFromLinks")
-                        .addParameter("jobId", dataPersistenceUniqueId)
-                        .toUri();
-
-                HttpRequest request = HttpRequest.newBuilder()
-                        .POST(BodyPublishers.ofString(jsonArrayBuilder.build().toString()))
-                        .timeout(Duration.ofSeconds(10))
-                        .uri(uri)
+                JsonObject jsonPayload = Json.createObjectBuilder()
+                        .add(link.getLink(), link.getLinkText())
                         .build();
-                try {
-                    HttpResponse<String> resp = client.send(request, HttpResponse.BodyHandlers.ofString());
-                    String body = resp.body();
-                    if (resp.statusCode() != 200) {
-                        System.out.println("return of html text reader by the API was not a 200 code");
-                        String errorMessage = body;
-                        System.out.println(errorMessage);
-                        logBean.addOneNotificationFromString(errorMessage);
-                        sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "💔", errorMessage);
-                    } else {
-                        logBean.addOneNotificationFromString("✅ " + sessionBean.getLocaleBundle().getString("general.message.content_successful_read") + ": " + link.getLink());
-                    }
+                JsonArray jsonArray = Json.createArrayBuilder().add(jsonPayload).build();
 
-                } catch (HttpTimeoutException e) {
-                    logBean.addOneNotificationFromString("💔 " + sessionBean.getLocaleBundle().getString("general.message.error_url_timed_out") + ": " + link.getLink());
-                } catch (ConnectException e) {
-                    logBean.addOneNotificationFromString("💔 " + sessionBean.getLocaleBundle().getString("general.message.error_no_connection") + ": " + link.getLink());
-                }
+                var response = microserviceHttpClient.importService()
+                        .post("/import/html/getRawTextFromLinks")
+                        .addQueryParameter("jobId", jobId)
+                        .withJsonPayload(Json.createObjectBuilder().add("links", jsonArray).build())
+                        .sendAsyncAndGetBody(HttpResponse.BodyHandlers.ofString())
+                        .join();
+
+                logBean.addOneNotificationFromString("✅ " + sessionBean.getLocaleBundle().getString("general.message.content_successful_read") + ": " + link.getLink());
             }
-        } catch (IOException | InterruptedException ex) {
-            Logger.getLogger(HtmlTextImportToSimpleLines.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (Exception e) {
+            logBean.addOneNotificationFromString("💔 " + e.getMessage());
         }
     }
 
     public void retrieveUrlsContainedOnAPage() {
-        dataPersistenceUniqueId = simpleLineImportBean.getJobId();
-        selectedLinks = new ArrayList();
-        linksToHarvest = new ArrayList();
+        jobId = simpleLineImportBean.getJobId();
+        selectedLinks = new ArrayList<>();
+        linksToHarvest = new ArrayList<>();
 
         try {
             String currentFunction = sessionBean.getFunction();
-
-            Properties privateProperties = applicationProperties.getPrivateProperties();
-
             if (currentFunction == null) {
                 logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.error_function_not_set"));
                 return;
             }
 
-            HttpClient client = HttpClient.newHttpClient();
+            var response = microserviceHttpClient.importService()
+                    .get("/import/html/getLinksContainedInPage")
+                    .addQueryParameter("jobId", jobId)
+                    .addQueryParameter("url", urlWebPage)
+                    .sendAsyncAndGetBody(HttpResponse.BodyHandlers.ofString())
+                    .join();
 
-            URI uri = UrlBuilder
-                    .empty()
-                    .withScheme("http")
-                    .withPort(Integer.valueOf(privateProperties.getProperty("nocode_import_port")))
-                    .withHost("localhost")
-                    .withPath("api/import/html/getLinksContainedInPage")
-                    .addParameter("jobId", dataPersistenceUniqueId)
-                    .addParameter("url", urlWebPage)
-                    .toUri();
-
-            HttpRequest request = HttpRequest.newBuilder()
-                    .GET()
-                    .uri(uri)
-                    .build();
-
-            try {
-                HttpResponse<String> resp = client.send(request, HttpResponse.BodyHandlers.ofString());
-                String body = resp.body();
-                if (resp.statusCode() != 200) {
-                    System.out.println("return of html text reader by the API was not a 200 code");
-                    String errorMessage = body;
-                    System.out.println(errorMessage);
-                    logBean.addOneNotificationFromString(errorMessage);
-                    sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "💔", errorMessage);
-                } else {
-                    JsonReader reader = Json.createReader(new StringReader(body));
-                    JsonArray jsonArray = reader.readArray();
-                    for (JsonValue jsonValue : jsonArray) {
-                        JsonObject jo = jsonValue.asJsonObject();
-                        String linkHref = jo.getString("linkHref");
-                        String linkText = jo.getString("linkText");
-                        UrlLink urlOnPage = new UrlLink();
-                        urlOnPage.setLink(linkHref);
-                        urlOnPage.setLinkText(linkText);
-                        linksToHarvest.add(urlOnPage);
-                    }
-                }
-            } catch (HttpTimeoutException e) {
-                logBean.addOneNotificationFromString("💔 " + sessionBean.getLocaleBundle().getString("general.message.error_url_timed_out") + ": " + urlWebPage);
-            } catch (ConnectException e) {
-                logBean.addOneNotificationFromString("💔 " + sessionBean.getLocaleBundle().getString("general.message.error_no_connection") + ": " + urlWebPage);
+            try (JsonReader reader = Json.createReader(new StringReader(response))) {
+                reader.readArray().forEach(jsonValue -> {
+                    JsonObject jo = jsonValue.asJsonObject();
+                    UrlLink urlOnPage = new UrlLink();
+                    urlOnPage.setLink(jo.getString("linkHref"));
+                    urlOnPage.setLinkText(jo.getString("linkText"));
+                    linksToHarvest.add(urlOnPage);
+                });
             }
 
-        } catch (IOException | InterruptedException ex) {
-            Logger.getLogger(HtmlTextImportToSimpleLines.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (Exception e) {
+            logBean.addOneNotificationFromString("💔 " + e.getMessage());
         }
     }
 
     public void crawlPagesOfAWebsite() {
-        dataPersistenceUniqueId = simpleLineImportBean.getJobId();
-        selectedLinks = new ArrayList();
-        linksToHarvest = new ArrayList();
+        jobId = simpleLineImportBean.getJobId();
+        selectedLinks = new ArrayList<>();
+        linksToHarvest = new ArrayList<>();
 
         try {
             String currentFunction = sessionBean.getFunction();
-
-            Properties privateProperties = applicationProperties.getPrivateProperties();
-
             if (currentFunction == null) {
                 logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.error_function_not_set"));
                 return;
             }
 
-            HttpClient client = HttpClient.newHttpClient();
+            var response = microserviceHttpClient.importService()
+                    .get("/import/html/getPagesContainedInWebsite")
+                    .addQueryParameter("jobId", jobId)
+                    .addQueryParameter("url", urlWebSite)
+                    .addQueryParameter("maxUrls", String.valueOf(urlsToCrawl))
+                    .addQueryParameter("exclusionTerms", commaSeparatedValuesExclusionTerms)
+                    .sendAsyncAndGetBody(HttpResponse.BodyHandlers.ofString())
+                    .join();
 
-            URI uri = UrlBuilder
-                    .empty()
-                    .withScheme("http")
-                    .withPort(Integer.valueOf(privateProperties.getProperty("nocode_import_port")))
-                    .withHost("localhost")
-                    .withPath("api/import/html/getPagesContainedInWebsite")
-                    .addParameter("jobId", dataPersistenceUniqueId)
-                    .addParameter("url", urlWebSite)
-                    .addParameter("maxUrls", String.valueOf(urlsToCrawl))
-                    .addParameter("exclusionTerms", commaSeparatedValuesExclusionTerms)
-                    .toUri();
-
-            HttpRequest request = HttpRequest.newBuilder()
-                    .GET()
-                    .uri(uri)
-                    .build();
-
-            try {
-                HttpResponse<String> resp = client.send(request, HttpResponse.BodyHandlers.ofString());
-                String body = resp.body();
-                if (resp.statusCode() != 200) {
-                    System.out.println("return of html text reader by the API was not a 200 code");
-                    String errorMessage = body;
-                    System.out.println(errorMessage);
-                    logBean.addOneNotificationFromString("💔 " + errorMessage);
-                    sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "💔", errorMessage);
-                } else {
-                    JsonReader reader = Json.createReader(new StringReader(body));
-                    JsonArray jsonArray = reader.readArray();
-                    for (JsonValue jsonValue : jsonArray) {
-                        JsonObject jo = jsonValue.asJsonObject();
-                        String linkHref = jo.getString("linkHref");
-                        String linkText = jo.getString("linkText");
-                        UrlLink urlOnPage = new UrlLink();
-                        urlOnPage.setLink(linkHref);
-                        urlOnPage.setLinkText(linkText);
-                        selectedLinks.add(urlOnPage);
-                    }
-
-                    // decrease credits by one is the user has made use of an elevated capacity
-                    if (urlsToCrawl > MAX_URL_FREE) {
-                        stripeBean.manageCredits();
-                    }
-
-                }
-            } catch (HttpTimeoutException e) {
-                logBean.addOneNotificationFromString("💔 " + sessionBean.getLocaleBundle().getString("general.message.error_url_timed_out") + ": " + urlWebPage);
-            } catch (ConnectException e) {
-                logBean.addOneNotificationFromString("💔 " + sessionBean.getLocaleBundle().getString("general.message.error_no_connection") + ": " + urlWebPage);
+            try (JsonReader reader = Json.createReader(new StringReader(response))) {
+                reader.readArray().forEach(jsonValue -> {
+                    JsonObject jo = jsonValue.asJsonObject();
+                    UrlLink urlOnPage = new UrlLink();
+                    urlOnPage.setLink(jo.getString("linkHref"));
+                    urlOnPage.setLinkText(jo.getString("linkText"));
+                    selectedLinks.add(urlOnPage);
+                });
             }
 
-        } catch (IOException | InterruptedException ex) {
-            Logger.getLogger(HtmlTextImportToSimpleLines.class.getName()).log(Level.SEVERE, null, ex);
+            if (urlsToCrawl > MAX_URL_FREE) {
+                stripeBean.manageCredits();
+            }
+
+            logBean.addOneNotificationFromString("📚 " + sessionBean.getLocaleBundle().getString("general.message.nb_pages_to_crawl") + " " + selectedLinks.size());
+
+        } catch (Exception e) {
+            logBean.addOneNotificationFromString("💔 " + e.getMessage());
         }
-
-        String nbOfPagesToCrawl = "📚 " + sessionBean.getLocaleBundle().getString("general.message.nb_pages_to_crawl") + " " + selectedLinks.size();
-        logBean.addOneNotificationFromString(nbOfPagesToCrawl);
-
     }
 
     public List<UrlLink> getLinksToHarvest() {

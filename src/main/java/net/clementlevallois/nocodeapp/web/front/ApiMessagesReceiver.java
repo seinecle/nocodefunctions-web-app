@@ -15,6 +15,7 @@ import jakarta.ws.rs.core.Response;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import net.clementlevallois.functions.model.FunctionUmigon;
 import net.clementlevallois.functions.model.WorkflowCowoProps;
 import net.clementlevallois.functions.model.WorkflowTopicsProps;
 
@@ -37,6 +38,16 @@ public class ApiMessagesReceiver {
     @Path("/"+ WorkflowCowoProps.ENDPOINT)
     @Consumes(MediaType.APPLICATION_JSON)
     public Response messagesFromCowoAPI(MessageFromApi msg) {
+        ConcurrentLinkedDeque<MessageFromApi> messages = WatchTower.getDequeAPIMessages().getOrDefault(msg.getSessionId(), new ConcurrentLinkedDeque());
+        messages.addLast(msg);
+        WatchTower.getDequeAPIMessages().put(msg.getSessionId(), messages);
+        return Response.ok().build();
+    }
+
+    @POST
+    @Path("/"+ FunctionUmigon.ENDPOINT)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response messagesFromUmigonAPI(MessageFromApi msg) {
         ConcurrentLinkedDeque<MessageFromApi> messages = WatchTower.getDequeAPIMessages().getOrDefault(msg.getSessionId(), new ConcurrentLinkedDeque());
         messages.addLast(msg);
         WatchTower.getDequeAPIMessages().put(msg.getSessionId(), messages);
