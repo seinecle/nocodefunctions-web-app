@@ -6,12 +6,6 @@ import java.io.Serializable;
 import java.io.StringReader;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jakarta.enterprise.context.SessionScoped;
@@ -22,22 +16,14 @@ import jakarta.faces.event.AjaxBehaviorEvent;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import jakarta.json.Json;
-import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObject;
-import jakarta.json.JsonObjectBuilder;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.UUID;
 import net.clementlevallois.functions.model.Globals;
 import static net.clementlevallois.functions.model.Globals.GlobalQueryParams.CALLBACK_URL;
 import static net.clementlevallois.functions.model.Globals.GlobalQueryParams.JOB_ID;
 import static net.clementlevallois.functions.model.Globals.GlobalQueryParams.SESSION_ID;
-import net.clementlevallois.functions.model.WorkflowGazeProps;
-import static net.clementlevallois.functions.model.WorkflowGazeProps.BodyJsonKeys.LINES;
-import static net.clementlevallois.functions.model.WorkflowGazeProps.QueryParams.MIN_SHARED_TARGETS;
-import net.clementlevallois.functions.model.WorkflowTopicsProps;
-import net.clementlevallois.importers.model.CellRecord;
-import net.clementlevallois.importers.model.SheetModel;
+import net.clementlevallois.functions.model.WorkflowSimProps;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.exportdata.ExportToVosViewer;
 import net.clementlevallois.nocodeapp.web.front.importdata.DataImportBean;
@@ -47,7 +33,6 @@ import net.clementlevallois.nocodeapp.web.front.exportdata.ExportToGephiLite;
 import net.clementlevallois.nocodeapp.web.front.http.RemoteLocal;
 import net.clementlevallois.nocodeapp.web.front.utils.GEXFSaver;
 import net.clementlevallois.nocodeapp.web.front.utils.Converters;
-import net.clementlevallois.utils.Multiset;
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
 import net.clementlevallois.nocodeapp.web.front.http.MicroserviceHttpClient;
@@ -56,9 +41,9 @@ import net.clementlevallois.nocodeapp.web.front.http.MicroserviceHttpClient.Post
 
 @Named
 @SessionScoped
-public class WorkflowGazeBean implements Serializable {
+public class WorkflowSimBean implements Serializable {
 
-    private static final Logger LOG = Logger.getLogger(WorkflowGazeBean.class.getName());
+    private static final Logger LOG = Logger.getLogger(WorkflowSimBean.class.getName());
 
     private Integer progress = 0;
     private Integer minSharedTargets = 1;
@@ -66,6 +51,7 @@ public class WorkflowGazeBean implements Serializable {
     private StreamedContent fileToSave;
     private String nodesAsJson;
     private String edgesAsJson;
+    private String sourceColIndex;
     private int minFreqNode = 1000_000;
     private int maxFreqNode = 0;
     private Boolean shareVVPublicly;
@@ -77,7 +63,7 @@ public class WorkflowGazeBean implements Serializable {
 
     private String gexf;
 
-    private WorkflowGazeProps props;
+    private WorkflowSimProps props;
     private Globals globals;
 
     @Inject
@@ -95,14 +81,14 @@ public class WorkflowGazeBean implements Serializable {
     @Inject
     private MicroserviceHttpClient microserviceClient;
 
-    public WorkflowGazeBean() {
+    public WorkflowSimBean() {
     }
 
     @PostConstruct
     public void init() {
-        sessionBean.setFunction(WorkflowGazeProps.NAME);
+        sessionBean.setFunction(WorkflowSimProps.NAME);
         sessionId = FacesContext.getCurrentInstance().getExternalContext().getSessionId(false);
-        props = new WorkflowGazeProps(applicationProperties.getTempFolderFullPath());
+        props = new WorkflowSimProps(applicationProperties.getTempFolderFullPath());
         globals = new Globals(applicationProperties.getTempFolderFullPath());
     }
 
@@ -116,219 +102,63 @@ public class WorkflowGazeBean implements Serializable {
         if (workflowComplete) {
             runButtonDisabled = false;
             FacesContext context = FacesContext.getCurrentInstance();
-        context.getApplication().getNavigationHandler().handleNavigation(context, null, "/" + WorkflowGazeProps.NAME + "/" + Globals.RESULTS_PAGE + Globals.FACES_REDIRECT);
+            context.getApplication().getNavigationHandler().handleNavigation(context, null, "/" + WorkflowSimProps.NAME + "/" + Globals.RESULTS_PAGE + Globals.FACES_REDIRECT);
         }
     }
 
     public void navigatToResults(AjaxBehaviorEvent event) {
         FacesContext context = FacesContext.getCurrentInstance();
-        context.getApplication().getNavigationHandler().handleNavigation(context, null, "/" + WorkflowGazeProps.NAME + "/" + Globals.RESULTS_PAGE + Globals.FACES_REDIRECT);
-    }
-
-    public void runCoocAnalysis() {
-        try {
-            jobId = UUID.randomUUID().toString().substring(0, 10);
-            Files.createDirectories(applicationProperties.getTempFolderFullPath().resolve(jobId));
-            progress = 0;
-            sessionBean.sendFunctionPageReport();
-            logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.starting_analysis"));
-            List<SheetModel> dataInSheets = dataImportBean.getDataInSheets();
-            SheetModel sheetWithData = null;
-            for (SheetModel sm : dataInSheets) {
-                if (sm.getName().equals(dataImportBean.getSelectedSheetName())) {
-                    sheetWithData = sm;
-                    break;
-                }
-            }
-            if (sheetWithData == null) {
-                logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.data_not_found") + " (1)");
-                return;
-            }
-            Map<Integer, List<CellRecord>> mapOfCellRecordsPerRow = sheetWithData.getRowIndexToCellRecords();
-            Map<Integer, Multiset<String>> lines = new HashMap();
-
-            Iterator<Map.Entry<Integer, List<CellRecord>>> iterator = mapOfCellRecordsPerRow.entrySet().iterator();
-            int i = 0;
-            Multiset<String> multiset;
-            while (iterator.hasNext()) {
-                Map.Entry<Integer, List<CellRecord>> next = iterator.next();
-                multiset = new Multiset();
-                for (CellRecord cr : next.getValue()) {
-                    multiset.addOne(cr.getRawValue());
-                }
-                lines.put(i++, multiset);
-            }
-            if (lines.isEmpty()) {
-                logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.data_not_found") + " (2)");
-                return;
-            }
-
-            if (dataImportBean.getHasHeaders()) {
-                lines.remove(0);
-            }
-
-            callCooc(lines);
-            runButtonDisabled = true;
-        } catch (IOException ex) {
-            LOG.log(Level.SEVERE, "Error running Cooc analysis", ex);
-            sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Analysis Error", "Could not start Cooc analysis: " + ex.getMessage());
-            runButtonDisabled = false;
-        }
+        context.getApplication().getNavigationHandler().handleNavigation(context, null, "/" + WorkflowSimProps.NAME + "/" + Globals.RESULTS_PAGE + Globals.FACES_REDIRECT);
     }
 
     public void runSimAnalysis(String sourceColIndex, String sheetName) {
         try {
-            jobId = UUID.randomUUID().toString().substring(0, 10);
-            Files.createDirectories(applicationProperties.getTempFolderFullPath().resolve(jobId));
+            jobId = sessionBean.getJobId();
             sessionBean.sendFunctionPageReport();
             logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.starting_analysis"));
-            List<SheetModel> dataInSheets = dataImportBean.getDataInSheets();
-            SheetModel sheetWithData = null;
-            for (SheetModel sm : dataInSheets) {
-                if (sm.getName().equals(sheetName)) {
-                    sheetWithData = sm;
-                    break;
-                }
-            }
-            if (sheetWithData == null) {
-                logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.data_not_found") + " (1)");
-                runButtonDisabled = false; // Enable button on error
-                return;
-            }
-            Map<Integer, List<CellRecord>> mapOfCellRecordsPerRow = sheetWithData.getRowIndexToCellRecords();
-            if (dataImportBean.getHasHeaders()) {
-                mapOfCellRecordsPerRow.remove(0);
-            }
-            Iterator<Map.Entry<Integer, List<CellRecord>>> iterator = mapOfCellRecordsPerRow.entrySet().iterator();
+            
+            this.sourceColIndex = sourceColIndex;
 
-            Map<String, Set<String>> sourcesAndTargets = new HashMap();
-            Set<String> setTargets;
-            String source = "";
-            int sourceIndexInt = Integer.parseInt(sourceColIndex);
-            while (iterator.hasNext()) {
-                Map.Entry<Integer, List<CellRecord>> entryCellRecordsInRow = iterator.next();
-                setTargets = new HashSet();
-                for (CellRecord cr : entryCellRecordsInRow.getValue()) {
-                    if (cr.getColIndex() == sourceIndexInt) {
-                        source = cr.getRawValue();
-                    } else {
-                        setTargets.add(cr.getRawValue());
-                    }
-                }
-                if (sourcesAndTargets.containsKey(source)) {
-                    Set<String> existingTargetsForThisSource = sourcesAndTargets.get(source);
-                    existingTargetsForThisSource.addAll(setTargets);
-                    sourcesAndTargets.put(source, existingTargetsForThisSource);
-                } else {
-                    sourcesAndTargets.put(source, setTargets);
-                }
-            }
-            if (sourcesAndTargets.isEmpty()) {
-                logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.data_not_found") + " (2)");
-                runButtonDisabled = false;
-                return;
-            }
+            var requestBuilder = microserviceClient.api().post(WorkflowSimProps.ENDPOINT);
 
-            callSim(sourcesAndTargets);
+            addQueryParamsForSim(requestBuilder);
+            addGlobalQueryParams(requestBuilder);
+
+            requestBuilder.sendAsync(HttpResponse.BodyHandlers.ofString())
+                    .thenAccept(response -> {
+                        if (response.statusCode() != 200) {
+                            String error = response.body();
+                            LOG.log(Level.SEVERE, "Sim call failed. Status: {0}, Body: {1}", new Object[]{response.statusCode(), error});
+                            sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Sim Failed", "Could not send to Sim microservice: " + error);
+                        } else {
+                            LOG.log(Level.INFO, "Sim task submitted successfully for dataId: {0}", jobId);
+                        }
+                    })
+                    .exceptionally(e -> {
+                        LOG.log(Level.SEVERE, "Exception during async Sim call for dataId " + jobId, e);
+                        String errorMessage = "Exception communicating with Sim microservice: " + e.getMessage();
+                        if (e.getCause() instanceof MicroserviceCallException msce) {
+                            errorMessage += " (Status: " + msce.getStatusCode() + ", URI: " + msce.getUri() + ", Body: " + msce.getErrorBody() + ")";
+                        }
+                        sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Sim Failed", errorMessage);
+                        return null;
+                    });
             runButtonDisabled = true;
 
         } catch (NumberFormatException ex) {
             LOG.log(Level.SEVERE, "Error parsing source column index", ex);
             sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Analysis Error", "Invalid source column index: " + ex.getMessage());
             runButtonDisabled = false;
-        } catch (IOException ex) {
-            LOG.log(Level.SEVERE, "Error running Sim analysis", ex);
-            sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Analysis Error", "Could not start Sim analysis: " + ex.getMessage());
-            runButtonDisabled = false;
         }
-    }
-
-    public void callCooc(Map<Integer, Multiset<String>> inputLines) {
-        JsonObjectBuilder linesBuilder = Json.createObjectBuilder();
-        for (Map.Entry<Integer, Multiset<String>> entryLines : inputLines.entrySet()) {
-            JsonArrayBuilder createArrayBuilder = Json.createArrayBuilder();
-            Multiset<String> targets = entryLines.getValue();
-            for (String target : targets.toListOfAllOccurrences()) {
-                createArrayBuilder.add(target);
-            }
-            linesBuilder.add(String.valueOf(entryLines.getKey()), createArrayBuilder);
-        }
-
-        JsonObject jsonPayload = Json.createObjectBuilder()
-                .add(LINES.name(), linesBuilder)
-                .build();
-
-        var requestBuilder = microserviceClient.api().post(WorkflowGazeProps.ENDPOINT_COOC)
-                .withJsonPayload(jsonPayload);
-
-        addGlobalQueryParams(requestBuilder);
-
-        requestBuilder.sendAsync(HttpResponse.BodyHandlers.ofString())
-                .thenAccept(response -> {
-                    if (response.statusCode() != 200) {
-                        String error = response.body();
-                        LOG.log(Level.SEVERE, "Cooc call failed. Status: {0}, Body: {1}", new Object[]{response.statusCode(), error});
-                        sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Cooc Failed", "Could not send to Cooc microservice: " + error);
-                    }
-                })
-                .exceptionally(e -> {
-                    LOG.log(Level.SEVERE, "Exception during async Cooc call for dataId " + jobId, e);
-                    String errorMessage = "Exception communicating with Cooc microservice: " + e.getMessage();
-                    if (e.getCause() instanceof MicroserviceCallException msce) {
-                        errorMessage += " (Status: " + msce.getStatusCode() + ", URI: " + msce.getUri() + ", Body: " + msce.getErrorBody() + ")";
-                    }
-                    sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Cooc Failed", errorMessage);
-                    return null;
-                });
-    }
-
-    public void callSim(Map<String, Set<String>> sourcesAndTargets) {
-        JsonObjectBuilder linesBuilder = Json.createObjectBuilder();
-        for (Map.Entry<String, Set<String>> entryLines : sourcesAndTargets.entrySet()) {
-            JsonArrayBuilder createArrayBuilder = Json.createArrayBuilder();
-            Set<String> targets = entryLines.getValue();
-            for (String target : targets) {
-                createArrayBuilder.add(target);
-            }
-            linesBuilder.add(entryLines.getKey(), createArrayBuilder);
-        }
-
-        JsonObject jsonPayload = Json.createObjectBuilder()
-                .add(LINES.name(), linesBuilder)
-                .build();
-
-        var requestBuilder = microserviceClient.api().post(WorkflowGazeProps.ENDPOINT_SIM)
-                .withJsonPayload(jsonPayload);
-
-        addQueryParamsForSim(requestBuilder);
-        addGlobalQueryParams(requestBuilder);
-
-        requestBuilder.sendAsync(HttpResponse.BodyHandlers.ofString())
-                .thenAccept(response -> {
-                    if (response.statusCode() != 200) {
-                        String error = response.body();
-                        LOG.log(Level.SEVERE, "Sim call failed. Status: {0}, Body: {1}", new Object[]{response.statusCode(), error});
-                        sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Sim Failed", "Could not send to Sim microservice: " + error);
-                    } else {
-                        LOG.log(Level.INFO, "Sim task submitted successfully for dataId: {0}", jobId);
-                    }
-                })
-                .exceptionally(e -> {
-                    LOG.log(Level.SEVERE, "Exception during async Sim call for dataId " + jobId, e);
-                    String errorMessage = "Exception communicating with Sim microservice: " + e.getMessage();
-                    if (e.getCause() instanceof MicroserviceCallException msce) {
-                        errorMessage += " (Status: " + msce.getStatusCode() + ", URI: " + msce.getUri() + ", Body: " + msce.getErrorBody() + ")";
-                    }
-                    sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Sim Failed", errorMessage);
-                    return null;
-                });
     }
 
     private MicroserviceHttpClient.PostRequestBuilder addQueryParamsForSim(PostRequestBuilder requestBuilder) {
-        for (WorkflowGazeProps.QueryParams param : WorkflowGazeProps.QueryParams.values()) {
+        for (WorkflowSimProps.QueryParams param : WorkflowSimProps.QueryParams.values()) {
             String paramValue = switch (param) {
                 case MIN_SHARED_TARGETS ->
                     String.valueOf(minSharedTargets);
+                case SOURCE_COL_INDEX ->
+                    sourceColIndex;
             };
             requestBuilder.addQueryParameter(param.name(), paramValue);
         }
@@ -337,9 +167,7 @@ public class WorkflowGazeBean implements Serializable {
     }
 
     private MicroserviceHttpClient.PostRequestBuilder addGlobalQueryParams(PostRequestBuilder requestBuilder) {
-
-        String callbackURL = RemoteLocal.getDomain() + RemoteLocal.getInternalMessageApiEndpoint() + WorkflowGazeProps.ENDPOINT_GAZE;
-
+        String callbackURL = RemoteLocal.getDomain() + RemoteLocal.getInternalMessageApiEndpoint() + WorkflowSimProps.ENDPOINT;
         for (Globals.GlobalQueryParams param : Globals.GlobalQueryParams.values()) {
             String paramValue = switch (param) {
                 case SESSION_ID ->

@@ -64,7 +64,7 @@
             <p:spacer height="20"/>
             <p:panel>
                 <h:form>
-                    <p:remoteCommand name="onload" action="#{workflowGazeBean.execGraph(20)}" oncomplete="main('#{workflowGazeBean.nodesAsJson}','#{workflowGazeBean.edgesAsJson}','#{workflowGazeBean.minFreqNode}','#{workflowGazeBean.maxFreqNode}');" autoRun="true" />
+                    <p:remoteCommand name="onload" action="#{workflowSimBean.execGraph(20)}" oncomplete="main('#{workflowSimBean.nodesAsJson}','#{workflowSimBean.edgesAsJson}','#{workflowSimBean.minFreqNode}','#{workflowSimBean.maxFreqNode}');" autoRun="true" />
                 </h:form>
                 <h:form target="_blank">
                     <div class="grid lg:grid-cols-4 md:grid-cols-3 sm:grid-cols-2 gap-4">
@@ -78,7 +78,7 @@
                                 onclick="PrimeFaces.monitorDownload(start, stop);"
                                 icon="pi pi-arrow-down"
                                 styleClass="p-mr-2">
-                                <p:fileDownload value="#{workflowGazeBean.fileToSave}"/>
+                                <p:fileDownload value="#{workflowSimBean.fileToSave}"/>
                             </p:commandButton>
                         </div>
                         <div class="border">
@@ -87,13 +87,13 @@
                             <br/>
                             <p:commandButton
                                 value="#{text['general.message.visualize_with_gephi-lite']}"
-                                action ="#{workflowGazeBean.gotoGephiLite()}"
+                                action ="#{workflowSimBean.gotoGephiLite()}"
                                 icon="pi pi-external-link"
                                 styleClass="p-mr-2"/>
                             <p:spacer width="5"/>
                             <br/>
                             <br/>
-                            <p:selectBooleanCheckbox value="#{workflowGazeBean.shareGephiLitePublicly}" itemLabel="#{text['general.message.make_viz_public_question']}"/>
+                            <p:selectBooleanCheckbox value="#{workflowSimBean.shareGephiLitePublicly}" itemLabel="#{text['general.message.make_viz_public_question']}"/>
                             <br/>
                             <br/>
                             <p:outputLabel escape="false" value="#{text['general.message.make_viz_public_details']}"/>
@@ -104,12 +104,12 @@
                             <br/>
                             <p:commandButton
                                 value="#{text['general.message.visualize_with_vosviewer']}"
-                                action="#{workflowGazeBean.gotoVV()}"
+                                action="#{workflowSimBean.gotoVV()}"
                                 icon="pi pi-external-link"
                                 styleClass="p-mr-2"/>
                             <br/>
                             <br/>
-                            <p:selectBooleanCheckbox value="#{workflowGazeBean.shareVVPublicly}" itemLabel="#{text['general.message.make_viz_public_question']}"/>
+                            <p:selectBooleanCheckbox value="#{workflowSimBean.shareVVPublicly}" itemLabel="#{text['general.message.make_viz_public_question']}"/>
                             <br/>
                             <br/>
                             <p:outputLabel escape="false" value="#{text['general.message.make_viz_public_details']}"/>

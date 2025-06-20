@@ -11,9 +11,4 @@ public record FileUploaded(byte[] bytes, String fileName, String fileUniqueId) {
     public FileUploaded(InputStream is, String fileName) throws IOException {
         this(is.readAllBytes(), Objects.requireNonNull(fileName), Globals.UPLOADED_FILE_PREFIX + UUID.randomUUID().toString().substring(0, 5));
     }
-
-    @Override
-    public byte[] bytes() {
-        return bytes.clone();
-    }
 }

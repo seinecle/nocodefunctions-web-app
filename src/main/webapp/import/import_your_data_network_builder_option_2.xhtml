@@ -126,7 +126,7 @@
                                                     <div align="center">
                                                         <h:graphicImage name="images/round_3_orange.png" width="20" height="20" style="vertical-align: bottom;"/>
                                                         <p:spacer width="5"/>
-                                                        <p:commandLink value="#{text['import_data.option2.click_to_select_source']}" action="#{workflowGazeBean.runSimAnalysis(mycolHeader.colIndex, dataInSheet.name)}" styleClass="p-mr-2">
+                                                        <p:commandLink value="#{text['import_data.option2.click_to_select_source']}" action="#{workflowSimBean.runSimAnalysis(mycolHeader.colIndex, dataInSheet.name)}" styleClass="p-mr-2">
                                                             <p:confirm type="popup" header="#{text['general.verbs.confirm']}" message="#{text['import_data.option2.confirm_this_column_is_source']}" icon="pi pi-exclamation-triangle"/>
                                                         </p:commandLink>
                                                         <p:confirmPopup global="true">

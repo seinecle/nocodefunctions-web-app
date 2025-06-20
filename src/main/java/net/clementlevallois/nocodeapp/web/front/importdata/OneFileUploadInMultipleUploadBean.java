@@ -6,6 +6,8 @@ import jakarta.inject.Named;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import net.clementlevallois.functions.model.Globals;
+import static net.clementlevallois.functions.model.Globals.Names.PDF_REGION_EXTRACTOR;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.logview.BackToFrontMessengerBean;
 import org.primefaces.event.FileUploadEvent;
@@ -35,7 +37,7 @@ public class OneFileUploadInMultipleUploadBean {
                 return;
             }
 
-            String currentFunction = sessionBean.getFunction();
+            Globals.Names currentFunction = sessionBean.getFunction();
 
             if (currentFunction == null) {
                 logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.error_function_not_set"));
@@ -50,13 +52,11 @@ public class OneFileUploadInMultipleUploadBean {
             dataImportBean.setReadButtonDisabled(Boolean.FALSE);
             dataImportBean.setRenderProgressBar(Boolean.TRUE);
 
-            if (currentFunction.equals("pdf_region_extractor")) {
+            if (currentFunction == PDF_REGION_EXTRACTOR) {
                 dataImportBean.storePdFile(oneFile);
             }
         } catch (IOException ex) {
             Logger.getLogger(OneFileUploadInMultipleUploadBean.class.getName()).log(Level.SEVERE, null, ex);
         }
-
     }
-
 }

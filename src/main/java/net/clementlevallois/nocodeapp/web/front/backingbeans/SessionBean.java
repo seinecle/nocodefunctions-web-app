@@ -22,6 +22,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import net.clementlevallois.functions.model.Globals.Names;
 import net.clementlevallois.nocodeapp.web.front.i18n.I18nStaticFilesResourceBundle;
 import net.clementlevallois.nocodeapp.web.front.utils.UrlParamCleaner;
 
@@ -33,7 +34,7 @@ import net.clementlevallois.nocodeapp.web.front.utils.UrlParamCleaner;
 @SessionScoped
 public class SessionBean implements Serializable {
 
-    private String function;
+    private Names functionName;
     private String gazeOption = "1";
     private String userAgent;
     private ResourceBundle localeBundle;
@@ -69,8 +70,8 @@ public class SessionBean implements Serializable {
         this.applicationProperties = applicationProperties;
     }
 
-    public String getFunction() {
-        return function;
+    public Names getFunction() {
+        return functionName;
     }
 
     public void setFunction(String function) {
@@ -82,11 +83,11 @@ public class SessionBean implements Serializable {
         if (function.contains("=") & !function.contains("?")) {
             System.out.println("weird url parameters decoded in sessionBean");
             System.out.println("url param for function is: " + function);
-            this.function = function.split("=")[1];
+            this.functionName = Names.valueOf(function.split("=")[1]);
         } else if (function.contains("=") & function.contains("?")) {
-            this.function = function.split("\\?")[0];
+            this.functionName = Names.valueOf(function.split("\\?")[0]);
         } else {
-            this.function = function;
+            this.functionName = Names.valueOf(function);
         }
     }
 
@@ -100,7 +101,7 @@ public class SessionBean implements Serializable {
 
     public void sendFunctionPageReport() {
         SendReport send = new SendReport(applicationProperties.getMiddlewareHost(), applicationProperties.getMiddlewarePort());
-        send.initAnalytics(this.function, userAgent);
+        send.initAnalytics(this.functionName.getDescription(), userAgent);
         send.start();
     }
 

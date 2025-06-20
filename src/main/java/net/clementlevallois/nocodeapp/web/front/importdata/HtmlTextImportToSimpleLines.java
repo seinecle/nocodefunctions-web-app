@@ -54,7 +54,7 @@ public class HtmlTextImportToSimpleLines implements Serializable {
 
     public void getRawTextFromUrls() {
         try {
-            String currentFunction = sessionBean.getFunction();
+            String currentFunction = sessionBean.getFunction().getDescription();
             if (currentFunction == null) {
                 logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.error_function_not_set"));
                 return;
@@ -71,7 +71,7 @@ public class HtmlTextImportToSimpleLines implements Serializable {
                         .build();
                 JsonArray jsonArray = Json.createArrayBuilder().add(jsonPayload).build();
 
-                var response = microserviceHttpClient.importService()
+                microserviceHttpClient.importService()
                         .post("/import/html/getRawTextFromLinks")
                         .addQueryParameter("jobId", jobId)
                         .withJsonPayload(Json.createObjectBuilder().add("links", jsonArray).build())
@@ -91,7 +91,7 @@ public class HtmlTextImportToSimpleLines implements Serializable {
         linksToHarvest = new ArrayList<>();
 
         try {
-            String currentFunction = sessionBean.getFunction();
+            String currentFunction = sessionBean.getFunction().getDescription();
             if (currentFunction == null) {
                 logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.error_function_not_set"));
                 return;
@@ -125,7 +125,7 @@ public class HtmlTextImportToSimpleLines implements Serializable {
         linksToHarvest = new ArrayList<>();
 
         try {
-            String currentFunction = sessionBean.getFunction();
+            String currentFunction = sessionBean.getFunction().getDescription();
             if (currentFunction == null) {
                 logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.error_function_not_set"));
                 return;

@@ -1,22 +1,15 @@
 package net.clementlevallois.nocodeapp.web.front.importdata;
 
-import io.mikael.urlbuilder.UrlBuilder;
 import jakarta.annotation.PostConstruct;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import jakarta.inject.Named;
 import java.io.Serializable;
-import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -29,7 +22,6 @@ import jakarta.faces.event.PhaseId;
 import jakarta.inject.Inject;
 import jakarta.servlet.annotation.MultipartConfig;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Base64;
@@ -38,13 +30,13 @@ import java.util.HashMap;
 import java.util.Properties;
 import java.util.UUID;
 import java.util.stream.Stream;
-import net.clementlevallois.functions.model.FunctionPdfMatcher;
-import net.clementlevallois.functions.model.FunctionPdfRegionExtract;
 import net.clementlevallois.functions.model.Globals;
+import net.clementlevallois.functions.model.Globals.Names;
+import static net.clementlevallois.functions.model.Globals.Names.COOC;
+import static net.clementlevallois.functions.model.Globals.Names.PDF_REGION_EXTRACTOR;
 import net.clementlevallois.importers.model.ImagesPerFile;
 import net.clementlevallois.importers.model.SheetModel;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
-import net.clementlevallois.nocodeapp.web.front.functions.UmigonBean;
 import net.clementlevallois.nocodeapp.web.front.logview.BackToFrontMessengerBean;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.ApplicationPropertiesBean;
 import net.clementlevallois.nocodeapp.web.front.http.MicroserviceHttpClient;
@@ -98,7 +90,7 @@ public class DataImportBean implements Serializable {
     private List<ImagesPerFile> imagesPerFiles;
     private List<String> imageNamesOfCurrentFile;
     private Map<String, String> pdfsToBeExtracted;
-    private String currentFunction;
+    private Names currentFunctionName;
 
     private int tabIndex;
     private Properties privateProperties;
@@ -117,14 +109,13 @@ public class DataImportBean implements Serializable {
     @PostConstruct
     public void init() {
         dataInSheets = new ArrayList();
-        pdfsToBeExtracted = new HashMap();
         privateProperties = applicationProperties.getPrivateProperties();
         globals = new Globals(applicationProperties.getTempFolderFullPath());
 
     }
 
     public String readData() throws IOException, URISyntaxException {
-        currentFunction = sessionBean.getFunction();
+        currentFunctionName = sessionBean.getFunction();
         dataInSheets = new ArrayList();
         sessionBean.createJobId();
         pdfsToBeExtracted = new HashMap();
@@ -134,9 +125,7 @@ public class DataImportBean implements Serializable {
             sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "💔", sessionBean.getLocaleBundle().getString("general.message.no_file_upload_again"));
             return "";
         }
-
-        String gazeOption = sessionBean.getGazeOption();
-
+        
         Runnable incrementProgress = () -> {
             progress = progress + 1;
         };
@@ -148,6 +137,7 @@ public class DataImportBean implements Serializable {
                 continue;
             }
             Files.write(globals.getInputFileCompletePath(sessionBean.getJobId(), f.fileUniqueId()), f.bytes());
+            
             if (f.fileName().endsWith("xlsx")) {
                 source = Source.XLSX;
             } else if (f.fileName().endsWith("txt")) {
@@ -166,10 +156,10 @@ public class DataImportBean implements Serializable {
                     readExcelFile(f);
                 }
                 case TXT -> {
-                    readTextFile(f, gazeOption);
+                    readTextFile(f);
                 }
                 case CSV ->
-                    readCsvFile(f, gazeOption);
+                    readCsvFile(f);
                 case PDF -> {
                     readPdfFile(f);
                 }
@@ -186,10 +176,10 @@ public class DataImportBean implements Serializable {
         return "";
     }
 
-    private void readTextFile(FileUploaded f, String gazeOption) {
+    private void readTextFile(FileUploaded f) {
 
         setSelectedSheetName(f.fileName());
-        if (currentFunction.equals("gaze") && gazeOption.equals("1")) {
+        if (currentFunctionName == COOC) {
             setSelectedColumnIndex("0");
             microserviceClient.importService().post("/api/import/txt_cooc")
                     .addQueryParameter("jobId", sessionBean.getJobId())
@@ -215,8 +205,8 @@ public class DataImportBean implements Serializable {
 
     private void readPdfFile(FileUploaded f) {
         String localizedEmptyLineMessage = sessionBean.getLocaleBundle().getString("general.message.empty_line");
-        switch (currentFunction) {
-            case FunctionPdfRegionExtract.NAME ->
+        switch (currentFunctionName) {
+            case PDF_REGION_EXTRACTOR ->
                 microserviceClient.importService().post("/api/pdf/return-png")
                         .addQueryParameter("jobId", sessionBean.getJobId())
                         .addQueryParameter("fileUniqueId", f.fileUniqueId())
@@ -224,7 +214,7 @@ public class DataImportBean implements Serializable {
                         .addQueryParameter("localizedEmptyLineMessage", localizedEmptyLineMessage)
                         .sendAsync(HttpResponse.BodyHandlers.ofString());
 
-            case FunctionPdfMatcher.NAME ->
+            case PDF_MATCHER ->
                 microserviceClient.importService().post("/api/pdf/linesPerPage")
                         .addQueryParameter("jobId", sessionBean.getJobId())
                         .addQueryParameter("fileUniqueId", f.fileUniqueId())
@@ -239,11 +229,11 @@ public class DataImportBean implements Serializable {
         }
     }
 
-    private void readCsvFile(FileUploaded f, String gazeOption) {
+    private void readCsvFile(FileUploaded f) {
 
         setSelectedSheetName(f.fileName());
         // for co-occurrences, we consider all columns, starting from column zero.
-        if (currentFunction.equals("gaze") && gazeOption.equals("1")) {
+        if (currentFunctionName == COOC) {
             setSelectedColumnIndex("0");
         }
 
@@ -264,62 +254,31 @@ public class DataImportBean implements Serializable {
     }
 
     private void readExcelFile(FileUploaded file) {
-        HttpRequest request;
-        HttpClient client = HttpClient.newHttpClient();
-        Set<CompletableFuture> futures = new HashSet();
-        HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(file.bytes());
-        String gaze_option = "cooc";
-        if (sessionBean.getGazeOption().equals("2")) {
-            gaze_option = "sim";
-        }
-        URI uri = UrlBuilder
-                .empty()
-                .withScheme("http")
-                .withPort(Integer.valueOf(privateProperties.getProperty("nocode_import_port")))
-                .withHost("localhost")
-                .withPath("api/import/xlsx")
-                .addParameter("gaze_option", gaze_option)
-                .addParameter("separator", ",")
-                .toUri();
-        request = HttpRequest.newBuilder()
-                .POST(bodyPublisher)
-                .uri(uri)
-                .build();
-        CompletableFuture<Void> future = client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()).thenAccept(resp -> {
-            byte[] body = resp.body();
-            if (body.length >= 100 && !new String(body, StandardCharsets.UTF_8).toLowerCase().startsWith("internal") && !new String(body, StandardCharsets.UTF_8).toLowerCase().startsWith("not found")) {
-                try (
-                        ByteArrayInputStream bis = new ByteArrayInputStream(body); ObjectInputStream ois = new ObjectInputStream(bis)) {
-                    List<SheetModel> tempResults = (List<SheetModel>) ois.readObject();
-                    dataInSheets.addAll(tempResults);
-                } catch (Exception ex) {
-                    System.out.println("error in body:");
-                    System.out.println(new String(body, StandardCharsets.UTF_8));
-                    Logger.getLogger(UmigonBean.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            } else {
-                System.out.println("return of xlsx reader by the API was not a 200 code");
-                String errorMessage = new String(body, StandardCharsets.UTF_8);
-                System.out.println(errorMessage);
-                logBean.addOneNotificationFromString(errorMessage);
-                sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, errorMessage, errorMessage);
-            }
+        switch (currentFunctionName) {
+            case COOC ->
+                microserviceClient.importService().post("/api/import/xslx/cooc")
+                        .addQueryParameter("jobId", sessionBean.getJobId())
+                        .addQueryParameter("sheetName", selectedSheetName)
+                        .addQueryParameter("hasHeaders", Boolean.toString(hasHeaders))
+                        .sendAsync(HttpResponse.BodyHandlers.ofString());
 
-        }
-        );
-        futures.add(future);
-        CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(futures.toArray((new CompletableFuture[0])));
-        combinedFuture.join();
-        // for coocurrences the data must start at the leftest column
-        if (sessionBean.getGazeOption().equals("1")) {
-            setSelectedColumnIndex("0");
+            case SIM ->
+                microserviceClient.importService().post("/api/import/xslx/sim")
+                        .addQueryParameter("jobId", sessionBean.getJobId())
+                        .addQueryParameter("sheetName", selectedSheetName)
+                        .addQueryParameter("hasHeaders", Boolean.toString(hasHeaders))
+                        .sendAsync(HttpResponse.BodyHandlers.ofString());
+
+            default ->
+                System.out.println("reading excel file but not for COOC or SIM, weird!");
         }
         // by default the selected sheet is the first one of the workbook
         // this gets changed when the user selects a different sheet in the preview
         // there is a listener in the data table in the xhtml that sets the selected sheet
         // to the one currently selected by the user
+
         if (!dataInSheets.isEmpty()) {
-            setSelectedSheetName(dataInSheets.get(0).getName());
+            setSelectedSheetName(file.fileName());
         }
         progress = 100;
     }
@@ -388,7 +347,7 @@ public class DataImportBean implements Serializable {
         selectedColumnIndex = colIndex;
         selectedSheetName = sheetName;
         bulkData = false;
-        return "/" + currentFunction + "/" + currentFunction + ".xhtml?faces-redirect=true";
+        return "/" + currentFunctionName + "/" + currentFunctionName + ".xhtml?faces-redirect=true";
     }
 
     public String launchAnalysisForTwoColumnsDataset() {
@@ -411,18 +370,18 @@ public class DataImportBean implements Serializable {
             return "";
         }
 
-        return "/" + currentFunction + "/" + currentFunction + ".xhtml?faces-redirect=true";
+        return "/" + currentFunctionName + "/" + currentFunctionName + ".xhtml?faces-redirect=true";
     }
 
     public String gotToFunctionWithDataInBulk() {
         bulkData = true;
-        return "/" + currentFunction + "/" + currentFunction + ".xhtml?faces-redirect=true";
+        return "/" + currentFunctionName + "/" + currentFunctionName + ".xhtml?faces-redirect=true";
     }
 
     public String goToAnalysisForCooccurrences(String sheetName) {
         selectedColumnIndex = "0";
         selectedSheetName = sheetName;
-        return "/" + currentFunction + "/" + currentFunction + ".xhtml?faces-redirect=true";
+        return "/" + currentFunctionName + "/" + currentFunctionName + ".xhtml?faces-redirect=true";
     }
 
     public List<SheetModel> getDataInSheets() {

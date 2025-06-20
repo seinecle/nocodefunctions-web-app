@@ -31,16 +31,13 @@ import jakarta.servlet.annotation.MultipartConfig;
 import java.io.StringReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
 import java.util.Iterator;
 import java.util.TreeMap;
-import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.concurrent.CompletionException;
-import net.clementlevallois.importers.model.DataFormatConverter;
 import net.clementlevallois.nocodeapp.web.front.MessageFromApi;
 import net.clementlevallois.nocodeapp.web.front.WatchTower;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.LocaleComparator;
@@ -160,13 +157,11 @@ public class WorkflowTopicsBean implements Serializable {
         runButtonDisabled = true;
 
         try {
-            if (simpleLinesImportBean.getJobId() != null) {
-                this.jobId = simpleLinesImportBean.getJobId();
+            if (sessionBean.getJobId() != null) {
+                this.jobId = sessionBean.getJobId();
             } else {
-                generateInputDataAndDataId();
-                if (this.jobId == null || this.jobId.isEmpty()) {
-                    LOG.warning("No data found to generate input file.");
-                }
+                LOG.warning("No data found to generate input file.");
+                return;
             }
 
             var requestBuilder = microserviceClient.api().post(WorkflowTopicsProps.ENDPOINT);
@@ -321,50 +316,6 @@ public class WorkflowTopicsBean implements Serializable {
     public void navigateToResults(AjaxBehaviorEvent event) {
         FacesContext context = FacesContext.getCurrentInstance();
         context.getApplication().getNavigationHandler().handleNavigation(context, null, "/" + WorkflowTopicsProps.NAME + "/" + Globals.RESULTS_PAGE + Globals.FACES_REDIRECT);
-    }
-
-    public void generateInputDataAndDataId() {
-        jobId = UUID.randomUUID().toString().substring(0, 10);
-        LOG.log(Level.INFO, "Generating input data for dataId: {0}", jobId);
-        try {
-            Path tempFolderForAllTasks = applicationProperties.getTempFolderFullPath();
-            Path tempFolderForThisTask = Path.of(tempFolderForAllTasks.toString(), jobId);
-            Files.createDirectories(tempFolderForThisTask);
-
-            if (mapOfLines == null || mapOfLines.isEmpty()) {
-                DataFormatConverter dataFormatConverter = new DataFormatConverter();
-                mapOfLines = dataFormatConverter.convertToMapOfLines(
-                        inputData.getBulkData(),
-                        inputData.getDataInSheets(),
-                        inputData.getSelectedSheetName(),
-                        inputData.getSelectedColumnIndex(),
-                        inputData.getHasHeaders()
-                );
-
-                if (mapOfLines == null || mapOfLines.isEmpty()) {
-                    LOG.warning("No data found to generate input file.");
-                    logBean.addOneNotificationFromString("No data found for analysis.");
-                    jobId = null;
-                    return;
-                }
-            }
-
-            StringBuilder sb = new StringBuilder();
-            for (Map.Entry<Integer, String> entry : mapOfLines.entrySet()) {
-                if (entry.getValue() == null) {
-                    continue;
-                }
-                sb.append(entry.getValue().trim()).append("\n");
-            }
-            Path fullPathToInputFile = Path.of(tempFolderForThisTask.toString(), jobId);
-            Files.writeString(fullPathToInputFile, sb.toString(), StandardCharsets.UTF_8, StandardOpenOption.CREATE,
-                    StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
-
-        } catch (IOException ex) {
-            LOG.log(Level.SEVERE, "Error generating input data file", ex);
-            logBean.addOneNotificationFromString("Error preparing input data: " + ex.getMessage());
-            jobId = null;
-        }
     }
 
     private void processParsedResults() {

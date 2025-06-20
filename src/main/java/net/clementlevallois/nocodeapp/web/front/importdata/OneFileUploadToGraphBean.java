@@ -9,6 +9,7 @@ import java.nio.file.Path;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import net.clementlevallois.functions.model.Globals;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.ApplicationPropertiesBean;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.logview.BackToFrontMessengerBean;
@@ -43,7 +44,7 @@ public class OneFileUploadToGraphBean {
             }
             FileUploaded fileUploaded = new FileUploaded(f.getInputStream(), f.getFileName());
 
-            String currentFunction = sessionBean.getFunction();
+            Globals.Names currentFunction = sessionBean.getFunction();
 
             if (currentFunction == null) {
                 logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.error_function_not_set"));

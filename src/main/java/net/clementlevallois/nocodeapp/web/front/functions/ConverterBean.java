@@ -25,7 +25,6 @@ import net.clementlevallois.functions.model.Globals;
 import static net.clementlevallois.functions.model.Globals.GlobalQueryParams.CALLBACK_URL;
 import static net.clementlevallois.functions.model.Globals.GlobalQueryParams.JOB_ID;
 import static net.clementlevallois.functions.model.Globals.GlobalQueryParams.SESSION_ID;
-import net.clementlevallois.functions.model.WorkflowGazeProps;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.exportdata.ExportToVosViewer;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.ApplicationPropertiesBean;
