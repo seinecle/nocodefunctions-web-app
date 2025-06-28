@@ -43,7 +43,7 @@ public class WorkflowCowoService {
     @Inject
     ApplicationPropertiesBean applicationProperties;
 
-    public CowoFlowState.Processing startAnalysis(CowoFlowState.AwaitingParameters currentState, String sessionId) {
+    public CowoState.Processing startAnalysis(CowoState.AwaitingParameters currentState, String sessionId) {
         String jobId = currentState.jobId();
         String correctionType = currentState.usePMI() ? "pmi" : "none";
 
@@ -121,10 +121,10 @@ public class WorkflowCowoService {
                     return null;
                 });
 
-        return new CowoFlowState.Processing(jobId, currentState, 0);
+        return new CowoState.Processing(jobId, currentState, 0);
     }
 
-    public CowoFlowState checkCompletion(CowoFlowState.Processing currentState, String sessionId) {
+    public CowoState checkCompletion(CowoState.Processing currentState, String sessionId) {
         String jobId = currentState.jobId();
         Globals globals = new Globals(applicationProperties.getTempFolderFullPath());
         Path pathSignalWorkflowComplete = globals.getWorkflowCompleteFilePath(jobId);
@@ -139,7 +139,7 @@ public class WorkflowCowoService {
                 if (jobId.equals(msg.getjobId())) {
                     if (msg.getInfo() == MessageFromApi.Information.ERROR) {
                         messagesFromApi.remove(msg);
-                        return new CowoFlowState.FlowFailed(jobId, currentState.parameters(), msg.getMessage());
+                        return new CowoState.FlowFailed(jobId, currentState.parameters(), msg.getMessage());
                     }
                     if (msg.getInfo() == MessageFromApi.Information.PROGRESS && msg.getProgress() != null) {
                         messagesFromApi.remove(msg);
@@ -151,7 +151,7 @@ public class WorkflowCowoService {
         return currentState; // No change
     }
 
-    private CowoFlowState finishAnalysis(CowoFlowState.Processing currentState) {
+    private CowoState finishAnalysis(CowoState.Processing currentState) {
         String jobId = currentState.jobId();
         Globals globals = new Globals(applicationProperties.getTempFolderFullPath());
         WorkflowCowoProps props = new WorkflowCowoProps(applicationProperties.getTempFolderFullPath());
@@ -171,11 +171,11 @@ public class WorkflowCowoService {
             int minFreqNode = jsonObject.getJsonObject("metadata").getInt("minFreqNode");
             int maxFreqNode = jsonObject.getJsonObject("metadata").getInt("maxFreqNode");
 
-            return new CowoFlowState.ResultsReady(jobId, gexf, nodesAsJson, edgesAsJson, minFreqNode, maxFreqNode, false, false);
+            return new CowoState.ResultsReady(jobId, gexf, nodesAsJson, edgesAsJson, minFreqNode, maxFreqNode, false, false);
 
-        } catch (Exception e) {
+        } catch (IOException e) {
             LOG.log(Level.SEVERE, "Error finalizing analysis for job " + jobId, e);
-            return new CowoFlowState.FlowFailed(jobId, currentState.parameters(), "Could not read result files: " + e.getMessage());
+            return new CowoState.FlowFailed(jobId, currentState.parameters(), "Could not read result files: " + e.getMessage());
         }
     }
 }

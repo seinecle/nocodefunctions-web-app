@@ -14,7 +14,7 @@ import org.primefaces.model.file.UploadedFile;
  * instance of CowoFlowState must be one of the permitted record types, allowing
  * for exhaustive, compile-time-checked pattern matching.
  */
-public sealed interface CowoFlowState {
+public sealed interface CowoState {
 
     String jobId();
 
@@ -36,7 +36,7 @@ public sealed interface CowoFlowState {
             boolean replaceStopwords,
             boolean usePMI,
             UploadedFile fileUserStopwords,
-            int minCharNumber) implements CowoFlowState {
+            int minCharNumber) implements CowoState {
 
         public AwaitingParameters withSelectedLanguages(List<String> newLanguages) {
             return new AwaitingParameters(jobId, newLanguages, minTermFreq, maxNGram, removeNonAsciiCharacters, scientificCorpus, firstNames, lemmatize, replaceStopwords, usePMI, fileUserStopwords, minCharNumber);
@@ -81,6 +81,10 @@ public sealed interface CowoFlowState {
         public AwaitingParameters withMinCharNumber(int newMinChar) {
             return new AwaitingParameters(jobId, selectedLanguages, minTermFreq, maxNGram, removeNonAsciiCharacters, scientificCorpus, firstNames, lemmatize, replaceStopwords, usePMI, fileUserStopwords, newMinChar);
         }
+        
+        public AwaitingParameters withJobId(String newJobId) {
+            return new AwaitingParameters(newJobId, selectedLanguages, minTermFreq, maxNGram, removeNonAsciiCharacters, scientificCorpus, firstNames, lemmatize, replaceStopwords, usePMI, fileUserStopwords, minCharNumber);
+        }
     }
 
     /**
@@ -91,7 +95,7 @@ public sealed interface CowoFlowState {
     record Processing(
             String jobId,
             AwaitingParameters parameters,
-            int progress) implements CowoFlowState {
+            int progress) implements CowoState {
 
         public Processing withProgress(int newProgress) {
             return new Processing(jobId, parameters, newProgress);
@@ -110,7 +114,7 @@ public sealed interface CowoFlowState {
             int minFreqNode,
             int maxFreqNode,
             boolean shareVVPublicly,
-            boolean shareGephiLitePublicly) implements CowoFlowState {
+            boolean shareGephiLitePublicly) implements CowoState {
         
         public ResultsReady withShareVVPublicly(boolean newFlag){
             return new ResultsReady(jobId, gexf, nodesAsJson, edgesAsJson, minFreqNode, maxFreqNode, newFlag, shareGephiLitePublicly);
@@ -128,6 +132,6 @@ public sealed interface CowoFlowState {
     record FlowFailed(
             String jobId,
             AwaitingParameters parameters,
-            String errorMessage) implements CowoFlowState {
+            String errorMessage) implements CowoState {
     }
 }

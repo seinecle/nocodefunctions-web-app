@@ -6,10 +6,8 @@ package net.clementlevallois.nocodeapp.web.front.flows;
 
 import jakarta.enterprise.context.SessionScoped;
 import jakarta.faces.application.FacesMessage;
-import jakarta.faces.context.FacesContext;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -34,11 +32,30 @@ public class CowoDataInputBean implements Serializable {
     @Inject
     private SessionBean sessionBean;
 
+    @Inject
+    private WorkflowSessionBean workflowSessionBean;
+
     public void init() {
         this.jobId = null;
         this.url = null;
         this.websiteUrl = null;
         this.uploadedFileNames.clear();
+        // Initialize with default parameters
+        CowoState.AwaitingParameters awaitingParameters = new CowoState.AwaitingParameters(
+                jobId,
+                new ArrayList<>(), // selectedLanguages
+                2, // minTermFreq
+                4, // maxNGram
+                false, // removeNonAsciiCharacters
+                false, // scientificCorpus
+                true, // firstNames
+                true, // lemmatize
+                false, // replaceStopwords
+                false, // usePMI
+                null, // fileUserStopwords
+                4 // minCharNumber
+        );
+        workflowSessionBean.setCowoState(awaitingParameters);
     }
 
     public void handleFileUpload(FileUploadEvent event) {
@@ -90,15 +107,17 @@ public class CowoDataInputBean implements Serializable {
     public String proceedToParameters() {
         if (jobId == null) {
             sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Error", "You must first import at least one data source.");
-            return null; // Stay on the same page
-        }
-        try {
-            FacesContext.getCurrentInstance().getExternalContext().redirect("workflow-cowo.html?faces-redirect=true");
-            return "workflow-cowo.html?faces-redirect=true";
-        } catch (IOException e) {
-            sessionBean.addMessage(FacesMessage.SEVERITY_FATAL, "Navigation Error", "Could not redirect to the parameters page.");
             return null;
         }
+
+        CowoState currentState = workflowSessionBean.getCowoState();
+
+
+        if (currentState instanceof CowoState.AwaitingParameters p) {
+            workflowSessionBean.setCowoState(p.withJobId(this.jobId));
+        }
+
+        return "workflow-cowo?faces-redirect=true";
     }
 
     public boolean isDataReady() {

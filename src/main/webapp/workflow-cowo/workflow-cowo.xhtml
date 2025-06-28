@@ -215,7 +215,7 @@
                                            labelTemplate="{value}%" styleClass="p-mt-3" global="false" interval="500">
                             </p:progressBar>
                             <h:panelGroup id="pollingArea">
-                                <p:poll listener="#{workflowCowoBean.pollingListener()}" process="pollingArea" update="pollingArea :notifications generalForm" interval="2" rendered="#{workflowCowoBean.shouldPoll}"/>
+                                <p:poll listener="#{workflowCowoBean.pollingListener()}" process="pollingArea" update="pollingArea :notifications generalForm" interval="2"/>
                             </h:panelGroup>
                         </h:form>
                     </p:panel>
