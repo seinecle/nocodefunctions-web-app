@@ -80,13 +80,20 @@ public class WorkflowSimBean implements Serializable {
 
     @Inject
     private MicroserviceHttpClient microserviceClient;
+    
+    
+    @Inject
+    private ExportToVosViewer exportToVosViewer;
+
+    @Inject
+    private ExportToGephiLite exportToGephiLite;
 
     public WorkflowSimBean() {
     }
 
     @PostConstruct
     public void init() {
-        sessionBean.setFunction(WorkflowSimProps.NAME);
+        sessionBean.setFunctionName(WorkflowSimProps.NAME);
         sessionId = FacesContext.getCurrentInstance().getExternalContext().getSessionId(false);
         props = new WorkflowSimProps(applicationProperties.getTempFolderFullPath());
         globals = new Globals(applicationProperties.getTempFolderFullPath());
@@ -183,10 +190,7 @@ public class WorkflowSimBean implements Serializable {
     }
 
     public void gotoVV() {
-        Path userGeneratedVosviewerDirectoryFullPath = applicationProperties.getUserGeneratedVosviewerDirectoryFullPath(shareVVPublicly);
-        Path relativePathFromProjectRootToVosviewerFolder = applicationProperties.getRelativePathFromProjectRootToVosviewerFolder();
-        Path vosviewerRootFullPath = applicationProperties.getVosviewerRootFullPath();
-        String linkToVosViewer = ExportToVosViewer.finishOpsFromGraphAsJson(jobId, userGeneratedVosviewerDirectoryFullPath, relativePathFromProjectRootToVosviewerFolder, vosviewerRootFullPath);
+        String linkToVosViewer = exportToVosViewer.finishOpsFromGraphAsJson(jobId, shareVVPublicly);
         if (linkToVosViewer != null && !linkToVosViewer.isBlank()) {
             try {
                 ExternalContext externalContext = FacesContext.getCurrentInstance().getExternalContext();
@@ -205,10 +209,7 @@ public class WorkflowSimBean implements Serializable {
             sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "Navigation Error", "Analysis ID not set. Cannot navigate to Gephi Lite.");
             return;
         }
-        Path userGeneratedGephiLiteDirectoryFullPath = applicationProperties.getUserGeneratedGephiLiteDirectoryFullPath(shareGephiLitePublicly);
-        Path relativePathFromProjectRootToGephiLiteFolder = applicationProperties.getRelativePathFromProjectRootToGephiLiteFolder();
-        Path gephiLiteRootFullPath = applicationProperties.getGephiLiteRootFullPath();
-        String urlToGephiLite = ExportToGephiLite.exportAndReturnLink(jobId, userGeneratedGephiLiteDirectoryFullPath, relativePathFromProjectRootToGephiLiteFolder, gephiLiteRootFullPath);
+        String urlToGephiLite = exportToGephiLite.exportAndReturnLinkFromId(jobId,shareGephiLitePublicly);
         if (urlToGephiLite != null && !urlToGephiLite.isBlank()) {
             ExternalContext externalContext = FacesContext.getCurrentInstance().getExternalContext();
             try {

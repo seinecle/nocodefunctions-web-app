@@ -80,7 +80,7 @@ public class PdfMatcherBean implements Serializable {
 
     @PostConstruct
     public void init() {
-        sessionBean.setFunction(FunctionPdfMatcher.NAME);
+        sessionBean.setFunctionName(FunctionPdfMatcher.NAME);
         results = new ConcurrentHashMap();
         sessionId = FacesContext.getCurrentInstance().getExternalContext().getSessionId(false);
 
@@ -273,7 +273,7 @@ public class PdfMatcherBean implements Serializable {
 
             PrimeFaces.current().ajax().update("formComputeButton:computeButton", "notifications", "progressComponentId");
 
-            return "/" + sessionBean.getFunction() + "/results.xhtml?faces-redirect=true";
+            return "/" + sessionBean.getFunctionName() + "/results.xhtml?faces-redirect=true";
 
         } catch (CompletionException cex) {
             Throwable cause = cex.getCause();

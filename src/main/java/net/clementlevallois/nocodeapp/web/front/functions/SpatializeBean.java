@@ -55,7 +55,7 @@ public class SpatializeBean implements Serializable {
 
     @PostConstruct
     public void init() {
-        sessionBean.setFunction(FunctionSpatialization.NAME);
+        sessionBean.setFunctionName(FunctionSpatialization.NAME);
     }
 
     public String logout() {

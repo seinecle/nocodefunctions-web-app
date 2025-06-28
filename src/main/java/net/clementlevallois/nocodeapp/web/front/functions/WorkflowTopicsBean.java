@@ -136,7 +136,7 @@ public class WorkflowTopicsBean implements Serializable {
         logBean.setSessionId(sessionId);
         props = new WorkflowTopicsProps(applicationProperties.getTempFolderFullPath());
         globals = new Globals(applicationProperties.getTempFolderFullPath());
-        sessionBean.setFunction(WorkflowTopicsProps.NAME);
+        sessionBean.setFunctionName(WorkflowTopicsProps.NAME);
     }
 
     public Integer getProgress() {

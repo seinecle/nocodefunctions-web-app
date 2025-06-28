@@ -89,7 +89,7 @@ public class OrganicBean implements Serializable {
 
     @PostConstruct
     public void init() {
-        sessionBean.setFunction(FunctionOrganic.NAME);
+        sessionBean.setFunctionName(FunctionOrganic.NAME);
         String promoted_tone = sessionBean.getLocaleBundle().getString("organic.general.soundspromoted");
         String neutral_tone = sessionBean.getLocaleBundle().getString("organic.general.soundsorganic");
         tones = new String[]{promoted_tone, neutral_tone};
@@ -299,7 +299,7 @@ public class OrganicBean implements Serializable {
 
             PrimeFaces.current().ajax().update("formComputeButton:computeButton", "notifications", "resultsButtonPanel");
 
-            return "/" + sessionBean.getFunction() + "/results.xhtml?faces-redirect=true";
+            return "/" + sessionBean.getFunctionName() + "/results.xhtml?faces-redirect=true";
 
         } catch (CompletionException cex) {
             Throwable cause = cex.getCause();

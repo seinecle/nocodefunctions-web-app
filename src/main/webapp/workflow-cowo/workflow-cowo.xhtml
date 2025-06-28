@@ -188,12 +188,7 @@
                                         </p:selectBooleanCheckbox>
                                         <br/>
                                         <br/>
-                                        <p:selectBooleanCheckbox value="#{workflowCowoBean.okToShareStopwords}" itemLabel="#{text['general.message.ok_sharing_stopwords']}">
-                                            <p:ajax/>
-                                        </p:selectBooleanCheckbox>                                        
-                                        <br/>
-                                        <br/>
-                                        <p:commandButton value="#{text['general.verbs.confirm_options']}" ajax="false" action="#{workflowCowoBean.uploadStopWordFile}" styleClass="p-mt-3 ui-button-outlined p-d-block"/> 
+                                        <p:commandButton value="#{text['general.verbs.confirm_options']}" ajax="false" styleClass="p-mt-3 ui-button-outlined p-d-block"/> 
                                     </p>
                                 </h:form>
                             </p:tab>
@@ -220,7 +215,7 @@
                                            labelTemplate="{value}%" styleClass="p-mt-3" global="false" interval="500">
                             </p:progressBar>
                             <h:panelGroup id="pollingArea">
-                                <p:poll listener="#{workflowCowoBean.pollingDidTopNodesArrive}" process="pollingArea" update="pollingArea :notifications generalForm" interval="2" />
+                                <p:poll listener="#{workflowCowoBean.pollingListener()}" process="pollingArea" update="pollingArea :notifications generalForm" interval="2" rendered="#{workflowCowoBean.shouldPoll}"/>
                             </h:panelGroup>
                         </h:form>
                     </p:panel>

@@ -12,6 +12,7 @@ import java.util.concurrent.CompletionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import net.clementlevallois.functions.model.Globals;
+import net.clementlevallois.functions.model.Globals.Names;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.ApplicationPropertiesBean;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.http.MicroserviceHttpClient;
@@ -51,7 +52,7 @@ public class OneFileUploadToSimpleLinesBean {
 
             byte[] fileAllBytes = f.getInputStream().readAllBytes();
             String fileName = f.getFileName();
-            Globals.Names currentFunction = sessionBean.getFunction();
+            Globals.Names currentFunction = Names.valueOf(sessionBean.getFunctionName());
 
             if (currentFunction == null) {
                 logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.error_function_not_set"));

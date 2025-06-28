@@ -1,8 +1,10 @@
 /*
- * Copyright Clement Levallois 2021-2024. License Attribution 4.0 Intertnational (CC BY 4.0)
+ * Copyright Clement Levallois 2021-2025. License Attribution 4.0 Intertnational (CC BY 4.0)
  */
 package net.clementlevallois.nocodeapp.web.front.exportdata;
 
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -15,55 +17,110 @@ import net.clementlevallois.nocodeapp.web.front.backingbeans.ApplicationProperti
 import net.clementlevallois.nocodeapp.web.front.http.RemoteLocal;
 
 /**
+ * An application-scoped bean for handling data exports to Gephi Lite.
  *
- * @author LEVALLOIS
+ * This service takes data, either from a persisted file or a GEXF string,
+ * places it in an accessible location, and generates a URL for visualization
+ * in Gephi Lite.
  */
+@ApplicationScoped
 public class ExportToGephiLite {
 
-    public static String exportAndReturnLink(boolean shareGephiLitePublicly, String dataPersistenceUniqueId, ApplicationPropertiesBean applicationProperties) {
+    private static final Logger LOG = Logger.getLogger(ExportToGephiLite.class.getName());
+
+    @Inject
+    private ApplicationPropertiesBean applicationProperties;
+
+    /**
+     * Creates a Gephi Lite link by copying a result file identified by its unique persistence ID.
+     *
+     * @param dataPersistenceUniqueId The unique ID corresponding to the data file in the temp directory.
+     * @param shareGephiLitePublicly  If true, the generated link will be in a publicly accessible folder.
+     * @return A URL to the Gephi Lite visualization, or an empty string on failure.
+     */
+    public String exportAndReturnLinkFromId(String dataPersistenceUniqueId, boolean shareGephiLitePublicly) {
+        Path userGeneratedGephiLiteDirectoryFullPath = applicationProperties.getUserGeneratedGephiLiteDirectoryFullPath(shareGephiLitePublicly);
+        Path sourceFile = applicationProperties.getTempFolderFullPath().resolve(dataPersistenceUniqueId + "_result");
+
+        if (!Files.exists(sourceFile)) {
+            LOG.log(Level.SEVERE, "Source file for Gephi Lite export does not exist: {0}", sourceFile);
+            return "";
+        }
+
+        // Generate a unique, non-negative file name
+        long randomId = ThreadLocalRandom.current().nextLong(Long.MAX_VALUE);
+        String gephiLiteGexfFileName = "gephi-lite_" + randomId + ".gexf";
+        Path destinationFile = userGeneratedGephiLiteDirectoryFullPath.resolve(gephiLiteGexfFileName);
+
+        try {
+            Files.createDirectories(destinationFile.getParent());
+            Files.copy(sourceFile, destinationFile, StandardCopyOption.REPLACE_EXISTING);
+            LOG.log(Level.INFO, "Copied Gephi Lite file to: {0}", destinationFile);
+        } catch (IOException ex) {
+            LOG.log(Level.SEVERE, "Could not copy Gephi Lite file from {0} to {1}", new Object[]{sourceFile, destinationFile});
+            LOG.log(Level.SEVERE, "Exception details:", ex);
+            return "";
+        }
+
+        return generateFinalUrl(destinationFile);
+    }
+
+    /**
+     * Creates a Gephi Lite link from a GEXF graph provided as a string.
+     *
+     * @param gexf                   The GEXF graph content as a String.
+     * @param shareGephiLitePublicly If true, the link will be publicly accessible.
+     * @return A URL to the Gephi Lite visualization, or an empty string on failure.
+     */
+    public String exportAndReturnLinkFromString(String gexf, boolean shareGephiLitePublicly) {
+        if (gexf == null || gexf.isBlank()) {
+            LOG.warning("GEXF string provided for Gephi Lite export was null or empty.");
+            return "";
+        }
+
+        Path userGeneratedGephiLiteDirectoryFullPath = applicationProperties.getUserGeneratedGephiLiteDirectoryFullPath(shareGephiLitePublicly);
+
+        // Generate a unique, non-negative file name
+        long randomId = ThreadLocalRandom.current().nextLong(Long.MAX_VALUE);
+        String gephiLiteGexfFileName = "gephi-lite_" + randomId + ".gexf";
+        Path destinationFile = userGeneratedGephiLiteDirectoryFullPath.resolve(gephiLiteGexfFileName);
+
+        try {
+            Files.createDirectories(destinationFile.getParent());
+            Files.writeString(destinationFile, gexf, StandardCharsets.UTF_8);
+            LOG.log(Level.INFO, "Wrote Gephi Lite GEXF string to: {0}", destinationFile);
+        } catch (IOException ex) {
+            LOG.log(Level.SEVERE, "Error writing user-generated GEXF file for Gephi Lite to: " + destinationFile, ex);
+            return "";
+        }
+
+        return generateFinalUrl(destinationFile);
+    }
+
+    /**
+     * Private helper to construct the final URL for the Gephi Lite file.
+     *
+     * @param fullPathToGeneratedFile The full path to the newly created GEXF file.
+     * @return A URL pointing to the Gephi Lite instance with the file loaded.
+     */
+    private String generateFinalUrl(Path fullPathToGeneratedFile) {
+        if (RemoteLocal.isLocal()) {
+            // For local development, return the direct file system path.
+            return fullPathToGeneratedFile.toString();
+        }
+
         Path relativePathFromProjectRootToGephiLiteFolder = applicationProperties.getRelativePathFromProjectRootToGephiLiteFolder();
         Path gephiLiteRootFullPath = applicationProperties.getGephiLiteRootFullPath();
-        Path userGeneratedGephiLiteDirectoryFullPath = applicationProperties.getUserGeneratedGephiLiteDirectoryFullPath(shareGephiLitePublicly);
-        Path tempFolderRelativePath = Path.of(applicationProperties.getTempFolderFullPath().toString(), dataPersistenceUniqueId + "_result");
-        long nextLong = ThreadLocalRandom.current().nextLong();
-        String gephiLiteGexfFileName = "gephi-lite_" + String.valueOf(Math.abs(nextLong)) + ".gexf";
 
-        Path fullPathFileToWrite = userGeneratedGephiLiteDirectoryFullPath.resolve(Path.of(gephiLiteGexfFileName));
-        if (Files.exists(tempFolderRelativePath)) {
-            try {
-                Files.copy(tempFolderRelativePath, fullPathFileToWrite, StandardCopyOption.REPLACE_EXISTING);
-            } catch (IOException ex) {
-                Logger.getLogger(ExportToGephiLite.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
+        // Base URL for the Gephi Lite application
+        String urlWithoutParamValue = RemoteLocal.getDomain() + "/" + relativePathFromProjectRootToGephiLiteFolder.toString().replace("\\", "/") + "/index.html?file=";
 
-        if (RemoteLocal.isLocal()) {
-            return fullPathFileToWrite.toString();
-        }
-        String urlWithoutParamValue = RemoteLocal.getDomain() + "/" + relativePathFromProjectRootToGephiLiteFolder + "/index.html?file=";
-        Path relativePathToGephiLiteFile = gephiLiteRootFullPath.relativize(fullPathFileToWrite);
-        String fullUrl = urlWithoutParamValue + relativePathToGephiLiteFile;
-        return fullUrl;
-    }
-    
-        public static String exportAndReturnLink(String gexf, Path directoryToSaveFile, Path relativePathFromProjectRootToGephiLiteFolder, Path gephiLiteRootFullPath) {
-        long nextLong = ThreadLocalRandom.current().nextLong();
-        String gephiLiteGexfFileName = "gephi-lite_" + String.valueOf(Math.abs(nextLong)) + ".gexf";
+        // The path to the file must be relative to the Gephi Lite web application's root
+        Path relativePathToGephiLiteFile = gephiLiteRootFullPath.relativize(fullPathToGeneratedFile);
 
-        Path fullPathFileToWrite = directoryToSaveFile.resolve(Path.of(gephiLiteGexfFileName));
-        try {
-            Files.writeString(fullPathFileToWrite, gexf, StandardCharsets.UTF_8);
-        } catch (IOException ex) {
-            System.out.println("error when writing user generated gexf file to disk for export to Gephi Lite");
-            System.out.println("ex: " + ex);
-        }
-        if (RemoteLocal.isLocal()) {
-            return fullPathFileToWrite.toString();
-        }
+        String fullUrl = urlWithoutParamValue + relativePathToGephiLiteFile.toString().replace("\\", "/");
 
-        String urlWithoutParamValue = RemoteLocal.getDomain() + "/" + relativePathFromProjectRootToGephiLiteFolder + "/index.html?file=";
-        Path relativePathToGephiLiteFile = gephiLiteRootFullPath.relativize(fullPathFileToWrite);
-        String fullUrl = urlWithoutParamValue + relativePathToGephiLiteFile;
+        LOG.log(Level.INFO, "Generated Gephi Lite public URL: {0}", fullUrl);
         return fullUrl;
     }
 }

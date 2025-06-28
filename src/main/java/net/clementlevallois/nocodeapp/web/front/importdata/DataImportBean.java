@@ -115,7 +115,7 @@ public class DataImportBean implements Serializable {
     }
 
     public String readData() throws IOException, URISyntaxException {
-        currentFunctionName = sessionBean.getFunction();
+        currentFunctionName = Names.valueOf(sessionBean.getFunctionName());
         dataInSheets = new ArrayList();
         sessionBean.createJobId();
         pdfsToBeExtracted = new HashMap();

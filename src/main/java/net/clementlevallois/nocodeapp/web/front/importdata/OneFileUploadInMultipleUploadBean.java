@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import net.clementlevallois.functions.model.Globals;
+import net.clementlevallois.functions.model.Globals.Names;
 import static net.clementlevallois.functions.model.Globals.Names.PDF_REGION_EXTRACTOR;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.logview.BackToFrontMessengerBean;
@@ -37,7 +38,7 @@ public class OneFileUploadInMultipleUploadBean {
                 return;
             }
 
-            Globals.Names currentFunction = sessionBean.getFunction();
+            Globals.Names currentFunction = Names.valueOf(sessionBean.getFunctionName());
 
             if (currentFunction == null) {
                 logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.error_function_not_set"));

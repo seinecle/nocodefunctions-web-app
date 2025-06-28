@@ -87,7 +87,7 @@ public class CommunityInsightsBean implements Serializable {
 
     @PostConstruct
     public void init() {
-        sessionBean.setFunction("community-insights");
+        sessionBean.setFunctionName("community-insights");
         runButtonText = sessionBean.getLocaleBundle().getString("general.verbs.compute");
         sessionId = FacesContext.getCurrentInstance().getExternalContext().getSessionId(false);
         logBean.setSessionId(sessionId);

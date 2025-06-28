@@ -70,12 +70,14 @@ public class SessionBean implements Serializable {
         this.applicationProperties = applicationProperties;
     }
 
-    public Names getFunction() {
-        return functionName;
+    public String getFunctionName() {
+        if (functionName == null){
+            return "";
+        }
+        return functionName.getDescription();
     }
 
-    public void setFunction(String function) {
-
+    public void setFunctionName(String function) {
         if (function == null) {
             System.out.println("function param was null??");
             return;
@@ -83,11 +85,11 @@ public class SessionBean implements Serializable {
         if (function.contains("=") & !function.contains("?")) {
             System.out.println("weird url parameters decoded in sessionBean");
             System.out.println("url param for function is: " + function);
-            this.functionName = Names.valueOf(function.split("=")[1]);
+            this.functionName = Names.fromDescription(function.split("=")[1]);
         } else if (function.contains("=") & function.contains("?")) {
-            this.functionName = Names.valueOf(function.split("\\?")[0]);
+            this.functionName = Names.fromDescription(function.split("\\?")[0]);
         } else {
-            this.functionName = Names.valueOf(function);
+            this.functionName = Names.fromDescription(function);
         }
     }
 

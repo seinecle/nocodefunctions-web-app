@@ -88,7 +88,7 @@ public class UmigonBean implements Serializable {
 
     @PostConstruct
     public void init() {
-        sessionBean.setFunction(FunctionUmigon.NAME);
+        sessionBean.setFunctionName(FunctionUmigon.NAME);
         sessionId = FacesContext.getCurrentInstance().getExternalContext().getSessionId(false);
         String positive_tone = sessionBean.getLocaleBundle().getString("general.nouns.sentiment_positive");
         String negative_tone = sessionBean.getLocaleBundle().getString("general.nouns.sentiment_negative");

@@ -28,6 +28,7 @@ import static net.clementlevallois.functions.model.Globals.GlobalQueryParams.SES
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.exportdata.ExportToVosViewer;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.ApplicationPropertiesBean;
+import net.clementlevallois.nocodeapp.web.front.exportdata.ExportToGephiLite;
 import net.clementlevallois.nocodeapp.web.front.http.MicroserviceHttpClient;
 import net.clementlevallois.nocodeapp.web.front.http.RemoteLocal;
 import org.primefaces.event.FileUploadEvent;
@@ -54,7 +55,6 @@ public class ConverterBean implements Serializable {
     private boolean shareVVPublicly;
 
     private StreamedContent gexfFileToSave;
-    private Properties privateProperties;
 
     private String jobId;
     private String sessionId;
@@ -66,6 +66,9 @@ public class ConverterBean implements Serializable {
     ApplicationPropertiesBean applicationProperties;
 
     @Inject
+    private ExportToVosViewer exportToVosViewer;
+    
+    @Inject
     private MicroserviceHttpClient httpClient;
 
     public ConverterBean() {
@@ -73,8 +76,7 @@ public class ConverterBean implements Serializable {
 
     @PostConstruct
     public void init() {
-        sessionBean.setFunction(FunctionNetworkConverter.NAME);
-        privateProperties = applicationProperties.getPrivateProperties();
+        sessionBean.setFunctionName(FunctionNetworkConverter.NAME);
         uploadButtonMessage = sessionBean.getLocaleBundle().getString("general.message.choose_gexf_file");
         sessionId = FacesContext.getCurrentInstance().getExternalContext().getSessionId(false);
     }
@@ -111,7 +113,7 @@ public class ConverterBean implements Serializable {
     }
 
     public void gotoVV() {
-        String linkToVosViewer = ExportToVosViewer.exportAndReturnLinkForConversionToVV(httpClient, jobId, shareVVPublicly, applicationProperties, item, link, linkStrength);
+        String linkToVosViewer = exportToVosViewer.exportAndReturnLinkForConversionToVV(jobId, shareVVPublicly, item, link, linkStrength);
         if (linkToVosViewer != null && !linkToVosViewer.isBlank()) {
             try {
                 ExternalContext externalContext = FacesContext.getCurrentInstance().getExternalContext();

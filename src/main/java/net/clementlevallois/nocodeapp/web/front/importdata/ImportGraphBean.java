@@ -79,7 +79,7 @@ public class ImportGraphBean implements Serializable {
     }
 
     public String gotToFunctionWithDataInBulk() {
-        return "/" + sessionBean.getFunction() + "/" + sessionBean.getFunction() + ".xhtml?faces-redirect=true";
+        return "/" + sessionBean.getFunctionName() + "/" + sessionBean.getFunctionName() + ".xhtml?faces-redirect=true";
     }
 
     public List<String> getNamesOfNodeAttributes() {
