@@ -38,7 +38,20 @@
 
         <h:body>
             <h:outputStylesheet name="css/output.css" />
+            <script id="nodesJson" type="application/json">
+                #{workflowCowoBean.nodesAsJson}
+            </script>
+            <script id="edgesJson" type="application/json">
+                #{workflowCowoBean.edgesAsJson}
+            </script>
 
+            <h:outputScript target="body">
+                window.onload = function() {
+                const nodes = JSON.parse(document.getElementById('nodesJson').textContent);
+                const edges = JSON.parse(document.getElementById('edgesJson').textContent);
+                main(nodes, edges);
+                };
+            </h:outputScript>
             <script type="text/javascript">
                 //<![CDATA[
                 function start() {
@@ -63,13 +76,6 @@
             </div>
             <p:spacer height="20"/>
             <p:panel>
-                <h:form>
-                    <p:remoteCommand
-                        name="onload"
-                        action="#{workflowCowoBean.execGraph(20)}"
-                        oncomplete="main('#{workflowCowoBean.nodesAsJson}','#{workflowCowoBean.edgesAsJson}','#{workflowCowoBean.minFreqNode}','#{workflowCowoBean.maxFreqNode}');"
-                        autoRun="true" />
-                </h:form>
                 <p:spacer height="20"/>
                 <h:form target="_blank">
                     <div class="grid lg:grid-cols-4 md:grid-cols-3 sm:grid-cols-2 gap-4">

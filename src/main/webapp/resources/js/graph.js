@@ -1,6 +1,6 @@
 /* global Viva */
 var executions = 0;
-function main(nodes, edges, mincount, maxcount) {
+function main(nodes, edges) {
     if (executions > 0) {
         return;
     }
@@ -49,7 +49,7 @@ function main(nodes, edges, mincount, maxcount) {
                 // Create SVG text element with user id as content
                 svgText = Viva.Graph.svg('text')
                 .attr('y', '-4px')
-                .attr('font-size', scaleValue(node.data, [mincount, maxcount], [15, 60]))
+                .attr('font-size', scaleValue(node.data, [3, 3], [15, 60]))
                 .text(node.id),
                 img = Viva.Graph.svg('image')
                 .attr('width', node.data)

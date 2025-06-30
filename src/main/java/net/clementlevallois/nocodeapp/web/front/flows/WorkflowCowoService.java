@@ -148,7 +148,7 @@ public class WorkflowCowoService {
                 }
             }
         }
-        return currentState; // No change
+        return currentState;
     }
 
     private CowoState finishAnalysis(CowoState.Processing currentState) {
@@ -168,10 +168,8 @@ public class WorkflowCowoService {
 
             String nodesAsJson = Converters.turnJsonObjectToString(jsonObject.getJsonObject("nodes"));
             String edgesAsJson = Converters.turnJsonObjectToString(jsonObject.getJsonObject("edges"));
-            int minFreqNode = jsonObject.getJsonObject("metadata").getInt("minFreqNode");
-            int maxFreqNode = jsonObject.getJsonObject("metadata").getInt("maxFreqNode");
 
-            return new CowoState.ResultsReady(jobId, gexf, nodesAsJson, edgesAsJson, minFreqNode, maxFreqNode, false, false);
+            return new CowoState.ResultsReady(jobId, gexf, nodesAsJson, edgesAsJson, false, false);
 
         } catch (IOException e) {
             LOG.log(Level.SEVERE, "Error finalizing analysis for job " + jobId, e);

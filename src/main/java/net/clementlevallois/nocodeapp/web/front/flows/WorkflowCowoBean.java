@@ -37,8 +37,7 @@ public class WorkflowCowoBean implements Serializable {
 
     @Inject
     private BackToFrontMessengerBean logBean;
-    @Inject
-    private CowoDataInputBean cowoDataInputBean;
+
     @Inject
     private SessionBean sessionBean;
     @Inject
@@ -124,34 +123,6 @@ public class WorkflowCowoBean implements Serializable {
         };
     }
 
-    public String getNodesAsJson() {
-        if (workflowSessionBean.getCowoState() instanceof CowoState.ResultsReady rr) {
-            return rr.nodesAsJson();
-        }
-        return "{}";
-    }
-
-    public String getEdgesAsJson() {
-        if (workflowSessionBean.getCowoState() instanceof CowoState.ResultsReady rr) {
-            return rr.edgesAsJson();
-        }
-        return "{}";
-    }
-
-    public int getMinFreqNode() {
-        if (workflowSessionBean.getCowoState() instanceof CowoState.ResultsReady rr) {
-            return rr.minFreqNode();
-        }
-        return 0;
-    }
-
-    public int getMaxFreqNode() {
-        if (workflowSessionBean.getCowoState() instanceof CowoState.ResultsReady rr) {
-            return rr.maxFreqNode();
-        }
-        return 0;
-    }
-
     public void gotoVV() {
         if (workflowSessionBean.getCowoState() instanceof CowoState.ResultsReady rr) {
             String linkToVosViewer = exportToVosViewer.exportAndReturnLinkFromGexfWithGet(rr.jobId(), rr.shareVVPublicly());
@@ -187,7 +158,6 @@ public class WorkflowCowoBean implements Serializable {
         return new DefaultStreamedContent();
     }
 
-    // Getters and Setters for parameters, which now delegate to the state object
     private void updateAwaitingParameters(java.util.function.Function<CowoState.AwaitingParameters, CowoState.AwaitingParameters> updater) {
         if (workflowSessionBean.getCowoState() instanceof CowoState.AwaitingParameters params) {
             workflowSessionBean.setCowoState(updater.apply(params));
@@ -202,6 +172,14 @@ public class WorkflowCowoBean implements Serializable {
         updateAwaitingParameters(p -> p.withSelectedLanguages(languages));
     }
 
+    public String getNodesAsJson() {
+        return (workflowSessionBean.getCowoState() instanceof CowoState.ResultsReady r) ? r.nodesAsJson() : "{}";
+    }
+
+    public String getEdgesAsJson() {
+        return (workflowSessionBean.getCowoState() instanceof CowoState.ResultsReady r) ? r.edgesAsJson() : "{}";
+    }    
+    
     public int getMinTermFreq() {
         return (workflowSessionBean.getCowoState() instanceof CowoState.AwaitingParameters p) ? p.minTermFreq() : 2;
     }
@@ -219,6 +197,14 @@ public class WorkflowCowoBean implements Serializable {
 
     public void setMaxNGram(int nGram) {
         updateAwaitingParameters(p -> p.withMaxNGram(nGram));
+    }
+
+    public Integer getMinCharNumber() {
+        return (workflowSessionBean.getCowoState() instanceof CowoState.AwaitingParameters p) ? p.minCharNumber() : 4;
+    }
+
+    public void setMinCharNumber(Integer minChar) {
+        updateAwaitingParameters(p -> p.withMinCharNumber(minChar));
     }
 
     public boolean isRemoveNonAsciiCharacters() {
@@ -302,14 +288,6 @@ public class WorkflowCowoBean implements Serializable {
         }
     }
 
-    public Integer getMinCharNumber() {
-        return (workflowSessionBean.getCowoState() instanceof CowoState.AwaitingParameters p) ? p.minCharNumber() : 4;
-    }
-
-    public void setMinCharNumber(Integer minChar) {
-        updateAwaitingParameters(p -> p.withMinCharNumber(minChar));
-    }
-
     public List<Locale> getAvailable() {
         List<Locale> available = new ArrayList<>();
         String[] availableStopwordLists = new String[]{"ar", "bg", "ca", "da", "de", "el", "en", "es", "fr", "it", "ja", "nl", "no", "pl", "pt", "ro", "ru", "tr"};
@@ -320,5 +298,5 @@ public class WorkflowCowoBean implements Serializable {
         Locale requestLocale = (context != null) ? context.getExternalContext().getRequestLocale() : Locale.getDefault();
         Collections.sort(available, new LocaleComparator(requestLocale));
         return available;
-    }
+    }    
 }

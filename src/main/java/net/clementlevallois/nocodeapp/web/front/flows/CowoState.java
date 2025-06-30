@@ -111,17 +111,15 @@ public sealed interface CowoState {
             String gexf,
             String nodesAsJson,
             String edgesAsJson,
-            int minFreqNode,
-            int maxFreqNode,
             boolean shareVVPublicly,
             boolean shareGephiLitePublicly) implements CowoState {
         
         public ResultsReady withShareVVPublicly(boolean newFlag){
-            return new ResultsReady(jobId, gexf, nodesAsJson, edgesAsJson, minFreqNode, maxFreqNode, newFlag, shareGephiLitePublicly);
+            return new ResultsReady(jobId, gexf, nodesAsJson, edgesAsJson, newFlag, shareGephiLitePublicly);
         }
 
         public ResultsReady withShareGephiLitePublicly(boolean newFlag){
-            return new ResultsReady(jobId, gexf, nodesAsJson, edgesAsJson, minFreqNode, maxFreqNode, shareVVPublicly, newFlag);
+            return new ResultsReady(jobId, gexf, nodesAsJson, edgesAsJson, shareVVPublicly, newFlag);
         }
     }
 
