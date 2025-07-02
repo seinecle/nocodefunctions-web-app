@@ -42,6 +42,18 @@ public class CowoDataPreparationService {
         record Failure(String errorMessage) implements PreparationResult {}
     }
 
+    /**
+     * Represents the different types of supported file extensions.
+     * This is a sealed interface to allow for exhaustive pattern matching.
+     */
+    public sealed interface FileExtension {
+        record Pdf() implements FileExtension {}
+        record Txt() implements FileExtension {}
+        record Json(String jsonKey) implements FileExtension {} // jsonKey will be added later
+        record Csv() implements FileExtension {}
+        record Unsupported(String extension) implements FileExtension {}
+    }
+
     public PreparationResult prepare(CowoDataSource dataSource, String jobId) {
         try {
             Path jobDirectory = applicationProperties.getTempFolderFullPath().resolve(jobId);
@@ -65,29 +77,25 @@ public class CowoDataPreparationService {
                 Path pathToFile = applicationProperties.getTempFolderFullPath().resolve(jobId).resolve(fileUniqueId);
                 Files.write(pathToFile, file.getInputStream().readAllBytes());
                 
-                String extension = getFileExtension(file.getFileName());
+                FileExtension fileExtension = getFileExtension(file.getFileName());
                 var importClient = microserviceHttpClient.importService();
-                var requestBuilder = switch (extension) {
-                    case "pdf" -> importClient.get("import/pdf/simpleLines");
-                    case "txt" -> importClient.get("import/txt/simpleLines");
-                    case "json" -> importClient.get("import/json/simpleLines");
-                    default -> null;
+                
+                var requestBuilder = switch (fileExtension) {
+                    case FileExtension.Pdf() -> importClient.get("import/pdf/simpleLines");
+                    case FileExtension.Txt() -> importClient.get("import/txt/simpleLines");
+                    case FileExtension.Json(String jsonKey) -> importClient.get("import/json/simpleLines").addQueryParameter("jsonKey", jsonKey);
+                    case FileExtension.Csv() -> importClient.get("import/csv/simpleLines");
+                    case FileExtension.Unsupported(String ext) -> null;
                 };
                 
                 if (requestBuilder == null) {
-                    return new PreparationResult.Failure("Unsupported file type: " + extension);
+                    return new PreparationResult.Failure("Unsupported file type: " + ((FileExtension.Unsupported) fileExtension).extension());
                 }
                 
                 requestBuilder.addQueryParameter("jobId", jobId)
                         .addQueryParameter("fileUniqueId", fileUniqueId)
                         .addQueryParameter("fileName", file.getFileName());
                 
-                // the actual json key needs to be retrieved from the UI! TO DO
-                if ("json".equals(extension)) {
-                    requestBuilder.addQueryParameter("jsonKey", "text");
-                }
-                // We use join() here to process files sequentially.
-                // This is simpler and safer than parallel processing for now.
                 requestBuilder.sendAsync(HttpResponse.BodyHandlers.ofString()).join();
             } catch (IOException ex) {
                 System.getLogger(CowoDataPreparationService.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
@@ -148,10 +156,25 @@ public class CowoDataPreparationService {
         return new PreparationResult.Success(jobId);
     }
 
-    private String getFileExtension(String fileName) {
+    /**
+     * Determines the file extension and returns the corresponding FileExtension record.
+     * For JSON files, a placeholder "text" is used for the jsonKey. In a real application,
+     * this key would likely come from user input or a more sophisticated parsing strategy.
+     *
+     * @param fileName The name of the file.
+     * @return A FileExtension record representing the detected extension.
+     */
+    private FileExtension getFileExtension(String fileName) {
         if (fileName == null || fileName.lastIndexOf('.') == -1) {
-            return "";
+            return new FileExtension.Unsupported("");
         }
-        return fileName.substring(fileName.lastIndexOf('.') + 1).toLowerCase();
+        String extension = fileName.substring(fileName.lastIndexOf('.') + 1).toLowerCase();
+        return switch (extension) {
+            case "pdf" -> new FileExtension.Pdf();
+            case "txt" -> new FileExtension.Txt();
+            case "json" -> new FileExtension.Json("text");
+            case "csv" -> new FileExtension.Csv();
+            default -> new FileExtension.Unsupported(extension);
+        };
     }
 }

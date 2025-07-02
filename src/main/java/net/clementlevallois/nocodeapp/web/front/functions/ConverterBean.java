@@ -15,7 +15,6 @@ import jakarta.inject.Named;
 import jakarta.servlet.annotation.MultipartConfig;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Properties;
 import java.util.UUID;
 import java.util.concurrent.CompletionException;
 import java.util.logging.Level;
@@ -24,11 +23,9 @@ import net.clementlevallois.functions.model.FunctionNetworkConverter;
 import net.clementlevallois.functions.model.Globals;
 import static net.clementlevallois.functions.model.Globals.GlobalQueryParams.CALLBACK_URL;
 import static net.clementlevallois.functions.model.Globals.GlobalQueryParams.JOB_ID;
-import static net.clementlevallois.functions.model.Globals.GlobalQueryParams.SESSION_ID;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.exportdata.ExportToVosViewer;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.ApplicationPropertiesBean;
-import net.clementlevallois.nocodeapp.web.front.exportdata.ExportToGephiLite;
 import net.clementlevallois.nocodeapp.web.front.http.MicroserviceHttpClient;
 import net.clementlevallois.nocodeapp.web.front.http.RemoteLocal;
 import org.primefaces.event.FileUploadEvent;
@@ -57,7 +54,6 @@ public class ConverterBean implements Serializable {
     private StreamedContent gexfFileToSave;
 
     private String jobId;
-    private String sessionId;
 
     @Inject
     SessionBean sessionBean;
@@ -78,7 +74,6 @@ public class ConverterBean implements Serializable {
     public void init() {
         sessionBean.setFunctionName(FunctionNetworkConverter.NAME);
         uploadButtonMessage = sessionBean.getLocaleBundle().getString("general.message.choose_gexf_file");
-        sessionId = FacesContext.getCurrentInstance().getExternalContext().getSessionId(false);
     }
 
     public String logout() {
@@ -226,8 +221,6 @@ public class ConverterBean implements Serializable {
 
         for (Globals.GlobalQueryParams param : Globals.GlobalQueryParams.values()) {
             String paramValue = switch (param) {
-                case SESSION_ID ->
-                    sessionId;
                 case JOB_ID ->
                     jobId;
                 case CALLBACK_URL ->

@@ -1,4 +1,5 @@
 /* global Viva */
+
 var executions = 0;
 function main(nodes, edges) {
     if (executions > 0) {
@@ -7,7 +8,7 @@ function main(nodes, edges) {
     executions++;
 
 
-// Step 1. We create a graph object.
+    // Step 1. We create a graph object.
     var graph = Viva.Graph.graph();
 
     // Step 2. We add nodes and edges to the graph:
@@ -15,20 +16,17 @@ function main(nodes, edges) {
             nodeSize = 24;
     
     
-    const jsonNodes = JSON.parse(nodes);
-    const jsonEdges = JSON.parse(edges);
-
-    for (var key in jsonNodes) {
-        if (jsonNodes.hasOwnProperty(key)) {
-            console.log(key + " (node id) -> " + jsonNodes[key]);
+    for (var key in nodes) {
+        if (nodes.hasOwnProperty(key)) {
+            console.log(key + " (node id) -> " + nodes[key]);
             graph.addNode(key, key);
         }
     }
 
-    for (var key in jsonEdges) {
-        if (jsonEdges.hasOwnProperty(key)) {
-            console.log(key + " (edge id) -> " + jsonEdges[key]);
-            const edge = jsonEdges[key];
+    for (var key in edges) {
+        if (edges.hasOwnProperty(key)) {
+            console.log(key + " (edge id) -> " + edges[key]);
+            const edge = edges[key];
             let source;
             let target;
             for (let [key, value] of Object.entries(edge)) {

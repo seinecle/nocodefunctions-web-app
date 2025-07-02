@@ -65,7 +65,6 @@ public class UmigonBean implements Serializable {
     private StreamedContent fileToSave;
     private List<Document> filteredDocuments;
     private Integer maxCapacity = 10_000;
-    private String sessionId;
 
     private String jobId;
     private Globals globals;
@@ -89,7 +88,6 @@ public class UmigonBean implements Serializable {
     @PostConstruct
     public void init() {
         sessionBean.setFunctionName(FunctionUmigon.NAME);
-        sessionId = FacesContext.getCurrentInstance().getExternalContext().getSessionId(false);
         String positive_tone = sessionBean.getLocaleBundle().getString("general.nouns.sentiment_positive");
         String negative_tone = sessionBean.getLocaleBundle().getString("general.nouns.sentiment_negative");
         String neutral_tone = sessionBean.getLocaleBundle().getString("general.nouns.sentiment_neutral");
@@ -179,8 +177,6 @@ public class UmigonBean implements Serializable {
             String value = switch (param) {
                 case JOB_ID ->
                     jobId;
-                case SESSION_ID ->
-                    sessionId;
                 case CALLBACK_URL ->
                     callbackURL;
             };

@@ -1,16 +1,7 @@
 package net.clementlevallois.nocodeapp.web.front.flows;
 
 import jakarta.annotation.PostConstruct;
-import java.io.IOException;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Locale;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import jakarta.faces.application.FacesMessage;
-import jakarta.faces.context.ExternalContext;
 import jakarta.faces.context.FacesContext;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
@@ -18,19 +9,20 @@ import jakarta.inject.Named;
 import net.clementlevallois.functions.model.WorkflowCowoProps;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.LocaleComparator;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
-import net.clementlevallois.nocodeapp.web.front.exportdata.ExportToVosViewer;
 import net.clementlevallois.nocodeapp.web.front.logview.BackToFrontMessengerBean;
-import net.clementlevallois.nocodeapp.web.front.exportdata.ExportToGephiLite;
-import net.clementlevallois.nocodeapp.web.front.utils.GEXFSaver;
-import org.primefaces.model.DefaultStreamedContent;
-import org.primefaces.model.StreamedContent;
+
+import java.io.IOException;
+import java.io.Serializable;
+import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.primefaces.model.file.UploadedFile;
 
 @Named
 @ViewScoped
-public class WorkflowCowoBean implements Serializable {
+public class CowoAnalysisBean implements Serializable {
 
-    private static final Logger LOG = Logger.getLogger(WorkflowCowoBean.class.getName());
+    private static final Logger LOG = Logger.getLogger(CowoAnalysisBean.class.getName());
 
     @Inject
     private WorkflowSessionBean workflowSessionBean;
@@ -40,23 +32,17 @@ public class WorkflowCowoBean implements Serializable {
 
     @Inject
     private SessionBean sessionBean;
-    @Inject
-    private ExportToVosViewer exportToVosViewer;
-    @Inject
-    private ExportToGephiLite exportToGephiLite;
+
     @Inject
     private WorkflowCowoService cowoService;
-
-    public WorkflowCowoBean() {
-    }
 
     @PostConstruct
     public void init() {
         if (workflowSessionBean.getCowoState() == null) {
             try {
-                FacesContext.getCurrentInstance().getExternalContext().redirect("cowo-import.xhtml?faces-redirect=true");
+                FacesContext.getCurrentInstance().getExternalContext().redirect("cowo-import.html?faces-redirect=true");
             } catch (IOException ex) {
-                System.getLogger(WorkflowCowoBean.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
+                LOG.log(Level.SEVERE, "Redirection error", ex);
             }
         }
     }
@@ -74,7 +60,8 @@ public class WorkflowCowoBean implements Serializable {
             try {
                 logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.starting_analysis"));
                 String sessionId = FacesContext.getCurrentInstance().getExternalContext().getSessionId(false);
-                workflowSessionBean.setCowoState(cowoService.startAnalysis(parameters, sessionId));
+                CowoState.Processing processingState = cowoService.startAnalysis(parameters, sessionId);
+                workflowSessionBean.setCowoState(processingState);
             } catch (Exception e) {
                 LOG.log(Level.SEVERE, "Error initiating analysis", e);
                 sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Error", "Could not start analysis: " + e.getMessage());
@@ -84,25 +71,23 @@ public class WorkflowCowoBean implements Serializable {
 
     public String pollingListener() {
         if (workflowSessionBean.getCowoState() instanceof CowoState.Processing processingState) {
-            String sessionId = FacesContext.getCurrentInstance().getExternalContext().getSessionId(false);
-            workflowSessionBean.setCowoState(cowoService.checkCompletion(processingState, sessionId));
+            workflowSessionBean.setCowoState(cowoService.checkCompletion(processingState));
             if (workflowSessionBean.getCowoState() instanceof CowoState.ResultsReady) {
-                return "/workflow-cowo/results.xhtml?faces-redirect=true";
-            } else {
-                return null;
+                try {
+                    FacesContext.getCurrentInstance().getExternalContext()
+                        .redirect(FacesContext.getCurrentInstance().getExternalContext().getRequestContextPath() + "/workflow-cowo/results.html");
+                } catch (IOException ex) {
+                    LOG.log(Level.SEVERE, "Redirect to results.xhtml failed", ex);
+                }
             }
-        } else {
-            return null;
         }
+        return null;
     }
 
     public String getRunButtonText() {
-        return switch (workflowSessionBean.getCowoState()) {
-            case CowoState.Processing p ->
-                sessionBean.getLocaleBundle().getString("general.message.wait_long_operation");
-            default ->
-                sessionBean.getLocaleBundle().getString("general.verbs.compute");
-        };
+        return (workflowSessionBean.getCowoState() instanceof CowoState.Processing)
+            ? sessionBean.getLocaleBundle().getString("general.message.wait_long_operation")
+            : sessionBean.getLocaleBundle().getString("general.verbs.compute");
     }
 
     public boolean isRunButtonDisabled() {
@@ -110,52 +95,12 @@ public class WorkflowCowoBean implements Serializable {
     }
 
     public int getProgress() {
-        CowoState cowoState = workflowSessionBean.getCowoState();
-        return switch (cowoState) {
-            case CowoState.AwaitingParameters ap ->
-                0;
-            case CowoState.Processing p ->
-                p.progress();
-            case CowoState.ResultsReady rr ->
-                100;
-            case CowoState.FlowFailed ff ->
-                0;
+        return switch (workflowSessionBean.getCowoState()) {
+            case CowoState.AwaitingParameters ap -> 0;
+            case CowoState.Processing p -> p.progress();
+            case CowoState.ResultsReady rr -> 100;
+            case CowoState.FlowFailed ff -> 0;
         };
-    }
-
-    public void gotoVV() {
-        if (workflowSessionBean.getCowoState() instanceof CowoState.ResultsReady rr) {
-            String linkToVosViewer = exportToVosViewer.exportAndReturnLinkFromGexfWithGet(rr.jobId(), rr.shareVVPublicly());
-            if (linkToVosViewer != null && !linkToVosViewer.isBlank()) {
-                try {
-                    ExternalContext externalContext = FacesContext.getCurrentInstance().getExternalContext();
-                    externalContext.redirect(linkToVosViewer);
-                } catch (IOException ex) {
-                    LOG.log(Level.SEVERE, "Error redirecting to VOSviewer", ex);
-                }
-            }
-        }
-    }
-
-    public void gotoGephiLite() {
-        if (workflowSessionBean.getCowoState() instanceof CowoState.ResultsReady rr) {
-            String urlToGephiLite = exportToGephiLite.exportAndReturnLinkFromId(rr.jobId(), rr.shareGephiLitePublicly());
-            if (urlToGephiLite != null && !urlToGephiLite.isBlank()) {
-                try {
-                    ExternalContext externalContext = FacesContext.getCurrentInstance().getExternalContext();
-                    externalContext.redirect(urlToGephiLite);
-                } catch (IOException ex) {
-                    LOG.log(Level.SEVERE, "Error redirecting to Gephi Lite", ex);
-                }
-            }
-        }
-    }
-
-    public StreamedContent getFileToSave() {
-        if (workflowSessionBean.getCowoState() instanceof CowoState.ResultsReady rr) {
-            return GEXFSaver.exportGexfAsStreamedFile(rr.gexf(), "results_cowo");
-        }
-        return new DefaultStreamedContent();
     }
 
     private void updateAwaitingParameters(java.util.function.Function<CowoState.AwaitingParameters, CowoState.AwaitingParameters> updater) {
@@ -163,6 +108,8 @@ public class WorkflowCowoBean implements Serializable {
             workflowSessionBean.setCowoState(updater.apply(params));
         }
     }
+
+    // Input parameters setters and getters
 
     public List<String> getSelectedLanguages() {
         return (workflowSessionBean.getCowoState() instanceof CowoState.AwaitingParameters p) ? p.selectedLanguages() : new ArrayList<>();
@@ -172,14 +119,6 @@ public class WorkflowCowoBean implements Serializable {
         updateAwaitingParameters(p -> p.withSelectedLanguages(languages));
     }
 
-    public String getNodesAsJson() {
-        return (workflowSessionBean.getCowoState() instanceof CowoState.ResultsReady r) ? r.nodesAsJson() : "{}";
-    }
-
-    public String getEdgesAsJson() {
-        return (workflowSessionBean.getCowoState() instanceof CowoState.ResultsReady r) ? r.edgesAsJson() : "{}";
-    }    
-    
     public int getMinTermFreq() {
         return (workflowSessionBean.getCowoState() instanceof CowoState.AwaitingParameters p) ? p.minTermFreq() : 2;
     }
@@ -189,10 +128,7 @@ public class WorkflowCowoBean implements Serializable {
     }
 
     public int getMaxNGram() {
-        if (workflowSessionBean.getCowoState() instanceof CowoState.AwaitingParameters p) {
-            return p.maxNGram();
-        }
-        return 4;
+        return (workflowSessionBean.getCowoState() instanceof CowoState.AwaitingParameters p) ? p.maxNGram() : 4;
     }
 
     public void setMaxNGram(int nGram) {
@@ -268,35 +204,16 @@ public class WorkflowCowoBean implements Serializable {
         }
     }
 
-    public Boolean getShareVVPublicly() {
-        return (workflowSessionBean.getCowoState() instanceof CowoState.ResultsReady rr) && rr.shareVVPublicly();
-    }
-
-    public void setShareVVPublicly(Boolean flag) {
-        if (workflowSessionBean.getCowoState() instanceof CowoState.ResultsReady rr) {
-            workflowSessionBean.setCowoState(rr.withShareVVPublicly(flag));
-        }
-    }
-
-    public Boolean getShareGephiLitePublicly() {
-        return (workflowSessionBean.getCowoState() instanceof CowoState.ResultsReady rr) && rr.shareGephiLitePublicly();
-    }
-
-    public void setShareGephiLitePublicly(Boolean flag) {
-        if (workflowSessionBean.getCowoState() instanceof CowoState.ResultsReady rr) {
-            workflowSessionBean.setCowoState(rr.withShareGephiLitePublicly(flag));
-        }
-    }
-
     public List<Locale> getAvailable() {
         List<Locale> available = new ArrayList<>();
         String[] availableStopwordLists = new String[]{"ar", "bg", "ca", "da", "de", "el", "en", "es", "fr", "it", "ja", "nl", "no", "pl", "pt", "ro", "ru", "tr"};
         for (String tag : availableStopwordLists) {
             available.add(Locale.forLanguageTag(tag));
         }
-        FacesContext context = FacesContext.getCurrentInstance();
-        Locale requestLocale = (context != null) ? context.getExternalContext().getRequestLocale() : Locale.getDefault();
-        Collections.sort(available, new LocaleComparator(requestLocale));
+        Locale requestLocale = Optional.ofNullable(FacesContext.getCurrentInstance())
+            .map(ctx -> ctx.getExternalContext().getRequestLocale())
+            .orElse(Locale.getDefault());
+        available.sort(new LocaleComparator(requestLocale));
         return available;
-    }    
+    }
 }

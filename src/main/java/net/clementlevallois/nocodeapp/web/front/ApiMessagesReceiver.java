@@ -38,9 +38,9 @@ public class ApiMessagesReceiver {
     @Path("/"+ WorkflowCowoProps.ENDPOINT)
     @Consumes(MediaType.APPLICATION_JSON)
     public Response messagesFromCowoAPI(MessageFromApi msg) {
-        ConcurrentLinkedDeque<MessageFromApi> messages = WatchTower.getDequeAPIMessages().getOrDefault(msg.getSessionId(), new ConcurrentLinkedDeque());
+        ConcurrentLinkedDeque<MessageFromApi> messages = WatchTower.getDequeAPIMessages().getOrDefault(msg.getjobId(), new ConcurrentLinkedDeque());
         messages.addLast(msg);
-        WatchTower.getDequeAPIMessages().put(msg.getSessionId(), messages);
+        WatchTower.getDequeAPIMessages().put(msg.getjobId(), messages);
         return Response.ok().build();
     }
 
@@ -48,9 +48,9 @@ public class ApiMessagesReceiver {
     @Path("/"+ FunctionUmigon.ENDPOINT)
     @Consumes(MediaType.APPLICATION_JSON)
     public Response messagesFromUmigonAPI(MessageFromApi msg) {
-        ConcurrentLinkedDeque<MessageFromApi> messages = WatchTower.getDequeAPIMessages().getOrDefault(msg.getSessionId(), new ConcurrentLinkedDeque());
+        ConcurrentLinkedDeque<MessageFromApi> messages = WatchTower.getDequeAPIMessages().getOrDefault(msg.getjobId(), new ConcurrentLinkedDeque());
         messages.addLast(msg);
-        WatchTower.getDequeAPIMessages().put(msg.getSessionId(), messages);
+        WatchTower.getDequeAPIMessages().put(msg.getjobId(), messages);
         return Response.ok().build();
     }
 
@@ -59,14 +59,14 @@ public class ApiMessagesReceiver {
     @Consumes(MediaType.APPLICATION_JSON)
     public Response messagesFromTopicsAPI(MessageFromApi msg) {
         LOG.log(Level.INFO, "Received callback for session {0}, task {1}, info {2}",
-                new Object[]{msg.getSessionId(), msg.getjobId(), msg.getInfo()});
+                new Object[]{msg.getjobId(), msg.getjobId(), msg.getInfo()});
 
-        ConcurrentLinkedDeque<MessageFromApi> messages = WatchTower.getDequeAPIMessages().getOrDefault(msg.getSessionId(), new ConcurrentLinkedDeque());
+        ConcurrentLinkedDeque<MessageFromApi> messages = WatchTower.getDequeAPIMessages().getOrDefault(msg.getjobId(), new ConcurrentLinkedDeque());
         messages.addLast(msg);
-        WatchTower.getDequeAPIMessages().put(msg.getSessionId(), messages);
+        WatchTower.getDequeAPIMessages().put(msg.getjobId(), messages);
 
         boolean success;
-        if (msg.getInfo() == MessageFromApi.Information.WORKFLOW_COMPLETED && msg.getjobId() != null && msg.getSessionId() != null) {
+        if (msg.getInfo() == MessageFromApi.Information.WORKFLOW_COMPLETED && msg.getjobId() != null && msg.getjobId() != null) {
             success = true;
             messageFromApiEvent.fire(new MessageFromApi(msg.getjobId(), success, msg.getMessage()));
         } else if (msg.getInfo() == MessageFromApi.Information.ERROR && msg.getjobId() != null) {
@@ -84,9 +84,9 @@ public class ApiMessagesReceiver {
     @Path("/gaze")
     @Consumes(MediaType.APPLICATION_JSON)
     public Response messagesFromGazeAPI(MessageFromApi msg) {
-        ConcurrentLinkedDeque<MessageFromApi> messages = WatchTower.getDequeAPIMessages().getOrDefault(msg.getSessionId(), new ConcurrentLinkedDeque());
+        ConcurrentLinkedDeque<MessageFromApi> messages = WatchTower.getDequeAPIMessages().getOrDefault(msg.getjobId(), new ConcurrentLinkedDeque());
         messages.addLast(msg);
-        WatchTower.getDequeAPIMessages().put(msg.getSessionId(), messages);
+        WatchTower.getDequeAPIMessages().put(msg.getjobId(), messages);
         return Response.ok().build();
     }
 

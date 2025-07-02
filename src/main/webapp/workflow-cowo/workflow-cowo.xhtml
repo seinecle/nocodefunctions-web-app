@@ -48,10 +48,10 @@
                             <p:selectManyMenu
                                 id="lang"
                                 showCheckbox="true"
-                                value="#{workflowCowoBean.selectedLanguages}"
+                                value="#{cowoAnalysisBean.selectedLanguages}"
                                 style="width: 50px !important">
                                 <f:selectItems
-                                    value="#{workflowCowoBean.available}" var="l"
+                                    value="#{cowoAnalysisBean.available}" var="l"
                                     itemValue="#{l.toLanguageTag()}"
                                     itemLabel="#{l.getDisplayLanguage(localeBean.currentLocale)}"/>
                                 <p:ajax event="change" process="@this"/>
@@ -73,7 +73,7 @@
                                         #{text['cowo.cowo.remove_smaller_words']} 4
                                         <br/>
                                         <br/>
-                                        <p:spinner id="spinner1" value="#{workflowCowoBean.minCharNumber}" min="1" max="10" stepFactor="1">
+                                        <p:spinner id="spinner1" value="#{cowoAnalysisBean.minCharNumber}" min="1" max="10" stepFactor="1">
                                         </p:spinner>
                                         <p:slider for="spinner1" minValue="1" maxValue="10" step="1"/>
 
@@ -86,7 +86,7 @@
                                         #{text['cowo.cowo.remove_infrequent_words']}
                                         <br/>
                                         <br/>
-                                        <p:spinner id="spinnerFreq" value="#{workflowCowoBean.minTermFreq}" min="2" max="10" stepFactor="1"/>
+                                        <p:spinner id="spinnerFreq" value="#{cowoAnalysisBean.minTermFreq}" min="2" max="10" stepFactor="1"/>
                                         <p:slider for="spinnerFreq" minValue="2" maxValue="10" step="1"/>
 
                                         <p:divider align="left">
@@ -98,7 +98,7 @@
                                         <p:outputLabel value="#{text['gaze.network_builder.apply_pmi_correction']}" escape="false"/>
                                         <br/>
                                         <br/>
-                                        <p:selectBooleanCheckbox id="pmiCheckBox" value="#{workflowCowoBean.usePMI}" escape="false"/>
+                                        <p:selectBooleanCheckbox id="pmiCheckBox" value="#{cowoAnalysisBean.usePMI}" escape="false"/>
 
                                         <p:divider align="left">
                                             <div class="p-d-inline-flex p-ai-center">
@@ -107,11 +107,11 @@
                                             </div>
                                         </p:divider>
 
-                                        #{text['cowo.cowo.max_size_for_ngrams']} #{workflowCowoBean.maxNGram}
+                                        #{text['cowo.cowo.max_size_for_ngrams']} #{cowoAnalysisBean.maxNGram}
                                         <br/>
                                         <br/>
-                                        <p:spinner id="spinnerNGRAM" value="#{workflowCowoBean.maxNGram}" min="1" max="#{workflowCowoBean.maxNGram}" stepFactor="1"/>
-                                        <p:slider for="spinnerNGRAM" minValue="1" maxValue="#{workflowCowoBean.maxNGram}" step="1"/>
+                                        <p:spinner id="spinnerNGRAM" value="#{cowoAnalysisBean.maxNGram}" min="1" max="#{cowoAnalysisBean.maxNGram}" stepFactor="1"/>
+                                        <p:slider for="spinnerNGRAM" minValue="1" maxValue="#{cowoAnalysisBean.maxNGram}" step="1"/>
 
                                         <p:divider align="left">
                                             <div class="p-d-inline-flex p-ai-center">
@@ -122,7 +122,7 @@
                                         #{text['general.message.lemmatization_explanation']}
                                         <br/>
                                         <br/>
-                                        <p:selectBooleanCheckbox value="#{workflowCowoBean.lemmatize}" itemLabel="#{text['general.verbs.lemmatize']}" escape="false"/>
+                                        <p:selectBooleanCheckbox value="#{cowoAnalysisBean.lemmatize}" itemLabel="#{text['general.verbs.lemmatize']}" escape="false"/>
                                         <div>
                                             <p:spacer width="30" height="20"/>
                                         </div>
@@ -137,7 +137,7 @@
                                         <br/>
                                         <br/>
                                         <p:selectBooleanCheckbox
-                                            value="#{workflowCowoBean.removeNonAsciiCharacters}"
+                                            value="#{cowoAnalysisBean.removeNonAsciiCharacters}"
                                             itemLabel="#{text['general.verbs.remove_accents']}"
                                             escape="false"/>
                                         <div>
@@ -153,7 +153,7 @@
                                         <p:outputLabel value="#{text['cowo.cowo.remove_academic_stopwords']}" escape="false"/>
                                         <br/>
                                         <br/>
-                                        <p:selectBooleanCheckbox value="#{workflowCowoBean.scientificCorpus}" itemLabel="#{text['general.message.remove_academic_stopwords']}" escape="false"/>
+                                        <p:selectBooleanCheckbox value="#{cowoAnalysisBean.scientificCorpus}" itemLabel="#{text['general.message.remove_academic_stopwords']}" escape="false"/>
                                         <div>
                                             <p:spacer width="30" height="20"/>
                                         </div>
@@ -166,7 +166,7 @@
                                         #{text['cowo.cowo.remove_firstnames']}
                                         <br/>
                                         <br/>
-                                        <p:selectBooleanCheckbox value="#{workflowCowoBean.firstNames}" itemLabel="#{text['general.message.remove_firstnames']}" escape="false"/>
+                                        <p:selectBooleanCheckbox value="#{cowoAnalysisBean.firstNames}" itemLabel="#{text['general.message.remove_firstnames']}" escape="false"/>
                                         <div>
                                             <p:spacer width="30" height="20"/>
                                         </div>
@@ -180,10 +180,10 @@
                                         #{text['general.message.use_own_stopwords.instructions']}
                                         <br/>
                                         <br/>
-                                        <p:fileUpload value="#{workflowCowoBean.fileUserStopwords}" mode="simple" skinSimple="true" allowTypes="/(\.|\/)(txt)$/"/>
+                                        <p:fileUpload value="#{cowoAnalysisBean.fileUserStopwords}" mode="simple" skinSimple="true" allowTypes="/(\.|\/)(txt)$/"/>
                                         <br/>
                                         <br/>
-                                        <p:selectBooleanCheckbox value="#{workflowCowoBean.replaceStopwords}" itemLabel="#{text['general.message.your_stopwords_replace']}">
+                                        <p:selectBooleanCheckbox value="#{cowoAnalysisBean.replaceStopwords}" itemLabel="#{text['general.message.your_stopwords_replace']}">
                                             <p:ajax/>
                                         </p:selectBooleanCheckbox>
                                         <br/>
@@ -200,22 +200,22 @@
                         <h:form id="generalForm">
                             <!--RUN ANALYSIS BUTTON-->
                             <p:commandButton 
-                                value="#{workflowCowoBean.runButtonText}"
+                                value="#{cowoAnalysisBean.runButtonText}"
                                 widgetVar="cowoButton"
-                                action="#{workflowCowoBean.runAnalysis}"
+                                action="#{cowoAnalysisBean.runAnalysis}"
                                 onclick="PF('pbAjaxLong').start();PF('cowoButton').disable()"
                                 styleClass="btn btn-primary"
-                                disabled="#{workflowCowoBean.runButtonDisabled}"
+                                disabled="#{cowoAnalysisBean.runButtonDisabled}"
                                 update=":notifications"/>
                             <br/>
                             <br/>
                             <p:spacer height="20"/>
                             <!--PROGRESS BAR FOR RUN ANALYSIS-->
-                            <p:progressBar id="pb" widgetVar="pbAjaxLong" ajax="true" value="#{workflowCowoBean.progress}"
+                            <p:progressBar id="pb" widgetVar="pbAjaxLong" ajax="true" value="#{cowoAnalysisBean.progress}"
                                            labelTemplate="{value}%" styleClass="p-mt-3" global="false" interval="500">
                             </p:progressBar>
                             <h:panelGroup id="pollingArea">
-                                <p:poll listener="#{workflowCowoBean.pollingListener()}" process="pollingArea" update="pollingArea :notifications generalForm" interval="2"/>
+                                <p:poll listener="#{cowoAnalysisBean.pollingListener()}" process="pollingArea" update="pollingArea :notifications generalForm" interval="2"/>
                             </h:panelGroup>
                         </h:form>
                     </p:panel>
@@ -231,7 +231,7 @@
                                     <p:ajax event="updateNotifications" update=":notifications" />
                                 </f:websocket>
                                 <f:websocket channel="navigationChannel"  scope="session">
-                                    <p:ajax event="navigateToResultscowo" listener="#{workflowCowoBean.navigateToResults}"/>
+                                    <p:ajax event="navigateToResultscowo" listener="#{cowoAnalysisBean.navigateToResults}"/>
                                 </f:websocket>
                             </h:form>
                         </p:scrollPanel>

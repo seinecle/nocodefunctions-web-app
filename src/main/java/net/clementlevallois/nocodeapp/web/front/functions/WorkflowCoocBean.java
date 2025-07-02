@@ -22,7 +22,6 @@ import java.nio.file.Path;
 import net.clementlevallois.functions.model.Globals;
 import static net.clementlevallois.functions.model.Globals.GlobalQueryParams.CALLBACK_URL;
 import static net.clementlevallois.functions.model.Globals.GlobalQueryParams.JOB_ID;
-import static net.clementlevallois.functions.model.Globals.GlobalQueryParams.SESSION_ID;
 import net.clementlevallois.functions.model.WorkflowCoocProps;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.exportdata.ExportToVosViewer;
@@ -57,8 +56,6 @@ public class WorkflowCoocBean implements Serializable {
     private boolean applyPMI = false;
 
     private String jobId;
-    private String sessionId;
-
     private String gexf;
 
     private WorkflowCoocProps props;
@@ -91,7 +88,6 @@ public class WorkflowCoocBean implements Serializable {
     @PostConstruct
     public void init() {
         sessionBean.setFunctionName(WorkflowCoocProps.NAME);
-        sessionId = FacesContext.getCurrentInstance().getExternalContext().getSessionId(false);
         props = new WorkflowCoocProps(applicationProperties.getTempFolderFullPath());
         globals = new Globals(applicationProperties.getTempFolderFullPath());
     }
@@ -150,8 +146,6 @@ public class WorkflowCoocBean implements Serializable {
 
         for (Globals.GlobalQueryParams param : Globals.GlobalQueryParams.values()) {
             String paramValue = switch (param) {
-                case SESSION_ID ->
-                    sessionId;
                 case JOB_ID ->
                     jobId;
                 case CALLBACK_URL ->

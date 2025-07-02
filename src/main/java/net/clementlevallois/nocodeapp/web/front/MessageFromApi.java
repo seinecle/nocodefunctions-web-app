@@ -11,7 +11,6 @@ import java.io.Serializable;
  */
 public class MessageFromApi implements Serializable {
 
-    private String sessionId;
     private String message;
     private Integer progress;
     private String function;
@@ -30,14 +29,6 @@ public class MessageFromApi implements Serializable {
         this.jobId = jobId;
         this.success = success;
         this.message = message;
-    }
-
-    public String getSessionId() {
-        return sessionId;
-    }
-
-    public void setSessionId(String sessionId) {
-        this.sessionId = sessionId;
     }
 
     public String getMessage() {

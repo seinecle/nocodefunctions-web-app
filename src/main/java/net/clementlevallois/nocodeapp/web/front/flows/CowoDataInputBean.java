@@ -4,8 +4,8 @@
  */
 package net.clementlevallois.nocodeapp.web.front.flows;
 
-import jakarta.enterprise.context.SessionScoped;
 import jakarta.faces.application.FacesMessage;
+import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import java.io.Serializable;
@@ -17,7 +17,7 @@ import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import org.primefaces.event.FileUploadEvent;
 
 @Named
-@SessionScoped
+@ViewScoped
 public class CowoDataInputBean implements Serializable {
 
     private String jobId;
@@ -64,7 +64,6 @@ public class CowoDataInputBean implements Serializable {
             return;
         }
         // For multiple file uploads, the listener is called for each file.
-        // We will handle them one by one.
         CowoDataSource dataSource = new CowoDataSource.FileUpload(List.of(event.getFile()));
         processDataSource(dataSource);
         uploadedFileNames.add(event.getFile().getFileName());
@@ -111,7 +110,6 @@ public class CowoDataInputBean implements Serializable {
         }
 
         CowoState currentState = workflowSessionBean.getCowoState();
-
 
         if (currentState instanceof CowoState.AwaitingParameters p) {
             workflowSessionBean.setCowoState(p.withJobId(this.jobId));

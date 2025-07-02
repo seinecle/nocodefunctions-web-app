@@ -22,7 +22,6 @@ import java.nio.file.Path;
 import net.clementlevallois.functions.model.Globals;
 import static net.clementlevallois.functions.model.Globals.GlobalQueryParams.CALLBACK_URL;
 import static net.clementlevallois.functions.model.Globals.GlobalQueryParams.JOB_ID;
-import static net.clementlevallois.functions.model.Globals.GlobalQueryParams.SESSION_ID;
 import net.clementlevallois.functions.model.WorkflowSimProps;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.exportdata.ExportToVosViewer;
@@ -59,7 +58,6 @@ public class WorkflowSimBean implements Serializable {
     private boolean applyPMI = false;
 
     private String jobId;
-    private String sessionId;
 
     private String gexf;
 
@@ -94,7 +92,6 @@ public class WorkflowSimBean implements Serializable {
     @PostConstruct
     public void init() {
         sessionBean.setFunctionName(WorkflowSimProps.NAME);
-        sessionId = FacesContext.getCurrentInstance().getExternalContext().getSessionId(false);
         props = new WorkflowSimProps(applicationProperties.getTempFolderFullPath());
         globals = new Globals(applicationProperties.getTempFolderFullPath());
     }
@@ -177,8 +174,6 @@ public class WorkflowSimBean implements Serializable {
         String callbackURL = RemoteLocal.getDomain() + RemoteLocal.getInternalMessageApiEndpoint() + WorkflowSimProps.ENDPOINT;
         for (Globals.GlobalQueryParams param : Globals.GlobalQueryParams.values()) {
             String paramValue = switch (param) {
-                case SESSION_ID ->
-                    sessionId;
                 case JOB_ID ->
                     jobId;
                 case CALLBACK_URL ->

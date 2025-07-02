@@ -100,8 +100,6 @@ public class WorkflowCowoService {
 
         for (Globals.GlobalQueryParams param : Globals.GlobalQueryParams.values()) {
             String paramValue = switch (param) {
-                case SESSION_ID ->
-                    sessionId;
                 case JOB_ID ->
                     jobId;
                 case CALLBACK_URL ->
@@ -124,7 +122,7 @@ public class WorkflowCowoService {
         return new CowoState.Processing(jobId, currentState, 0);
     }
 
-    public CowoState checkCompletion(CowoState.Processing currentState, String sessionId) {
+    public CowoState checkCompletion(CowoState.Processing currentState) {
         String jobId = currentState.jobId();
         Globals globals = new Globals(applicationProperties.getTempFolderFullPath());
         Path pathSignalWorkflowComplete = globals.getWorkflowCompleteFilePath(jobId);
@@ -133,7 +131,7 @@ public class WorkflowCowoService {
             return finishAnalysis(currentState);
         }
 
-        var messagesFromApi = WatchTower.getDequeAPIMessages().get(sessionId);
+        var messagesFromApi = WatchTower.getDequeAPIMessages().get(jobId);
         if (messagesFromApi != null) {
             for (MessageFromApi msg : messagesFromApi) {
                 if (jobId.equals(msg.getjobId())) {

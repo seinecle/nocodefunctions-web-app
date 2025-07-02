@@ -58,7 +58,6 @@ import net.clementlevallois.functions.model.Globals;
 import net.clementlevallois.functions.model.Globals.GlobalQueryParams;
 import static net.clementlevallois.functions.model.Globals.GlobalQueryParams.CALLBACK_URL;
 import static net.clementlevallois.functions.model.Globals.GlobalQueryParams.JOB_ID;
-import static net.clementlevallois.functions.model.Globals.GlobalQueryParams.SESSION_ID;
 import net.clementlevallois.functions.model.WorkflowTopicsProps;
 import static net.clementlevallois.functions.model.WorkflowTopicsProps.BodyJsonKeys.USER_SUPPLIED_STOPWORDS;
 import net.clementlevallois.functions.model.WorkflowTopicsProps.QueryParams;
@@ -98,7 +97,6 @@ public class WorkflowTopicsBean implements Serializable {
 
     private String runButtonText = "";
     private String jobId = "";
-    private String sessionId;
 
     private Map<Integer, String> mapOfLines;
 
@@ -132,8 +130,6 @@ public class WorkflowTopicsBean implements Serializable {
     @PostConstruct
     public void init() {
         runButtonText = sessionBean.getLocaleBundle().getString("general.verbs.compute");
-        sessionId = FacesContext.getCurrentInstance().getExternalContext().getSessionId(false);
-        logBean.setSessionId(sessionId);
         props = new WorkflowTopicsProps(applicationProperties.getTempFolderFullPath());
         globals = new Globals(applicationProperties.getTempFolderFullPath());
         sessionBean.setFunctionName(WorkflowTopicsProps.NAME);
@@ -234,8 +230,6 @@ public class WorkflowTopicsBean implements Serializable {
 
         for (GlobalQueryParams param : GlobalQueryParams.values()) {
             String paramValue = switch (param) {
-                case SESSION_ID ->
-                    sessionId;
                 case JOB_ID ->
                     jobId;
                 case CALLBACK_URL ->
@@ -268,10 +262,6 @@ public class WorkflowTopicsBean implements Serializable {
     }
 
     public void checkTaskStatusForPolling() {
-        if (sessionId == null || jobId == null) {
-            return;
-        }
-
         Path pathSignalWorkflowComplete = globals.getWorkflowCompleteFilePath(jobId);
         boolean workflowComplete = Files.exists(pathSignalWorkflowComplete);
 
@@ -284,7 +274,7 @@ public class WorkflowTopicsBean implements Serializable {
             context.getApplication().getNavigationHandler().handleNavigation(context, null, "/" + WorkflowTopicsProps.NAME + "/" + Globals.RESULTS_PAGE + Globals.FACES_REDIRECT);
         }
 
-        ConcurrentLinkedDeque<MessageFromApi> messagesFromApi = WatchTower.getDequeAPIMessages().get(sessionId);
+        ConcurrentLinkedDeque<MessageFromApi> messagesFromApi = WatchTower.getDequeAPIMessages().get(jobId);
 
         if (messagesFromApi != null && !messagesFromApi.isEmpty()) {
             Iterator<MessageFromApi> it = messagesFromApi.iterator();
