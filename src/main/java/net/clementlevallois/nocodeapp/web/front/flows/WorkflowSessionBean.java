@@ -1,7 +1,3 @@
-/*
- * Licence Apache 2.0
- * https://www.apache.org/licenses/LICENSE-2.0
- */
 package net.clementlevallois.nocodeapp.web.front.flows;
 
 
@@ -14,6 +10,7 @@ import java.io.Serializable;
 public class WorkflowSessionBean implements Serializable {
 
     private CowoState cowoState;
+    private TopicsState topicsState;
 
     public CowoState getCowoState() {
         return cowoState;
@@ -21,5 +18,13 @@ public class WorkflowSessionBean implements Serializable {
 
     public void setCowoState(CowoState cowoState) {
         this.cowoState = cowoState;
+    }
+
+    public TopicsState getTopicsState() {
+        return topicsState;
+    }
+
+    public void setTopicsState(TopicsState topicsState) {
+        this.topicsState = topicsState;
     }
 }

@@ -54,15 +54,15 @@ public class CowoDataPreparationService {
         record Unsupported(String extension) implements FileExtension {}
     }
 
-    public PreparationResult prepare(CowoDataSource dataSource, String jobId) {
+    public PreparationResult prepare(DataSource dataSource, String jobId) {
         try {
             Path jobDirectory = applicationProperties.getTempFolderFullPath().resolve(jobId);
             Files.createDirectories(jobDirectory);
 
             return switch (dataSource) {
-                case CowoDataSource.FileUpload(List<UploadedFile> files) -> handleFileUpload(files, jobId);
-                case CowoDataSource.WebPage(String url) -> handleWebPage(url, jobId);
-                case CowoDataSource.WebSite(String rootUrl, int maxUrls, var exclusionTerms) -> handleWebSite(rootUrl, maxUrls, exclusionTerms, jobId);
+                case DataSource.FileUpload(List<UploadedFile> files) -> handleFileUpload(files, jobId);
+                case DataSource.WebPage(String url) -> handleWebPage(url, jobId);
+                case DataSource.WebSite(String rootUrl, int maxUrls, var exclusionTerms) -> handleWebSite(rootUrl, maxUrls, exclusionTerms, jobId);
             };
         } catch (IOException e) {
             LOG.log(Level.SEVERE, "Data preparation failed for job " + jobId, e);

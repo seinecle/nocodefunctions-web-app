@@ -27,7 +27,7 @@ public class CowoDataInputBean implements Serializable {
     private final List<String> uploadedFileNames = new ArrayList<>();
 
     @Inject
-    private CowoDataPreparationService dataPreparationService;
+    private DataPreparationCommons dataPreparationService;
 
     @Inject
     private SessionBean sessionBean;
@@ -64,7 +64,7 @@ public class CowoDataInputBean implements Serializable {
             return;
         }
         // For multiple file uploads, the listener is called for each file.
-        CowoDataSource dataSource = new CowoDataSource.FileUpload(List.of(event.getFile()));
+        DataSource dataSource = new DataSource.FileUpload(List.of(event.getFile()));
         processDataSource(dataSource);
         uploadedFileNames.add(event.getFile().getFileName());
     }
@@ -74,7 +74,7 @@ public class CowoDataInputBean implements Serializable {
             sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "Input Error", "Please provide a valid URL.");
             return;
         }
-        CowoDataSource dataSource = new CowoDataSource.WebPage(url);
+        DataSource dataSource = new DataSource.WebPage(url);
         processDataSource(dataSource);
     }
 
@@ -83,11 +83,11 @@ public class CowoDataInputBean implements Serializable {
             sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "Input Error", "Please provide a valid website URL.");
             return;
         }
-        CowoDataSource dataSource = new CowoDataSource.WebSite(websiteUrl, maxUrlsToCrawl, Collections.emptyList());
+        DataSource dataSource = new DataSource.WebSite(websiteUrl, maxUrlsToCrawl, Collections.emptyList());
         processDataSource(dataSource);
     }
 
-    private void processDataSource(CowoDataSource dataSource) {
+    private void processDataSource(DataSource dataSource) {
         // If this is the first data processing action, create a new job ID.
         if (this.jobId == null) {
             this.jobId = UUID.randomUUID().toString().substring(0, 10);
@@ -95,9 +95,9 @@ public class CowoDataInputBean implements Serializable {
 
         var result = dataPreparationService.prepare(dataSource, this.jobId);
 
-        if (result instanceof CowoDataPreparationService.PreparationResult.Failure(String error)) {
+        if (result instanceof DataPreparationCommons.PreparationResult.Failure(String error)) {
             sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Data Preparation Failed", error);
-        } else if (dataSource instanceof CowoDataSource.FileUpload) {
+        } else if (dataSource instanceof DataSource.FileUpload) {
             // For file uploads, we just show a success message for that file.
             sessionBean.addMessage(FacesMessage.SEVERITY_INFO, "File Processed", "The file has been added to your dataset.");
         }
