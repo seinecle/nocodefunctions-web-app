@@ -1,25 +1,13 @@
-package net.clementlevallois.nocodeapp.web.front.flows;
+package net.clementlevallois.nocodeapp.web.front.flows.topics;
 
 import java.util.Map;
 import net.clementlevallois.utils.Multiset;
 import org.primefaces.model.file.UploadedFile;
 
-/**
- * This sealed interface represents the complete set of possible states for the
- * Topic Modeling (topics) workflow. Using a sealed interface ensures that any
- * instance of TopicsState must be one of the permitted record types, allowing
- * for exhaustive, compile-time-checked pattern matching.
- */
 public sealed interface TopicsState {
 
     String jobId();
 
-    /**
-     * The initial state of the workflow, where the application is awaiting user
-     * configuration. It holds all the parameters that can be set by the user.
-     * Each 'with...' method returns a new, immutable instance of this state
-     * with the updated parameter.
-     */
     record AwaitingParameters(
             String jobId,
             String selectedLanguage,
@@ -73,10 +61,6 @@ public sealed interface TopicsState {
         }
     }
 
-    /**
-     * Represents the state where the analysis has been submitted to the
-     * backend microservice and is currently processing. It includes the current progress.
-     */
     record Processing(
             String jobId,
             AwaitingParameters parameters,
@@ -87,25 +71,22 @@ public sealed interface TopicsState {
         }
     }
 
-    /**
-     * The terminal state representing a successfully completed analysis. It
-     * holds all the necessary information to display and export the results.
-     */
     record ResultsReady(
             String jobId,
             String gexf,
             Map<Integer, Multiset<String>> keywordsPerTopic,
-            boolean shareGephiLitePublicly) implements TopicsState {
+            boolean shareGephiLitePublicly,
+            boolean shareVVPublicly
+            ) implements TopicsState {
         
         public ResultsReady withShareGephiLitePublicly(boolean newFlag){
-            return new ResultsReady(jobId, gexf, keywordsPerTopic, newFlag);
+            return new ResultsReady(jobId, gexf, keywordsPerTopic, newFlag, shareVVPublicly);
+        }
+        public ResultsReady withShareVVPublicly(boolean newFlag){
+            return new ResultsReady(jobId, gexf, keywordsPerTopic, shareGephiLitePublicly, newFlag);
         }
     }
 
-    /**
-     * A terminal state representing a failure in the workflow. It captures the
-     * original parameters and an error message for diagnosis.
-     */
     record FlowFailed(
             String jobId,
             AwaitingParameters parameters,

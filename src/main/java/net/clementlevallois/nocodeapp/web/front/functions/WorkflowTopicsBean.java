@@ -110,9 +110,6 @@ public class WorkflowTopicsBean implements Serializable {
     DataImportBean inputData;
 
     @Inject
-    ImportSimpleLinesBean simpleLinesImportBean;
-
-    @Inject
     SessionBean sessionBean;
 
     @Inject
@@ -157,6 +154,8 @@ public class WorkflowTopicsBean implements Serializable {
                 this.jobId = sessionBean.getJobId();
             } else {
                 LOG.warning("No data found to generate input file.");
+                runButtonText = sessionBean.getLocaleBundle().getString("general.verbs.compute");
+                runButtonDisabled = false;
                 return;
             }
 

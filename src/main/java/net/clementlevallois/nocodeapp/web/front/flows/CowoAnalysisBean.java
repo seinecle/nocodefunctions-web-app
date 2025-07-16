@@ -1,5 +1,6 @@
 package net.clementlevallois.nocodeapp.web.front.flows;
 
+import net.clementlevallois.nocodeapp.web.front.exportdata.WorkflowSessionBean;
 import jakarta.annotation.PostConstruct;
 import jakarta.faces.application.FacesMessage;
 import jakarta.faces.context.FacesContext;
@@ -34,7 +35,7 @@ public class CowoAnalysisBean implements Serializable {
     private SessionBean sessionBean;
 
     @Inject
-    private WorkflowCowoService cowoService;
+    private CowoService cowoService;
 
     @PostConstruct
     public void init() {

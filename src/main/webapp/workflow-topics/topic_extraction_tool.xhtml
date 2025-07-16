@@ -8,13 +8,13 @@
     <f:view locale="#{localeBean.currentLocale}">
         <f:metadata>
             <f:viewParam name="lang" value="#{localeBean.languageTag}" />
-            <f:viewParam name="function" value="#{sessionBean.function}" />
+            <f:viewParam name="function" value="#{sessionBean.functionName}" />
         </f:metadata>
 
         <h:head>        <!-- Primary Meta Tags -->
             <title>#{text['topics.topics_extraction_tool.title']}</title>
             <meta name="description" content="#{text['topics.topics_extraction_tool.description']}"/>
-            
+
             <meta http-equiv="content-language" content="en-us"/>
             <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
             <meta http-equiv="cleartype" content="on"/>
@@ -62,14 +62,16 @@
                 <div>
                     <p:spacer height="30" width="10"/>            
                 </div>
+
                 <div style="text-align: center">
-                    <p:button id="textInBulkButton_1" value="#{text['general.message.text_in_bulk']}" icon="pi pi-file-pdf" iconPos="right" outcome="/import/import_your_data_bulk_text.xhtml?function=workflow-topics&amp;faces-redirect=true" styleClass="btn btn-primary" style="min-width: 15em;"/>
+                    <p:button
+                        value="#{text['general.message.import_your_data']}"
+                        icon="pi pi-file-pdf"
+                        iconPos="right"
+                        outcome="/workflow-topics/topics-data-import.xhtml?function=workflow-topics&amp;faces-redirect=true"
+                        styleClass="btn btn-primary"
+                        style="min-width: 15em;"/>
                     <br/>
-                    <br/>
-                    #{text['general.small_words.or']}
-                    <br/>
-                    <br/>
-                    <p:button id="structuredTextButton_1" value="#{text['general.message.text_structured']}" icon="pi pi-file-excel" iconPos="right" outcome="/import/import_your_structured_data.xhtml?function=workflow-topics&amp;faces-redirect=true" styleClass="btn btn-primary" style="min-width: 15em;"/>
                 </div>
             </p:panel>
             <p:spacer height="60"/>

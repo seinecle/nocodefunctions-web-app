@@ -1,11 +1,6 @@
-/*
- * Licence Apache 2.0
- * https://www.apache.org/licenses/LICENSE-2.0
- */
-package net.clementlevallois.nocodeapp.web.front.flows;
+package net.clementlevallois.nocodeapp.web.front.flows.topics;
 
-import net.clementlevallois.nocodeapp.web.front.exportdata.DataPreparationService;
-import net.clementlevallois.nocodeapp.web.front.exportdata.WorkflowSessionBean;
+import jakarta.annotation.PostConstruct;
 import jakarta.faces.application.FacesMessage;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
@@ -15,16 +10,20 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
+import net.clementlevallois.nocodeapp.web.front.exportdata.DataPreparationService;
+import net.clementlevallois.nocodeapp.web.front.exportdata.WorkflowSessionBean;
 import org.primefaces.event.FileUploadEvent;
 
 @Named
 @ViewScoped
-public class CowoDataInputBean implements Serializable {
+public class TopicsDataInputBean implements Serializable {
 
+    private int selectedTab;
     private String jobId;
+    private String exclusionTerms;
     private String url;
-    private String websiteUrl;
     private String jsonKey;
+    private String websiteUrl;
     private int maxUrlsToCrawl = 10;
     private final List<String> uploadedFileNames = new ArrayList<>();
 
@@ -37,37 +36,35 @@ public class CowoDataInputBean implements Serializable {
     @Inject
     private WorkflowSessionBean workflowSessionBean;
 
+    @PostConstruct
     public void init() {
         this.jobId = null;
         this.url = null;
         this.websiteUrl = null;
         this.uploadedFileNames.clear();
-        // Initialize with default parameters
-        CowoState.AwaitingParameters awaitingParameters = new CowoState.AwaitingParameters(
-                jobId,
-                new ArrayList<>(), // selectedLanguages
+        // Initialize with default parameters for the topics workflow
+        TopicsState.AwaitingParameters awaitingParameters = new TopicsState.AwaitingParameters(
+                null, // jobId will be set later
+                "en", // selectedLanguage
+                50, // precision
+                3, // minCharNumber
                 2, // minTermFreq
-                4, // maxNGram
-                false, // removeNonAsciiCharacters
                 false, // scientificCorpus
-                true, // firstNames
-                true, // lemmatize
                 false, // replaceStopwords
-                false, // usePMI
-                null, // fileUserStopwords
-                4 // minCharNumber
+                true, // lemmatize
+                false, // removeNonAsciiCharacters
+                null // uploaded user stopwords
         );
-        workflowSessionBean.setCowoState(awaitingParameters);
+        workflowSessionBean.setTopicsState(awaitingParameters);
     }
 
     public void handleFileUpload(FileUploadEvent event) {
-        if (event.getFile() == null) {
-            sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "File Upload Error", "No file was uploaded.");
+        if (event.getFile() == null || event.getFile().getFileName() == null || event.getFile().getFileName().isBlank()) {
+            sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "File Upload Error", "No file was selected or the file is empty.");
             return;
         }
-        // For multiple file uploads, the listener is called for each file.
-        CowoDataSource dataSource = new CowoDataSource.FileUpload(List.of(event.getFile()));
-        processCowoDataSource(dataSource);
+        TopicsDataSource dataSource = new TopicsDataSource.FileUpload(List.of(event.getFile()));
+        processTopicsDataSource(dataSource);
         uploadedFileNames.add(event.getFile().getFileName());
     }
 
@@ -76,8 +73,8 @@ public class CowoDataInputBean implements Serializable {
             sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "Input Error", "Please provide a valid URL.");
             return;
         }
-        CowoDataSource dataSource = new CowoDataSource.WebPage(url);
-        processCowoDataSource(dataSource);
+        TopicsDataSource dataSource = new TopicsDataSource.WebPage(url);
+        processTopicsDataSource(dataSource);
     }
 
     public void processWebSite() {
@@ -85,23 +82,28 @@ public class CowoDataInputBean implements Serializable {
             sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "Input Error", "Please provide a valid website URL.");
             return;
         }
-        CowoDataSource dataSource = new CowoDataSource.WebSite(websiteUrl, maxUrlsToCrawl, "");
-        processCowoDataSource(dataSource);
+        TopicsDataSource dataSource = new TopicsDataSource.WebSite(websiteUrl, maxUrlsToCrawl, exclusionTerms);
+        processTopicsDataSource(dataSource);
     }
 
-    private void processCowoDataSource(CowoDataSource dataSource) {
-        // If this is the first data processing action, create a new job ID.
+    private void processTopicsDataSource(TopicsDataSource dataSource) {
+        // Create a new job ID if this is the first data processing action
         if (this.jobId == null) {
             this.jobId = UUID.randomUUID().toString().substring(0, 10);
         }
 
-        var result = dataPreparationService.prepareCowo(dataSource, this.jobId, this.jsonKey);
+        var result = dataPreparationService.prepareTopics(dataSource, this.jobId, this.jsonKey);
 
         if (result instanceof DataPreparationService.PreparationResult.Failure(String error)) {
             sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Data Preparation Failed", error);
-        } else if (dataSource instanceof CowoDataSource.FileUpload) {
-            // For file uploads, we just show a success message for that file.
-            sessionBean.addMessage(FacesMessage.SEVERITY_INFO, "File Processed", "The file has been added to your dataset.");
+        } else {
+            String successMessage = switch (dataSource) {
+                case TopicsDataSource.FileUpload f -> f.files().getFirst().getFileName() + " has been added to your dataset.";
+                case TopicsDataSource.WebPage w -> "The web page content has been added to your dataset.";
+                case TopicsDataSource.WebSite ws -> "The website content has been added to your dataset.";
+                default -> "Data has been successfully processed.";
+            };
+            sessionBean.addMessage(FacesMessage.SEVERITY_INFO, "Success", successMessage);
         }
     }
 
@@ -111,21 +113,21 @@ public class CowoDataInputBean implements Serializable {
             return null;
         }
 
-        CowoState currentState = workflowSessionBean.getCowoState();
-
-        if (currentState instanceof CowoState.AwaitingParameters p) {
-            workflowSessionBean.setCowoState(p.withJobId(this.jobId));
+        if (workflowSessionBean.getTopicsState() instanceof TopicsState.AwaitingParameters p) {
+            workflowSessionBean.setTopicsState(p.withJobId(this.jobId));
         }
 
-        return "workflow-cowo?faces-redirect=true";
+        return "workflow-topics.xhtml?faces-redirect=true";
     }
 
     public boolean isDataReady() {
         return this.jobId != null;
     }
 
+    // Standard Getters and Setters
+
     public String getJobId() {
-        return this.jobId;
+        return jobId;
     }
 
     public void setJobId(String jobId) {
@@ -156,8 +158,24 @@ public class CowoDataInputBean implements Serializable {
         this.maxUrlsToCrawl = maxUrlsToCrawl;
     }
 
+    public String getExclusionTerms() {
+        return exclusionTerms;
+    }
+
+    public void setExclusionTerms(String exclusionTerms) {
+        this.exclusionTerms = exclusionTerms;
+    }    
+
     public List<String> getUploadedFileNames() {
         return uploadedFileNames;
+    }
+
+    public int getSelectedTab() {
+        return selectedTab;
+    }
+
+    public void setSelectedTab(int selectedTab) {
+        this.selectedTab = selectedTab;
     }
 
     public String getJsonKey() {
@@ -167,6 +185,4 @@ public class CowoDataInputBean implements Serializable {
     public void setJsonKey(String jsonKey) {
         this.jsonKey = jsonKey;
     }
-    
-    
 }

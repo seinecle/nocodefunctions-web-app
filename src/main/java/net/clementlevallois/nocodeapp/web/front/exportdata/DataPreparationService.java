@@ -1,4 +1,4 @@
-package net.clementlevallois.nocodeapp.web.front.flows;
+package net.clementlevallois.nocodeapp.web.front.exportdata;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -19,6 +19,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import net.clementlevallois.functions.model.Globals;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.ApplicationPropertiesBean;
+import net.clementlevallois.nocodeapp.web.front.flows.CowoDataSource;
+import net.clementlevallois.nocodeapp.web.front.flows.topics.TopicsDataSource;
 import net.clementlevallois.nocodeapp.web.front.http.MicroserviceHttpClient;
 import org.primefaces.model.file.UploadedFile;
 
@@ -31,9 +33,9 @@ import org.primefaces.model.file.UploadedFile;
  */
 @ApplicationScoped
 @Named
-public class DataPreparationCommons {
+public class DataPreparationService {
 
-    private static final Logger LOG = Logger.getLogger(DataPreparationCommons.class.getName());
+    private static final Logger LOG = Logger.getLogger(DataPreparationService.class.getName());
 
     @Inject
     ApplicationPropertiesBean applicationProperties;
@@ -56,22 +58,41 @@ public class DataPreparationCommons {
         }
     }
 
-    public DataPreparationCommons.PreparationResult prepare(DataSource dataSource, String jobId) {
+    public DataPreparationService.PreparationResult prepareCowo(CowoDataSource dataSource, String jobId, String jsonKey) {
         try {
             Path jobDirectory = applicationProperties.getTempFolderFullPath().resolve(jobId);
             Files.createDirectories(jobDirectory);
 
             return switch (dataSource) {
-                case DataSource.FileUpload(List<UploadedFile> files) ->
-                    handleFileUpload(files, jobId);
-                case DataSource.WebPage(String url) ->
-                    handleWebPage(url, jobId);
-                case DataSource.WebSite(String rootUrl, int maxUrls, var exclusionTerms) ->
-                    handleWebSite(rootUrl, maxUrls, exclusionTerms, jobId);
+                case CowoDataSource.FileUpload(List<UploadedFile> files) ->
+                    handleFileUpload(files, jobId, jsonKey);
+                case CowoDataSource.WebPage(String url) ->
+                    parseWebPage(url, jobId);
+                case CowoDataSource.WebSite(String rootUrl, int maxUrls, String exclusionTerms) ->
+                    crawlWebSite(rootUrl, maxUrls, exclusionTerms, jobId);
             };
         } catch (IOException e) {
             LOG.log(Level.SEVERE, "Data preparation failed for job " + jobId, e);
-            return new DataPreparationCommons.PreparationResult.Failure("An unexpected error occurred: " + e.getMessage());
+            return new DataPreparationService.PreparationResult.Failure("An unexpected error occurred: " + e.getMessage());
+        }
+    }
+
+    public DataPreparationService.PreparationResult prepareTopics(TopicsDataSource dataSource, String jobId, String jsonKey) {
+        try {
+            Path jobDirectory = applicationProperties.getTempFolderFullPath().resolve(jobId);
+            Files.createDirectories(jobDirectory);
+
+            return switch (dataSource) {
+                case TopicsDataSource.FileUpload(List<UploadedFile> files) ->
+                    handleFileUpload(files, jobId, jsonKey);
+                case TopicsDataSource.WebPage(String url) ->
+                    parseWebPage(url, jobId);
+                case TopicsDataSource.WebSite(String rootUrl, int maxUrls, String exclusionTerms) ->
+                    crawlWebSite(rootUrl, maxUrls, exclusionTerms, jobId);
+            };
+        } catch (IOException e) {
+            LOG.log(Level.SEVERE, "Data preparation failed for job " + jobId, e);
+            return new DataPreparationService.PreparationResult.Failure("An unexpected error occurred: " + e.getMessage());
         }
     }
 
@@ -87,7 +108,7 @@ public class DataPreparationCommons {
         record Txt() implements FileExtension {
         }
 
-        record Json(String jsonKey) implements FileExtension {
+        record Json() implements FileExtension {
 
         }
 
@@ -106,9 +127,10 @@ public class DataPreparationCommons {
      *
      * @param files The list of files uploaded by the user.
      * @param jobId The unique identifier for the current job.
+     * @param jsonKey
      * @return A {@link PreparationResult} indicating success or failure.
      */
-    public PreparationResult handleFileUpload(List<UploadedFile> files, String jobId) {
+    public PreparationResult handleFileUpload(List<UploadedFile> files, String jobId, String jsonKey) {
         for (UploadedFile file : files) {
             try {
                 String fileUniqueId = Globals.UPLOADED_FILE_PREFIX + UUID.randomUUID().toString().substring(0, 5);
@@ -123,7 +145,7 @@ public class DataPreparationCommons {
                         importClient.get("import/pdf/simpleLines");
                     case FileExtension.Txt() ->
                         importClient.get("import/txt/simpleLines");
-                    case FileExtension.Json(String jsonKey) ->
+                    case FileExtension.Json() ->
                         importClient.get("import/json/simpleLines").addQueryParameter("jsonKey", jsonKey);
                     case FileExtension.Csv() ->
                         importClient.get("import/csv/simpleLines");
@@ -156,7 +178,7 @@ public class DataPreparationCommons {
      * @param jobId The unique identifier for the current job.
      * @return A {@link PreparationResult} indicating success or failure.
      */
-    public PreparationResult handleWebPage(String url, String jobId) {
+    public PreparationResult parseWebPage(String url, String jobId) {
         var response = microserviceHttpClient.importService()
                 .get("import/html/getRawTextFromLinks")
                 .addQueryParameter("jobId", jobId)
@@ -181,7 +203,7 @@ public class DataPreparationCommons {
      * @param jobId The unique identifier for the current job.
      * @return A {@link PreparationResult} indicating success or failure.
      */
-    public PreparationResult handleWebSite(String rootUrl, int maxUrls, List<String> exclusionTerms, String jobId) {
+    public PreparationResult crawlWebSite(String rootUrl, int maxUrls, String exclusionTerms, String jobId) {
         String exclusionTermsParam = String.join(",", exclusionTerms);
         var response = microserviceHttpClient.importService()
                 .get("import/html/getPagesContainedInWebsite")
@@ -222,6 +244,7 @@ public class DataPreparationCommons {
      * record.
      *
      * @param fileName The name of the file.
+     * @param jsonKey
      * @return A FileExtension record representing the detected extension.
      */
     public FileExtension getFileExtension(String fileName) {
@@ -235,7 +258,7 @@ public class DataPreparationCommons {
             case "txt" ->
                 new FileExtension.Txt();
             case "json" ->
-                new FileExtension.Json("text"); // Placeholder key
+                new FileExtension.Json();
             case "csv" ->
                 new FileExtension.Csv();
             default ->

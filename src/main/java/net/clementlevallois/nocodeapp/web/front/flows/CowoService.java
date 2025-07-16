@@ -33,9 +33,9 @@ import net.clementlevallois.nocodeapp.web.front.utils.Converters;
 import org.primefaces.model.file.UploadedFile;
 
 @ApplicationScoped
-public class WorkflowCowoService {
+public class CowoService {
 
-    private static final Logger LOG = Logger.getLogger(WorkflowCowoService.class.getName());
+    private static final Logger LOG = Logger.getLogger(CowoService.class.getName());
 
     @Inject
     private MicroserviceHttpClient microserviceClient;
