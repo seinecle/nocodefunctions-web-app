@@ -10,7 +10,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.ApplicationPropertiesBean;
-import net.clementlevallois.nocodeapp.web.front.exportdata.ExportToVosViewer;
+import net.clementlevallois.nocodeapp.web.front.io.ExportToVosViewer;
 import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;

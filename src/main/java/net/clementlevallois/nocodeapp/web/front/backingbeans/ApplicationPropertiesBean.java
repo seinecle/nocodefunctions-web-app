@@ -401,7 +401,7 @@ public class ApplicationPropertiesBean {
                 System.setProperty(fields[0], fields[1]);
             }
         } catch (IOException ex) {
-            System.out.println("running on windows, could not find the file sys.properties containing all environment variablesl");
+            System.out.println("running on windows, could not find the file sys.properties containing all environment variables");
             System.out.println("EXITING NOW because without these properties, the app can't function");
             System.out.println("ex: " + ex);
         }

@@ -5,14 +5,20 @@ import jakarta.faces.application.FacesMessage;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
+import java.io.IOException;
 import java.io.Serializable;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import net.clementlevallois.nocodeapp.web.front.backingbeans.ApplicationPropertiesBean;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
-import net.clementlevallois.nocodeapp.web.front.exportdata.DataPreparationService;
-import net.clementlevallois.nocodeapp.web.front.exportdata.WorkflowSessionBean;
+import net.clementlevallois.nocodeapp.web.front.io.ImportersService;
 import org.primefaces.event.FileUploadEvent;
+import org.primefaces.model.file.UploadedFile;
 
 @Named
 @ViewScoped
@@ -27,14 +33,17 @@ public class TopicsDataInputBean implements Serializable {
     private int maxUrlsToCrawl = 10;
     private final List<String> uploadedFileNames = new ArrayList<>();
 
+    private static final Logger LOG = Logger.getLogger(TopicsDataInputBean.class.getName());
+
     @Inject
-    private DataPreparationService dataPreparationService;
+    ApplicationPropertiesBean applicationProperties;
+
+    @Inject
+    private ImportersService importersService;
 
     @Inject
     private SessionBean sessionBean;
 
-    @Inject
-    private WorkflowSessionBean workflowSessionBean;
 
     @PostConstruct
     public void init() {
@@ -55,7 +64,7 @@ public class TopicsDataInputBean implements Serializable {
                 false, // removeNonAsciiCharacters
                 null // uploaded user stopwords
         );
-        workflowSessionBean.setTopicsState(awaitingParameters);
+        sessionBean.setTopicsState(awaitingParameters);
     }
 
     public void handleFileUpload(FileUploadEvent event) {
@@ -91,17 +100,35 @@ public class TopicsDataInputBean implements Serializable {
         if (this.jobId == null) {
             this.jobId = UUID.randomUUID().toString().substring(0, 10);
         }
+            Path jobDirectory = applicationProperties.getTempFolderFullPath().resolve(jobId);
+        try {
+            Files.createDirectories(jobDirectory);
+        } catch (IOException ex) {
+            LOG.log(Level.SEVERE, "unable to create directories for job " + jobId);
+        }
 
-        var result = dataPreparationService.prepareTopics(dataSource, this.jobId, this.jsonKey);
+        ImportersService.PreparationResult result = switch (dataSource) {
+            case TopicsDataSource.FileUpload(List<UploadedFile> files) ->
+                importersService.handleFileUpload(files, jobId, jsonKey);
+            case TopicsDataSource.WebPage(String url) ->
+                importersService.parseWebPage(url, jobId);
+            case TopicsDataSource.WebSite(String rootUrl, int maxUrls, String exclusionTermsParams) ->
+                importersService.crawlWebSite(rootUrl, maxUrls, exclusionTerms, jobId);
+        };
+        
 
-        if (result instanceof DataPreparationService.PreparationResult.Failure(String error)) {
+        if (result instanceof ImportersService.PreparationResult.Failure(String error)) {
             sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Data Preparation Failed", error);
         } else {
             String successMessage = switch (dataSource) {
-                case TopicsDataSource.FileUpload f -> f.files().getFirst().getFileName() + " has been added to your dataset.";
-                case TopicsDataSource.WebPage w -> "The web page content has been added to your dataset.";
-                case TopicsDataSource.WebSite ws -> "The website content has been added to your dataset.";
-                default -> "Data has been successfully processed.";
+                case TopicsDataSource.FileUpload f ->
+                    f.files().getFirst().getFileName() + " has been added to your dataset.";
+                case TopicsDataSource.WebPage w ->
+                    "The web page content has been added to your dataset.";
+                case TopicsDataSource.WebSite ws ->
+                    "The website content has been added to your dataset.";
+                default ->
+                    "Data has been successfully processed.";
             };
             sessionBean.addMessage(FacesMessage.SEVERITY_INFO, "Success", successMessage);
         }
@@ -113,8 +140,8 @@ public class TopicsDataInputBean implements Serializable {
             return null;
         }
 
-        if (workflowSessionBean.getTopicsState() instanceof TopicsState.AwaitingParameters p) {
-            workflowSessionBean.setTopicsState(p.withJobId(this.jobId));
+        if (sessionBean.getTopicsState() instanceof TopicsState.AwaitingParameters p) {
+            sessionBean.setTopicsState(p.withJobId(this.jobId));
         }
 
         return "workflow-topics.xhtml?faces-redirect=true";
@@ -125,7 +152,6 @@ public class TopicsDataInputBean implements Serializable {
     }
 
     // Standard Getters and Setters
-
     public String getJobId() {
         return jobId;
     }
@@ -164,7 +190,7 @@ public class TopicsDataInputBean implements Serializable {
 
     public void setExclusionTerms(String exclusionTerms) {
         this.exclusionTerms = exclusionTerms;
-    }    
+    }
 
     public List<String> getUploadedFileNames() {
         return uploadedFileNames;

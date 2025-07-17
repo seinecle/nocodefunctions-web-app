@@ -1,7 +1,7 @@
 /*
  * Copyright Clement Levallois 2021-2025. License Attribution 4.0 Intertnational (CC BY 4.0)
  */
-package net.clementlevallois.nocodeapp.web.front.exportdata;
+package net.clementlevallois.nocodeapp.web.front.io;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;

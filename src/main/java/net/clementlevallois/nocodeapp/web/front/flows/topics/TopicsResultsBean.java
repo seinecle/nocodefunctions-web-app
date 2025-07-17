@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import net.clementlevallois.nocodeapp.web.front.exportdata.WorkflowSessionBean;
+import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.utils.GEXFSaver;
 import net.clementlevallois.utils.Multiset;
 import org.primefaces.model.DefaultStreamedContent;
@@ -25,7 +25,7 @@ public class TopicsResultsBean implements Serializable {
     private static final Logger LOG = Logger.getLogger(TopicsResultsBean.class.getName());
 
     @Inject
-    private WorkflowSessionBean workflowSessionBean;
+    private SessionBean sessionBean;
     @Inject
     private TopicsService topicsService;
 
@@ -33,7 +33,7 @@ public class TopicsResultsBean implements Serializable {
 
     @PostConstruct
     public void init() {
-        if (workflowSessionBean.getTopicsState() instanceof TopicsState.ResultsReady results) {
+        if (sessionBean.getTopicsState() instanceof TopicsState.ResultsReady results) {
             this.results = results;
         } else {
             try {
@@ -79,8 +79,8 @@ public class TopicsResultsBean implements Serializable {
 
     public void setShareVVPublicly(Boolean flag) {
         if (results != null) {
-            workflowSessionBean.setTopicsState(results.withShareVVPublicly(flag));
-            this.results = (TopicsState.ResultsReady) workflowSessionBean.getTopicsState();
+            sessionBean.setTopicsState(results.withShareVVPublicly(flag));
+            this.results = (TopicsState.ResultsReady) sessionBean.getTopicsState();
         }
     }
 
@@ -90,8 +90,8 @@ public class TopicsResultsBean implements Serializable {
 
     public void setShareGephiLitePublicly(Boolean flag) {
         if (results != null) {
-            workflowSessionBean.setTopicsState(results.withShareGephiLitePublicly(flag));
-            this.results = (TopicsState.ResultsReady) workflowSessionBean.getTopicsState();
+            sessionBean.setTopicsState(results.withShareGephiLitePublicly(flag));
+            this.results = (TopicsState.ResultsReady) sessionBean.getTopicsState();
         }
     }
     

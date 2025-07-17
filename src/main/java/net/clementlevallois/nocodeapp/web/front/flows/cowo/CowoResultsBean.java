@@ -1,6 +1,5 @@
-package net.clementlevallois.nocodeapp.web.front.flows;
+package net.clementlevallois.nocodeapp.web.front.flows.cowo;
 
-import net.clementlevallois.nocodeapp.web.front.exportdata.WorkflowSessionBean;
 import jakarta.annotation.PostConstruct;
 import jakarta.faces.context.FacesContext;
 import jakarta.faces.view.ViewScoped;
@@ -10,8 +9,9 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import net.clementlevallois.nocodeapp.web.front.exportdata.ExportToGephiLite;
-import net.clementlevallois.nocodeapp.web.front.exportdata.ExportToVosViewer;
+import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
+import net.clementlevallois.nocodeapp.web.front.io.ExportToGephiLite;
+import net.clementlevallois.nocodeapp.web.front.io.ExportToVosViewer;
 import net.clementlevallois.nocodeapp.web.front.utils.GEXFSaver;
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
@@ -23,7 +23,7 @@ public class CowoResultsBean implements Serializable {
     private static final Logger LOG = Logger.getLogger(CowoResultsBean.class.getName());
 
     @Inject
-    private WorkflowSessionBean workflowSessionBean;
+    private SessionBean sessionBean;
 
     @Inject
     private ExportToVosViewer exportToVosViewer;
@@ -35,7 +35,7 @@ public class CowoResultsBean implements Serializable {
 
     @PostConstruct
     public void init() {
-        if (workflowSessionBean.getCowoState() instanceof CowoState.ResultsReady rr) {
+        if (sessionBean.getCowoState() instanceof CowoState.ResultsReady rr) {
             this.results = rr;
         } else {
             try {
@@ -85,8 +85,8 @@ public class CowoResultsBean implements Serializable {
 
     public void setShareVVPublicly(Boolean flag) {
         if (results != null) {
-            workflowSessionBean.setCowoState(results.withShareVVPublicly(flag));
-            this.results = (CowoState.ResultsReady) workflowSessionBean.getCowoState();
+            sessionBean.setCowoState(results.withShareVVPublicly(flag));
+            this.results = (CowoState.ResultsReady) sessionBean.getCowoState();
         }
     }
 
@@ -96,8 +96,8 @@ public class CowoResultsBean implements Serializable {
 
     public void setShareGephiLitePublicly(Boolean flag) {
         if (results != null) {
-            workflowSessionBean.setCowoState(results.withShareGephiLitePublicly(flag));
-            this.results = (CowoState.ResultsReady) workflowSessionBean.getCowoState();
+            sessionBean.setCowoState(results.withShareGephiLitePublicly(flag));
+            this.results = (CowoState.ResultsReady) sessionBean.getCowoState();
         }
     }
 

@@ -2,7 +2,7 @@
  * Licence Apache 2.0
  * https://www.apache.org/licenses/LICENSE-2.0
  */
-package net.clementlevallois.nocodeapp.web.front.flows;
+package net.clementlevallois.nocodeapp.web.front.flows.cowo;
 
 
 import java.util.List;

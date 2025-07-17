@@ -23,6 +23,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import net.clementlevallois.functions.model.Globals.Names;
+import net.clementlevallois.nocodeapp.web.front.flows.cowo.CowoState;
+import net.clementlevallois.nocodeapp.web.front.flows.topics.TopicsState;
 import net.clementlevallois.nocodeapp.web.front.i18n.I18nStaticFilesResourceBundle;
 import net.clementlevallois.nocodeapp.web.front.utils.UrlParamCleaner;
 
@@ -43,6 +45,8 @@ public class SessionBean implements Serializable {
     private Locale currentLocale;
     private String hash;
     private String jobId;
+    private CowoState cowoState;
+    private TopicsState topicsState;
 
     @Inject
     ApplicationPropertiesBean applicationProperties;
@@ -71,7 +75,7 @@ public class SessionBean implements Serializable {
     }
 
     public String getFunctionName() {
-        if (functionName == null){
+        if (functionName == null) {
             return "";
         }
         return functionName.getDescription();
@@ -268,6 +272,22 @@ public class SessionBean implements Serializable {
         properties.put("httpOnly", true);
         properties.put("secure", true);
         FacesContext.getCurrentInstance().getExternalContext().addResponseCookie(SingletonBean.SERVICE_NAME, value, properties);
+    }
+
+    public CowoState getCowoState() {
+        return cowoState;
+    }
+
+    public void setCowoState(CowoState cowoState) {
+        this.cowoState = cowoState;
+    }
+
+    public TopicsState getTopicsState() {
+        return topicsState;
+    }
+
+    public void setTopicsState(TopicsState topicsState) {
+        this.topicsState = topicsState;
     }
 
 }
