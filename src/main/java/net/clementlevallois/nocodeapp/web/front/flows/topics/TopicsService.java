@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import static java.util.stream.Collectors.toList;
@@ -29,6 +30,7 @@ import net.clementlevallois.functions.model.WorkflowTopicsProps;
 import net.clementlevallois.nocodeapp.web.front.MessageFromApi;
 import net.clementlevallois.nocodeapp.web.front.WatchTower;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.ApplicationPropertiesBean;
+import net.clementlevallois.nocodeapp.web.front.flows.cowo.CowoState;
 import net.clementlevallois.nocodeapp.web.front.http.MicroserviceHttpClient;
 import net.clementlevallois.nocodeapp.web.front.http.RemoteLocal;
 import net.clementlevallois.utils.Multiset;
@@ -47,30 +49,37 @@ public class TopicsService {
     @Inject
     ApplicationPropertiesBean applicationProperties;
 
-    public TopicsState.Processing startAnalysis(TopicsState.AwaitingParameters params) {
-        try {
-            var requestBuilder = microserviceClient.api().post(WorkflowTopicsProps.ENDPOINT);
+    public TopicsState startAnalysis(TopicsState.AwaitingParameters state) {
+        String jobId = state.jobId();
 
-            addJsonBody(requestBuilder, params);
+        var requestBuilder = microserviceClient.api().post(WorkflowTopicsProps.ENDPOINT);
 
-            addQueryParams(requestBuilder, params);
+        addJsonBody(requestBuilder, state);
 
-            // Asynchronously send the request
-            requestBuilder.sendAsync(HttpResponse.BodyHandlers.ofString())
-                    .thenAccept(response -> {
-                        if (response.statusCode() != 200) {
-                            LOG.log(Level.SEVERE, "Microservice task submission failed for job {0}. Status: {1}, Body: {2}", new Object[]{params.jobId(), response.statusCode(), response.body()});
-                        }
-                    })
-                    .exceptionally(e -> {
-                        LOG.log(Level.SEVERE, "Exception during microservice task submission for job " + params.jobId(), e);
-                        return null;
-                    });
-            return new TopicsState.Processing(params.jobId(), params, 0);
+        addQueryParams(requestBuilder, state);
 
-        } catch (Exception e) {
-            LOG.log(Level.SEVERE, "Error launching topics analysis for job " + params.jobId(), e);
-            return null;
+        // Asynchronously send the request
+        AtomicReference<TopicsState.FlowFailed> resultFlowFailed = new AtomicReference<>();
+        AtomicReference<Boolean> isProcessSucessFul = new AtomicReference<>(true);
+        requestBuilder.sendAsync(HttpResponse.BodyHandlers.ofString())
+                .thenAccept(response -> {
+                    if (response.statusCode() != 200) {
+                        LOG.log(Level.SEVERE, "Microservice task submission failed for job {0}. Status: {1}, Body: {2}", new Object[]{state.jobId(), response.statusCode(), response.body()});
+                        resultFlowFailed.set(new TopicsState.FlowFailed(jobId, state, "cowo task submission to remote service returned a not 200 code"));
+                        isProcessSucessFul.set(Boolean.FALSE);
+                    }
+                })
+                .exceptionally(e -> {
+                    LOG.log(Level.SEVERE, "Exception during microservice task submission for job " + jobId, e);
+                    resultFlowFailed.set(new TopicsState.FlowFailed(jobId, state, "cowo task submission created an exceptional error"));
+                    isProcessSucessFul.set(Boolean.FALSE);
+                    return null;
+                });
+
+        if (isProcessSucessFul.get()) {
+            return new TopicsState.Processing(jobId, state, 0);
+        } else {
+            return resultFlowFailed.get();
         }
     }
 
@@ -178,8 +187,8 @@ public class TopicsService {
             return new TopicsState.FlowFailed(jobId, currentState.parameters(), "Failed to read or process results.");
         }
     }
-    
-        public StreamedContent createExcelFileFromJsonSavedData(String jobId) {
+
+    public StreamedContent createExcelFileFromJsonSavedData(String jobId) {
         if (jobId == null || jobId.isEmpty()) {
             LOG.warning("Cannot create Excel file, jobId is null or empty.");
             return new DefaultStreamedContent();

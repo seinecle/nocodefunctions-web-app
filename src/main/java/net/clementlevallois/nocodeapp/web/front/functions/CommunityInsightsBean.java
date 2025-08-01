@@ -46,7 +46,7 @@ public class CommunityInsightsBean implements Serializable {
     private Integer progress = 0;
     private String jsonResultAsString;
     private Boolean runButtonDisabled = false;
-    private StreamedContent excelFileToSave; 
+    private StreamedContent excelFileToSave;
     private StreamedContent gexfFile;
     private String selectedLanguage;
     private String selectedAttributeForText;
@@ -87,7 +87,6 @@ public class CommunityInsightsBean implements Serializable {
 
     @PostConstruct
     public void init() {
-        sessionBean.setFunctionName("community-insights");
         runButtonText = sessionBean.getLocaleBundle().getString("general.verbs.compute");
         sessionId = FacesContext.getCurrentInstance().getExternalContext().getSessionId(false);
         logBean.setSessionId(sessionId);
@@ -143,8 +142,8 @@ public class CommunityInsightsBean implements Serializable {
 
     private void sendRequestToMicroserviceAsync() {
         String callbackURL = RemoteLocal.getDomain() + "/internalapi/messageFromAPI/workflow/community-insights";
+
         microserviceClient.api().post("/api/workflow/community-insights")
-                .withNoPayload()
                 .addQueryParameter("selectedLanguage", selectedLanguage)
                 .addQueryParameter("selectedAttributeForText", selectedAttributeForText)
                 .addQueryParameter("selectedAttributeForCommunity", selectedAttributeForCommunity)
@@ -153,22 +152,23 @@ public class CommunityInsightsBean implements Serializable {
                 .addQueryParameter("sessionId", sessionId)
                 .addQueryParameter("jobId", dataPersistenceUniqueId)
                 .addQueryParameter("callbackURL", callbackURL)
-                .sendAsync(HttpResponse.BodyHandlers.ofString()) // Assuming microservice returns String response on submission
+                .sendAsync(HttpResponse.BodyHandlers.ofString())
                 .thenAccept(response -> {
-                    if (response.statusCode() != 200) {
-                        String errorBody = response.body();
-                        LOG.log(Level.SEVERE, "Microservice task submission failed for dataId {0}. Status: {1}, Body: {2}", new Object[]{dataPersistenceUniqueId, response.statusCode(), errorBody});
-                        sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Submission Failed", "Microservice rejected task. Status: " + response.statusCode());
-                        logBean.addOneNotificationFromString("Microservice rejected task. Status: " + response.statusCode() + ", Error: " + errorBody);
-                    }
+                    LOG.info("Successfully submitted task for dataId: " + dataPersistenceUniqueId);
                 })
                 .exceptionally(e -> {
                     LOG.log(Level.SEVERE, "Exception during microservice task submission for dataId " + dataPersistenceUniqueId, e);
-                    String errorMessage = "Exception communicating with microservice: " + e.getMessage();
-                    if (e.getCause() instanceof MicroserviceCallException msce) {
-                        errorMessage += " (Status: " + msce.getStatusCode() + ", URI: " + msce.getUri() + ", Body: " + msce.getErrorBody() + ")";
+
+                    // Unwrap the cause to get to the specific exception
+                    Throwable cause = e.getCause() != null ? e.getCause() : e;
+                    String errorMessage;
+                    if (cause instanceof MicroserviceCallException msce) {
+                        errorMessage = "Microservice rejected task. Status: " + msce.getStatusCode() + ", Error: " + msce.getErrorBody();
+                        sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Submission Failed", "Microservice rejected task. Status: " + msce.getStatusCode());
+                    } else {
+                        errorMessage = "Communication error with microservice: " + cause.getMessage();
+                        sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Submission Failed", "Communication error with microservice.");
                     }
-                    sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Submission Failed", "Communication error with microservice.");
                     logBean.addOneNotificationFromString(errorMessage);
                     return null;
                 });

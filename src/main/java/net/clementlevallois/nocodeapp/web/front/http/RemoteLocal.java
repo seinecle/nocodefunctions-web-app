@@ -1,8 +1,5 @@
 package net.clementlevallois.nocodeapp.web.front.http;
 
-import io.mikael.urlbuilder.UrlBuilder;
-import java.net.URI;
-
 /**
  *
  * @author LEVALLOIS
@@ -32,22 +29,14 @@ public class RemoteLocal {
                 domain = "nocodefunctions.com";
             }
         }
-        URI uri;
+        StringBuilder uri = new StringBuilder();
 
         if (isLocal()) {
-            uri = UrlBuilder
-                    .empty()
-                    .withScheme(protocol)
-                    .withHost(domain)
-                    .withPort(port)
-                    .withPath(path).toUri();
+            uri.append(protocol).append("://").append(domain).append(":").append(port).append("/")
+                    .append(path);
         }else {
-            uri = UrlBuilder
-                    .empty()
-                    .withScheme(protocol)
-                    .withHost(domain)
-                    .withPath(path).toUri();
-            
+            uri.append(protocol).append("://").append(domain).append("/")
+                    .append(path);
         }
         return uri.toString();
     }

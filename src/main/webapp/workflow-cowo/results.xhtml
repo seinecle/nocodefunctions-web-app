@@ -122,11 +122,10 @@
             </p:panel>
             <ui:include src="/WEB-INF/includes/footer.xhtml" />
             <script type="text/javascript">
-        const nodesData = #{cowoResultsBean.nodesAsJson};
-        const edgesData = #{cowoResultsBean.edgesAsJson};
-        main(nodesData, edgesData);
-        
-    </script>
+                const nodesData = #{cowoResultsBean.nodesAsJson};
+                const edgesData = #{cowoResultsBean.edgesAsJson};
+                main(nodesData, edgesData);
+            </script>
         </h:body>
     </f:view>
 </html>

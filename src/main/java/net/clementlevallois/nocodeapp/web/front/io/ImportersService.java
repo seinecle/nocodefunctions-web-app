@@ -8,9 +8,14 @@ import jakarta.json.JsonArray;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonReader;
 import jakarta.json.JsonValue;
+import java.io.File;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.io.StringReader;
 import java.net.http.HttpResponse;
+import java.nio.channels.FileChannel;
+import java.nio.channels.FileLock;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -69,10 +74,12 @@ public class ImportersService {
         }
 
         record Json() implements FileExtension {
-
         }
 
         record Csv() implements FileExtension {
+        }
+
+        record Excel() implements FileExtension {
         }
 
         record Unsupported(String extension) implements FileExtension {
@@ -88,25 +95,32 @@ public class ImportersService {
      * @param files The list of files uploaded by the user.
      * @param jobId The unique identifier for the current job.
      * @param jsonKey
+     * @param functionName
      * @return A {@link PreparationResult} indicating success or failure.
      */
-    public PreparationResult handleFileUpload(List<UploadedFile> files, String jobId, String jsonKey) {
+    public PreparationResult handleFileUpload(List<UploadedFile> files, String jobId) {
         for (UploadedFile file : files) {
             try {
                 String fileUniqueId = Globals.UPLOADED_FILE_PREFIX + UUID.randomUUID().toString().substring(0, 5);
-                Path pathToFile = applicationProperties.getTempFolderFullPath().resolve(jobId).resolve(fileUniqueId);
-                Files.write(pathToFile, file.getInputStream().readAllBytes());
+                
+                byte[] uploadedFileBytes = file.getInputStream().readAllBytes();
 
                 FileExtension fileExtension = getFileExtension(file.getFileName());
+
+                Path pathToFile = applicationProperties.getTempFolderFullPath().resolve(jobId).resolve(fileUniqueId);
+                Files.write(pathToFile, uploadedFileBytes);
+
                 var importClient = microserviceHttpClient.importService();
 
                 var requestBuilder = switch (fileExtension) {
                     case FileExtension.Pdf() ->
                         importClient.get("import/pdf/simpleLines");
+                    case FileExtension.Excel() ->
+                        importClient.get("import/xlsx/sheetModel");
                     case FileExtension.Txt() ->
                         importClient.get("import/txt/simpleLines");
                     case FileExtension.Json() ->
-                        importClient.get("import/json/simpleLines").addQueryParameter("jsonKey", jsonKey);
+                        importClient.get("import/json/appendToPersistedJsonArray");
                     case FileExtension.Csv() ->
                         importClient.get("import/csv/simpleLines");
                     case FileExtension.Unsupported(String ext) ->
@@ -218,10 +232,48 @@ public class ImportersService {
                 new FileExtension.Txt();
             case "json" ->
                 new FileExtension.Json();
+            case "xlsx" ->
+                new FileExtension.Excel();
             case "csv" ->
                 new FileExtension.Csv();
             default ->
                 new FileExtension.Unsupported(extension);
         };
     }
+    
+        public static synchronized void concurrentWriting(Path path, String string) {
+        File file = path.toFile();
+        if (string == null) {
+            System.out.println("string is empty in concurrentWriting method of IO");
+        }
+        try (RandomAccessFile raf = new RandomAccessFile(file, "rw"); FileChannel fileChannel = raf.getChannel()) {
+            try (FileLock lock = fileChannel.lock()) {
+                byte[] bytes = string.getBytes(StandardCharsets.UTF_8);
+                raf.seek(raf.length());
+                raf.write(bytes);
+            } catch (Exception e) {
+                System.out.println("problem with lock");
+            }
+        } catch (IOException e) {
+            System.out.println("error in the concurrent write to file in one import API endpoint");
+        }
+    }
+
+        public static synchronized void concurrentWriting(Path path, byte [] bytes) {
+        File file = path.toFile();
+        if (bytes == null) {
+            System.out.println("byte array is null in concurrentWriting method of web front import service");
+        }
+        try (RandomAccessFile raf = new RandomAccessFile(file, "rw"); FileChannel fileChannel = raf.getChannel()) {
+            try (FileLock lock = fileChannel.lock()) {
+                raf.seek(raf.length());
+                raf.write(bytes);
+            } catch (Exception e) {
+                System.out.println("problem with lock");
+            }
+        } catch (IOException e) {
+            System.out.println("error in the concurrent write to file in one import API endpoint");
+        }
+    }
+
 }

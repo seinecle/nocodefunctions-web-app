@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="#{localeBean.languageTag}"
+      xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+    <f:view locale="#{localeBean.currentLocale}">
+        <h:head>
+            <title>Spatialize Network - Results</title>
+            <h:outputStylesheet name="css/output.css" />
+        </h:head>
+        <h:body>
+            <ui:include src="/WEB-INF/includes/header.xhtml"/>
+            <div class="flex w-full gap-4 flew-wrap">
+                <div class="sm:w-[70%] flex flex-col">
+                    <p:panel header="3. Results">
+                        <h:form>
+                            <p:commandButton value="Download a GEXF file with network layout"
+                                             ajax="false"
+                                             icon="pi pi-arrow-down"
+                                             styleClass="btn btn-primary">
+                                <p:fileDownload value="#{spatializeResultsBean.fileToSave}" />
+                            </p:commandButton>
+                        </h:form>
+                    </p:panel>
+                </div>
+            </div>
+            <ui:include src="/WEB-INF/includes/footer.xhtml" />
+        </h:body>
+    </f:view>
+</html>

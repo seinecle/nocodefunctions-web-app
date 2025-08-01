@@ -6,7 +6,6 @@ import jakarta.faces.context.FacesContext;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
-import net.clementlevallois.functions.model.WorkflowCowoProps;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.LocaleComparator;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.logview.BackToFrontMessengerBean;
@@ -44,10 +43,6 @@ public class CowoAnalysisBean implements Serializable {
         }
     }
 
-    public void setFunctionNameInSession() {
-        sessionBean.setFunctionName(WorkflowCowoProps.NAME);
-    }
-
     public void runAnalysis() {
         if (sessionBean.getCowoState() instanceof CowoState.AwaitingParameters parameters) {
             if (parameters.jobId() == null || parameters.jobId().isBlank()) {
@@ -57,8 +52,8 @@ public class CowoAnalysisBean implements Serializable {
             try {
                 logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.starting_analysis"));
                 String sessionId = FacesContext.getCurrentInstance().getExternalContext().getSessionId(false);
-                CowoState.Processing processingState = cowoService.startAnalysis(parameters, sessionId);
-                sessionBean.setCowoState(processingState);
+                CowoState cowoState = cowoService.startAnalysis(parameters, sessionId);
+                sessionBean.setCowoState(cowoState);
             } catch (Exception e) {
                 LOG.log(Level.SEVERE, "Error initiating analysis", e);
                 sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Error", "Could not start analysis: " + e.getMessage());

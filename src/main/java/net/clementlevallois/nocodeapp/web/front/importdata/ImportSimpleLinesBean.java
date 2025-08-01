@@ -66,7 +66,7 @@ public class ImportSimpleLinesBean implements Serializable {
     }
 
     public String gotToFunctionWithDataInBulk() {
-        return "/" + sessionBean.getFunctionName() + "/" + sessionBean.getFunctionName() + ".xhtml?faces-redirect=true";
+        return ".xhtml?faces-redirect=true";
     }
 
     public String getJsonKey() {

@@ -9,7 +9,6 @@
     <f:view locale="#{localeBean.currentLocale}">
         <f:metadata>
             <f:viewParam name="lang" value="#{localeBean.languageTag}" />
-            <f:viewParam name="function" value="#{sessionBean.function}" />
         </f:metadata>
 
         <h:head>        <!-- Primary Meta Tags -->
@@ -63,47 +62,14 @@
                 <div>
                     <p:spacer height="30" width="10"/>            
                 </div>
-                <p:button id="button" value="#{text['sim.create']} 🔎" outcome="/import/import_your_data_network_builder_option.xhtml?function=sim&amp;faces-redirect=true" styleClass="btn btn-primary" style="min-width: 15em;"/>
+                <p:button id="button" value="#{text['sim.create']} 🔎" outcome="/sim/similarity-import.xhtml?function=sim&amp;faces-redirect=true" styleClass="btn btn-primary" style="min-width: 15em;"/>
             </p:panel>
-            <p:spacer height="20"/>
-            <h:form enctype="multipart/form-data" id="parametersSim">
-                <p:panel header="#{text['general.nouns.parameters']}">
-                    <p:accordionPanel widgetVar="basic" activeIndex="null">
-                        <p:tab title="#{text['gaze.network_builder.if_you_need_more_parameters']}">
-                            <p class="p-m-0">
-                                <p:divider align="left">
-                                    <div class="p-d-inline-flex p-ai-center">
-                                        <i class="pi pi-chart-bar p-mr-2"/>
-                                        <b>#{text['general.nouns.min_targets']}</b>
-                                    </div>
-                                </p:divider>
-                                <p:outputLabel escape="false" value="#{text['gaze.network_builder.connections_should_have_min_targets_in_common']}"/>
-                                <br/>
-                                <br/>
-                                <p:outputLabel for="@next" value="#{text['general.message.at_least']}"/>
-                                <p:spinner value="#{workflowSimBean.minSharedTargets}">
-                                    <f:ajax />
-                                </p:spinner>
-                            </p>
-                        </p:tab>
-                    </p:accordionPanel>
-                </p:panel>        
-            </h:form>
-            <p:spacer height="20"/>
             <p:panel>
-                <p><i>#{text['gaze.network_builder.or_read_below']}</i></p>
-                <p:spacer height="40"/>
                 <p:fieldset>
                     <f:facet name="legend">
-                        <h3>#{text['gaze.network_builder.two_options']}</h3>
+                        <h3>Create a network based on similarities between entities</h3>
                     </f:facet>
                     <div id="reduce-desktop" style="text-align:center;">
-                        <h:graphicImage name="images/cooccurrences_explanations.jpg" style="vertical-align: bottom; -webkit-filter: drop-shadow(5px 5px 5px #222222);
-                                        filter: drop-shadow(5px 5px 5px #222222);" alt="explanations for how to transform a table of coccurrences into a network"/>
-                        <br/>
-                        <div>
-                            <p:spacer height="60"/>
-                        </div>
                         <h:graphicImage name="images/sources_targets_explanations.jpg" style="vertical-align: bottom; -webkit-filter: drop-shadow(5px 5px 5px #222222);
                                         filter: drop-shadow(5px 5px 5px #222222);" alt="explanations for how to transform items into a network, based on their similarities"/>
                     </div>

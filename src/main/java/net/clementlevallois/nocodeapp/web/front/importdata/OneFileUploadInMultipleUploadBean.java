@@ -38,7 +38,7 @@ public class OneFileUploadInMultipleUploadBean {
                 return;
             }
 
-            Globals.Names currentFunction = Names.valueOf(sessionBean.getFunctionName());
+            Globals.Names currentFunction = null;
 
             if (currentFunction == null) {
                 logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.error_function_not_set"));

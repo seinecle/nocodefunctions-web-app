@@ -52,7 +52,7 @@ public class OneFileUploadToSimpleLinesBean {
 
             byte[] fileAllBytes = f.getInputStream().readAllBytes();
             String fileName = f.getFileName();
-            Globals.Names currentFunction = Names.valueOf(sessionBean.getFunctionName());
+            Globals.Names currentFunction = null;
 
             if (currentFunction == null) {
                 logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.error_function_not_set"));

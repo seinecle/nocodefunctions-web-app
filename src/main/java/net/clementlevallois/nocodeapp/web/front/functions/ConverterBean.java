@@ -72,7 +72,6 @@ public class ConverterBean implements Serializable {
 
     @PostConstruct
     public void init() {
-        sessionBean.setFunctionName(FunctionNetworkConverter.NAME);
         uploadButtonMessage = sessionBean.getLocaleBundle().getString("general.message.choose_gexf_file");
     }
 
@@ -85,7 +84,6 @@ public class ConverterBean implements Serializable {
         try {
             byte[] readAllBytes = event.getFile().getInputStream().readAllBytes();
             fileNameUploaded = event.getFile().getFileName();
-            sessionBean.sendFunctionPageReport();
             jobId = UUID.randomUUID().toString().substring(0, 10);
             Path tempFolderRelativePath = applicationProperties.getTempFolderFullPath();
 

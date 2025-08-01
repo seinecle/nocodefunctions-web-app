@@ -87,7 +87,6 @@ public class UmigonBean implements Serializable {
 
     @PostConstruct
     public void init() {
-        sessionBean.setFunctionName(FunctionUmigon.NAME);
         String positive_tone = sessionBean.getLocaleBundle().getString("general.nouns.sentiment_positive");
         String negative_tone = sessionBean.getLocaleBundle().getString("general.nouns.sentiment_negative");
         String neutral_tone = sessionBean.getLocaleBundle().getString("general.nouns.sentiment_neutral");
@@ -129,7 +128,6 @@ public class UmigonBean implements Serializable {
         if (selectedLanguage == null || selectedLanguage.isEmpty()) {
             selectedLanguage = "en";
         }
-        sessionBean.sendFunctionPageReport();
         logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.starting_analysis"));
 
         PrimeFaces.current().ajax().update("formComputeButton:computeButton", "notifications", "progressComponentId");

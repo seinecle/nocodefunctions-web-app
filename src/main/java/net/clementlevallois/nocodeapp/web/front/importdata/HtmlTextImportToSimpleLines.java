@@ -54,7 +54,7 @@ public class HtmlTextImportToSimpleLines implements Serializable {
 
     public void getRawTextFromUrls() {
         try {
-            String currentFunction = sessionBean.getFunctionName();
+            String currentFunction = null;
             if (currentFunction == null) {
                 logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.error_function_not_set"));
                 return;
@@ -91,7 +91,7 @@ public class HtmlTextImportToSimpleLines implements Serializable {
         linksToHarvest = new ArrayList<>();
 
         try {
-            String currentFunction = sessionBean.getFunctionName();
+            String currentFunction = null;
             if (currentFunction == null) {
                 logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.error_function_not_set"));
                 return;
@@ -125,7 +125,7 @@ public class HtmlTextImportToSimpleLines implements Serializable {
         linksToHarvest = new ArrayList<>();
 
         try {
-            String currentFunction = sessionBean.getFunctionName();
+            String currentFunction = null;
             if (currentFunction == null) {
                 logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.error_function_not_set"));
                 return;
@@ -181,7 +181,7 @@ public class HtmlTextImportToSimpleLines implements Serializable {
         getRawTextFromUrls();
         urlWebPage = null;
         urlWebSite = null;
-        return "/" + sessionBean.getFunctionName() + "/" + sessionBean.getFunctionName() + ".xhtml?faces-redirect=true";
+        return ".xhtml?faces-redirect=true";
     }
 
     public String getUrlWebPage() {

@@ -1,7 +1,5 @@
 package net.clementlevallois.nocodeapp.web.front.http;
 
-import io.mikael.urlbuilder.UrlBuilder;
-import io.mikael.urlbuilder.util.UrlParameterMultimap;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -151,47 +149,24 @@ public class SendReport extends Thread {
                 params.put("key", stopwords);
             }
 
-            if (TYPE.equals("sendDataKeycode")) {
-                endPoint = "sendDataKeycode";
-                params.put("email", email);
-                params.put("keycode", keycode);
-                params.put("description", description);
+            StringBuilder urlBuilder = new StringBuilder();
+            urlBuilder.append(scheme).append("://").append(middlewareHost).append(":")
+                    .append(middlewarePort).append("/").append(endPoint);
+            
+            if (!params.isEmpty()){
+                urlBuilder.append("?");
             }
-
-            if (TYPE.equals("sendAnnotatorCredentials")) {
-                endPoint = "sendAnnotatorCredentials";
-                params.put("emailAnnotator", email);
-                params.put("pass", pass);
-
-                // this is to obfuscate the correct keycode.
-                // When the keycode is parsed back in the app, the 3 last characters are removed
-                params.put("keycode", keycode + "2ie");
-                params.put("description", description);
-                params.put("emailDesigner", emailDesigner);
-                params.put("annotationTypeOfTask", annotationTypeOfTask);
-            }
-
-            if (TYPE.equals("sendTaskDesignerCredentials")) {
-                endPoint = "sendTaskDesignerCredentials";
-                params.put("pass", pass);
-                params.put("email", email);
-            }
-
-            UrlBuilder urlBuilder = UrlBuilder.empty()
-                    .withScheme(scheme)
-                    .withHost(middlewareHost)
-                    .withPort(Integer.valueOf(middlewarePort))
-                    .withPath(endPoint);
-            UrlParameterMultimap paramsList = UrlParameterMultimap.newMultimap();
-
+            
             for (Map.Entry<String, String> entry : params.entrySet()) {
-                paramsList.add(entry.getKey(), entry.getValue());
+                urlBuilder.append(entry.getKey()).append("=").append(entry.getValue()).append("&");
             }
+            
+            String uriString = urlBuilder.toString().replaceAll("&$", "");
 
-            uri = urlBuilder.withParameters(paramsList).toUri();
+            uri = URI.create(uriString);
             HttpRequest request = HttpRequest.newBuilder().uri(uri).build();
             HttpClient client = HttpClient.newHttpClient();
-            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            client.send(request, HttpResponse.BodyHandlers.ofString());
         } catch (IOException | InterruptedException ex) {
             System.out.println("error sending report to this url:");
             if (uri != null) {

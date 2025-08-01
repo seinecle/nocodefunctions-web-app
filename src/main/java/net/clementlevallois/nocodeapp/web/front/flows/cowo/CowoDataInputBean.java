@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import net.clementlevallois.functions.model.Globals;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.ApplicationPropertiesBean;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.flows.topics.TopicsDataInputBean;
@@ -106,12 +107,14 @@ public class CowoDataInputBean implements Serializable {
         try {
             Files.createDirectories(jobDirectory);
         } catch (IOException ex) {
-            LOG.log(Level.SEVERE, "unable to create directories for job " + jobId);
+            LOG.log(Level.SEVERE, () -> "unable to create directories for job " + jobId);
         }
+
+        sessionBean.sendFunctionPageReport(Globals.Names.COWO.name());
 
         ImportersService.PreparationResult result = switch (dataSource) {
             case CowoDataSource.FileUpload(List<UploadedFile> files) ->
-                importersService.handleFileUpload(files, jobId, jsonKey);
+                importersService.handleFileUpload(files, jobId);
             case CowoDataSource.WebPage(String url) ->
                 importersService.parseWebPage(url, jobId);
             case CowoDataSource.WebSite(String rootUrl, int maxUrls, String exclusionTerms) ->

@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import net.clementlevallois.functions.model.Globals;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.ApplicationPropertiesBean;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.io.ImportersService;
@@ -43,7 +44,6 @@ public class TopicsDataInputBean implements Serializable {
 
     @Inject
     private SessionBean sessionBean;
-
 
     @PostConstruct
     public void init() {
@@ -100,22 +100,23 @@ public class TopicsDataInputBean implements Serializable {
         if (this.jobId == null) {
             this.jobId = UUID.randomUUID().toString().substring(0, 10);
         }
-            Path jobDirectory = applicationProperties.getTempFolderFullPath().resolve(jobId);
+        Path jobDirectory = applicationProperties.getTempFolderFullPath().resolve(jobId);
         try {
             Files.createDirectories(jobDirectory);
         } catch (IOException ex) {
             LOG.log(Level.SEVERE, "unable to create directories for job " + jobId);
         }
 
+        sessionBean.sendFunctionPageReport(Globals.Names.TOPICS.name());
+
         ImportersService.PreparationResult result = switch (dataSource) {
             case TopicsDataSource.FileUpload(List<UploadedFile> files) ->
-                importersService.handleFileUpload(files, jobId, jsonKey);
+                importersService.handleFileUpload(files, jobId);
             case TopicsDataSource.WebPage(String url) ->
                 importersService.parseWebPage(url, jobId);
             case TopicsDataSource.WebSite(String rootUrl, int maxUrls, String exclusionTermsParams) ->
                 importersService.crawlWebSite(rootUrl, maxUrls, exclusionTerms, jobId);
         };
-        
 
         if (result instanceof ImportersService.PreparationResult.Failure(String error)) {
             sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Data Preparation Failed", error);

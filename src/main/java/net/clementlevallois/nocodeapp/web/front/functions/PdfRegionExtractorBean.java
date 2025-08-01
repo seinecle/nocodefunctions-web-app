@@ -84,7 +84,6 @@ public class PdfRegionExtractorBean implements Serializable {
 
     @PostConstruct
     public void init() {
-        sessionBean.setFunctionName(FunctionPdfRegionExtract.NAME);
         results = new ConcurrentHashMap();
     }
 
@@ -255,7 +254,6 @@ public class PdfRegionExtractorBean implements Serializable {
             return null; // Stay on the same page
         }
 
-        sessionBean.sendFunctionPageReport();
         logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.starting_analysis"));
         progress = 0;
         renderProgressBar = true;
@@ -376,7 +374,7 @@ public class PdfRegionExtractorBean implements Serializable {
             PrimeFaces.current().ajax().update("formComputeButton:computeButton", "notifications", "progressComponentId", "resultsButtonPanel");
 
             // Navigate to the results page
-            return "/" + sessionBean.getFunctionName() + "/" + Globals.RESULTS_PAGE + Globals.FACES_REDIRECT;
+            return Globals.RESULTS_PAGE + Globals.FACES_REDIRECT;
 
         } catch (CompletionException cex) {
             Throwable cause = cex.getCause();

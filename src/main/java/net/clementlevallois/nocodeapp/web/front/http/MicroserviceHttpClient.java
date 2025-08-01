@@ -5,6 +5,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonWriter;
+import java.io.IOException;
 import java.io.StringWriter;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -24,6 +25,11 @@ import java.util.logging.Logger;
 import net.clementlevallois.functions.model.Globals;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.ApplicationPropertiesBean;
 
+/**
+ * An injectable, application-scoped HTTP client for communicating with internal microservices.
+ * It provides a fluent builder API for constructing and sending requests with consistent
+ * configuration, error handling, and timeout settings.
+ */
 @ApplicationScoped
 public class MicroserviceHttpClient {
 
@@ -34,7 +40,7 @@ public class MicroserviceHttpClient {
 
     private HttpClient httpClient;
     private Properties privateProperties;
-    private static final String MICROSERVICE_ENDPOINT = Globals.API_ENDPOINT_ROOT;
+    private static final String MICROSERVICE_ENDPOINT_PATH = Globals.API_ENDPOINT_ROOT;
 
     @PostConstruct
     public void init() {
@@ -45,29 +51,85 @@ public class MicroserviceHttpClient {
         LOG.info("MicroserviceHttpClient initialized.");
     }
 
+    /**
+     * Starts building a request to a specific target service.
+     *
+     * @param scheme The URI scheme (e.g., "http").
+     * @param host The host (e.g., "localhost").
+     * @param port The port number.
+     * @return A ServiceClientBuilder to continue defining the request.
+     */
+    public ServiceClientBuilder target(String scheme, String host, int port) {
+        try {
+            URI baseUri = new URI(scheme, null, host, port, null, null, null);
+            return new ServiceClientBuilder(httpClient, baseUri);
+        } catch (URISyntaxException e) {
+            LOG.log(Level.SEVERE, "Invalid URI components provided to target", e);
+            throw new IllegalArgumentException("Invalid URI components", e);
+        }
+    }
+
+    /**
+     * Creates a client builder for the pre-configured 'API' microservice.
+     *
+     * @return A ServiceClientBuilder configured for the API service.
+     */
     public ServiceClientBuilder api() {
         String apiPort = privateProperties.getProperty("nocode_api_port");
         Objects.requireNonNull(apiPort, "nocode_api_port property is not set!");
-        URI baseUri = buildBaseUri("localhost", apiPort);
+        URI baseUri = buildBaseUriWithBasePath("localhost", apiPort);
         return new ServiceClientBuilder(httpClient, baseUri);
     }
 
+    /**
+     * Creates a client builder for the pre-configured 'import' microservice.
+     *
+     * @return A ServiceClientBuilder configured for the import service.
+     */
     public ServiceClientBuilder importService() {
         String importPort = privateProperties.getProperty("nocode_import_port");
         Objects.requireNonNull(importPort, "nocode_import_port property is not set!");
-        URI baseUri = buildBaseUri("localhost", importPort);
+        URI baseUri = buildBaseUriWithBasePath("localhost", importPort);
         return new ServiceClientBuilder(httpClient, baseUri);
     }
 
-    private URI buildBaseUri(String host, String port) {
+    private URI buildBaseUriWithBasePath(String host, String port) {
         try {
-            return new URI("http", null, host, Integer.parseInt(port), MICROSERVICE_ENDPOINT, null, null);
+            return new URI("http", null, host, Integer.parseInt(port), MICROSERVICE_ENDPOINT_PATH, null, null);
         } catch (NumberFormatException | URISyntaxException e) {
             LOG.log(Level.SEVERE, "Invalid port number: " + port, e);
             throw new IllegalStateException("Invalid port configuration", e);
         }
     }
+    
+    /**
+     * Validates the HttpResponse, throwing a MicroserviceCallException for non-2xx status codes.
+     * @param <T>
+     * @param response
+     */
+    public static <T> void validateResponse(HttpResponse<T> response) {
+        if (response.statusCode() >= 200 && response.statusCode() < 300) {
+            return;
+        }
+        String errorBody = "Could not read error response body.";
+        try {
+            if (response.body() instanceof String s) {
+                errorBody = s;
+            } else if (response.body() instanceof byte[] bs) {
+                errorBody = new String(bs, StandardCharsets.UTF_8);
+            }
+        } catch (Exception e) {
+            LOG.log(Level.FINEST, "Exception while reading error body from failed microservice call", e);
+        }
+        LOG.log(Level.WARNING, "Microservice call failed. Status: {0}, URI: {1}, Body: {2}",
+                new Object[]{response.statusCode(), response.uri(), errorBody});
+        throw new MicroserviceCallException("Microservice call failed with status code " + response.statusCode(), response.statusCode(), errorBody, response.uri().toString());
+    }
 
+
+    /**
+     * Builder for specifying the request path (e.g., GET, POST) after a target is set.
+     */
     public static class ServiceClientBuilder {
 
         private final HttpClient httpClient;
@@ -89,6 +151,10 @@ public class MicroserviceHttpClient {
         }
     }
 
+    /**
+     * Abstract base for all request builders, providing common functionality
+     * for adding headers, query parameters, and sending the request.
+     */
     private static abstract class AbstractRequestBuilder<B extends AbstractRequestBuilder<B>> {
 
         protected final HttpClient httpClient;
@@ -113,67 +179,52 @@ public class MicroserviceHttpClient {
         }
 
         protected URI buildFinalUri() {
+            if (queryParams.isEmpty()) {
+                return uri;
+            }
             try {
-                if (queryParams.isEmpty()) {
-                    return uri;
-                }
-
                 StringBuilder query = new StringBuilder();
-                queryParams.forEach((key, value) -> {
+                for (Map.Entry<String, String> entry : queryParams.entrySet()) {
                     if (!query.isEmpty()) {
                         query.append("&");
                     }
-                    query.append(URLEncoder.encode(key, StandardCharsets.UTF_8));
+                    query.append(URLEncoder.encode(entry.getKey(), StandardCharsets.UTF_8));
                     query.append("=");
-                    query.append(URLEncoder.encode(value, StandardCharsets.UTF_8));
-                });
-
-                return URI.create(
-                        new URI(
-                                uri.getScheme(),
-                                uri.getUserInfo(),
-                                uri.getHost(),
-                                uri.getPort(),
-                                uri.getPath(),
-                                query.toString(),
-                                uri.getFragment()
-                        ).toString()
-                );
+                    query.append(URLEncoder.encode(entry.getValue(), StandardCharsets.UTF_8));
+                }
+                return new URI(uri.getScheme(), uri.getUserInfo(), uri.getHost(), uri.getPort(), uri.getPath(), query.toString(), uri.getFragment());
             } catch (URISyntaxException ex) {
-                Logger.getLogger(MicroserviceHttpClient.class.getName()).log(Level.SEVERE, null, ex);
+                throw new IllegalStateException("Failed to build final URI with query parameters", ex);
             }
-            return uri;
         }
 
         protected abstract HttpRequest buildRequest();
 
-        public <T> CompletableFuture<HttpResponse<T>> sendAsync(HttpResponse.BodyHandler<T> bodyHandler) {
-            return httpClient.sendAsync(buildRequest(), bodyHandler);
+        /**
+         * Sends the request synchronously.
+         */
+        public <T> HttpResponse<T> send(HttpResponse.BodyHandler<T> bodyHandler) throws IOException, InterruptedException {
+            HttpResponse<T> response = httpClient.send(buildRequest(), bodyHandler);
+            MicroserviceHttpClient.validateResponse(response);
+            return response;
         }
 
-        public <T> CompletableFuture<T> sendAsyncAndGetBody(HttpResponse.BodyHandler<T> bodyHandler) {
+        /**
+         * Sends the request asynchronously.
+         */
+        public <T> CompletableFuture<HttpResponse<T>> sendAsync(HttpResponse.BodyHandler<T> bodyHandler) {
             return httpClient.sendAsync(buildRequest(), bodyHandler)
                     .thenApply(response -> {
-                        if (response.statusCode() >= 200 && response.statusCode() < 300) {
-                            return response.body();
-                        } else {
-                            String errorBody = "Could not read error response body.";
-                            try {
-                                switch (response.body()) {
-                                    case String string ->
-                                        errorBody = string;
-                                    case byte[] bs ->
-                                        errorBody = new String(bs, StandardCharsets.UTF_8);
-                                    default -> {
-                                    }
-                                }
-                            } catch (Exception e) {
-                            }
-                            LOG.log(Level.WARNING, "Microservice call failed. Status: {0}, URI: {1}, Body: {2}",
-                                    new Object[]{response.statusCode(), response.uri(), errorBody});
-                            throw new MicroserviceCallException("Microservice call failed with status code " + response.statusCode(), response.statusCode(), errorBody, response.uri().toString());
-                        }
+                        MicroserviceHttpClient.validateResponse(response);
+                        return response;
                     });
+        }
+
+        /**
+         * Sends the request asynchronously and returns the body upon successful completion.
+         */
+        public <T> CompletableFuture<T> sendAsyncAndGetBody(HttpResponse.BodyHandler<T> bodyHandler) {
+            return sendAsync(bodyHandler).thenApply(HttpResponse::body);
         }
 
         @SuppressWarnings("unchecked")
@@ -183,21 +234,18 @@ public class MicroserviceHttpClient {
     }
 
     public static class GetRequestBuilder extends AbstractRequestBuilder<GetRequestBuilder> {
-
         private GetRequestBuilder(HttpClient httpClient, URI uri) {
             super(httpClient, uri);
         }
 
         @Override
         protected HttpRequest buildRequest() {
-            URI finalUri = buildFinalUri();
-            requestBuilder.uri(finalUri).GET();
+            requestBuilder.uri(buildFinalUri()).GET();
             return requestBuilder.build();
         }
     }
 
     public static class PostRequestBuilder extends AbstractRequestBuilder<PostRequestBuilder> {
-
         private HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.noBody();
 
         private PostRequestBuilder(HttpClient httpClient, URI uri) {
@@ -210,8 +258,7 @@ public class MicroserviceHttpClient {
             try (JsonWriter jw = jakarta.json.Json.createWriter(sw)) {
                 jw.write(json);
             }
-            String jsonString = sw.toString();
-            this.bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(jsonString.getBytes(StandardCharsets.UTF_8));
+            this.bodyPublisher = HttpRequest.BodyPublishers.ofString(sw.toString());
             requestBuilder.header("Content-Type", "application/json");
             return self();
         }
@@ -223,22 +270,14 @@ public class MicroserviceHttpClient {
             return self();
         }
 
-        public PostRequestBuilder withNoPayload() {
-            this.bodyPublisher = HttpRequest.BodyPublishers.noBody();
-            requestBuilder.headers("Content-Type");
-            return self();
-        }
-
         @Override
         protected HttpRequest buildRequest() {
-            URI finalUri = buildFinalUri();
-            requestBuilder.uri(finalUri).POST(bodyPublisher);
+            requestBuilder.uri(buildFinalUri()).POST(bodyPublisher);
             return requestBuilder.build();
         }
     }
 
     public static class MicroserviceCallException extends RuntimeException {
-
         private final int statusCode;
         private final String errorBody;
         private final String uri;
@@ -249,17 +288,8 @@ public class MicroserviceHttpClient {
             this.errorBody = errorBody;
             this.uri = uri;
         }
-
-        public int getStatusCode() {
-            return statusCode;
-        }
-
-        public String getErrorBody() {
-            return errorBody;
-        }
-
-        public String getUri() {
-            return uri;
-        }
+        public int getStatusCode() { return statusCode; }
+        public String getErrorBody() { return errorBody; }
+        public String getUri() { return uri; }
     }
 }

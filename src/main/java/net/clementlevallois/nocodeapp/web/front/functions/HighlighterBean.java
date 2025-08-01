@@ -60,7 +60,6 @@ public class HighlighterBean implements Serializable {
 
     @PostConstruct
     public void init() {
-        sessionBean.setFunctionName(FunctionHighlighter.NAME);
     }
 
     public void onload() {

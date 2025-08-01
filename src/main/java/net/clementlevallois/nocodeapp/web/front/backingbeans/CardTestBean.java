@@ -1,6 +1,5 @@
 package net.clementlevallois.nocodeapp.web.front.backingbeans;
 
-import io.mikael.urlbuilder.UrlBuilder;
 import jakarta.annotation.PostConstruct;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -16,6 +15,9 @@ import java.util.logging.Logger;
 import jakarta.inject.Named;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
+import java.net.URISyntaxException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import net.clementlevallois.nocodeapp.web.front.functions.UmigonBean;
 import net.clementlevallois.nocodeapp.web.front.http.SendReport;
 import net.clementlevallois.umigon.model.classification.Document;
@@ -88,7 +90,7 @@ public class CardTestBean implements Serializable {
     public void setPrivateProperties(Properties privateProperties) {
         this.privateProperties = privateProperties;
     }
-    
+
     public String getUmigonTestInputFR() {
         return umigonTestInputFR;
     }
@@ -102,22 +104,23 @@ public class CardTestBean implements Serializable {
         try {
             showFRExplanation = false;
 
-            UrlBuilder urlBuilder = UrlBuilder.empty();
+            String scheme;
+            String host;
+            int port = -1; // default to -1 means no port
             if (usePublicDomainName) {
-                urlBuilder = urlBuilder.withScheme("https")
-                        .withHost("nocodefunctions.com");
+                scheme = "https";
+                host = "nocodefunctions.com";
             } else {
-                urlBuilder = urlBuilder.withScheme("http")
-                        .withHost("localhost")
-                        .withPort((Integer.valueOf(privateProperties.getProperty("nocode_api_port"))));
+                scheme = "http";
+                host = "localhost";
+                port = Integer.parseInt(privateProperties.getProperty("nocode_api_port"));
             }
-            uri = urlBuilder.withPath("api/sentimentForAText")
-                    .addParameter("text-lang", "fr")
-                    .addParameter("explanation", "on")
-                    .addParameter("shorter", "true")
-                    .addParameter("output-format", "bytes")
-                    .addParameter("explanation-lang", sessionBean.getCurrentLocale().toLanguageTag())
-                    .toUri();
+
+            String path = "/api/sentimentForAText";
+            String query = String.format("text-lang=fr&explanation=on&shorter=true&output-format=bytes&explanation-lang=%s",
+                    URLEncoder.encode(sessionBean.getCurrentLocale().toLanguageTag(), StandardCharsets.UTF_8));
+
+            uri = new URI(scheme, null, host, port, path, query, null);
 
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(uri)
@@ -156,6 +159,8 @@ public class CardTestBean implements Serializable {
             } else {
                 System.out.println("uri: " + uri.toString());
             }
+        } catch (URISyntaxException ex) {
+            System.getLogger(CardTestBean.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
         }
 
     }
@@ -165,22 +170,26 @@ public class CardTestBean implements Serializable {
         try {
             showFRExplanationOrganic = false;
 
-            UrlBuilder urlBuilder = UrlBuilder.empty();
+            String scheme;
+            String host;
+            int port = -1; // -1 means "no port" for the URI constructor
+
             if (usePublicDomainName) {
-                urlBuilder = urlBuilder.withScheme("https")
-                        .withHost("nocodefunctions.com");
+                scheme = "https";
+                host = "nocodefunctions.com";
             } else {
-                urlBuilder = urlBuilder.withScheme("http")
-                        .withHost("localhost")
-                        .withPort((Integer.valueOf(privateProperties.getProperty("nocode_api_port"))));
+                scheme = "http";
+                host = "localhost";
+                port = Integer.parseInt(privateProperties.getProperty("nocode_api_port"));
             }
-            uri = urlBuilder.withPath("api/organicForAText")
-                    .addParameter("text-lang", "fr")
-                    .addParameter("explanation", "on")
-                    .addParameter("shorter", "true")
-                    .addParameter("output-format", "bytes")
-                    .addParameter("explanation-lang", sessionBean.getCurrentLocale().toLanguageTag())
-                    .toUri();
+
+            String path = "/api/organicForAText";
+            String query = String.format(
+                    "text-lang=fr&explanation=on&shorter=true&output-format=bytes&explanation-lang=%s",
+                    URLEncoder.encode(sessionBean.getCurrentLocale().toLanguageTag(), StandardCharsets.UTF_8)
+            );
+
+            uri = new URI(scheme, null, host, port, path, query, null);
 
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(uri)
@@ -223,6 +232,8 @@ public class CardTestBean implements Serializable {
             } else {
                 System.out.println("uri: " + uri.toString());
             }
+        } catch (URISyntaxException ex) {
+            System.getLogger(CardTestBean.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
         }
 
     }
@@ -232,22 +243,26 @@ public class CardTestBean implements Serializable {
         try {
             showENExplanationOrganic = false;
 
-            UrlBuilder urlBuilder = UrlBuilder.empty();
+            String scheme;
+            String host;
+            int port = -1; // Pas de port ajouté si -1
+
             if (usePublicDomainName) {
-                urlBuilder = urlBuilder.withScheme("https")
-                        .withHost("nocodefunctions.com");
+                scheme = "https";
+                host = "nocodefunctions.com";
             } else {
-                urlBuilder = urlBuilder.withScheme("http")
-                        .withHost("localhost")
-                        .withPort((Integer.valueOf(privateProperties.getProperty("nocode_api_port"))));
+                scheme = "http";
+                host = "localhost";
+                port = Integer.parseInt(privateProperties.getProperty("nocode_api_port"));
             }
-            uri = urlBuilder.withPath("api/organicForAText")
-                    .addParameter("text-lang", "en")
-                    .addParameter("explanation", "on")
-                    .addParameter("shorter", "true")
-                    .addParameter("output-format", "bytes")
-                    .addParameter("explanation-lang", sessionBean.getCurrentLocale().toLanguageTag())
-                    .toUri();
+
+            String path = "/api/organicForAText";
+            String query = String.format(
+                    "text-lang=en&explanation=on&shorter=true&output-format=bytes&explanation-lang=%s",
+                    URLEncoder.encode(sessionBean.getCurrentLocale().toLanguageTag(), StandardCharsets.UTF_8)
+            );
+
+            uri = new URI(scheme, null, host, port, path, query, null);
 
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(uri)
@@ -287,6 +302,8 @@ public class CardTestBean implements Serializable {
             } else {
                 System.out.println("uri: " + uri.toString());
             }
+        } catch (URISyntaxException ex) {
+            System.getLogger(CardTestBean.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
         }
 
     }
@@ -296,22 +313,26 @@ public class CardTestBean implements Serializable {
         try {
             showESExplanation = false;
 
-            UrlBuilder urlBuilder = UrlBuilder.empty();
+            String scheme;
+            String host;
+            int port = -1; // -1 signifie "pas de port" dans URI
+
             if (usePublicDomainName) {
-                urlBuilder = urlBuilder.withScheme("https")
-                        .withHost("nocodefunctions.com");
+                scheme = "https";
+                host = "nocodefunctions.com";
             } else {
-                urlBuilder = urlBuilder.withScheme("http")
-                        .withHost("localhost")
-                        .withPort((Integer.valueOf(privateProperties.getProperty("nocode_api_port"))));
+                scheme = "http";
+                host = "localhost";
+                port = Integer.parseInt(privateProperties.getProperty("nocode_api_port"));
             }
-            uri = urlBuilder.withPath("api/sentimentForAText")
-                    .addParameter("text-lang", "es")
-                    .addParameter("explanation", "on")
-                    .addParameter("shorter", "true")
-                    .addParameter("output-format", "bytes")
-                    .addParameter("explanation-lang", sessionBean.getCurrentLocale().toLanguageTag())
-                    .toUri();
+
+            String path = "/api/sentimentForAText";
+            String query = String.format(
+                    "text-lang=es&explanation=on&shorter=true&output-format=bytes&explanation-lang=%s",
+                    URLEncoder.encode(sessionBean.getCurrentLocale().toLanguageTag(), StandardCharsets.UTF_8)
+            );
+
+            uri = new URI(scheme, null, host, port, path, query, null);
 
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(uri)
@@ -354,6 +375,8 @@ public class CardTestBean implements Serializable {
             } else {
                 System.out.println("uri: " + uri.toString());
             }
+        } catch (URISyntaxException ex) {
+            System.getLogger(CardTestBean.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
         }
     }
 
@@ -362,23 +385,27 @@ public class CardTestBean implements Serializable {
         try {
             showENExplanation = false;
 
-            UrlBuilder urlBuilder = UrlBuilder.empty();
+            String scheme;
+            String host;
+            int port = -1;
+
             if (usePublicDomainName) {
-                urlBuilder = urlBuilder.withScheme("https")
-                        .withHost("nocodefunctions.com");
+                scheme = "https";
+                host = "nocodefunctions.com";
             } else {
-                urlBuilder = urlBuilder.withScheme("http")
-                        .withHost("localhost")
-                        .withPort((Integer.valueOf(privateProperties.getProperty("nocode_api_port"))));
+                scheme = "http";
+                host = "localhost";
+                port = Integer.parseInt(privateProperties.getProperty("nocode_api_port"));
             }
-            uri = urlBuilder.withPath("api/sentimentForAText")
-                    .addParameter("text-lang", "en")
-                    .addParameter("text", umigonTestInputEN)
-                    .addParameter("explanation", "on")
-                    .addParameter("shorter", "true")
-                    .addParameter("output-format", "bytes")
-                    .addParameter("explanation-lang", sessionBean.getCurrentLocale().toLanguageTag())
-                    .toUri();
+
+            String path = "/api/sentimentForAText";
+            String query = String.format(
+                    "text-lang=en&text=%s&explanation=on&shorter=true&output-format=bytes&explanation-lang=%s",
+                    URLEncoder.encode(umigonTestInputEN, StandardCharsets.UTF_8),
+                    URLEncoder.encode(sessionBean.getCurrentLocale().toLanguageTag(), StandardCharsets.UTF_8)
+            );
+
+            uri = new URI(scheme, null, host, port, path, query, null);
 
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(uri)
@@ -421,6 +448,8 @@ public class CardTestBean implements Serializable {
             } else {
                 System.out.println("uri: " + uri.toString());
             }
+        } catch (URISyntaxException ex) {
+            System.getLogger(CardTestBean.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
         }
     }
 

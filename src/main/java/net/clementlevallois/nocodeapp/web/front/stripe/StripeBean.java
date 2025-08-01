@@ -4,7 +4,6 @@
  */
 package net.clementlevallois.nocodeapp.web.front.stripe;
 
-import io.mikael.urlbuilder.UrlBuilder;
 import jakarta.annotation.PostConstruct;
 import jakarta.faces.context.ExternalContext;
 import jakarta.faces.context.FacesContext;
@@ -12,6 +11,7 @@ import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import jakarta.json.Json;
+import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.json.bind.Jsonb;
 import jakarta.json.bind.JsonbBuilder;
@@ -19,11 +19,7 @@ import jakarta.json.bind.JsonbException;
 import jakarta.servlet.annotation.MultipartConfig;
 import java.io.IOException;
 import java.io.Serializable;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -32,6 +28,8 @@ import java.util.logging.Logger;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.ApplicationPropertiesBean;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SingletonBean;
+import net.clementlevallois.nocodeapp.web.front.http.MicroserviceHttpClient;
+import net.clementlevallois.nocodeapp.web.front.http.MicroserviceHttpClient.MicroserviceCallException;
 import net.clementlevallois.nocodeapp.web.front.http.RemoteLocal;
 import net.clementlevallois.nocodeapp.web.front.utils.UrlParamCleaner;
 
@@ -60,7 +58,6 @@ public class StripeBean implements Serializable {
     private static final String MONTHLY_CREDITS_PRO = "100";
     private static final String MONTHLY_CREDITS_PATRON = "100";
     private String MAX_USED_CREDITS_FOR_REFUND_ELIGIBILITY = "5";
-    private static final HttpClient client = HttpClient.newHttpClient();
 
     private int portPayment;
 
@@ -73,15 +70,20 @@ public class StripeBean implements Serializable {
 
     private Properties privateProperties;
 
+    private static final Logger LOG = Logger.getLogger(StripeBean.class.getName());
+
     @Inject
     ApplicationPropertiesBean applicationProperties;
+
+    @Inject
+    MicroserviceHttpClient httpClient;
 
     @Inject
     SessionBean sessionBean;
 
     @PostConstruct
     public void init() {
-        privateProperties = privateProperties = applicationProperties.getPrivateProperties();
+        privateProperties = applicationProperties.getPrivateProperties();
         portPayment = Integer.parseInt(privateProperties.getProperty("port-payment-ops"));
         creditsCheckPerformed = false;
     }
@@ -91,15 +93,13 @@ public class StripeBean implements Serializable {
     }
 
     public void decisionTreeBeforeRenderingIndexPage() {
-
-        // IF WE LAND ON INDEX FROM THE STRIPE CHECKOUT PAGE
         if (isRedirectFromStripeCheckout()) {
             Customer customer = getCustomerInfoBySessionId(urlParamStripeSessionIdReturnedByCheckout);
-            sessionBean.setHash(customer.getHash()); // write it to the session
-            sendWelcomeEmailAfterCheckout(customer.getEmail(), customer.getName(), customer.getHash()); // send Welcome email
-            // add welcome pop up
+            if (customer != null) {
+                sessionBean.setHash(customer.getHash());
+                sendWelcomeEmailAfterCheckout(customer.getEmail(), customer.getName(), customer.getHash());
+            }
         }
-
     }
 
     public void populatePlanUrls() {
@@ -107,71 +107,60 @@ public class StripeBean implements Serializable {
         if (emailParamAbsent && !sessionBean.isHashPresent()) {
             try {
                 ExternalContext externalContext = FacesContext.getCurrentInstance().getExternalContext();
-                externalContext.redirect(externalContext.getRequestContextPath() + "/" + "index.html?#input-email-container-anchor");
+                externalContext.redirect(externalContext.getRequestContextPath() + "/" + "index.html#input-email-container-anchor");
             } catch (IOException ex) {
-                Logger.getLogger(StripeBean.class.getName()).log(Level.SEVERE, null, ex);
+                LOG.log(Level.SEVERE, "Redirect failed", ex);
             }
-        } else {
-            if (emailParamAbsent) {
-                String emailFromHash = getEmailFromCustomerHash(sessionBean.getHash());
-                urlParamEmail = emailFromHash;
-            }
+            return;
+        }
+
+        if (emailParamAbsent) {
+            urlParamEmail = getEmailFromCustomerHash(sessionBean.getHash());
+        }
+
+        if (urlParamEmail != null) {
             if (TEST) {
                 urlCheckoutMonthlyProPlan = getCheckoutUrlForServiceAndPrice(PRICE_PRO_MONTHLY_TEST, MONTHLY_CREDITS_PRO, urlParamEmail);
                 urlCheckoutMonthlyPatronPlan = getCheckoutUrlForServiceAndPrice(PRICE_PATRON_MONTHLY_TEST, MONTHLY_CREDITS_PATRON, urlParamEmail);
             } else {
                 urlCheckoutMonthlyProPlan = getCheckoutUrlForServiceAndPrice(PRICE_PRO_MONTHLY, MONTHLY_CREDITS_PRO, urlParamEmail);
                 urlCheckoutMonthlyPatronPlan = getCheckoutUrlForServiceAndPrice(PRICE_PATRON_MONTHLY, MONTHLY_CREDITS_PATRON, urlParamEmail);
-
             }
         }
     }
 
     public void redirectToStripeBillingPortal() {
         String hash = sessionBean.getHash();
-        try {
+        String targetUrl = TEST ? BILLING_PORTAL_URL_TEST : BILLING_PORTAL_URL_PROD;
 
-            if (hash == null || hash.isBlank()) {
-                String billingPortalURL = TEST ? BILLING_PORTAL_URL_TEST : BILLING_PORTAL_URL_PROD;
-                ExternalContext externalContext = FacesContext.getCurrentInstance().getExternalContext();
-                externalContext.redirect(billingPortalURL);
-            } else {
-                URI uri = UrlBuilder
-                        .empty()
-                        .withScheme("http")
-                        .withPort(portPayment)
-                        .withHost("localhost")
-                        .withPath("/stripe/getStripeBillingUrl")
-                        .addParameter("hash", hash)
-                        .addParameter("successUrl", RemoteLocal.getDomain() + "/index.html?hash=" + hash)
-                        .addParameter("lang", sessionBean.getCurrentLocale().getLanguage())
-                        .toUri();
+        if (hash != null && !hash.isBlank()) {
+            try {
+                HttpResponse<String> resp = httpClient
+                        .target("http", "localhost", portPayment)
+                        .get("/stripe/getStripeBillingUrl")
+                        .addQueryParameter("hash", hash)
+                        .addQueryParameter("successUrl", RemoteLocal.getDomain() + "/index.html?hash=" + hash)
+                        .addQueryParameter("lang", sessionBean.getCurrentLocale().getLanguage())
+                        .send(HttpResponse.BodyHandlers.ofString());
 
-                HttpRequest httpRequest = HttpRequest.newBuilder()
-                        .GET()
-                        .uri(uri)
-                        .build();
-
-                HttpResponse<String> resp = client.send(httpRequest, HttpResponse.BodyHandlers.ofString());
-                if (resp.statusCode() != 200) {
-                    String stringError = resp.body();
-                    System.out.println("stringError: " + stringError);
-                    System.out.println("status code: " + resp.statusCode());
-                } else {
-                    String response = resp.body();
-                    if (response.equals("{}")) {
-                        System.out.println("no billing url returned");
-                    } else {
-                        ExternalContext externalContext = FacesContext.getCurrentInstance().getExternalContext();
-                        externalContext.redirect(response);
-                    }
-
+                String responseBody = resp.body();
+                if (responseBody != null && !responseBody.equals("{}")) {
+                    targetUrl = responseBody;
+                }
+            } catch (MicroserviceCallException e) {
+                LOG.log(Level.SEVERE, "API call to get billing URL failed. URI: " + e.getUri() + ", Status: " + e.getStatusCode(), e);
+            } catch (IOException | InterruptedException e) {
+                LOG.log(Level.SEVERE, "Could not send request to get billing URL.", e);
+                if (e instanceof InterruptedException) {
+                    Thread.currentThread().interrupt();
                 }
             }
-        } catch (IOException | InterruptedException ex) {
-            Logger.getLogger(StripeBean.class.getName()).log(Level.SEVERE, null, ex);
         }
-
+        try {
+            FacesContext.getCurrentInstance().getExternalContext().redirect(targetUrl);
+        } catch (IOException ex) {
+            LOG.log(Level.SEVERE, "Redirect to billing portal failed", ex);
+        }
     }
 
     public Boolean isRedirectFromStripeCheckout() {
@@ -180,48 +169,33 @@ public class StripeBean implements Serializable {
 
     public void addHashFieldAndCreditsToCustomer(String customerId, String hash, String serviceName, String credits) {
         try {
-
-            URI uri = UrlBuilder
-                    .empty()
-                    .withScheme("http")
-                    .withPort(portPayment)
-                    .withHost("localhost")
-                    .withPath("/stripe/addHashFieldAndCreditsToCustomer")
-                    .addParameter("hash", hash)
-                    .addParameter("credits", credits)
-                    .addParameter("customerId", customerId)
-                    .addParameter("serviceName", serviceName)
-                    .toUri();
-
-            HttpRequest httpRequest = HttpRequest.newBuilder()
-                    .GET()
-                    .uri(uri)
-                    .build();
-
-            HttpResponse<String> resp = client.send(httpRequest, HttpResponse.BodyHandlers.ofString());
-            if (resp.statusCode() != 200) {
-                String stringError = resp.body();
-                System.out.println("stringError: " + stringError);
-                System.out.println("status code: " + resp.statusCode());
+            httpClient
+                    .target("http", "localhost", portPayment)
+                    .get("/stripe/addHashFieldAndCreditsToCustomer")
+                    .addQueryParameter("hash", hash)
+                    .addQueryParameter("credits", credits)
+                    .addQueryParameter("customerId", customerId)
+                    .addQueryParameter("serviceName", serviceName)
+                    .send(HttpResponse.BodyHandlers.ofString());
+            LOG.info("Successfully added credits for customer: " + customerId);
+        } catch (MicroserviceCallException e) {
+            LOG.log(Level.SEVERE, "API call to update Stripe customer failed. URI: " + e.getUri() + ", Status: " + e.getStatusCode(), e);
+        } catch (IOException | InterruptedException e) {
+            LOG.log(Level.SEVERE, "Could not send request to update Stripe customer.", e);
+            if (e instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
             }
-
-        } catch (IOException | InterruptedException ex) {
-            Logger.getLogger(StripeBean.class.getName()).log(Level.SEVERE, null, ex);
         }
-
     }
 
     public String anyRemainingCreditsBeforeServiceUse() {
-
         if (creditsCheckPerformed) {
             return "";
         }
-
         String hash = sessionBean.getHash();
-        if (hash.isBlank()) {
+        if (hash == null || hash.isBlank()) {
             return "index.html?faces-redirect=true";
         }
-
         remainingCredits = getRemainingCredits();
         creditsCheckPerformed = true;
         if (remainingCredits < 1) {
@@ -231,476 +205,309 @@ public class StripeBean implements Serializable {
     }
 
     public String handleRefund() {
-        String hash = sessionBean.getHash();
-        proceedToRefund(hash);
+        proceedToRefund(sessionBean.getHash());
         return "/index.html";
     }
 
-//    public Boolean checkRefundEligibility() {
-//        String hash = sessionBean.getHash();
-//        Customer customerByHash = getCustomerByHash(hash);
-//        Map<String, String> metadata = customerByHash.getMetadata();
-//
-//        String usedCreditsOverall = metadata.getOrDefault(SERVICE_NAME_ALL_CREDITS_USED, "0");
-//        eligibleForRefund = Integer.valueOf(usedCreditsOverall) <= Integer.valueOf(MAX_USED_CREDITS_FOR_REFUND_ELIGIBILITY);
-//        return eligibleForRefund;
-//    }
     public String proceedToRefund(String hashValueFromUrlParam) {
+        String priceIds = TEST ? String.join(";", allPaidPlansForThisServiceTest) : String.join(";", allPaidPlansForThisService);
         try {
-            String priceIds;
-            if (TEST) {
-                priceIds = String.join(";", allPaidPlansForThisServiceTest);
-            } else {
-                priceIds = String.join(";", allPaidPlansForThisService);
+            httpClient
+                    .target("http", "localhost", portPayment)
+                    .get("/stripe/proceedToRefund")
+                    .addQueryParameter("hash", hashValueFromUrlParam)
+                    .addQueryParameter("priceIds", priceIds)
+                    .addQueryParameter("serviceName", SingletonBean.SERVICE_NAME)
+                    .send(HttpResponse.BodyHandlers.ofString());
+            LOG.info(() -> "Refund processed successfully for hash: " + hashValueFromUrlParam);
+        } catch (MicroserviceCallException e) {
+            LOG.log(Level.SEVERE, "API call to process refund failed. URI: " + e.getUri() + ", Status: " + e.getStatusCode(), e);
+            return null;
+        } catch (IOException | InterruptedException e) {
+            LOG.log(Level.SEVERE, "Could not send request for refund.", e);
+            if (e instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
             }
-            URI uri = UrlBuilder
-                    .empty()
-                    .withScheme("http")
-                    .withPort(portPayment)
-                    .withHost("localhost")
-                    .withPath("/stripe/proceedToRefund")
-                    .addParameter("hash", hashValueFromUrlParam)
-                    .addParameter("priceIds", priceIds)
-                    .addParameter("serviceName", SingletonBean.SERVICE_NAME)
-                    .toUri();
-
-            HttpRequest httpRequest = HttpRequest.newBuilder()
-                    .GET()
-                    .uri(uri)
-                    .build();
-
-            HttpResponse<String> resp = client.send(httpRequest, HttpResponse.BodyHandlers.ofString());
-            if (resp.statusCode() != 200) {
-                String stringError = resp.body();
-                System.out.println("stringError: " + stringError);
-                System.out.println("status code: " + resp.statusCode());
-                return null;
-            } else {
-                System.out.println("refund successful");
-            }
-
-        } catch (IOException | InterruptedException ex) {
-            Logger.getLogger(StripeBean.class.getName()).log(Level.SEVERE, null, ex);
+            return null;
         }
         return "";
     }
 
     public String resetServiceMetadataForThisCustomer(String hashValueFromUrlParam, String serviceName) {
         try {
-            String priceIds;
-            if (TEST) {
-                priceIds = String.join(";", allPaidPlansForThisServiceTest);
-            } else {
-                priceIds = String.join(";", allPaidPlansForThisService);
+            httpClient
+                    .target("http", "localhost", portPayment)
+                    .get("/stripe/resetServiceMetadataForThisCustomer")
+                    .addQueryParameter("hash", hashValueFromUrlParam)
+                    .addQueryParameter("serviceName", serviceName)
+                    .send(HttpResponse.BodyHandlers.ofString());
+            LOG.info(() -> "Successfully reset service metadata for hash: " + hashValueFromUrlParam);
+        } catch (MicroserviceCallException e) {
+            LOG.log(Level.SEVERE, "API call to reset service metadata failed. URI: " + e.getUri() + ", Status: " + e.getStatusCode(), e);
+            return null;
+        } catch (IOException | InterruptedException e) {
+            LOG.log(Level.SEVERE, "Could not send request to reset service metadata.", e);
+            if (e instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
             }
-            URI uri = UrlBuilder
-                    .empty()
-                    .withScheme("http")
-                    .withPort(portPayment)
-                    .withHost("localhost")
-                    .withPath("/stripe/resetServiceMetadataForThisCustomer")
-                    .addParameter("hash", hashValueFromUrlParam)
-                    .addParameter("serviceName", serviceName)
-                    .toUri();
-
-            HttpRequest httpRequest = HttpRequest.newBuilder()
-                    .GET()
-                    .uri(uri)
-                    .build();
-
-            HttpResponse<String> resp = client.send(httpRequest, HttpResponse.BodyHandlers.ofString());
-            if (resp.statusCode() != 200) {
-                String stringError = resp.body();
-                System.out.println("stringError: " + stringError);
-                System.out.println("status code: " + resp.statusCode());
-                return null;
-            } else {
-                System.out.println("refund successful");
-            }
-
-        } catch (IOException | InterruptedException ex) {
-            Logger.getLogger(StripeBean.class.getName()).log(Level.SEVERE, null, ex);
+            return null;
         }
         return "";
     }
 
     public void manageCredits() {
         String hash = sessionBean.getHash();
-        if (hash.isBlank()) {
+        if (hash == null || hash.isBlank()) {
             return;
         }
         try {
-            URI uri = UrlBuilder
-                    .empty()
-                    .withScheme("http")
-                    .withPort(portPayment)
-                    .withHost("localhost")
-                    .withPath("/stripe/manageCredits")
-                    .addParameter("hash", hash)
-                    .addParameter("serviceName", SingletonBean.SERVICE_NAME)
-                    .addParameter("serviceNameAllCreditsUsed", SingletonBean.SERVICE_NAME_ALL_CREDITS_USED)
-                    .toUri();
-
-            HttpRequest httpRequest = HttpRequest.newBuilder()
-                    .GET()
-                    .uri(uri)
-                    .build();
-
-            HttpResponse<String> resp = client.send(httpRequest, HttpResponse.BodyHandlers.ofString());
-            if (resp.statusCode() != 200) {
-                String stringError = resp.body();
-                System.out.println("stringError: " + stringError);
-                System.out.println("status code: " + resp.statusCode());
-            } else {
-                remainingCredits = Integer.valueOf(resp.body());
-
+            HttpResponse<String> resp = httpClient
+                    .target("http", "localhost", portPayment)
+                    .get("/stripe/manageCredits")
+                    .addQueryParameter("hash", hash)
+                    .addQueryParameter("serviceName", SingletonBean.SERVICE_NAME)
+                    .addQueryParameter("serviceNameAllCreditsUsed", SingletonBean.SERVICE_NAME_ALL_CREDITS_USED)
+                    .send(HttpResponse.BodyHandlers.ofString());
+            remainingCredits = Integer.valueOf(resp.body());
+        } catch (MicroserviceCallException e) {
+            LOG.log(Level.SEVERE, "API call to manage credits failed. URI: " + e.getUri() + ", Status: " + e.getStatusCode(), e);
+        } catch (IOException | InterruptedException | NumberFormatException e) {
+            LOG.log(Level.SEVERE, "Could not process request to manage credits.", e);
+            if (e instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
             }
-
-        } catch (IOException | InterruptedException ex) {
-            Logger.getLogger(StripeBean.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
     public void updateCustomerWithMetadata(String customerId, Map<String, String> keyValuesToUpdate) {
+        JsonObjectBuilder parametersBuilder = Json.createObjectBuilder();
+        keyValuesToUpdate.forEach(parametersBuilder::add);
+        JsonObject payload = parametersBuilder.build();
+
         try {
-
-            URI uri = UrlBuilder
-                    .empty()
-                    .withScheme("http")
-                    .withPort(portPayment)
-                    .withHost("localhost")
-                    .withPath("/stripe/updateCustomerMetadata")
-                    .addParameter("customerId", customerId)
-                    .toUri();
-
-            JsonObjectBuilder parametersBuilder = Json.createObjectBuilder();
-            for (Map.Entry<String, String> entry : keyValuesToUpdate.entrySet()) {
-                parametersBuilder.add(entry.getKey(), entry.getValue());
+            httpClient
+                    .target("http", "localhost", portPayment)
+                    .post("/stripe/updateCustomerMetadata")
+                    .addQueryParameter("customerId", customerId)
+                    .withJsonPayload(payload)
+                    .send(HttpResponse.BodyHandlers.ofString());
+            LOG.info("Successfully updated metadata for customer: " + customerId);
+        } catch (MicroserviceCallException e) {
+            LOG.log(Level.SEVERE, "API call to update customer metadata failed. URI: " + e.getUri() + ", Status: " + e.getStatusCode(), e);
+        } catch (IOException | InterruptedException e) {
+            LOG.log(Level.SEVERE, "Could not send request to update customer metadata.", e);
+            if (e instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
             }
-
-            String jsonString = parametersBuilder.build().toString();
-
-            HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(jsonString.getBytes(StandardCharsets.UTF_8));
-
-            HttpRequest httpRequest = HttpRequest.newBuilder()
-                    .POST(bodyPublisher)
-                    .uri(uri)
-                    .build();
-
-            HttpResponse<String> resp = client.send(httpRequest, HttpResponse.BodyHandlers.ofString());
-            if (resp.statusCode() != 200) {
-                String stringError = resp.body();
-                System.out.println("stringError: " + stringError);
-                System.out.println("status code: " + resp.statusCode());
-            } else {
-                System.out.println("key values sent to update customer metadata");
-            }
-        } catch (IOException | InterruptedException ex) {
-            Logger.getLogger(StripeBean.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
     public String sendPricingInfoOrLoginUrlViaEmail() {
         if (emailInputField == null || emailInputField.isBlank()) {
-            System.out.println("email address was empty, email not sent");
             return "";
         }
-
         emailButtonIsDisabled = true;
         String hash = getHashFromCustomerEmail(emailInputField);
         sessionBean.setHash(hash);
-
-        String subject;
-        String bodyEmail;
 
         if (hash != null && !hash.isBlank()) {
             remainingCredits = getRemainingCredits();
             creditsCheckPerformed = true;
             if (remainingCredits < 1) {
-                return "plans/pricing_table.html?hash=" + hash + "&email="+emailInputField+"faces-redirect=true";
-            } else {
-                subject = "👋 Your login link to Nocodefunctions";
-                bodyEmail = """
-                        Hi!
-                        
-                        This is your login link to Nocodefunctions: 
-                            """ + RemoteLocal.getDomain() + "/?hash=" + hash + """
-                                                                                                         
-                                                         
-                                                         Enjoy nocodefunctions!
-                                                         
-                                                         """;
-
+                return "plans/pricing_table.html?hash=" + hash + "&email=" + emailInputField + "faces-redirect=true";
             }
-        } else {
-            String urlPricingPlans = RemoteLocal.getDomain() + "/plans/pricing_table.html?email=" + emailInputField;
-            subject = "👋 **ACTION REQUIRED** Sign up to Nocodefunctions";
-            bodyEmail = """
-                          Hi!
-                          
-                          To continue signing up to Nocodefunctions, go here:
-                          
-                          """
-                    + urlPricingPlans + """
-                                      
-                                      
-                                      """;
         }
-
-        try {
-
-            URI uri = UrlBuilder
-                    .empty()
-                    .withScheme("http")
-                    .withPort(portPayment)
-                    .withHost("localhost")
-                    .withPath("/stripe/sendEmail")
-                    .toUri();
-
-            JsonObjectBuilder parametersBuilder = Json.createObjectBuilder();
-            parametersBuilder.add("emailTo", emailInputField);
-            parametersBuilder.add("emailFrom", "for-help-do-not-email-but-go-to-nocodefunctions-dot-com-click-billing@nocodefunctions.com");
-            parametersBuilder.add("subject", subject);
-            parametersBuilder.add("bodyEmail", bodyEmail);
-            parametersBuilder.add("serviceName", SingletonBean.SERVICE_NAME);
-
-            String jsonString = parametersBuilder.build().toString();
-
-            HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(jsonString.getBytes(StandardCharsets.UTF_8));
-
-            HttpRequest httpRequest = HttpRequest.newBuilder()
-                    .POST(bodyPublisher)
-                    .uri(uri)
-                    .build();
-
-            HttpResponse<String> resp = client.send(httpRequest, HttpResponse.BodyHandlers.ofString());
-            if (resp.statusCode() != 200) {
-                String stringError = resp.body();
-                System.out.println("stringError: " + stringError);
-                System.out.println("status code: " + resp.statusCode());
-                return "";
-            } else {
-                System.out.println("email sent with a login link");
-                return "";
-            }
-        } catch (IOException | InterruptedException ex) {
-            Logger.getLogger(StripeBean.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        emailButtonIsDisabled = false;
-        System.out.println("arrived at end of email sending function without an email sent. Returning.");
+        sendEmail(hash);
         return "";
     }
 
-    public void sendWelcomeEmailAfterCheckout(String email, String customerFullName, String hash) {
-        try {
+    private void sendEmail(String hash) {
+        String subject;
+        String bodyEmail;
 
-            URI uri = UrlBuilder
-                    .empty()
-                    .withScheme("http")
-                    .withPort(portPayment)
-                    .withHost("localhost")
-                    .withPath("/stripe/sendEmail")
-                    .toUri();
-
-            JsonObjectBuilder parametersBuilder = Json.createObjectBuilder();
-            parametersBuilder.add("emailTo", email);
-            parametersBuilder.add("emailFrom", "for-help-do-not-email-but-go-to-nocodefunctions-dot-com-click-billing@nocodefunctions.com");
-            parametersBuilder.add("subject", "Extra capacity for nocodefunctions");
-            parametersBuilder.add("serviceName", SingletonBean.SERVICE_NAME);
-
-            String bodyEmail = """
-Hi """ + " " + customerFullName + "! " + """
-
-                                   
-Thank you for signing up to Nocodefunctions with elevated access. Here's your link to use it:
-                                         
-https://nocodefunctions.com/?hash=""" + hash + """
-
-                                         
-IDEAS AND BUGS
-If you have feedback on Nocodefunctions, or come across any bugs, I'd love to hear it at analysis@exploreyourdata.com
-
-                                         
-DOWNLOAD INVOICES, SWITCH PLANS, PAUSE OR CANCEL SUBSCRIPTION
-If you'd like to download invoices, switch plans, pause or cancel your subscription, you can do so on the site (click Billing in top right), or click the link below:
-https://nocodefunctions.com/plans/billing.html?lang=""" + sessionBean.getCurrentLocale().getLanguage() + "&hash=" + hash + """
-
-                                                
-Nocodefunctions is 100% self service. That means we can not send invoices, switch plans, pause or cancel your subscription for you but you can do it yourself easily.
-
-Thank you for choosing our data analytics service—you’re in for exceptional insights.
-
-- Clement (ExploreYourData)
-Solofounder of Nocodefunctions
-https://bsky.app/profile/seinecle.bsky.social""";
-
-            parametersBuilder.add("bodyEmail", bodyEmail);
-
-            String jsonString = parametersBuilder.build().toString();
-
-            HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(jsonString.getBytes(StandardCharsets.UTF_8));
-
-            HttpRequest httpRequest = HttpRequest.newBuilder()
-                    .POST(bodyPublisher)
-                    .uri(uri)
-                    .build();
-
-            HttpResponse<String> resp = client.send(httpRequest, HttpResponse.BodyHandlers.ofString());
-            if (resp.statusCode() != 200) {
-                String stringError = resp.body();
-                System.out.println("stringError: " + stringError);
-                System.out.println("status code: " + resp.statusCode());
-            } else {
-                System.out.println("email sent with a login link");
-            }
-        } catch (IOException | InterruptedException ex) {
-            Logger.getLogger(StripeBean.class.getName()).log(Level.SEVERE, null, ex);
+        if (hash != null && !hash.isBlank()) {
+            subject = "👋 Your login link to Nocodefunctions";
+            bodyEmail = "Hi!\n\nThis is your login link to Nocodefunctions:\n" + RemoteLocal.getDomain() + "/?hash=" + hash + "\n\nEnjoy nocodefunctions!";
+        } else {
+            String urlPricingPlans = RemoteLocal.getDomain() + "/plans/pricing_table.html?email=" + emailInputField;
+            subject = "👋 **ACTION REQUIRED** Sign up to Nocodefunctions";
+            bodyEmail = "Hi!\n\nTo continue signing up to Nocodefunctions, go here:\n\n" + urlPricingPlans;
         }
 
+        JsonObject payload = Json.createObjectBuilder()
+                .add("emailTo", emailInputField)
+                .add("emailFrom", "for-help-do-not-email-but-go-to-nocodefunctions-dot-com-click-billing@nocodefunctions.com")
+                .add("subject", subject)
+                .add("bodyEmail", bodyEmail)
+                .add("serviceName", SingletonBean.SERVICE_NAME)
+                .build();
+        try {
+            httpClient
+                    .target("http", "localhost", portPayment)
+                    .post("/stripe/sendEmail")
+                    .withJsonPayload(payload)
+                    .send(HttpResponse.BodyHandlers.ofString());
+            LOG.info(() -> "Email sent successfully to: " + emailInputField);
+        } catch (MicroserviceCallException e) {
+            LOG.log(Level.SEVERE, "API call to send email failed. URI: " + e.getUri() + ", Status: " + e.getStatusCode(), e);
+        } catch (IOException | InterruptedException e) {
+            LOG.log(Level.SEVERE, "Could not send request to send email.", e);
+            if (e instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
+            }
+        } finally {
+            emailButtonIsDisabled = false;
+        }
+    }
+
+    public void sendWelcomeEmailAfterCheckout(String email, String customerFullName, String hash) {
+        String bodyEmail = "Hi " + customerFullName + "!\n\n"
+                + "Thank you for signing up to Nocodefunctions with elevated access. Here's your link to use it:\n"
+                + "https://nocodefunctions.com/?hash=" + hash + "\n\n"
+                + "IDEAS AND BUGS\nIf you have feedback on Nocodefunctions, or come across any bugs, I'd love to hear it at analysis@exploreyourdata.com\n\n"
+                + "DOWNLOAD INVOICES, SWITCH PLANS, PAUSE OR CANCEL SUBSCRIPTION\n"
+                + "If you'd like to download invoices, switch plans, pause or cancel your subscription, you can do so on the site (click Billing in top right), or click the link below:\n"
+                + "https://nocodefunctions.com/plans/billing.html?lang=" + sessionBean.getCurrentLocale().getLanguage() + "&hash=" + hash + "\n\n"
+                + "Nocodefunctions is 100% self service. That means we can not send invoices, switch plans, pause or cancel your subscription for you but you can do it yourself easily.\n\n"
+                + "Thank you for choosing our data analytics service—you’re in for exceptional insights.\n\n"
+                + "- Clement (ExploreYourData)\nSolofounder of Nocodefunctions\nhttps://bsky.app/profile/seinecle.bsky.social";
+
+        JsonObject payload = Json.createObjectBuilder()
+                .add("emailTo", email)
+                .add("emailFrom", "for-help-do-not-email-but-go-to-nocodefunctions-dot-com-click-billing@nocodefunctions.com")
+                .add("subject", "Extra capacity for nocodefunctions")
+                .add("serviceName", SingletonBean.SERVICE_NAME)
+                .add("bodyEmail", bodyEmail)
+                .build();
+        try {
+            httpClient
+                    .target("http", "localhost", portPayment)
+                    .post("/stripe/sendEmail")
+                    .withJsonPayload(payload)
+                    .send(HttpResponse.BodyHandlers.ofString());
+            LOG.info("Welcome email sent successfully to: " + email);
+        } catch (MicroserviceCallException e) {
+            LOG.log(Level.SEVERE, "API call to send welcome email failed. URI: " + e.getUri() + ", Status: " + e.getStatusCode(), e);
+        } catch (IOException | InterruptedException e) {
+            LOG.log(Level.SEVERE, "Could not send request to send welcome email.", e);
+            if (e instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
+            }
+        }
     }
 
     public String getCheckoutUrlForServiceAndPrice(String priceId, String credits, String email) {
-
-        URI uri = UrlBuilder
-                .empty()
-                .withScheme("http")
-                .withPort(portPayment)
-                .withHost("localhost")
-                .withPath("/stripe/getCheckoutUrl")
-                .toUri();
-
-        JsonObjectBuilder parametersBuilder = Json.createObjectBuilder();
-        parametersBuilder.add("baseUrl", RemoteLocal.getDomain());
-        parametersBuilder.add("cancelPath", "/plans/canceled.html?stripe_session_id={CHECKOUT_SESSION_ID}");
-        parametersBuilder.add("successPath", "/index.html?stripe_session_id={CHECKOUT_SESSION_ID}");
-        parametersBuilder.add("priceId", priceId);
-        parametersBuilder.add("paymentMode", "subscription");
-        parametersBuilder.add("email", email);
-
-        String jsonString = parametersBuilder.build().toString();
-
-        HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(jsonString.getBytes(StandardCharsets.UTF_8));
-
-        HttpRequest httpRequest = HttpRequest.newBuilder()
-                .POST(bodyPublisher)
-                .uri(uri)
+        JsonObject payload = Json.createObjectBuilder()
+                .add("baseUrl", RemoteLocal.getDomain())
+                .add("cancelPath", "/plans/canceled.html?stripe_session_id={CHECKOUT_SESSION_ID}")
+                .add("successPath", "/index.html?stripe_session_id={CHECKOUT_SESSION_ID}")
+                .add("priceId", priceId)
+                .add("paymentMode", "subscription")
+                .add("email", email)
                 .build();
-
         try {
-            HttpResponse<String> resp = client.send(httpRequest, HttpResponse.BodyHandlers.ofString());
-            if (resp.statusCode() != 200) {
-                String stringError = resp.body();
-                System.out.println("stringError: " + stringError);
-                System.out.println("status code: " + resp.statusCode());
-            } else {
-                String url = resp.body();
-                return url;
+            HttpResponse<String> resp = httpClient
+                    .target("http", "localhost", portPayment)
+                    .post("/stripe/getCheckoutUrl")
+                    .withJsonPayload(payload)
+                    .send(HttpResponse.BodyHandlers.ofString());
+            return resp.body();
+        } catch (MicroserviceCallException e) {
+            LOG.log(Level.SEVERE, "API call to get checkout URL failed. URI: " + e.getUri() + ", Status: " + e.getStatusCode(), e);
+        } catch (IOException | InterruptedException e) {
+            LOG.log(Level.SEVERE, "Could not send request to get checkout URL.", e);
+            if (e instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
             }
-        } catch (IOException | InterruptedException ex) {
-            Logger.getLogger(StripeBean.class.getName()).log(Level.SEVERE, null, ex);
         }
-        System.out.println("reached the end of the method without a returned url");
         return null;
     }
 
     public String getHashFromCustomerEmail(String customerEmail) {
-
-        URI uri = UrlBuilder
-                .empty()
-                .withScheme("http")
-                .withPort(portPayment)
-                .withHost("localhost")
-                .withPath("/stripe/getHashFromCustomerEmail")
-                .addParameter("customerEmail", customerEmail)
-                .toUri();
-
-        HttpRequest httpRequest = HttpRequest.newBuilder()
-                .uri(uri)
-                .build();
-
         try {
-            HttpResponse<String> resp = client.send(httpRequest, HttpResponse.BodyHandlers.ofString());
-            if (resp.statusCode() != 200) {
-                String stringError = resp.body();
-                System.out.println("stringError: " + stringError);
-                System.out.println("status code: " + resp.statusCode());
-            } else {
-                return resp.body();
+            HttpResponse<String> resp = httpClient
+                    .target("http", "localhost", portPayment)
+                    .get("/stripe/getHashFromCustomerEmail")
+                    .addQueryParameter("customerEmail", customerEmail)
+                    .send(HttpResponse.BodyHandlers.ofString());
+            return resp.body();
+        } catch (MicroserviceCallException e) {
+            LOG.log(Level.WARNING, () -> "API call to get hash from email failed, this is expected for new customers. URI: " + e.getUri() + ", Status: " + e.getStatusCode());
+        } catch (IOException | InterruptedException e) {
+            LOG.log(Level.SEVERE, "Could not send request to get hash from email.", e);
+            if (e instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
             }
-        } catch (IOException | InterruptedException ex) {
-            Logger.getLogger(StripeBean.class.getName()).log(Level.SEVERE, null, ex);
         }
-        System.out.println("reached the end of the method without a returned hash");
         return null;
     }
 
     public String getEmailFromCustomerHash(String hash) {
-
-        URI uri = UrlBuilder
-                .empty()
-                .withScheme("http")
-                .withPort(portPayment)
-                .withHost("localhost")
-                .withPath("/stripe/getCustomerEmailByHash")
-                .addParameter("hash", hash)
-                .toUri();
-
-        HttpRequest httpRequest = HttpRequest.newBuilder()
-                .uri(uri)
-                .build();
-
-        try {
-            HttpResponse<String> resp = client.send(httpRequest, HttpResponse.BodyHandlers.ofString());
-            if (resp.statusCode() != 200) {
-                String stringError = resp.body();
-                System.out.println("stringError: " + stringError);
-                System.out.println("status code: " + resp.statusCode());
-            } else {
-                return resp.body();
-            }
-        } catch (IOException | InterruptedException ex) {
-            Logger.getLogger(StripeBean.class.getName()).log(Level.SEVERE, null, ex);
+        if (hash == null || hash.isBlank()) {
+            return null;
         }
-        System.out.println("reached the end of the method without a returned email");
+        try {
+            HttpResponse<String> resp = httpClient
+                    .target("http", "localhost", portPayment)
+                    .get("/stripe/getCustomerEmailByHash")
+                    .addQueryParameter("hash", hash)
+                    .send(HttpResponse.BodyHandlers.ofString());
+            return resp.body();
+        } catch (MicroserviceCallException e) {
+            LOG.log(Level.SEVERE, "API call to get email from hash failed. URI: " + e.getUri() + ", Status: " + e.getStatusCode(), e);
+        } catch (IOException | InterruptedException e) {
+            LOG.log(Level.SEVERE, "Could not send request to get email from hash.", e);
+            if (e instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
+            }
+        }
         return null;
     }
 
     public Customer getCustomerInfoBySessionId(String stripeSessionId) {
-
-        URI uri = UrlBuilder
-                .empty()
-                .withScheme("http")
-                .withPort(portPayment)
-                .withHost("localhost")
-                .withPath("/stripe/getCustomerInfoBySessionId")
-                .addParameter("stripeSessionId", stripeSessionId)
-                .toUri();
-
-        HttpRequest httpRequest = HttpRequest.newBuilder()
-                .uri(uri)
-                .build();
-
         try {
-            HttpResponse<String> resp = client.send(httpRequest, HttpResponse.BodyHandlers.ofString());
-            if (resp.statusCode() != 200) {
-                String stringError = resp.body();
-                System.out.println("stringError: " + stringError);
-                System.out.println("status code: " + resp.statusCode());
-            } else {
-                try {
-                    Jsonb jb = JsonbBuilder.create();
-                    Customer customer = jb.fromJson(resp.body(), Customer.class);
-                    return customer;
-                } catch (JsonbException e) {
-                    System.out.println("error in deserializing customer info: " + e.getMessage());
-                    return null;
-                }
+            HttpResponse<String> resp = httpClient
+                    .target("http", "localhost", portPayment)
+                    .get("/stripe/getCustomerInfoBySessionId")
+                    .addQueryParameter("stripeSessionId", stripeSessionId)
+                    .send(HttpResponse.BodyHandlers.ofString());
+            Jsonb jb = JsonbBuilder.create();
+            return jb.fromJson(resp.body(), Customer.class);
+        } catch (MicroserviceCallException e) {
+            LOG.log(Level.SEVERE, "API call to get customer info failed. URI: " + e.getUri() + ", Status: " + e.getStatusCode(), e);
+        } catch (IOException | InterruptedException e) {
+            LOG.log(Level.SEVERE, "Could not send request to get customer info.", e);
+            if (e instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
             }
-        } catch (IOException | InterruptedException ex) {
-            Logger.getLogger(StripeBean.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (JsonbException e) {
+            LOG.log(Level.SEVERE, "Failed to deserialize customer info.", e);
         }
-        System.out.println("reached the end of the method without a returned customer");
         return null;
+    }
+
+    public Integer getRemainingCredits() {
+        if (!sessionBean.isHashPresent()) {
+            return 0;
+        }
+        String hash = sessionBean.getHash();
+        try {
+            HttpResponse<String> resp = httpClient
+                    .target("http", "localhost", portPayment)
+                    .get("/stripe/getCustomerRemainingCredits")
+                    .addQueryParameter("hash", hash)
+                    .addQueryParameter("serviceName", SingletonBean.SERVICE_NAME)
+                    .send(HttpResponse.BodyHandlers.ofString());
+            return Integer.valueOf(resp.body());
+        } catch (MicroserviceCallException e) {
+            LOG.log(Level.SEVERE, "API call to get remaining credits failed. URI: " + e.getUri() + ", Status: " + e.getStatusCode(), e);
+        } catch (IOException | InterruptedException | NumberFormatException e) {
+            LOG.log(Level.SEVERE, "Could not process request for remaining credits.", e);
+            if (e instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
+            }
+        }
+        return 0;
     }
 
     public String getUrlCheckoutMonthlyProPlan() {
@@ -725,7 +532,6 @@ https://bsky.app/profile/seinecle.bsky.social""";
 
     public void setUrlParamStripeSessionIdReturnedByCheckout(String urlParamStripeSessionIdReturnedByCheckout) {
         this.urlParamStripeSessionIdReturnedByCheckout = UrlParamCleaner.getRightmostPart(urlParamStripeSessionIdReturnedByCheckout);
-        
     }
 
     public String getUrlParamEmail() {
@@ -734,7 +540,6 @@ https://bsky.app/profile/seinecle.bsky.social""";
 
     public void setUrlParamEmail(String urlParamEmail) {
         this.urlParamEmail = UrlParamCleaner.getRightmostPart(urlParamEmail);
-        
     }
 
     public String getEmailInputField() {
@@ -746,47 +551,7 @@ https://bsky.app/profile/seinecle.bsky.social""";
     }
 
     public String getUrlBillingPortal() {
-        String billingPortalURL = TEST ? BILLING_PORTAL_URL_TEST : BILLING_PORTAL_URL_PROD;
-        return billingPortalURL;
-    }
-
-    public Integer getRemainingCredits() {
-        if (!sessionBean.isHashPresent()) {
-            return 0;
-        }
-
-        String hash = sessionBean.getHash();
-
-        URI uri = UrlBuilder
-                .empty()
-                .withScheme("http")
-                .withPort(portPayment)
-                .withHost("localhost")
-                .withPath("/stripe/getCustomerRemainingCredits")
-                .addParameter("hash", hash)
-                .addParameter("serviceName", SingletonBean.SERVICE_NAME)
-                .toUri();
-
-        HttpRequest httpRequest = HttpRequest.newBuilder()
-                .uri(uri)
-                .build();
-
-        try {
-            HttpResponse<String> resp = client.send(httpRequest, HttpResponse.BodyHandlers.ofString());
-            if (resp.statusCode() != 200) {
-                String stringError = resp.body();
-                System.out.println("stringError: " + stringError);
-                System.out.println("status code: " + resp.statusCode());
-                remainingCredits = 0;
-            } else {
-                remainingCredits = Integer.valueOf(resp.body());
-            }
-        } catch (IOException | InterruptedException | NumberFormatException e) {
-            System.out.println("error retrieving remaining credits");
-            remainingCredits = 0;
-        }
-
-        return remainingCredits;
+        return TEST ? BILLING_PORTAL_URL_TEST : BILLING_PORTAL_URL_PROD;
     }
 
     public void setRemainingCredits(Integer remainingCredits) {
@@ -816,6 +581,4 @@ https://bsky.app/profile/seinecle.bsky.social""";
     public void setEmailButtonIsDisabled(boolean emailButtonIsDisabled) {
         this.emailButtonIsDisabled = emailButtonIsDisabled;
     }
-    
-
 }
