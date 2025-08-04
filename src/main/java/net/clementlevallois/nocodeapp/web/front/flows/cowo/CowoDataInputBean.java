@@ -99,7 +99,6 @@ public class CowoDataInputBean implements Serializable {
     }
 
     private void processCowoDataSource(CowoDataSource dataSource) {
-        // If this is the first data processing action, create a new job ID.
         if (this.jobId == null) {
             this.jobId = UUID.randomUUID().toString().substring(0, 10);
         }
@@ -115,7 +114,7 @@ public class CowoDataInputBean implements Serializable {
         ImportersService.PreparationResult result = switch (dataSource) {
             case CowoDataSource.FileUpload(List<UploadedFile> files) ->
                 importersService.handleFileUpload(files, jobId);
-            case CowoDataSource.WebPage(String url) ->
+            case CowoDataSource.WebPage(String url_param) ->
                 importersService.parseWebPage(url, jobId);
             case CowoDataSource.WebSite(String rootUrl, int maxUrls, String exclusionTerms) ->
                 importersService.crawlWebSite(rootUrl, maxUrls, exclusionTerms, jobId);

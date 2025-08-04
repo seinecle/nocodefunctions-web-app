@@ -62,22 +62,16 @@
                 <div>
                     <p:spacer height="30" width="10"/>            
                 </div>
-                <p:button id="button" value="#{text['sim.create']} 🔎" outcome="/sim/similarity-import.xhtml?function=sim&amp;faces-redirect=true" styleClass="btn btn-primary" style="min-width: 15em;"/>
+                <p:button id="button" value="#{text['cooc.create']} 🔎" outcome="/cooc/cooc-import.xhtml?function=cooc&amp;faces-redirect=true" styleClass="btn btn-primary" style="min-width: 15em;"/>
             </p:panel>
             <p:panel>
                 <p:fieldset>
                     <f:facet name="legend">
-                        <h3>#{text['gaze.network_builder.two_options']}</h3>
+                        <h3>Create a network based on cooccurrences between entities</h3>
                     </f:facet>
                     <div id="reduce-desktop" style="text-align:center;">
                         <h:graphicImage name="images/cooccurrences_explanations.jpg" style="vertical-align: bottom; -webkit-filter: drop-shadow(5px 5px 5px #222222);
-                                        filter: drop-shadow(5px 5px 5px #222222);" alt="explanations for how to transform a table of coccurrences into a network"/>
-                        <br/>
-                        <div>
-                            <p:spacer height="60"/>
-                        </div>
-                        <h:graphicImage name="images/sources_targets_explanations.jpg" style="vertical-align: bottom; -webkit-filter: drop-shadow(5px 5px 5px #222222);
-                                        filter: drop-shadow(5px 5px 5px #222222);" alt="explanations for how to transform items into a network, based on their similarities"/>
+                                        filter: drop-shadow(5px 5px 5px #222222);" alt="explanations for how to transform items into a network, based on their cooccurences"/>
                     </div>
                 </p:fieldset>
                 <p:spacer height="20"/>
@@ -105,7 +99,7 @@
                     </p>
                     <p class="hide-desktop" style="text-align:center;">
                         <p:link
-                            value="Turn a list of sources and their targets into a network with Nocodefunctions App (and visualize it in Gephi)"
+                            value="Turn a list of coocurrences into a network with Nocodefunctions App (and visualize it in Gephi)"
                             href="https://medium.com/@vespinozag/turn-a-list-and-their-targets-into-a-network-with-nocodefunctions-app-and-visualize-it-in-gephi-1d412d1b0820"
                             target="_blank"/>
                     </p>

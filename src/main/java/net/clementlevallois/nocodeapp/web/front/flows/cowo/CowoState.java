@@ -129,7 +129,7 @@ public sealed interface CowoState {
      */
     record FlowFailed(
             String jobId,
-            AwaitingParameters parameters,
+            CowoState lastKnownState,
             String errorMessage) implements CowoState {
     }
 }

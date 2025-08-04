@@ -94,8 +94,6 @@ public class ImportersService {
      *
      * @param files The list of files uploaded by the user.
      * @param jobId The unique identifier for the current job.
-     * @param jsonKey
-     * @param functionName
      * @return A {@link PreparationResult} indicating success or failure.
      */
     public PreparationResult handleFileUpload(List<UploadedFile> files, String jobId) {
@@ -122,7 +120,7 @@ public class ImportersService {
                     case FileExtension.Json() ->
                         importClient.get("import/json/appendToPersistedJsonArray");
                     case FileExtension.Csv() ->
-                        importClient.get("import/csv/simpleLines");
+                        importClient.get("/api/import/csv/toSheets");
                     case FileExtension.Unsupported(String ext) ->
                         null;
                 };

@@ -33,6 +33,7 @@ import net.clementlevallois.nocodeapp.web.front.utils.Converters;
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
 import net.clementlevallois.nocodeapp.web.front.http.MicroserviceHttpClient;
+import net.clementlevallois.nocodeapp.web.front.http.MicroserviceHttpClient.GetRequestBuilder;
 import net.clementlevallois.nocodeapp.web.front.http.MicroserviceHttpClient.MicroserviceCallException;
 import net.clementlevallois.nocodeapp.web.front.http.MicroserviceHttpClient.PostRequestBuilder;
 import net.clementlevallois.nocodeapp.web.front.io.ExportToGephiLite;
@@ -117,7 +118,7 @@ public class WorkflowCoocBean implements Serializable {
         progress = 0;
         logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.starting_analysis"));
         runButtonDisabled = true;
-        var requestBuilder = microserviceClient.api().post(WorkflowCoocProps.ENDPOINT);
+        var requestBuilder = microserviceClient.api().get(WorkflowCoocProps.ENDPOINT);
 
         addGlobalQueryParams(requestBuilder);
 
@@ -141,7 +142,7 @@ public class WorkflowCoocBean implements Serializable {
 
     }
 
-    private MicroserviceHttpClient.PostRequestBuilder addGlobalQueryParams(PostRequestBuilder requestBuilder) {
+    private MicroserviceHttpClient.GetRequestBuilder addGlobalQueryParams(GetRequestBuilder requestBuilder) {
 
         String callbackURL = RemoteLocal.getDomain() + RemoteLocal.getInternalMessageApiEndpoint() + WorkflowCoocProps.ENDPOINT;
 

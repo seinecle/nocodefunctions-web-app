@@ -22,6 +22,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import net.clementlevallois.nocodeapp.web.front.flows.cooc.CoocState;
 import net.clementlevallois.nocodeapp.web.front.flows.cowo.CowoState;
 import net.clementlevallois.nocodeapp.web.front.flows.sim.SimState;
 import net.clementlevallois.nocodeapp.web.front.flows.spatialize.SpatializeState;
@@ -46,6 +47,7 @@ public class SessionBean implements Serializable {
     private String hash;
     private String jobId;
     private CowoState cowoState;
+    private CoocState coocState;
     private TopicsState topicsState;
     private SpatializeState spatializeState;
     private SimState simState;
@@ -286,4 +288,14 @@ public class SessionBean implements Serializable {
     public void setSimState(SimState simState) {
         this.simState = simState;
     }
+
+    public CoocState getCoocState() {
+        return coocState;
+    }
+
+    public void setCoocState(CoocState coocState) {
+        this.coocState = coocState;
+    }
+    
+    
 }

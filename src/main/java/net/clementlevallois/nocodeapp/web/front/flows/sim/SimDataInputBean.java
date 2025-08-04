@@ -34,7 +34,6 @@ public class SimDataInputBean implements Serializable {
 
     private String jobId;
     private List<SheetModel> dataInSheets;
-
     private Boolean hasHeaders = false;
     private String selectedColumnIndex;
     private SimState.AwaitingParameters awaitingParameters;
