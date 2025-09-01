@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.UUID;
 import net.clementlevallois.nocodeapp.web.front.flows.cooc.CoocState;
 import net.clementlevallois.nocodeapp.web.front.flows.cowo.CowoState;
+import net.clementlevallois.nocodeapp.web.front.flows.regionextractor.RegionExtractorState;
 import net.clementlevallois.nocodeapp.web.front.flows.sim.SimState;
 import net.clementlevallois.nocodeapp.web.front.flows.spatialize.SpatializeState;
 import net.clementlevallois.nocodeapp.web.front.flows.topics.TopicsState;
@@ -51,6 +52,7 @@ public class SessionBean implements Serializable {
     private TopicsState topicsState;
     private SpatializeState spatializeState;
     private SimState simState;
+    private RegionExtractorState regionExtractorState;
 
     @Inject
     ApplicationPropertiesBean applicationProperties;
@@ -296,6 +298,16 @@ public class SessionBean implements Serializable {
     public void setCoocState(CoocState coocState) {
         this.coocState = coocState;
     }
+
+    public RegionExtractorState getRegionExtractorState() {
+        return regionExtractorState;
+    }
+
+    public void setRegionExtractorState(RegionExtractorState regionExtractorState) {
+        this.regionExtractorState = regionExtractorState;
+    }
+    
+    
     
     
 }

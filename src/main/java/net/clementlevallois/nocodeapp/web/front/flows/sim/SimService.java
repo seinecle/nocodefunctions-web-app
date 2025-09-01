@@ -38,7 +38,7 @@ public class SimService {
     @Inject
     private ApplicationPropertiesBean applicationProperties;
 
-    public SimState startAnalysis(SimState.AwaitingParameters currentState) {
+    public SimState callSimMicroService(SimState.AwaitingParameters currentState) {
         String jobId = currentState.jobId();
         String callbackURL = RemoteLocal.getDomain() + RemoteLocal.getInternalMessageApiEndpoint() + WorkflowSimProps.ENDPOINT;
 
@@ -88,7 +88,7 @@ public class SimService {
         Path completeSignal = globals.getWorkflowCompleteFilePath(jobId);
 
         if (Files.exists(completeSignal)) {
-            return finishAnalysis(currentState);
+            return processSimResults(currentState);
         }
 
         var messages = WatchTower.getDequeAPIMessages().get(jobId);
@@ -114,7 +114,7 @@ public class SimService {
         return currentState;
     }
 
-    private SimState finishAnalysis(SimState.Processing currentState) {
+    private SimState processSimResults(SimState.Processing currentState) {
         String jobId = currentState.jobId();
         Globals globals = new Globals(applicationProperties.getTempFolderFullPath());
         WorkflowSimProps props = new WorkflowSimProps(applicationProperties.getTempFolderFullPath());

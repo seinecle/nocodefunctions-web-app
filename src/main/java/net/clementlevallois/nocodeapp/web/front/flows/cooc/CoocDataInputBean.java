@@ -32,9 +32,7 @@ import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.io.ImportersService;
 import net.clementlevallois.nocodeapp.web.front.utils.Converters;
 import net.clementlevallois.utils.Multiset;
-import org.primefaces.component.tabview.Tab;
 import org.primefaces.event.FileUploadEvent;
-import org.primefaces.event.TabChangeEvent;
 import org.primefaces.model.file.UploadedFile;
 
 @Named
@@ -97,7 +95,7 @@ public class CoocDataInputBean implements Serializable {
 
         ImportersService.PreparationResult result = switch (dataSource) {
             case CoocDataSource.FileUpload(List<UploadedFile> files) ->
-                importersService.handleFileUpload(files, jobId);
+                importersService.handleFileUpload(files, jobId, Globals.Names.COOC);
         };
 
         if (result instanceof ImportersService.PreparationResult.Failure(String error)) {

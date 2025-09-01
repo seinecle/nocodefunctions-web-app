@@ -1,0 +1,201 @@
+package net.clementlevallois.nocodeapp.web.front.flows.regionextractor;
+
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.http.HttpResponse;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.imageio.ImageIO;
+import net.clementlevallois.functions.model.FunctionRegionExtract;
+import static net.clementlevallois.functions.model.FunctionRegionExtract.QueryParams.ALL_PAGES;
+import static net.clementlevallois.functions.model.FunctionRegionExtract.QueryParams.HEIGHT;
+import static net.clementlevallois.functions.model.FunctionRegionExtract.QueryParams.LEFT_CORNER_X;
+import static net.clementlevallois.functions.model.FunctionRegionExtract.QueryParams.LEFT_CORNER_Y;
+import static net.clementlevallois.functions.model.FunctionRegionExtract.QueryParams.SELECTED_PAGES;
+import static net.clementlevallois.functions.model.FunctionRegionExtract.QueryParams.WIDTH;
+import net.clementlevallois.functions.model.Globals;
+import static net.clementlevallois.functions.model.Globals.GlobalQueryParams.CALLBACK_URL;
+import static net.clementlevallois.functions.model.Globals.GlobalQueryParams.JOB_ID;
+import net.clementlevallois.importers.model.ImagesPerFile;
+import net.clementlevallois.nocodeapp.web.front.MessageFromApi;
+import static net.clementlevallois.nocodeapp.web.front.MessageFromApi.Information.ERROR;
+import static net.clementlevallois.nocodeapp.web.front.MessageFromApi.Information.PROGRESS;
+import net.clementlevallois.nocodeapp.web.front.WatchTower;
+import net.clementlevallois.nocodeapp.web.front.backingbeans.ApplicationPropertiesBean;
+import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
+import net.clementlevallois.nocodeapp.web.front.flows.regionextractor.RegionExtractorState.RegionDefinition;
+import net.clementlevallois.nocodeapp.web.front.http.MicroserviceHttpClient;
+import net.clementlevallois.nocodeapp.web.front.http.RemoteLocal;
+import org.primefaces.model.CroppedImage;
+
+/**
+ *
+ * @author clevallois
+ */
+@ApplicationScoped
+public class RegionExtractorService {
+
+    private static final Logger LOG = Logger.getLogger(RegionExtractorService.class.getName());
+
+    @Inject
+    private MicroserviceHttpClient microserviceClient;
+
+    @Inject
+    private ApplicationPropertiesBean applicationProperties;
+
+    @Inject
+    private SessionBean sessionBean;
+
+    public RegionExtractorState.RegionDefinition defineRegion(RegionExtractorState.RegionDefinition currentState) {
+        RegionExtractorState.RegionParameters regionParameters = currentState.regionParameters();
+        if (regionParameters.selectedRegion() == null) {
+            return currentState;
+        }
+        CroppedImage croppedImage = regionParameters.selectedRegion();
+
+        if (croppedImage == null) {
+            LOG.log(Level.SEVERE, () -> "Error: No region was selected for jobId" + currentState.jobId());
+            return currentState;
+        }
+
+        float proportionTopLeftX = (float) croppedImage.getLeft() / regionParameters.pageWidth();
+        float proportionTopLeftY = (float) croppedImage.getTop() / regionParameters.pageHeight();
+        float proportionWidth = (float) croppedImage.getWidth() / regionParameters.pageWidth();
+        float proportionHeight = (float) croppedImage.getHeight() / regionParameters.pageHeight();
+
+        RegionExtractorState.RegionParameters updatedRegionParameters = regionParameters.withProportionTopLeftX(proportionTopLeftX).withProportionTopLeftY(proportionTopLeftY).withProportionWidth(proportionWidth).withProportionHeight(proportionHeight);
+        RegionExtractorState.RegionDefinition newState = new RegionExtractorState.RegionDefinition(currentState.jobId(), currentState.imagesPerFile(), updatedRegionParameters);
+        sessionBean.setRegionExtractorState(newState);
+        return newState;
+    }
+
+    public RegionExtractorState.RegionDefinition getDocumentDimensions(RegionExtractorState.RegionDefinition state) {
+        ImagesPerFile imagesPerFile = state.imagesPerFile();
+        if (imagesPerFile == null) {
+            LOG.warning("ImagesPerFile bytes is null");
+            return state;
+        }
+        byte[] imageBytes = imagesPerFile.getImage(state.regionParameters().selectedPage());
+        if (imageBytes == null) {
+            LOG.warning("Image bytes are null for image zero");
+            return state;
+        }
+
+        try (InputStream is = new ByteArrayInputStream(imageBytes)) {
+            BufferedImage buf = ImageIO.read(is);
+            if (buf == null) {
+                LOG.warning("Could not read BufferedImage from bytes.");
+                return state;
+            }
+            int widthImage = buf.getWidth();
+            int heightImage = buf.getHeight();
+            RegionExtractorState.RegionParameters regionParameters = state.regionParameters();
+            regionParameters = regionParameters.withPageHeight(heightImage);
+            regionParameters = regionParameters.withPageWidth(widthImage);
+            RegionDefinition updatedRegionDefinition = new RegionDefinition(state.jobId(), imagesPerFile, regionParameters);
+            sessionBean.setRegionExtractorState(updatedRegionDefinition);
+            return updatedRegionDefinition;
+        } catch (IOException ex) {
+            System.getLogger(RegionExtractorService.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
+            return state;
+        }
+    }
+
+    public RegionExtractorState callMicroService(RegionExtractorState.TargetPdfsUploaded current) {
+        String jobId = current.jobId();
+        RegionExtractorState.RegionParameters params = current.regionParameters();
+        AtomicReference<RegionExtractorState.FlowFailed> errorFlow = new AtomicReference<>();
+        AtomicReference<Boolean> isOk = new AtomicReference<>(true);
+
+        var requestBuilder = microserviceClient.importService().get(FunctionRegionExtract.ENDPOINT);
+
+        for (FunctionRegionExtract.QueryParams param : FunctionRegionExtract.QueryParams.values()) {
+            String value = switch (param) {
+                case FILE_NAME_PREFIX ->
+                    Globals.UPLOADED_FILE_PREFIX;
+                case ALL_PAGES ->
+                    String.valueOf(params.allPages());
+                case SELECTED_PAGES ->
+                    String.valueOf(params.selectedPage());
+                case LEFT_CORNER_X ->
+                    String.valueOf(params.proportionTopLeftX());
+                case LEFT_CORNER_Y ->
+                    String.valueOf(params.proportionTopLeftY());
+                case WIDTH ->
+                    String.valueOf(params.proportionWidth());
+                case HEIGHT ->
+                    String.valueOf(params.proportionHeight());
+            };
+            requestBuilder.addQueryParameter(param.name(), value);
+        }
+
+        String callbackURL = RemoteLocal.getDomain() + RemoteLocal.getInternalMessageApiEndpoint() + FunctionRegionExtract.NAME;
+
+        for (Globals.GlobalQueryParams param : Globals.GlobalQueryParams.values()) {
+            String paramValue = switch (param) {
+                case JOB_ID ->
+                    jobId;
+                case CALLBACK_URL ->
+                    callbackURL;
+            };
+            requestBuilder.addQueryParameter(param.name(), paramValue);
+        }
+
+        requestBuilder.sendAsync(HttpResponse.BodyHandlers.ofString())
+                .thenAccept(resp -> {
+                    if (resp.statusCode() != 200) {
+                        LOG.log(Level.SEVERE, "region text extraction task submission failed for job {0}. Status: {1}, Body: {2}",
+                                new Object[]{jobId, resp.statusCode(), resp.body()});
+                        errorFlow.set(new RegionExtractorState.FlowFailed(jobId, current, "region extractor call failed with non-200 status"));
+                        isOk.set(Boolean.FALSE);
+                    }
+                })
+                .exceptionally(ex -> {
+                    LOG.log(Level.SEVERE, "Exception during region text extraction submission for job " + jobId, ex);
+                    errorFlow.set(new RegionExtractorState.FlowFailed(jobId, current, "region extractor call threw exception"));
+                    isOk.set(Boolean.FALSE);
+                    return null;
+                });
+        return isOk.get() ? new RegionExtractorState.Processing(jobId, 0) : errorFlow.get();
+    }
+
+    public RegionExtractorState checkCompletion(RegionExtractorState.Processing currentState) {
+        String jobId = currentState.jobId();
+        Globals globals = new Globals(applicationProperties.getTempFolderFullPath());
+        Path completeSignal = globals.getResultInBinaryFormat(jobId);
+
+        if (Files.exists(completeSignal)) {
+            RegionExtractorState updatedState = new RegionExtractorState.ResultsReady(jobId);
+            sessionBean.setRegionExtractorState(updatedState);
+            return updatedState;
+        } else {
+            var messages = WatchTower.getDequeAPIMessages().get(jobId);
+            if (messages != null) {
+                for (MessageFromApi msg : messages) {
+                    if (jobId.equals(msg.getjobId())) {
+                        switch (msg.getInfo()) {
+                            case ERROR -> {
+                                messages.remove(msg);
+                                return new RegionExtractorState.FlowFailed(jobId, currentState, msg.getMessage());
+                            }
+                            case PROGRESS -> {
+                                if (msg.getProgress() != null) {
+                                    messages.remove(msg);
+                                    return currentState.withProgress(msg.getProgress());
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return currentState;
+    }
+}

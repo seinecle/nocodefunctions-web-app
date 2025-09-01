@@ -1,9 +1,7 @@
 package net.clementlevallois.nocodeapp.web.front.importdata;
 
 import jakarta.annotation.PostConstruct;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
 import jakarta.inject.Named;
 import java.io.Serializable;
 import java.net.URISyntaxException;
@@ -13,35 +11,24 @@ import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import jakarta.enterprise.context.SessionScoped;
 import jakarta.faces.application.FacesMessage;
-import jakarta.faces.context.FacesContext;
-import jakarta.faces.event.PhaseId;
 import jakarta.inject.Inject;
 import jakarta.servlet.annotation.MultipartConfig;
-import java.io.InputStream;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Base64;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Properties;
-import java.util.UUID;
-import java.util.stream.Stream;
 import net.clementlevallois.functions.model.Globals;
 import net.clementlevallois.functions.model.Globals.Names;
 import static net.clementlevallois.functions.model.Globals.Names.COOC;
-import static net.clementlevallois.functions.model.Globals.Names.PDF_REGION_EXTRACTOR;
 import net.clementlevallois.importers.model.ImagesPerFile;
 import net.clementlevallois.importers.model.SheetModel;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.logview.BackToFrontMessengerBean;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.ApplicationPropertiesBean;
 import net.clementlevallois.nocodeapp.web.front.http.MicroserviceHttpClient;
-import org.primefaces.model.DefaultStreamedContent;
-import org.primefaces.model.StreamedContent;
 
 /**
  *
@@ -87,9 +74,6 @@ public class DataImportBean implements Serializable {
     private Integer countOfSelectedColOne = 0;
     private Integer countOfSelectedColTwo = 0;
     private String currColBeingSelected;
-    private List<ImagesPerFile> imagesPerFiles;
-    private List<String> imageNamesOfCurrentFile;
-    private Map<String, String> pdfsToBeExtracted;
     private Names currentFunctionName;
 
     private int tabIndex;
@@ -117,7 +101,6 @@ public class DataImportBean implements Serializable {
     public String readData() throws IOException, URISyntaxException {
         dataInSheets = new ArrayList();
         sessionBean.createJobId();
-        pdfsToBeExtracted = new HashMap();
         progress = 0;
         if (filesUploaded.isEmpty()) {
             logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.no_file_upload_again"));
@@ -196,23 +179,9 @@ public class DataImportBean implements Serializable {
         progress = 100;
 
     }
-
-    public void storePdFile(FileUploaded f) {
-        String pdfEncodedAsString = Base64.getEncoder().encodeToString(f.bytes());
-        pdfsToBeExtracted.put(f.fileName(), pdfEncodedAsString);
-    }
-
     private void readPdfFile(FileUploaded f) {
         String localizedEmptyLineMessage = sessionBean.getLocaleBundle().getString("general.message.empty_line");
         switch (currentFunctionName) {
-            case PDF_REGION_EXTRACTOR ->
-                microserviceClient.importService().post("/api/pdf/return-png")
-                        .addQueryParameter("jobId", sessionBean.getJobId())
-                        .addQueryParameter("fileUniqueId", f.fileUniqueId())
-                        .addQueryParameter("fileName", f.fileName())
-                        .addQueryParameter("localizedEmptyLineMessage", localizedEmptyLineMessage)
-                        .sendAsync(HttpResponse.BodyHandlers.ofString());
-
             case PDF_MATCHER ->
                 microserviceClient.importService().post("/api/pdf/linesPerPage")
                         .addQueryParameter("jobId", sessionBean.getJobId())
@@ -523,50 +492,6 @@ public class DataImportBean implements Serializable {
         this.filesUploaded = filesUploaded;
     }
 
-    public List<ImagesPerFile> getImagesPerFiles() {
-        imagesPerFiles = new ArrayList<>();
-        Path jobDirectory = globals.getJobDirectory(sessionBean.getJobId());
-        String UPLOADED_FILE_PREFIX = Globals.UPLOADED_FILE_PREFIX;
-        String PNG_EXTENSION = Globals.PNG_EXTENSION;
-
-        try (Stream<Path> walk = Files.walk(jobDirectory)) {
-            walk.filter(Files::isRegularFile)
-                    .filter(path -> path.getFileName().toString().startsWith(UPLOADED_FILE_PREFIX))
-                    .filter(path -> path.getFileName().toString().endsWith(PNG_EXTENSION))
-                    .forEach(path -> {
-                        try (InputStream is = Files.newInputStream(path); ObjectInputStream ois = new ObjectInputStream(is)) {
-                            ImagesPerFile imagesPerOneFile = (ImagesPerFile) ois.readObject();
-                            imagesPerFiles.add(imagesPerOneFile);
-                        } catch (IOException | ClassNotFoundException ex) {
-                            Logger.getLogger(DataImportBean.class.getName()).log(Level.SEVERE, null, ex);
-                        }
-                    });
-        } catch (IOException ex) {
-            Logger.getLogger(DataImportBean.class.getName()).log(Level.SEVERE, null, ex);
-        }
-
-        return imagesPerFiles;
-    }
-
-    public void setImagesPerFiles(List<ImagesPerFile> imagesPerFiles) {
-        this.imagesPerFiles = imagesPerFiles;
-    }
-
-    public StreamedContent getImage() {
-        FacesContext context = FacesContext.getCurrentInstance();
-
-        if (context.getCurrentPhaseId() == PhaseId.RENDER_RESPONSE) {
-            // So, we're rendering the view. Return a stub StreamedContent so that it will generate right URL.
-            return new DefaultStreamedContent();
-        }
-        String index = context.getExternalContext().getRequestParameterMap().get("rowIndex");
-        byte[] image = imagesPerFiles.get(tabIndex).getImage(Integer.parseInt(index));
-        ByteArrayInputStream stream = new ByteArrayInputStream(image);
-        String random = UUID.randomUUID().toString();
-        StreamedContent imageAsStream = DefaultStreamedContent.builder().name(random).contentType("image/png").stream(() -> stream).build();
-        imageNamesOfCurrentFile.add(imageAsStream.toString());
-        return imageAsStream;
-    }
 
     public int getTabIndex() {
         return tabIndex;
@@ -576,15 +501,4 @@ public class DataImportBean implements Serializable {
         this.tabIndex = tabIndex;
     }
 
-    public Map<String, String> getPdfsToBeExtracted() {
-        return pdfsToBeExtracted;
-    }
-
-    public void setPdfsToBeExtracted(Map<String, String> pdfsToBeExtracted) {
-        this.pdfsToBeExtracted = pdfsToBeExtracted;
-    }
-
-    public List<String> getImageNamesOfCurrentFile() {
-        return imageNamesOfCurrentFile;
-    }
 }

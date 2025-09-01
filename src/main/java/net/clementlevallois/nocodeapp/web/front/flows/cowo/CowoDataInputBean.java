@@ -113,7 +113,7 @@ public class CowoDataInputBean implements Serializable {
 
         ImportersService.PreparationResult result = switch (dataSource) {
             case CowoDataSource.FileUpload(List<UploadedFile> files) ->
-                importersService.handleFileUpload(files, jobId);
+                importersService.handleFileUpload(files, jobId, Globals.Names.COWO);
             case CowoDataSource.WebPage(String url_param) ->
                 importersService.parseWebPage(url, jobId);
             case CowoDataSource.WebSite(String rootUrl, int maxUrls, String exclusionTerms) ->

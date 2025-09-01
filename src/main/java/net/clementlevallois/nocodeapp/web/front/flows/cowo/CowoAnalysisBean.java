@@ -52,7 +52,7 @@ public class CowoAnalysisBean implements Serializable {
             try {
                 logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.starting_analysis"));
                 String sessionId = FacesContext.getCurrentInstance().getExternalContext().getSessionId(false);
-                CowoState cowoState = cowoService.startAnalysis(parameters, sessionId);
+                CowoState cowoState = cowoService.callCowoMicroService(parameters, sessionId);
                 sessionBean.setCowoState(cowoState);
             } catch (Exception e) {
                 LOG.log(Level.SEVERE, "Error initiating analysis", e);

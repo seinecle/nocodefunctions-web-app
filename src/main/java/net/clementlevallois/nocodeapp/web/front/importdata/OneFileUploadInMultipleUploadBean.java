@@ -7,8 +7,6 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import net.clementlevallois.functions.model.Globals;
-import net.clementlevallois.functions.model.Globals.Names;
-import static net.clementlevallois.functions.model.Globals.Names.PDF_REGION_EXTRACTOR;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.logview.BackToFrontMessengerBean;
 import org.primefaces.event.FileUploadEvent;
@@ -52,10 +50,6 @@ public class OneFileUploadInMultipleUploadBean {
             dataImportBean.getFilesUploaded().add(oneFile);
             dataImportBean.setReadButtonDisabled(Boolean.FALSE);
             dataImportBean.setRenderProgressBar(Boolean.TRUE);
-
-            if (currentFunction == PDF_REGION_EXTRACTOR) {
-                dataImportBean.storePdFile(oneFile);
-            }
         } catch (IOException ex) {
             Logger.getLogger(OneFileUploadInMultipleUploadBean.class.getName()).log(Level.SEVERE, null, ex);
         }

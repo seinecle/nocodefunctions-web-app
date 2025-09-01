@@ -44,7 +44,7 @@ public class CowoService {
     @Inject
     ApplicationPropertiesBean applicationProperties;
 
-    public CowoState startAnalysis(CowoState.AwaitingParameters currentState, String sessionId) {
+    public CowoState callCowoMicroService(CowoState.AwaitingParameters currentState, String sessionId) {
         String jobId = currentState.jobId();
         String correctionType = currentState.usePMI() ? "pmi" : "none";
 
@@ -68,7 +68,7 @@ public class CowoService {
                 .add("userSuppliedStopwords", userSuppliedStopwordsBuilder)
                 .build();
 
-        String callbackURL = RemoteLocal.getDomain() + RemoteLocal.getInternalMessageApiEndpoint() + WorkflowCowoProps.ENDPOINT;
+        String callbackURL = RemoteLocal.getDomain() + RemoteLocal.getInternalMessageApiEndpoint() + WorkflowCowoProps.NAME;
         var requestBuilder = microserviceClient.api().post(WorkflowCowoProps.ENDPOINT).withJsonPayload(jsonPayload);
 
         for (WorkflowCowoProps.QueryParams param : WorkflowCowoProps.QueryParams.values()) {
@@ -140,7 +140,7 @@ public class CowoService {
         Path pathSignalWorkflowComplete = globals.getWorkflowCompleteFilePath(jobId);
 
         if (Files.exists(pathSignalWorkflowComplete)) {
-            return finishAnalysis(currentState);
+            return processCowoResults(currentState);
         }
 
         var messagesFromApi = WatchTower.getDequeAPIMessages().get(jobId);
@@ -161,7 +161,7 @@ public class CowoService {
         return currentState;
     }
 
-    private CowoState finishAnalysis(CowoState.Processing currentState) {
+    private CowoState processCowoResults(CowoState.Processing currentState) {
         String jobId = currentState.jobId();
         Globals globals = new Globals(applicationProperties.getTempFolderFullPath());
         WorkflowCowoProps props = new WorkflowCowoProps(applicationProperties.getTempFolderFullPath());

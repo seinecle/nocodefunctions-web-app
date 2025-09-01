@@ -1,0 +1,106 @@
+<html lang="#{localeBean.languageTag}" xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+    <f:view locale="#{localeBean.currentLocale}">
+        <f:metadata>
+            <f:viewAction action="#{cowoDataInputBean.init()}" />
+        </f:metadata>
+        <h:head>
+            <title>Import Data for Semantic Networks</title>
+            <meta name="robots" content="noindex"/>
+            <h:outputStylesheet name="css/output.css" />
+        </h:head>
+        <h:body>
+            <ui:include src="/WEB-INF/includes/header.xhtml"/>
+            <p:panel header="Import Data for Semantic Network Analysis">
+                <div class="flex w-full gap-4 flew-wrap">
+                    <div class="sm:w-[70%] flex flex-col">
+
+                        <p:growl id="messages" showDetail="true" life="4000"/>
+
+                        <h:form id="importForm" enctype="multipart/form-data">
+                            <p:panel header="Option 1: Upload one or more files">
+                                <p>Upload text files (.txt), PDFs, or JSON files. You can select multiple files.</p>
+                                <p:fileUpload mode="advanced"
+                                              skinSimple="true"
+                                              multiple="true"
+                                              listener="#{cowoDataInputBean.handleFileUpload}"
+                                              label="Choose Files"
+                                              update=":messages :proceedPanel"
+                                              allowTypes="/(\.|\/)(txt|pdf|json)$/"
+                                              sizeLimit="100000000" />
+                                <p:spacer height="10"/>
+                                <small>For JSON files, the text should be under a key named "text".</small>
+                            </p:panel>
+
+                            <p:spacer height="20"/>
+
+                            <p:panel header="Option 2: Analyze a single web page">
+                                <p:inputText id="webpageUrl" value="#{cowoDataInputBean.url}" placeholder="https://example.com/article" style="width: 100%"/>
+                                <p:spacer height="10"/>
+                                <p:commandButton value="Add Web Page to Dataset"
+                                                 action="#{cowoDataInputBean.processWebPage}"
+                                                 update=":messages :proceedPanel"
+                                                 styleClass="btn btn-secondary"/>
+                            </p:panel>
+
+                            <p:spacer height="20"/>
+
+                            <p:panel header="Option 3: Analyze an entire website">
+                                <p:inputText id="websiteUrl" value="#{cowoDataInputBean.websiteUrl}" placeholder="https://example.com" style="width: 100%"/>
+                                <p:spacer height="10"/>
+                                <h:outputLabel for="maxUrls" value="Max pages to crawl:" />
+                                <p:spinner id="maxUrls" value="#{cowoDataInputBean.maxUrlsToCrawl}" min="1" max="100"/>
+                                <p:spacer height="10"/>
+                                <p:commandButton value="Add Website to Dataset"
+                                                 action="#{cowoDataInputBean.processWebSite}"
+                                                 update=":messages :proceedPanel"
+                                                 styleClass="btn btn-secondary"/>
+                            </p:panel>
+                        </h:form>
+
+                        <p:spacer height="30"/>
+
+                        <p:outputPanel id="proceedPanel">
+                            <p:panel header="Next Step" styleClass="border-green-500" rendered="#{cowoDataInputBean.dataReady}">
+                                <h:form>
+                                    <p>Your dataset is ready. You have added the following files:</p>
+                                    <ul>
+                                        <ui:repeat value="#{cowoDataInputBean.uploadedFileNames}" var="fileName">
+                                            <li>#{fileName}</li>
+                                        </ui:repeat>
+                                    </ul>
+                                    <p:commandButton value="Proceed to Parameters"
+                                                     action="#{cowoDataInputBean.proceedToParameters}"
+                                                     styleClass="btn btn-primary"
+                                                     ajax="false"
+                                                     />
+                                </h:form>
+                            </p:panel>
+                        </p:outputPanel>
+
+                    </div>
+                    <div class="flex-1 gap-4 h-full hide-mobile">
+                        <p:panel header="Log" styleClass="flex flex-col">
+                            <p:scrollPanel id="scrollPanel" class="flex-1 overflow-auto h-full">
+                                <h:dataTable id="notifications"
+                                             value="#{backToFrontMessengerBean.notifications}"
+                                             var="notification">
+                                    <h:column>#{notification.message}</h:column>
+                                </h:dataTable>
+                                <h:form>
+                                    <f:websocket channel="logChannel" scope="session">
+                                        <f:ajax event="updateNotifications" render=":notifications" />
+                                    </f:websocket>
+                                </h:form>
+                            </p:scrollPanel>
+                        </p:panel>
+                    </div>
+                </div>
+            </p:panel>
+            <ui:include src="/WEB-INF/includes/footer.xhtml" />
+        </h:body>
+    </f:view>
+</html>

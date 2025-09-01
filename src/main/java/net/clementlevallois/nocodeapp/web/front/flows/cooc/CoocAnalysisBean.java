@@ -47,7 +47,7 @@ public class CoocAnalysisBean implements Serializable {
         if (sessionBean.getCoocState() instanceof CoocState.AwaitingParameters params) {
             sessionBean.setCoocState(new CoocState.Processing(params.jobId(), params, 0));
             logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.starting_analysis"));
-            CoocState processingState = coocService.startAnalysis(params);
+            CoocState processingState = coocService.callCoocMicroService(params);
             if (processingState != null) {
                 sessionBean.setCoocState(processingState);
             } else {

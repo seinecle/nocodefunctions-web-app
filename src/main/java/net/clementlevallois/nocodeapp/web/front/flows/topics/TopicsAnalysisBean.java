@@ -50,7 +50,7 @@ public class TopicsAnalysisBean implements Serializable {
                 return;
             }
             logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.starting_analysis"));
-            TopicsState processingState = topicsService.startAnalysis(params);
+            TopicsState processingState = topicsService.callTopicsMicroService(params);
             if (processingState != null) {
                 sessionBean.setTopicsState(processingState);
             } else {

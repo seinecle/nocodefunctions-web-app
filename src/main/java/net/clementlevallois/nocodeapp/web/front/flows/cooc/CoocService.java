@@ -38,7 +38,7 @@ public class CoocService {
     @Inject
     private ApplicationPropertiesBean applicationProperties;
 
-    public CoocState startAnalysis(CoocState.AwaitingParameters currentState) {
+    public CoocState callCoocMicroService(CoocState.AwaitingParameters currentState) {
         String jobId = currentState.jobId();
         String callbackURL = RemoteLocal.getDomain() + RemoteLocal.getInternalMessageApiEndpoint() + WorkflowCoocProps.ENDPOINT;
 
@@ -90,7 +90,7 @@ public class CoocService {
         Path completeSignal = globals.getWorkflowCompleteFilePath(jobId);
 
         if (Files.exists(completeSignal)) {
-            return finishAnalysis(currentState);
+            return processCoocResults(currentState);
         }
 
         var messages = WatchTower.getDequeAPIMessages().get(jobId);
@@ -116,7 +116,7 @@ public class CoocService {
         return currentState;
     }
 
-    private CoocState finishAnalysis(CoocState.Processing currentState) {
+    private CoocState processCoocResults(CoocState.Processing currentState) {
         String jobId = currentState.jobId();
         WorkflowCoocProps props = new WorkflowCoocProps(applicationProperties.getTempFolderFullPath());
 

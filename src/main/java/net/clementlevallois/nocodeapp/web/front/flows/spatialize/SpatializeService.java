@@ -99,7 +99,7 @@ public class SpatializeService {
         Path pathToSignalCompletion = globals.getWorkflowCompleteFilePath(jobId);
 
         if (Files.exists(pathToSignalCompletion)) {
-            return finishAnalysis(currentState);
+            return processSpatializationResults(currentState);
         }
 
         var messagesFromApi = WatchTower.getDequeAPIMessages().get(jobId);
@@ -124,7 +124,7 @@ public class SpatializeService {
         return currentState;
     }
 
-    private SpatializeState finishAnalysis(SpatializeState.Processing currentState) {
+    private SpatializeState processSpatializationResults(SpatializeState.Processing currentState) {
         String jobId = currentState.jobId();
         Globals globals = new Globals(applicationProperties.getTempFolderFullPath());
         try {

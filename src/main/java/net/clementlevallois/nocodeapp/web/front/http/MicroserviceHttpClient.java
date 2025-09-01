@@ -40,7 +40,9 @@ public class MicroserviceHttpClient {
 
     private HttpClient httpClient;
     private Properties privateProperties;
-    private static final String MICROSERVICE_ENDPOINT_PATH = Globals.API_ENDPOINT_ROOT;
+    private static final String API_ENDPOINT_PATH = Globals.API_ENDPOINT_ROOT;
+    private static final String IMPORT_ENDPOINT_PATH = Globals.IMPORT_ENDPOINT_ROOT;
+    private static final String EXPORT_ENDPOINT_PATH = Globals.EXPORT_ENDPOINT_ROOT;
 
     @PostConstruct
     public void init() {
@@ -77,7 +79,7 @@ public class MicroserviceHttpClient {
     public ServiceClientBuilder api() {
         String apiPort = privateProperties.getProperty("nocode_api_port");
         Objects.requireNonNull(apiPort, "nocode_api_port property is not set!");
-        URI baseUri = buildBaseUriWithBasePath("localhost", apiPort);
+        URI baseUri = buildBaseUriWithBasePath("localhost", apiPort, API_ENDPOINT_PATH);
         return new ServiceClientBuilder(httpClient, baseUri);
     }
 
@@ -89,13 +91,20 @@ public class MicroserviceHttpClient {
     public ServiceClientBuilder importService() {
         String importPort = privateProperties.getProperty("nocode_import_port");
         Objects.requireNonNull(importPort, "nocode_import_port property is not set!");
-        URI baseUri = buildBaseUriWithBasePath("localhost", importPort);
+        URI baseUri = buildBaseUriWithBasePath("localhost", importPort, IMPORT_ENDPOINT_PATH);
         return new ServiceClientBuilder(httpClient, baseUri);
     }
 
-    private URI buildBaseUriWithBasePath(String host, String port) {
+    public ServiceClientBuilder exportService() {
+        String importPort = privateProperties.getProperty("nocode_import_port");
+        Objects.requireNonNull(importPort, "nocode_import_port property is not set!");
+        URI baseUri = buildBaseUriWithBasePath("localhost", importPort, EXPORT_ENDPOINT_PATH);
+        return new ServiceClientBuilder(httpClient, baseUri);
+    }
+
+    private URI buildBaseUriWithBasePath(String host, String port, String endpointRootPath) {
         try {
-            return new URI("http", null, host, Integer.parseInt(port), MICROSERVICE_ENDPOINT_PATH, null, null);
+            return new URI("http", null, host, Integer.parseInt(port), endpointRootPath, null, null);
         } catch (NumberFormatException | URISyntaxException e) {
             LOG.log(Level.SEVERE, "Invalid port number: " + port, e);
             throw new IllegalStateException("Invalid port configuration", e);

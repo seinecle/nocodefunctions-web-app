@@ -30,7 +30,6 @@ import net.clementlevallois.functions.model.WorkflowTopicsProps;
 import net.clementlevallois.nocodeapp.web.front.MessageFromApi;
 import net.clementlevallois.nocodeapp.web.front.WatchTower;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.ApplicationPropertiesBean;
-import net.clementlevallois.nocodeapp.web.front.flows.cowo.CowoState;
 import net.clementlevallois.nocodeapp.web.front.http.MicroserviceHttpClient;
 import net.clementlevallois.nocodeapp.web.front.http.RemoteLocal;
 import net.clementlevallois.utils.Multiset;
@@ -49,7 +48,7 @@ public class TopicsService {
     @Inject
     ApplicationPropertiesBean applicationProperties;
 
-    public TopicsState startAnalysis(TopicsState.AwaitingParameters state) {
+    public TopicsState callTopicsMicroService(TopicsState.AwaitingParameters state) {
         String jobId = state.jobId();
 
         var requestBuilder = microserviceClient.api().post(WorkflowTopicsProps.ENDPOINT);
@@ -123,7 +122,7 @@ public class TopicsService {
         Path pathSignalWorkflowComplete = globals.getWorkflowCompleteFilePath(jobId);
 
         if (Files.exists(pathSignalWorkflowComplete)) {
-            return finishAnalysis(currentState);
+            return processTopicsResults(currentState);
         }
 
         var messagesFromApi = WatchTower.getDequeAPIMessages().get(jobId);
@@ -140,7 +139,7 @@ public class TopicsService {
         return currentState;
     }
 
-    private TopicsState finishAnalysis(TopicsState.Processing currentState) {
+    private TopicsState processTopicsResults(TopicsState.Processing currentState) {
         String jobId = currentState.jobId();
         WorkflowTopicsProps props = new WorkflowTopicsProps(applicationProperties.getTempFolderFullPath());
         try {

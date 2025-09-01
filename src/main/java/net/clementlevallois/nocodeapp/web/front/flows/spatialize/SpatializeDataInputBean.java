@@ -81,7 +81,7 @@ public class SpatializeDataInputBean implements Serializable {
 
         ImportersService.PreparationResult result = switch (dataSource) {
             case SpatializeDataSource.FileUpload(UploadedFile file) ->
-                importersService.handleFileUpload(List.of(file), jobId);
+                importersService.handleFileUpload(List.of(file), jobId, Globals.Names.SPATIALIZE_FORCE_ATLAS);
         };
 
         if (result instanceof ImportersService.PreparationResult.Failure(String error)) {

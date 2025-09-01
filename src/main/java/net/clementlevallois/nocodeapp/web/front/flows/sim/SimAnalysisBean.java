@@ -51,7 +51,7 @@ public class SimAnalysisBean implements Serializable {
                 return;
             }
             logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.starting_analysis"));
-            SimState processingState = simService.startAnalysis(params);
+            SimState processingState = simService.callSimMicroService(params);
             if (processingState != null) {
                 sessionBean.setSimState(processingState);
             } else {

@@ -502,7 +502,8 @@ public class StripeBean implements Serializable {
         } catch (MicroserviceCallException e) {
             LOG.log(Level.SEVERE, "API call to get remaining credits failed. URI: " + e.getUri() + ", Status: " + e.getStatusCode(), e);
         } catch (IOException | InterruptedException | NumberFormatException e) {
-            LOG.log(Level.SEVERE, "Could not process request for remaining credits.", e);
+            System.out.println("Stripe service can't be reached");
+//LOG.log(Level.SEVERE, "Could not process request for remaining credits.", e);
             if (e instanceof InterruptedException) {
                 Thread.currentThread().interrupt();
             }

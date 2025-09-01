@@ -90,17 +90,20 @@ public class ImportersService {
     /**
      * Processes a list of uploaded files. For each file, it determines the
      * type, saves it to a temporary location, and then calls the appropriate
-     * import microservice to convert it into plain text.
+     * import microservice based on the file type and the calling function's
+     * context.
      *
      * @param files The list of files uploaded by the user.
      * @param jobId The unique identifier for the current job.
+     * @param callingFunction The enum value identifying which function is
+     * requesting the import.
      * @return A {@link PreparationResult} indicating success or failure.
      */
-    public PreparationResult handleFileUpload(List<UploadedFile> files, String jobId) {
+    public PreparationResult handleFileUpload(List<UploadedFile> files, String jobId, Globals.Names callingFunction) {
         for (UploadedFile file : files) {
             try {
                 String fileUniqueId = Globals.UPLOADED_FILE_PREFIX + UUID.randomUUID().toString().substring(0, 5);
-                
+
                 byte[] uploadedFileBytes = file.getInputStream().readAllBytes();
 
                 FileExtension fileExtension = getFileExtension(file.getFileName());
@@ -110,17 +113,18 @@ public class ImportersService {
 
                 var importClient = microserviceHttpClient.importService();
 
+                // The requestBuilder is now determined by the file type AND the calling function
                 var requestBuilder = switch (fileExtension) {
                     case FileExtension.Pdf() ->
-                        importClient.get("import/pdf/simpleLines");
+                        importClient.get("pdf/simpleLines");
                     case FileExtension.Excel() ->
-                        importClient.get("import/xlsx/sheetModel");
+                        importClient.get("xlsx/sheetModel");
                     case FileExtension.Txt() ->
-                        importClient.get("import/txt/simpleLines");
+                        importClient.get("txt/simpleLines");
                     case FileExtension.Json() ->
-                        importClient.get("import/json/appendToPersistedJsonArray");
+                        importClient.get("json/appendToPersistedJsonArray");
                     case FileExtension.Csv() ->
-                        importClient.get("/api/import/csv/toSheets");
+                        importClient.get("csv/toSheets");
                     case FileExtension.Unsupported(String ext) ->
                         null;
                 };
@@ -133,7 +137,11 @@ public class ImportersService {
                         .addQueryParameter("fileUniqueId", fileUniqueId)
                         .addQueryParameter("fileName", file.getFileName());
 
+                // We use .join() here to wait for the import to complete before proceeding.
+                // This is a design choice: if imports could run fully in the background
+                // without the user waiting, we would handle the CompletableFuture differently.
                 requestBuilder.sendAsync(HttpResponse.BodyHandlers.ofString()).join();
+
             } catch (IOException ex) {
                 LOG.log(Level.SEVERE, "Error processing file upload for job " + jobId, ex);
                 return new PreparationResult.Failure("Error during file processing: " + ex.getMessage());
@@ -152,7 +160,7 @@ public class ImportersService {
      */
     public PreparationResult parseWebPage(String url, String jobId) {
         var response = microserviceHttpClient.importService()
-                .get("import/html/getRawTextFromLinks")
+                .get("html/getRawTextFromLinks")
                 .addQueryParameter("jobId", jobId)
                 .addQueryParameter("url", url)
                 .sendAsyncAndGetBody(HttpResponse.BodyHandlers.ofString())
@@ -178,7 +186,7 @@ public class ImportersService {
     public PreparationResult crawlWebSite(String rootUrl, int maxUrls, String exclusionTerms, String jobId) {
         String exclusionTermsParam = String.join(",", exclusionTerms);
         var response = microserviceHttpClient.importService()
-                .get("import/html/getPagesContainedInWebsite")
+                .get("html/getPagesContainedInWebsite")
                 .addQueryParameter("jobId", jobId)
                 .addQueryParameter("url", rootUrl)
                 .addQueryParameter("maxUrls", String.valueOf(maxUrls))
@@ -197,7 +205,7 @@ public class ImportersService {
                 String link = jo.getString("linkHref");
 
                 microserviceHttpClient.importService()
-                        .get("import/html/getRawTextFromLinks")
+                        .get("html/getRawTextFromLinks")
                         .addQueryParameter("jobId", jobId)
                         .addQueryParameter("url", link)
                         .sendAsyncAndGetBody(HttpResponse.BodyHandlers.ofString())
@@ -238,8 +246,8 @@ public class ImportersService {
                 new FileExtension.Unsupported(extension);
         };
     }
-    
-        public static synchronized void concurrentWriting(Path path, String string) {
+
+    public static synchronized void concurrentWriting(Path path, String string) {
         File file = path.toFile();
         if (string == null) {
             System.out.println("string is empty in concurrentWriting method of IO");
@@ -257,7 +265,7 @@ public class ImportersService {
         }
     }
 
-        public static synchronized void concurrentWriting(Path path, byte [] bytes) {
+    public static synchronized void concurrentWriting(Path path, byte[] bytes) {
         File file = path.toFile();
         if (bytes == null) {
             System.out.println("byte array is null in concurrentWriting method of web front import service");

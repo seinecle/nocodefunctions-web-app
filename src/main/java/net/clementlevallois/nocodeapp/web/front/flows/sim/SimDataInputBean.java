@@ -101,7 +101,7 @@ public class SimDataInputBean implements Serializable {
 
         ImportersService.PreparationResult result = switch (dataSource) {
             case SimDataSource.FileUpload(UploadedFile file) ->
-                importersService.handleFileUpload(List.of(file), jobId);
+                importersService.handleFileUpload(List.of(file), jobId, Globals.Names.SIM);
         };
 
         if (result instanceof ImportersService.PreparationResult.Failure(String error)) {

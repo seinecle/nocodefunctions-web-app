@@ -111,7 +111,7 @@ public class TopicsDataInputBean implements Serializable {
 
         ImportersService.PreparationResult result = switch (dataSource) {
             case TopicsDataSource.FileUpload(List<UploadedFile> files) ->
-                importersService.handleFileUpload(files, jobId);
+                importersService.handleFileUpload(files, jobId, Globals.Names.TOPICS);
             case TopicsDataSource.WebPage(String url) ->
                 importersService.parseWebPage(url, jobId);
             case TopicsDataSource.WebSite(String rootUrl, int maxUrls, String exclusionTermsParams) ->
