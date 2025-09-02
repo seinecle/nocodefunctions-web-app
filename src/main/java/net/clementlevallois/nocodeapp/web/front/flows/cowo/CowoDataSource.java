@@ -7,19 +7,9 @@ package net.clementlevallois.nocodeapp.web.front.flows.cowo;
 import org.primefaces.model.file.UploadedFile;
 import java.util.List;
 
-/**
- * Represents a source of data for the cowo workflow. This is a sealed
- * interface, establishing a closed set of all possible data sources. This
- * allows for exhaustive, type-safe pattern matching in the data preparation
- * service.
- */
+
 public sealed interface CowoDataSource {
 
-    /**
-     * Represents a data source from one or more files uploaded by the user.
-     *
-     * @param files A list of UploadedFile objects from PrimeFaces.
-     */
     record FileUpload(List<UploadedFile> files) implements CowoDataSource {}
 
     /**

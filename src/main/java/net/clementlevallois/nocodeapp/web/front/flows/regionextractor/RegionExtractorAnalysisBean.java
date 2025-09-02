@@ -10,20 +10,10 @@ import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import java.io.IOException;
 import java.io.Serializable;
-import java.net.http.HttpResponse;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import net.clementlevallois.nocodeapp.web.front.backingbeans.ApplicationPropertiesBean;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
-import net.clementlevallois.nocodeapp.web.front.flows.cooc.CoocState;
-import net.clementlevallois.nocodeapp.web.front.http.MicroserviceHttpClient;
 import net.clementlevallois.nocodeapp.web.front.logview.BackToFrontMessengerBean;
 
-/**
- * Main orchestrator bean for the Region Extractor workflow, refactored for a
- * file-system-based, asynchronous architecture.
- */
+
 @Named
 @RequestScoped
 public class RegionExtractorAnalysisBean implements Serializable {

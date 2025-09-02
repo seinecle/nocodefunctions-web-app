@@ -4,9 +4,6 @@
  */
 package net.clementlevallois.nocodeapp.web.front.flows.spatialize;
 
-/**
- * Represents the set of possible states for the Spatialize workflow.
- */
 public sealed interface SpatializeState {
 
     String jobId();

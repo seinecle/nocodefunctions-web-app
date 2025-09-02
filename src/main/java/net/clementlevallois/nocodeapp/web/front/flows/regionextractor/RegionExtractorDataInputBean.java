@@ -37,7 +37,6 @@ import net.clementlevallois.nocodeapp.web.front.flows.regionextractor.RegionExtr
 import net.clementlevallois.nocodeapp.web.front.flows.regionextractor.RegionExtractorState.RegionParameters;
 import net.clementlevallois.nocodeapp.web.front.flows.regionextractor.RegionExtractorState.TargetPdfsUploaded;
 import net.clementlevallois.nocodeapp.web.front.http.MicroserviceHttpClient;
-import net.clementlevallois.nocodeapp.web.front.importdata.DataImportBean;
 import net.clementlevallois.nocodeapp.web.front.logview.BackToFrontMessengerBean;
 import org.primefaces.PrimeFaces;
 import org.primefaces.event.FileUploadEvent;
@@ -46,13 +45,7 @@ import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
 import org.primefaces.model.file.UploadedFile;
 
-/**
- * This bean handles the data input logic for the Region Extractor flow. It is
- * responsible for processing uploaded PDF files, either by converting an
- * exemplar PDF to images or by preparing target PDFs for text extraction.
- *
- *
- */
+
 @Named
 @RequestScoped
 public class RegionExtractorDataInputBean implements Serializable {
@@ -82,11 +75,6 @@ public class RegionExtractorDataInputBean implements Serializable {
     }
 
     /**
-     * Processes the uploaded exemplar PDF file. This method is called when the
-     * application is in the AwaitingExemplarPdf state. It uses the
-     * ImportersService to convert the first uploaded PDF into a list of images,
-     * one for each page.
-     *
      * @param event
      */
     public void handleExamplarUpload(FileUploadEvent event) {
@@ -178,7 +166,7 @@ public class RegionExtractorDataInputBean implements Serializable {
                 ImagesPerFile imagesPerFile = (ImagesPerFile) ois.readObject();
                 return imagesPerFile;
             } catch (IOException | ClassNotFoundException ex) {
-                Logger.getLogger(DataImportBean.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(RegionExtractorDataInputBean.class.getName()).log(Level.SEVERE, null, ex);
             }
         } else {
             //error

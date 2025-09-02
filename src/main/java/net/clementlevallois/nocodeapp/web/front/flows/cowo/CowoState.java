@@ -8,22 +8,10 @@ package net.clementlevallois.nocodeapp.web.front.flows.cowo;
 import java.util.List;
 import org.primefaces.model.file.UploadedFile;
 
-/**
- * This sealed interface represents the complete set of possible states for the
- * Semantic Network (cowo) workflow. Using a sealed interface ensures that any
- * instance of CowoFlowState must be one of the permitted record types, allowing
- * for exhaustive, compile-time-checked pattern matching.
- */
+
 public sealed interface CowoState {
 
     String jobId();
-
-    /**
-     * The initial state of the workflow, where the application is awaiting user
-     * configuration. It holds all the parameters that can be set by the user.
-     * Each 'with...' method returns a new, immutable instance of this state
-     * with the updated parameter, which is ideal for use with JSF backing beans.
-     */
     record AwaitingParameters(
             String jobId,
             List<String> selectedLanguages,
@@ -87,11 +75,6 @@ public sealed interface CowoState {
         }
     }
 
-    /**
-     * Represents the state where the analysis has been submitted to the
-     * backend microservice and is currently processing. It carries forward all
-     * the parameters from the previous state and includes the current progress.
-     */
     record Processing(
             String jobId,
             AwaitingParameters parameters,
@@ -102,10 +85,6 @@ public sealed interface CowoState {
         }
     }
 
-    /**
-     * The terminal state representing a successfully completed analysis. It
-     * holds all the necessary information to display and export the results.
-     */
     record ResultsReady(
             String jobId,
             String gexf,
@@ -123,10 +102,6 @@ public sealed interface CowoState {
         }
     }
 
-    /**
-     * A terminal state representing a failure in the workflow. It captures the
-     * original parameters and an error message for diagnosis.
-     */
     record FlowFailed(
             String jobId,
             CowoState lastKnownState,

@@ -30,7 +30,6 @@ import java.util.HashMap;
 import net.clementlevallois.functions.model.FunctionOrganic;
 import net.clementlevallois.importers.model.DataFormatConverter;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
-import net.clementlevallois.nocodeapp.web.front.importdata.DataImportBean;
 import net.clementlevallois.nocodeapp.web.front.logview.BackToFrontMessengerBean;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.ApplicationPropertiesBean;
 import net.clementlevallois.nocodeapp.web.front.importdata.ImportSimpleLinesBean;
@@ -70,9 +69,6 @@ public class OrganicBean implements Serializable {
 
     @Inject
     SessionBean sessionBean;
-
-    @Inject
-    DataImportBean inputData;
 
     @Inject
     ApplicationPropertiesBean applicationProperties;
@@ -153,7 +149,6 @@ public class OrganicBean implements Serializable {
             }
         } else {
             DataFormatConverter dataFormatConverter = new DataFormatConverter();
-            mapOfLines = dataFormatConverter.convertToMapOfLines(inputData.getBulkData(), inputData.getDataInSheets(), inputData.getSelectedSheetName(), inputData.getSelectedColumnIndex(), inputData.getHasHeaders());
         }
 
         if (mapOfLines == null || mapOfLines.isEmpty()) {

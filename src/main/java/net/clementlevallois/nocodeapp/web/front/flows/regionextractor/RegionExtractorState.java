@@ -3,16 +3,9 @@
  */
 package net.clementlevallois.nocodeapp.web.front.flows.regionextractor;
 
-import java.util.Map;
 import net.clementlevallois.importers.model.ImagesPerFile;
-import net.clementlevallois.importers.model.SheetModel;
 import org.primefaces.model.CroppedImage;
 
-/**
- * This sealed interface represents the complete set of possible states for the
- * Region Extractor workflow, adapted for a file-system-based, asynchronous
- * architecture.
- */
 public sealed interface RegionExtractorState {
 
     // Stable discriminator if you like string checks in EL
