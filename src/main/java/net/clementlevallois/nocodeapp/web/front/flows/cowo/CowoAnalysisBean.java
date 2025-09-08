@@ -15,6 +15,7 @@ import java.io.Serializable;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import net.clementlevallois.nocodeapp.web.front.flows.base.FlowFailed;
 import org.primefaces.model.file.UploadedFile;
 
 @Named
@@ -91,7 +92,7 @@ public class CowoAnalysisBean implements Serializable {
             case CowoState.AwaitingParameters ap -> 0;
             case CowoState.Processing p -> p.progress();
             case CowoState.ResultsReady rr -> 100;
-            case CowoState.FlowFailed ff -> 0;
+            case FlowFailed ff -> 0;
         };
     }
 
