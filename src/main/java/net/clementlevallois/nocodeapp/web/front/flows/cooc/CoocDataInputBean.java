@@ -21,15 +21,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import net.clementlevallois.functions.model.Globals;
 import net.clementlevallois.functions.model.WorkflowCoocProps;
 import net.clementlevallois.importers.model.CellRecord;
 import net.clementlevallois.importers.model.SheetModel;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.ApplicationPropertiesBean;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
-import net.clementlevallois.nocodeapp.web.front.flows.base.FlowFailed;
+import net.clementlevallois.nocodeapp.web.front.exceptions.NocodeApplicationException;
 import net.clementlevallois.nocodeapp.web.front.io.ImportersService;
 import net.clementlevallois.nocodeapp.web.front.utils.Converters;
 import net.clementlevallois.utils.Multiset;
@@ -40,14 +38,10 @@ import org.primefaces.model.file.UploadedFile;
 @ViewScoped
 public class CoocDataInputBean implements Serializable {
 
-    private static final Logger LOG = Logger.getLogger(CoocDataInputBean.class.getName());
-
     private String jobId;
     private List<SheetModel> dataInSheets;
     private boolean hasHeaders;
     private Integer activeSheetIndex = 0;
-    
-    private CoocState.AwaitingParameters awaitingParameters;
 
     @Inject
     ApplicationPropertiesBean applicationProperties;
@@ -69,17 +63,14 @@ public class CoocDataInputBean implements Serializable {
             return;
         }
         CoocDataSource dataSource = new CoocDataSource.FileUpload(List.of(event.getFile()));
-        boolean done = processCoocDataSource(dataSource);
-        if (done) {
-            System.out.println("file uploaded: " + event.getFile().getFileName());
-        }
+        processCoocDataSource(dataSource);
     }
 
     private boolean processCoocDataSource(CoocDataSource dataSource) {
         if (!(sessionBean.getFlowState() instanceof CoocState.AwaitingData)) {
-            sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Invalid State", "The application is in an invalid state.");
-            sessionBean.setFlowState(new FlowFailed(null, sessionBean.getFlowState(), "invalid state"));
-            return false;
+            throw new IllegalStateException("Cannot proceed because the current state is "
+                    + sessionBean.getFlowState().getClass().getSimpleName()
+                    + " instead of " + CoocState.AwaitingData.class.getName());
         }
 
         this.jobId = UUID.randomUUID().toString().substring(0, 10);
@@ -87,9 +78,7 @@ public class CoocDataInputBean implements Serializable {
         try {
             Files.createDirectories(jobDirectory);
         } catch (IOException ex) {
-            LOG.log(Level.SEVERE, "unable to create directories for job " + jobId, ex);
-            sessionBean.setFlowState(new FlowFailed(jobId, sessionBean.getFlowState(), "unable to create directories"));
-            return false;
+            throw new NocodeApplicationException("An error occurred while processing the file.", ex);
         }
 
         sessionBean.sendFunctionPageReport(Globals.Names.COOC.name());
@@ -100,8 +89,8 @@ public class CoocDataInputBean implements Serializable {
         };
 
         if (result instanceof ImportersService.PreparationResult.Failure(String error)) {
-            sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Data Preparation Failed", error);
-            sessionBean.setFlowState(new FlowFailed(jobId, new CoocState.DataImported(jobId), "data prep failed"));
+            throw new IllegalStateException("Cannot proceed because data preparation failed: "
+                    + sessionBean.getFlowState().getClass().getSimpleName());
         } else {
             switch (dataSource) {
                 case CoocDataSource.FileUpload(List<UploadedFile> files) -> {
@@ -131,22 +120,19 @@ public class CoocDataInputBean implements Serializable {
                 try (ByteArrayInputStream bis = new ByteArrayInputStream(fileBytes); ObjectInputStream ois = new ObjectInputStream(bis)) {
                     return (List<SheetModel>) ois.readObject();
                 } catch (IOException | ClassNotFoundException ex) {
-                    System.getLogger(CoocDataInputBean.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
-                    sessionBean.setFlowState(new FlowFailed(jobId, awaitingParameters, "could not populate data in sheets field"));
-                    return Collections.EMPTY_LIST;
+                    throw new NocodeApplicationException("An IO error occurred", ex);
                 }
             } catch (IOException ex) {
-                System.getLogger(CoocDataInputBean.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
-                sessionBean.setFlowState(new FlowFailed(jobId, awaitingParameters, "could not populate data in sheets field"));
-                return Collections.EMPTY_LIST;
+                throw new NocodeApplicationException("An IO error occurred", ex);
             }
         } else {
-            return Collections.EMPTY_LIST;
+            throw new IllegalStateException("Cannot proceed because sheetsModelFile does not exist: "
+                    + sessionBean.getFlowState().getClass().getSimpleName());
         }
     }
 
     private void sheetModelToCooccurrences() {
-           try {
+        try {
             Globals globals = new Globals(applicationProperties.getTempFolderFullPath());
             Path tempDataPathToSheetModel = globals.getDataSheetPath(jobId);
             byte[] byteArray = Files.readAllBytes(tempDataPathToSheetModel);
@@ -155,7 +141,7 @@ public class CoocDataInputBean implements Serializable {
                 Object obj = ois.readObject();
                 sheets = (List<SheetModel>) obj;
             } catch (IOException | ClassNotFoundException ex) {
-                LOG.log(Level.SEVERE, "error in deserializing sheets to cooccurrences in job " + jobId, ex);
+                throw new NocodeApplicationException("An error occurred", ex);
             }
             SheetModel sheetWithData = sheets.get(activeSheetIndex);
             Map<Integer, List<CellRecord>> mapOfCellRecordsPerRow = sheetWithData.getRowIndexToCellRecords();
@@ -181,7 +167,7 @@ public class CoocDataInputBean implements Serializable {
             Files.write(coocProps.getPathForCooccurrencesFormattedAsMap(jobId), coocsAsByteArray);
             Files.deleteIfExists(tempDataPathToSheetModel);
         } catch (IOException ex) {
-            LOG.log(Level.SEVERE, "error in processing sheets to cooccurrences in job " + jobId, ex);
+           throw new NocodeApplicationException("An IO error occurred", ex);
         }
     }
 
@@ -192,12 +178,12 @@ public class CoocDataInputBean implements Serializable {
     public String proceedToParameters() {
         if (sessionBean.getFlowState() instanceof CoocState.DataImported importedState) {
             sheetModelToCooccurrences();
-            // 1 is the default value for min targets, this param can be adjusted at the parameters page
             sessionBean.setFlowState(new CoocState.AwaitingParameters(importedState.jobId(), 1));
             return "/cooc/cooc-parameters.xhtml?faces-redirect=true";
         } else {
-            sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Error", "You must first upload a file.");
-            return null;
+            throw new IllegalStateException("Cannot proceed because the current state is "
+                    + sessionBean.getFlowState().getClass().getSimpleName()
+                    + " instead of DataImported.");
         }
     }
 
@@ -230,5 +216,4 @@ public class CoocDataInputBean implements Serializable {
     public void setActiveSheetIndex(Integer activeSheetIndex) {
         this.activeSheetIndex = activeSheetIndex;
     }
-    
 }
