@@ -218,4 +218,7 @@ public class TopicsService {
         }
     }
 
+    private <T> T tern(T a, T b, boolean condition) {
+        return condition ? a : b;
+    }
 }
