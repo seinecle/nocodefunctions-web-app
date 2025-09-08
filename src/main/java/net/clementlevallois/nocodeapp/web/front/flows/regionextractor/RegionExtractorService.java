@@ -10,8 +10,6 @@ import java.net.http.HttpResponse;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 import net.clementlevallois.functions.model.FunctionRegionExtract;
 import static net.clementlevallois.functions.model.FunctionRegionExtract.QueryParams.ALL_PAGES;
@@ -30,6 +28,7 @@ import static net.clementlevallois.nocodeapp.web.front.MessageFromApi.Informatio
 import net.clementlevallois.nocodeapp.web.front.WatchTower;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.ApplicationPropertiesBean;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
+import net.clementlevallois.nocodeapp.web.front.exceptions.NocodeApplicationException;
 import net.clementlevallois.nocodeapp.web.front.flows.base.FlowFailed;
 import net.clementlevallois.nocodeapp.web.front.flows.base.FlowState;
 import net.clementlevallois.nocodeapp.web.front.flows.regionextractor.RegionExtractorState.RegionDefinition;
@@ -43,8 +42,6 @@ import org.primefaces.model.CroppedImage;
  */
 @ApplicationScoped
 public class RegionExtractorService {
-
-    private static final Logger LOG = Logger.getLogger(RegionExtractorService.class.getName());
 
     @Inject
     private MicroserviceHttpClient microserviceClient;
@@ -63,7 +60,6 @@ public class RegionExtractorService {
         CroppedImage croppedImage = regionParameters.selectedRegion();
 
         if (croppedImage == null) {
-            LOG.log(Level.SEVERE, () -> "Error: No region was selected for jobId" + currentState.jobId());
             return currentState;
         }
 
@@ -81,20 +77,17 @@ public class RegionExtractorService {
     public RegionExtractorState.RegionDefinition getDocumentDimensions(RegionExtractorState.RegionDefinition state) {
         ImagesPerFile imagesPerFile = state.imagesPerFile();
         if (imagesPerFile == null) {
-            LOG.warning("ImagesPerFile bytes is null");
-            return state;
+            throw new IllegalStateException("imagesPerFile was null " + sessionBean.getFlowState().getClass().getSimpleName());
         }
         byte[] imageBytes = imagesPerFile.getImage(state.regionParameters().selectedPage());
         if (imageBytes == null) {
-            LOG.warning("Image bytes are null for image zero");
-            return state;
+            throw new IllegalStateException("image bytes was null " + sessionBean.getFlowState().getClass().getSimpleName());
         }
 
         try (InputStream is = new ByteArrayInputStream(imageBytes)) {
             BufferedImage buf = ImageIO.read(is);
             if (buf == null) {
-                LOG.warning("Could not read BufferedImage from bytes.");
-                return state;
+                throw new IllegalStateException("BufferImage was null " + sessionBean.getFlowState().getClass().getSimpleName());
             }
             int widthImage = buf.getWidth();
             int heightImage = buf.getHeight();
@@ -105,8 +98,7 @@ public class RegionExtractorService {
             sessionBean.setFlowState(updatedRegionDefinition);
             return updatedRegionDefinition;
         } catch (IOException ex) {
-            System.getLogger(RegionExtractorService.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
-            return state;
+            throw new NocodeApplicationException("An IO error occurred", ex);
         }
     }
 
@@ -153,14 +145,11 @@ public class RegionExtractorService {
         requestBuilder.sendAsync(HttpResponse.BodyHandlers.ofString())
                 .thenAccept(resp -> {
                     if (resp.statusCode() != 200) {
-                        LOG.log(Level.SEVERE, "region text extraction task submission failed for job {0}. Status: {1}, Body: {2}",
-                                new Object[]{jobId, resp.statusCode(), resp.body()});
                         errorFlow.set(new FlowFailed(jobId, current, "region extractor call failed with non-200 status"));
                         isOk.set(Boolean.FALSE);
                     }
                 })
                 .exceptionally(ex -> {
-                    LOG.log(Level.SEVERE, "Exception during region text extraction submission for job " + jobId, ex);
                     errorFlow.set(new FlowFailed(jobId, current, "region extractor call threw exception"));
                     isOk.set(Boolean.FALSE);
                     return null;

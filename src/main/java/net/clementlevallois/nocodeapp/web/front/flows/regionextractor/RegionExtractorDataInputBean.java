@@ -31,6 +31,7 @@ import net.clementlevallois.functions.model.Globals;
 import net.clementlevallois.importers.model.ImagesPerFile;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.ApplicationPropertiesBean;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
+import net.clementlevallois.nocodeapp.web.front.exceptions.NocodeApplicationException;
 import net.clementlevallois.nocodeapp.web.front.flows.base.FlowFailed;
 import net.clementlevallois.nocodeapp.web.front.flows.base.FlowState;
 import net.clementlevallois.nocodeapp.web.front.flows.regionextractor.RegionExtractorState.AwaitingTargetPdfs;
@@ -47,12 +48,9 @@ import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
 import org.primefaces.model.file.UploadedFile;
 
-
 @Named
 @RequestScoped
 public class RegionExtractorDataInputBean implements Serializable {
-
-    private static final Logger LOG = Logger.getLogger(RegionExtractorDataInputBean.class.getName());
 
     @Inject
     ApplicationPropertiesBean applicationProperties;
@@ -167,7 +165,7 @@ public class RegionExtractorDataInputBean implements Serializable {
                 Logger.getLogger(RegionExtractorDataInputBean.class.getName()).log(Level.SEVERE, null, ex);
             }
         } else {
-            //error
+            throw new IllegalStateException("wrong state " + sessionBean.getFlowState().getClass().getSimpleName());
         }
         return null;
     }
@@ -192,16 +190,15 @@ public class RegionExtractorDataInputBean implements Serializable {
         var params = fc.getExternalContext().getRequestParameterMap();
         String pageParam = params.get("pageIndex");
         if (pageParam == null) {
-            return new DefaultStreamedContent(); // defensive
+            throw new IllegalStateException("param should not be null " + sessionBean.getFlowState().getClass().getSimpleName());
         }
 
         int pageIndex = Integer.parseInt(pageParam);
         if (sessionBean.getFlowState() instanceof RegionDefinition(String jobId, ImagesPerFile images, RegionParameters regionParameters)) {
             String random = UUID.randomUUID().toString() + String.valueOf(pageIndex);
             return DefaultStreamedContent.builder().name(random).contentType("image/png").stream(() -> new ByteArrayInputStream(images.getImage(pageIndex))).build();
-
         } else {
-            return new DefaultStreamedContent();
+            throw new IllegalStateException("state should be RegionDefinition " + sessionBean.getFlowState().getClass().getSimpleName());
         }
     }
 
@@ -216,7 +213,7 @@ public class RegionExtractorDataInputBean implements Serializable {
                 return regionParameters.selectedPage().equals(rowIndexAsInt);
             }
         } else {
-            return false;
+            throw new IllegalStateException("state should be RegionDefinition " + sessionBean.getFlowState().getClass().getSimpleName());
         }
     }
 
@@ -228,17 +225,14 @@ public class RegionExtractorDataInputBean implements Serializable {
                 if (sessionBean.getFlowState() instanceof RegionDefinition(String jobId, ImagesPerFile images, RegionParameters regionParameters)) {
                     regionParameters = regionParameters.withSelectedPage(Integer.parseInt(index));
                     sessionBean.setFlowState(new RegionExtractorState.RegionDefinition(jobId, images, regionParameters));
-                    LOG.log(Level.INFO, "Selected page set to: {0}", regionParameters.selectedPage());
                 } else {
-                    //error
+                    throw new IllegalStateException("state should be RegionDefinition " + sessionBean.getFlowState().getClass().getSimpleName());
                 }
             } catch (NumberFormatException e) {
-                LOG.log(Level.WARNING, "Invalid rowIndex3 parameter for setSelectPage: " + index, e);
-                sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Input Error", "Invalid page number selected.");
+                throw new IllegalStateException("invalid page number " + sessionBean.getFlowState().getClass().getSimpleName());
             }
         } else {
-            LOG.warning("Missing rowIndex3 parameter for setSelectPage.");
-            sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Input Error", "Missing page number for selection.");
+            throw new IllegalStateException("param should not be null " + sessionBean.getFlowState().getClass().getSimpleName());
         }
     }
 
@@ -246,7 +240,7 @@ public class RegionExtractorDataInputBean implements Serializable {
         if (sessionBean.getFlowState() instanceof RegionDefinition(String jobId, ImagesPerFile images, RegionParameters regionParameters)) {
             return regionParameters.allPages();
         } else {
-            return false;
+            throw new IllegalStateException("state should be RegionDefinition " + sessionBean.getFlowState().getClass().getSimpleName());
         }
     }
 
@@ -254,9 +248,8 @@ public class RegionExtractorDataInputBean implements Serializable {
         if (sessionBean.getFlowState() instanceof RegionDefinition(String jobId, ImagesPerFile images, RegionParameters regionParameters)) {
             regionParameters = regionParameters.withAllPages(allPagesParam);
             sessionBean.setFlowState(new RegionExtractorState.RegionDefinition(jobId, images, regionParameters));
-            LOG.log(Level.INFO, "Selected page set to: {0}", regionParameters.selectedPage());
         } else {
-            //error
+            throw new IllegalStateException("state should be RegionDefinition " + sessionBean.getFlowState().getClass().getSimpleName());
         }
     }
 
@@ -264,7 +257,7 @@ public class RegionExtractorDataInputBean implements Serializable {
         if (sessionBean.getFlowState() instanceof RegionDefinition(String jobId, ImagesPerFile images, RegionParameters regionParameters)) {
             return regionParameters.selectedRegion();
         } else {
-            return new CroppedImage();
+            throw new IllegalStateException("state should be RegionDefinition " + sessionBean.getFlowState().getClass().getSimpleName());
         }
     }
 
@@ -273,6 +266,8 @@ public class RegionExtractorDataInputBean implements Serializable {
             RegionParameters withSelectedRegion = regionParameters.withSelectedRegion(selectedRegion);
             RegionDefinition updatedRegionDefinition = new RegionDefinition(jobId, images, withSelectedRegion);
             sessionBean.setFlowState(updatedRegionDefinition);
+        } else {
+            throw new IllegalStateException("state should be RegionDefinition " + sessionBean.getFlowState().getClass().getSimpleName());
         }
     }
 
@@ -286,8 +281,7 @@ public class RegionExtractorDataInputBean implements Serializable {
             sessionBean.setFlowState(awaitingTargetPdfs);
             return "/regionextractor/import-all-documents.xhtml?function=pdf_region_extractor&amp;faces-redirect=true";
         } else {
-            // error
-            return null;
+            throw new IllegalStateException("state should be RegionDefinition " + sessionBean.getFlowState().getClass().getSimpleName());
         }
 
     }

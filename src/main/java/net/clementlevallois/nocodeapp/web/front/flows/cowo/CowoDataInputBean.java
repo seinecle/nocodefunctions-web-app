@@ -21,6 +21,7 @@ import java.util.logging.Logger;
 import net.clementlevallois.functions.model.Globals;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.ApplicationPropertiesBean;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
+import net.clementlevallois.nocodeapp.web.front.exceptions.NocodeApplicationException;
 import net.clementlevallois.nocodeapp.web.front.flows.base.FlowState;
 import net.clementlevallois.nocodeapp.web.front.flows.topics.TopicsDataInputBean;
 import org.primefaces.event.FileUploadEvent;
@@ -113,14 +114,11 @@ public class CowoDataInputBean implements Serializable {
         sessionBean.sendFunctionPageReport(Globals.Names.COWO.name());
 
         ImportersService.PreparationResult result;
-        if (dataSource instanceof CowoDataSource.FileUpload fileUpload) {
-            result = importersService.handleFileUpload(fileUpload.files(), jobId, Globals.Names.COWO);
-        } else if (dataSource instanceof CowoDataSource.WebPage webPage) {
-            result = importersService.parseWebPage(webPage.url(), jobId);
-        } else if (dataSource instanceof CowoDataSource.WebSite webSite) {
-            result = importersService.crawlWebSite(webSite.rootUrl(), webSite.maxUrls(), webSite.exclusionTerms(), jobId);
-        } else {
-            throw new IllegalArgumentException("Unsupported data source type");
+        switch (dataSource) {
+            case CowoDataSource.FileUpload fileUpload -> result = importersService.handleFileUpload(fileUpload.files(), jobId, Globals.Names.COWO);
+            case CowoDataSource.WebPage webPage -> result = importersService.parseWebPage(webPage.url(), jobId);
+            case CowoDataSource.WebSite webSite -> result = importersService.crawlWebSite(webSite.rootUrl(), webSite.maxUrls(), webSite.exclusionTerms(), jobId);
+            default -> throw new IllegalArgumentException("Unsupported data source type");
         }
 
         if (result instanceof ImportersService.PreparationResult.Failure(String error)) {

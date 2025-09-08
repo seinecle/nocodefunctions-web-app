@@ -11,9 +11,9 @@ import jakarta.inject.Named;
 import java.io.IOException;
 import java.io.Serializable;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
+import net.clementlevallois.nocodeapp.web.front.exceptions.NocodeApplicationException;
 import net.clementlevallois.nocodeapp.web.front.flows.base.FlowFailed;
 import net.clementlevallois.nocodeapp.web.front.flows.base.FlowState;
-
 
 @Named
 @RequestScoped
@@ -37,14 +37,11 @@ public class RegionExtractorAnalysisBean implements Serializable {
                 sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Error", "Could not start analysis.");
             }
         } else {
-                sessionBean.setFlowState(new FlowFailed(sessionBean.getFlowState().jobId(), sessionBean.getFlowState(), "Failed to start analysis."));
-                sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Error", "Could not start analysis.");
+            sessionBean.setFlowState(new FlowFailed(sessionBean.getFlowState().jobId(), sessionBean.getFlowState(), "Failed to start analysis."));
+            sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Error", "Could not start analysis.");
         }
     }
 
-    /**
-     * Called by a poller to check if the text extraction is complete.
-     */
     public void checkExtractionStatus() {
         if (sessionBean.getFlowState() instanceof RegionExtractorState.Processing processingState) {
             FlowState stateAfterCompletionCheck = regionExtractorService.checkCompletion(processingState);
@@ -55,11 +52,12 @@ public class RegionExtractorAnalysisBean implements Serializable {
                 } catch (IOException ex) {
                     throw new NocodeApplicationException("An IO error occurred", ex);
                 }
+            } else {
+                throw new IllegalStateException("wrong state " + sessionBean.getFlowState().getClass().getSimpleName());
             }
         }
     }
 
-    // --- Getters for state checking (used by XHTML) ---
     public boolean isStateAwaitingExemplar() {
         return sessionBean.getFlowState() instanceof RegionExtractorState.AwaitingExemplarPdf;
     }

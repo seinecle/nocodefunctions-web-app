@@ -5,15 +5,12 @@
 package net.clementlevallois.nocodeapp.web.front.flows.cooc;
 
 import jakarta.annotation.PostConstruct;
-import jakarta.faces.application.FacesMessage;
 import jakarta.faces.context.FacesContext;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.flows.base.FlowFailed;
 import net.clementlevallois.nocodeapp.web.front.flows.base.FlowState;
@@ -22,8 +19,6 @@ import net.clementlevallois.nocodeapp.web.front.logview.BackToFrontMessengerBean
 @Named
 @ViewScoped
 public class CoocAnalysisBean implements Serializable {
-
-    private static final Logger LOG = Logger.getLogger(CoocAnalysisBean.class.getName());
 
     @Inject
     private SessionBean sessionBean;
@@ -40,7 +35,9 @@ public class CoocAnalysisBean implements Serializable {
             try {
                 FacesContext.getCurrentInstance().getExternalContext().redirect("/cooc/cooc-import.xhtml?faces-redirect=true");
             } catch (IOException ex) {
-                LOG.log(Level.SEVERE, "Redirect failed in cooc analysis bean init", ex);
+                throw new IllegalStateException("Cannot redirect to cooc-import "
+                        + sessionBean.getFlowState().getClass().getSimpleName());
+
             }
         }
     }
@@ -50,12 +47,14 @@ public class CoocAnalysisBean implements Serializable {
             sessionBean.setFlowState(new CoocState.Processing(params.jobId(), params, 0));
             logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.starting_analysis"));
             FlowState processingState = coocService.callCoocMicroService(params);
-            if (processingState != null) {
-                sessionBean.setFlowState(processingState);
+            if (processingState instanceof FlowFailed) {
+                throw new IllegalStateException("State is null "
+                        + sessionBean.getFlowState().getClass().getSimpleName());
             } else {
-                sessionBean.setFlowState(new FlowFailed(params.jobId(), params, "Failed to start analysis."));
-                sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Error", "Could not start analysis.");
+                sessionBean.setFlowState(processingState);
             }
+        } else {
+            throw new IllegalStateException("State is not CoocState.AwaitingParameters "+ sessionBean.getFlowState().getClass().getSimpleName());
         }
     }
 
@@ -65,12 +64,19 @@ public class CoocAnalysisBean implements Serializable {
             if (sessionBean.getFlowState() instanceof CoocState.ResultsReady) {
                 try {
                     FacesContext.getCurrentInstance().getExternalContext().redirect(FacesContext.getCurrentInstance().getExternalContext().getRequestContextPath() + "/cooc/cooc-results.html");
+                    return null;
                 } catch (IOException ex) {
-                    LOG.log(Level.SEVERE, "Redirect to cooc-results.html failed", ex);
+                    throw new IllegalStateException("Redirect to cooc-results.html failed "
+                            + sessionBean.getFlowState().getClass().getSimpleName());
                 }
+            } else {
+                throw new IllegalStateException("State is not CoocState.ResultsReady "
+                        + sessionBean.getFlowState().getClass().getSimpleName());
             }
+        } else {
+            throw new IllegalStateException("State is not CoocState.Processing "
+                    + sessionBean.getFlowState().getClass().getSimpleName());
         }
-        return null;
     }
 
     public String getRunButtonText() {

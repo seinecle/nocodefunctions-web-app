@@ -51,11 +51,11 @@ public class SpatializeAnalysisBean implements Serializable {
             }
             logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.starting_analysis"));
             FlowState processingState = spatializeService.startAnalysis(params);
-            if (processingState != null) {
+            if (processingState instanceof FlowFailed) {
                 sessionBean.setFlowState(processingState);
             } else {
-                sessionBean.setFlowState(new FlowFailed(params.jobId(), params, "Failed to start analysis."));
                 sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Error", "Could not start analysis.");
+                
             }
         }
     }

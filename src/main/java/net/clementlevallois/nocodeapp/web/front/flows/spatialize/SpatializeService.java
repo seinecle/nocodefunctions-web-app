@@ -18,6 +18,7 @@ import static net.clementlevallois.functions.model.Globals.GlobalQueryParams.JOB
 import net.clementlevallois.nocodeapp.web.front.MessageFromApi;
 import net.clementlevallois.nocodeapp.web.front.WatchTower;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.ApplicationPropertiesBean;
+import net.clementlevallois.nocodeapp.web.front.exceptions.NocodeApplicationException;
 import net.clementlevallois.nocodeapp.web.front.flows.base.FlowFailed;
 import net.clementlevallois.nocodeapp.web.front.flows.base.FlowState;
 import net.clementlevallois.nocodeapp.web.front.http.MicroserviceHttpClient;
@@ -25,8 +26,6 @@ import net.clementlevallois.nocodeapp.web.front.http.RemoteLocal;
 
 @ApplicationScoped
 public class SpatializeService {
-
-    private static final Logger LOG = Logger.getLogger(SpatializeService.class.getName());
 
     @Inject
     private MicroserviceHttpClient microserviceClient;
@@ -59,13 +58,11 @@ public class SpatializeService {
         requestBuilder.sendAsync(HttpResponse.BodyHandlers.ofByteArray())
                 .thenAccept(resp -> {
                     if (resp.statusCode() != 200) {
-                        LOG.log(Level.SEVERE, "Spatialize task submission failed for job {0}. Status: {1}, Body: {2}", new Object[]{jobId, resp.statusCode(), new String(resp.body(), StandardCharsets.UTF_8)});
                         errorFlowFailed.set(new FlowFailed(jobId, currentState, "cowo task submission to remote service returned a not 200 code"));
                         isProcessSucessFul.set(Boolean.FALSE);
                     }
                 })
                 .exceptionally(ex -> {
-                    LOG.log(Level.SEVERE, "Exception during Spatialize task submission for job " + jobId, ex);
                     errorFlowFailed.set(new FlowFailed(jobId, currentState, "cowo task submission created an exceptional error"));
                     isProcessSucessFul.set(Boolean.FALSE);
                     return null;

@@ -11,10 +11,8 @@ import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
-import net.clementlevallois.nocodeapp.web.front.flows.cowo.CowoResultsBean;
+import net.clementlevallois.nocodeapp.web.front.exceptions.NocodeApplicationException;
 import net.clementlevallois.nocodeapp.web.front.io.ExportToGephiLite;
 import net.clementlevallois.nocodeapp.web.front.io.ExportToVosViewer;
 import net.clementlevallois.nocodeapp.web.front.utils.GEXFSaver;
@@ -28,8 +26,6 @@ import org.primefaces.model.StreamedContent;
 @Named
 @ViewScoped
 public class SpatializeResultsBean implements Serializable {
-
-    private static final Logger LOG = Logger.getLogger(CowoResultsBean.class.getName());
 
     @Inject
     private SessionBean sessionBean;

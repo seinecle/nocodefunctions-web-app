@@ -15,6 +15,7 @@ import java.io.Serializable;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import net.clementlevallois.nocodeapp.web.front.exceptions.NocodeApplicationException;
 import net.clementlevallois.nocodeapp.web.front.flows.base.FlowState;
 import org.primefaces.model.file.UploadedFile;
 
@@ -56,9 +57,11 @@ public class CowoAnalysisBean implements Serializable {
                 FlowState cowoState = cowoService.callCowoMicroService(parameters, sessionId);
                 sessionBean.setFlowState(cowoState);
             } catch (Exception e) {
-                LOG.log(Level.SEVERE, "Error initiating analysis", e);
                 sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Error", "Could not start analysis: " + e.getMessage());
             }
+        } else {
+            throw new IllegalStateException("State is not CowoState.AwaitingParameters " + sessionBean.getFlowState().getClass().getSimpleName());
+
         }
     }
 
@@ -68,19 +71,21 @@ public class CowoAnalysisBean implements Serializable {
             if (sessionBean.getFlowState() instanceof CowoState.ResultsReady) {
                 try {
                     FacesContext.getCurrentInstance().getExternalContext()
-                        .redirect(FacesContext.getCurrentInstance().getExternalContext().getRequestContextPath() + "/workflow-cowo/results.html");
+                            .redirect(FacesContext.getCurrentInstance().getExternalContext().getRequestContextPath() + "/workflow-cowo/results.html");
                 } catch (IOException ex) {
-                    LOG.log(Level.SEVERE, "Redirect to results.xhtml failed", ex);
+                    throw new NocodeApplicationException("An IO error occurred", ex);
                 }
             }
+        } else {
+            throw new IllegalStateException("State is not CowoState.Processing " + sessionBean.getFlowState().getClass().getSimpleName());
         }
         return null;
     }
 
     public String getRunButtonText() {
         return (sessionBean.getFlowState() instanceof CowoState.Processing)
-            ? sessionBean.getLocaleBundle().getString("general.message.wait_long_operation")
-            : sessionBean.getLocaleBundle().getString("general.verbs.compute");
+                ? sessionBean.getLocaleBundle().getString("general.message.wait_long_operation")
+                : sessionBean.getLocaleBundle().getString("general.verbs.compute");
     }
 
     public boolean isRunButtonDisabled() {
@@ -89,21 +94,26 @@ public class CowoAnalysisBean implements Serializable {
 
     public int getProgress() {
         return switch (sessionBean.getFlowState()) {
-            case CowoState.AwaitingParameters ap -> 0;
-            case CowoState.Processing p -> p.progress();
-            case CowoState.ResultsReady rr -> 100;
-            default -> 0;
+            case CowoState.AwaitingParameters ap ->
+                0;
+            case CowoState.Processing p ->
+                p.progress();
+            case CowoState.ResultsReady rr ->
+                100;
+            default ->
+                0;
         };
     }
 
     private void updateAwaitingParameters(java.util.function.Function<CowoState.AwaitingParameters, CowoState.AwaitingParameters> updater) {
         if (sessionBean.getFlowState() instanceof CowoState.AwaitingParameters params) {
             sessionBean.setFlowState(updater.apply(params));
+        }else{
+             throw new IllegalStateException("wrong state in updating params in CowoState " + sessionBean.getFlowState().getClass().getSimpleName());
         }
     }
 
     // Input parameters setters and getters
-
     public List<String> getSelectedLanguages() {
         return (sessionBean.getFlowState() instanceof CowoState.AwaitingParameters p) ? p.selectedLanguages() : new ArrayList<>();
     }
@@ -194,7 +204,9 @@ public class CowoAnalysisBean implements Serializable {
             String success = sessionBean.getLocaleBundle().getString("general.nouns.success");
             String is_uploaded = sessionBean.getLocaleBundle().getString("general.verb.is_uploaded");
             sessionBean.addMessage(FacesMessage.SEVERITY_INFO, success, file.getFileName() + " " + is_uploaded + ".");
-        }
+        } else {
+            throw new IllegalStateException("uploaded stopwords file not supposed to be null");
+       }
     }
 
     public List<Locale> getAvailable() {
@@ -204,8 +216,8 @@ public class CowoAnalysisBean implements Serializable {
             available.add(Locale.forLanguageTag(tag));
         }
         Locale requestLocale = Optional.ofNullable(FacesContext.getCurrentInstance())
-            .map(ctx -> ctx.getExternalContext().getRequestLocale())
-            .orElse(Locale.getDefault());
+                .map(ctx -> ctx.getExternalContext().getRequestLocale())
+                .orElse(Locale.getDefault());
         available.sort(new LocaleComparator(requestLocale));
         return available;
     }

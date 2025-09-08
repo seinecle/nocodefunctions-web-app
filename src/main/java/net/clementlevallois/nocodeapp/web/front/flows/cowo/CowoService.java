@@ -20,14 +20,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import static java.util.stream.Collectors.toList;
 import net.clementlevallois.functions.model.Globals;
 import net.clementlevallois.functions.model.WorkflowCowoProps;
 import net.clementlevallois.nocodeapp.web.front.MessageFromApi;
 import net.clementlevallois.nocodeapp.web.front.WatchTower;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.ApplicationPropertiesBean;
+import net.clementlevallois.nocodeapp.web.front.exceptions.NocodeApplicationException;
 import net.clementlevallois.nocodeapp.web.front.flows.base.FlowFailed;
 import net.clementlevallois.nocodeapp.web.front.flows.base.FlowState;
 import net.clementlevallois.nocodeapp.web.front.http.MicroserviceHttpClient;
@@ -37,8 +36,6 @@ import org.primefaces.model.file.UploadedFile;
 
 @ApplicationScoped
 public class CowoService {
-
-    private static final Logger LOG = Logger.getLogger(CowoService.class.getName());
 
     @Inject
     private MicroserviceHttpClient microserviceClient;
@@ -61,8 +58,7 @@ public class CowoService {
                     userSuppliedStopwordsBuilder.add(String.valueOf(index++), stopword);
                 }
             } catch (IOException exIO) {
-                LOG.log(Level.SEVERE, "Error reading user supplied stopwords file", exIO);
-                // This should ideally return a FlowFailed state, but for simplicity in this step, we log and proceed.
+                throw new NocodeApplicationException("An IO error occurred", exIO);
             }
         }
 
@@ -117,13 +113,11 @@ public class CowoService {
         requestBuilder.sendAsync(HttpResponse.BodyHandlers.ofString())
                 .thenAccept(response -> {
                     if (response.statusCode() != 200) {
-                        LOG.log(Level.SEVERE, "Cowo task submission failed for dataId {0}. Status: {1}, Body: {2}", new Object[]{jobId, response.statusCode(), response.body()});
                         errorFlowFailed.set(new FlowFailed(jobId, currentState, "cowo task submission to remote service returned a not 200 code"));
                         isProcessSucessFul.set(Boolean.FALSE);
                     }
                 })
                 .exceptionally(e -> {
-                    LOG.log(Level.SEVERE, "Exception during Cowo task submission for dataId " + jobId, e);
                     errorFlowFailed.set(new FlowFailed(jobId, currentState, "cowo task submission created an exceptional error"));
                     isProcessSucessFul.set(Boolean.FALSE);
                     return null;

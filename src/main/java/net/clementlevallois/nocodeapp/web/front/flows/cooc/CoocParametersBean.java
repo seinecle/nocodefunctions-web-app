@@ -12,16 +12,13 @@ import jakarta.inject.Named;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.Optional;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
+import net.clementlevallois.nocodeapp.web.front.exceptions.NocodeApplicationException;
 import net.clementlevallois.nocodeapp.web.front.flows.base.FlowState;
 
 @Named
 @ViewScoped
 public class CoocParametersBean implements Serializable {
-
-    private static final Logger LOG = Logger.getLogger(CoocParametersBean.class.getName());
 
     private int minSharedTargets = 1;
 
@@ -42,7 +39,7 @@ public class CoocParametersBean implements Serializable {
                 try {
                     FacesContext.getCurrentInstance().getExternalContext().redirect("/cooc/cooc-import.xhtml?faces-redirect=true");
                 } catch (IOException ex) {
-                    LOG.log(Level.SEVERE, "Redirect failed in CoocParametersBean init", ex);
+                    throw new NocodeApplicationException("An IO error occurred", ex);
                 }
             }
         }

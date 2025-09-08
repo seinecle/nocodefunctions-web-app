@@ -13,10 +13,9 @@ import java.io.Serializable;
 import java.net.http.HttpResponse;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import net.clementlevallois.functions.model.FunctionRegionExtract;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
+import net.clementlevallois.nocodeapp.web.front.exceptions.NocodeApplicationException;
 import net.clementlevallois.nocodeapp.web.front.http.MicroserviceHttpClient;
 import net.clementlevallois.nocodeapp.web.front.http.RemoteLocal;
 import org.primefaces.model.DefaultStreamedContent;
@@ -25,8 +24,6 @@ import org.primefaces.model.StreamedContent;
 @Named
 @ViewScoped
 public class RegionExtractorResultsBean implements Serializable {
-
-    private static final Logger LOG = Logger.getLogger(RegionExtractorResultsBean.class.getName());
 
     @Inject
     private SessionBean sessionBean;
@@ -69,24 +66,19 @@ public class RegionExtractorResultsBean implements Serializable {
                         .stream(() -> is)
                         .build();
             } catch (IOException e) {
-                LOG.log(Level.SEVERE, "Error creating StreamedContent from export response body", e);
-                sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Download Error", "Could not prepare download file.");
-                return new DefaultStreamedContent();
+                throw new NocodeApplicationException("An IO error occurred", e);
             }
 
         } catch (CompletionException cex) {
             Throwable cause = cex.getCause();
-            LOG.log(Level.SEVERE, "Error during asynchronous export service call (CompletionException)", cause);
             String errorMessage = "Error exporting data: " + cause.getMessage();
             if (cause instanceof MicroserviceHttpClient.MicroserviceCallException msce) {
                 errorMessage = "Error exporting data: Status " + msce.getStatusCode() + ", " + msce.getErrorBody();
             }
             sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Export Failed", errorMessage);
             return new DefaultStreamedContent();
-        } catch (Exception ex) {
-            LOG.log(Level.SEVERE, "Unexpected error in getFileToSave", ex);
-            sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Export Failed", "An unexpected error occurred: " + ex.getMessage());
-            return new DefaultStreamedContent();
+        } catch (NocodeApplicationException ex) {
+            throw new NocodeApplicationException("An IO error occurred", ex);
         }
     }
 

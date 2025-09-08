@@ -10,6 +10,7 @@ import java.io.Serializable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
+import net.clementlevallois.nocodeapp.web.front.exceptions.NocodeApplicationException;
 import net.clementlevallois.nocodeapp.web.front.io.ExportToGephiLite;
 import net.clementlevallois.nocodeapp.web.front.io.ExportToVosViewer;
 import net.clementlevallois.nocodeapp.web.front.utils.GEXFSaver;
@@ -41,7 +42,8 @@ public class CowoResultsBean implements Serializable {
             try {
                 FacesContext.getCurrentInstance().getExternalContext().redirect("cowo-import.html?faces-redirect=true");
             } catch (IOException ex) {
-                LOG.log(Level.SEVERE, "Redirection failed in results bean init", ex);
+                throw new NocodeApplicationException("An IO error occurred", ex);
+
             }
         }
     }
@@ -53,7 +55,8 @@ public class CowoResultsBean implements Serializable {
                 try {
                     FacesContext.getCurrentInstance().getExternalContext().redirect(linkToVosViewer);
                 } catch (IOException ex) {
-                    LOG.log(Level.SEVERE, "Error redirecting to VOSviewer", ex);
+                    throw new NocodeApplicationException("An IO error occurred", ex);
+
                 }
             }
         }
@@ -66,7 +69,7 @@ public class CowoResultsBean implements Serializable {
                 try {
                     FacesContext.getCurrentInstance().getExternalContext().redirect(urlToGephiLite);
                 } catch (IOException ex) {
-                    LOG.log(Level.SEVERE, "Error redirecting to Gephi Lite", ex);
+                    throw new NocodeApplicationException("An IO error occurred", ex);
                 }
             }
         }

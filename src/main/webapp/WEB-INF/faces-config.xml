@@ -29,7 +29,7 @@
 
     <factory>
         <external-context-factory>net.clementlevallois.nocodeapp.web.front.CustomExternalContext$Factory</external-context-factory>
-        <exception-handler-factory>net.clementlevallois.nocodeapp.web.front.CustomExceptionHandlerFactory</exception-handler-factory>
+        <exception-handler-factory>net.clementlevallois.nocodeapp.web.front.exceptions.CustomExceptionHandlerFactory</exception-handler-factory>
     </factory>
 
     <application>
