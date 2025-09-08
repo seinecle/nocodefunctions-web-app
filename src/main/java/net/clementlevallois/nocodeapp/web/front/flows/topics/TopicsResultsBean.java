@@ -101,4 +101,8 @@ public class TopicsResultsBean implements Serializable {
 
     public void setCommunitiesResult(Map<Integer, Multiset<String>> communitiesResult) {
     }
+    
+    public void test() {
+        // Méthode de test ajoutée
+    }
 }
