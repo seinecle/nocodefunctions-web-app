@@ -33,7 +33,7 @@ public class TopicsResultsBean implements Serializable {
 
     @PostConstruct
     public void init() {
-        if (sessionBean.getTopicsState() instanceof TopicsState.ResultsReady results) {
+        if (sessionBean.getFlowState() instanceof TopicsState.ResultsReady results) {
             this.results = results;
         } else {
             try {
@@ -79,8 +79,8 @@ public class TopicsResultsBean implements Serializable {
 
     public void setShareVVPublicly(Boolean flag) {
         if (results != null) {
-            sessionBean.setTopicsState(results.withShareVVPublicly(flag));
-            this.results = (TopicsState.ResultsReady) sessionBean.getTopicsState();
+            sessionBean.setFlowState(results.withShareVVPublicly(flag));
+            this.results = (TopicsState.ResultsReady) sessionBean.getFlowState();
         }
     }
 
@@ -90,8 +90,8 @@ public class TopicsResultsBean implements Serializable {
 
     public void setShareGephiLitePublicly(Boolean flag) {
         if (results != null) {
-            sessionBean.setTopicsState(results.withShareGephiLitePublicly(flag));
-            this.results = (TopicsState.ResultsReady) sessionBean.getTopicsState();
+            sessionBean.setFlowState(results.withShareGephiLitePublicly(flag));
+            this.results = (TopicsState.ResultsReady) sessionBean.getFlowState();
         }
     }
     
