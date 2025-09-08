@@ -79,10 +79,12 @@ public class SpatializeDataInputBean implements Serializable {
             throw new NocodeApplicationException("An IO error occurred", ex);
         }
 
-        ImportersService.PreparationResult result = switch (dataSource) {
-            case SpatializeDataSource.FileUpload(UploadedFile file) ->
-                importersService.handleFileUpload(List.of(file), jobId, Globals.Names.SPATIALIZE_FORCE_ATLAS);
-        };
+        ImportersService.PreparationResult result;
+        if (dataSource instanceof SpatializeDataSource.FileUpload fileUpload) {
+            result = importersService.handleFileUpload(List.of(fileUpload.file()), jobId, Globals.Names.SPATIALIZE_FORCE_ATLAS);
+        } else {
+            throw new IllegalArgumentException("Unsupported data source type");
+        }
 
         if (result instanceof ImportersService.PreparationResult.Failure(String error)) {
             sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Data Preparation Failed", error);

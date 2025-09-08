@@ -83,10 +83,12 @@ public class CoocDataInputBean implements Serializable {
 
         sessionBean.sendFunctionPageReport(Globals.Names.COOC.name());
 
-        ImportersService.PreparationResult result = switch (dataSource) {
-            case CoocDataSource.FileUpload(List<UploadedFile> files) ->
-                importersService.handleFileUpload(files, jobId, Globals.Names.COOC);
-        };
+        ImportersService.PreparationResult result;
+        if (dataSource instanceof CoocDataSource.FileUpload fileUpload) {
+            result = importersService.handleFileUpload(fileUpload.files(), jobId, Globals.Names.COOC);
+        } else {
+            throw new IllegalArgumentException("Unsupported data source type");
+        }
 
         if (result instanceof ImportersService.PreparationResult.Failure(String error)) {
             throw new IllegalStateException("Cannot proceed because data preparation failed: "

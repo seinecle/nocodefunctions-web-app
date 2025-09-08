@@ -96,10 +96,12 @@ public class SimDataInputBean implements Serializable {
             throw new NocodeApplicationException("An IO error occurred", ex);
         }
 
-        ImportersService.PreparationResult result = switch (dataSource) {
-            case SimDataSource.FileUpload(UploadedFile file) ->
-                importersService.handleFileUpload(List.of(file), jobId, Globals.Names.SIM);
-        };
+        ImportersService.PreparationResult result;
+        if (dataSource instanceof SimDataSource.FileUpload fileUpload) {
+            result = importersService.handleFileUpload(List.of(fileUpload.file()), jobId, Globals.Names.SIM);
+        } else {
+            throw new IllegalArgumentException("Unsupported data source type");
+        }
 
         if (result instanceof ImportersService.PreparationResult.Failure(String error)) {
             sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Data Preparation Failed", error);

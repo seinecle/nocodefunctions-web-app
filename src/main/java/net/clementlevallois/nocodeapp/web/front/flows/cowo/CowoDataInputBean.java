@@ -112,14 +112,16 @@ public class CowoDataInputBean implements Serializable {
 
         sessionBean.sendFunctionPageReport(Globals.Names.COWO.name());
 
-        ImportersService.PreparationResult result = switch (dataSource) {
-            case CowoDataSource.FileUpload(List<UploadedFile> files) ->
-                importersService.handleFileUpload(files, jobId, Globals.Names.COWO);
-            case CowoDataSource.WebPage(String url_param) ->
-                importersService.parseWebPage(url, jobId);
-            case CowoDataSource.WebSite(String rootUrl, int maxUrls, String exclusionTerms) ->
-                importersService.crawlWebSite(rootUrl, maxUrls, exclusionTerms, jobId);
-        };
+        ImportersService.PreparationResult result;
+        if (dataSource instanceof CowoDataSource.FileUpload fileUpload) {
+            result = importersService.handleFileUpload(fileUpload.files(), jobId, Globals.Names.COWO);
+        } else if (dataSource instanceof CowoDataSource.WebPage webPage) {
+            result = importersService.parseWebPage(webPage.url(), jobId);
+        } else if (dataSource instanceof CowoDataSource.WebSite webSite) {
+            result = importersService.crawlWebSite(webSite.rootUrl(), webSite.maxUrls(), webSite.exclusionTerms(), jobId);
+        } else {
+            throw new IllegalArgumentException("Unsupported data source type");
+        }
 
         if (result instanceof ImportersService.PreparationResult.Failure(String error)) {
             sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Data Preparation Failed", error);
