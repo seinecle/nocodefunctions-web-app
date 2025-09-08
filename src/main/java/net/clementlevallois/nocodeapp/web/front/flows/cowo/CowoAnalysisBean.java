@@ -92,7 +92,7 @@ public class CowoAnalysisBean implements Serializable {
             case CowoState.AwaitingParameters ap -> 0;
             case CowoState.Processing p -> p.progress();
             case CowoState.ResultsReady rr -> 100;
-            case FlowFailed ff -> 0;
+            default -> 0;
         };
     }
 
