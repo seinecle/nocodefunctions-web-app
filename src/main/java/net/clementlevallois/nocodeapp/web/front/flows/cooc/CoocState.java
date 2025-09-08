@@ -4,12 +4,15 @@
  */
 package net.clementlevallois.nocodeapp.web.front.flows.cooc;
 
+import net.clementlevallois.nocodeapp.web.front.flows.base.FlowState;
+
 /**
  * This sealed interface represents the complete set of possible states for the
  * Co-occurrence (cooc) workflow.
  */
-public sealed interface CoocState {
+public sealed interface CoocState extends FlowState {
     
+    @Override
     String jobId();
     
     /**
@@ -81,14 +84,5 @@ public sealed interface CoocState {
         public ResultsReady withShareGephiLitePublicly(boolean newFlag) {
             return new ResultsReady(jobId, gexf, nodesAsJson, edgesAsJson, shareVVPublicly, newFlag);
         }
-    }
-
-    /**
-     * A terminal state representing a failure in the workflow.
-     */
-    record FlowFailed(
-            String jobId,
-            CoocState lastKnownState,
-            String errorMessage) implements CoocState {
     }
 }

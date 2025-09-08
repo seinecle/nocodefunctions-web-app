@@ -22,6 +22,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import net.clementlevallois.nocodeapp.web.front.flows.base.FlowState;
 import net.clementlevallois.nocodeapp.web.front.flows.cooc.CoocState;
 import net.clementlevallois.nocodeapp.web.front.flows.cowo.CowoState;
 import net.clementlevallois.nocodeapp.web.front.flows.regionextractor.RegionExtractorState;
@@ -47,12 +48,7 @@ public class SessionBean implements Serializable {
     private Locale currentLocale;
     private String hash;
     private String jobId;
-    private CowoState cowoState;
-    private CoocState coocState;
-    private TopicsState topicsState;
-    private SpatializeState spatializeState;
-    private SimState simState;
-    private RegionExtractorState regionExtractorState;
+    private FlowState flowState;
 
     @Inject
     ApplicationPropertiesBean applicationProperties;
@@ -259,55 +255,11 @@ public class SessionBean implements Serializable {
         FacesContext.getCurrentInstance().getExternalContext().addResponseCookie(SingletonBean.SERVICE_NAME, value, properties);
     }
 
-    public CowoState getCowoState() {
-        return cowoState;
+    public FlowState getFlowState() {
+        return flowState;
     }
 
-    public void setCowoState(CowoState cowoState) {
-        this.cowoState = cowoState;
+    public void setFlowState(FlowState flowState) {
+        this.flowState = flowState;
     }
-
-    public TopicsState getTopicsState() {
-        return topicsState;
-    }
-
-    public void setTopicsState(TopicsState topicsState) {
-        this.topicsState = topicsState;
-    }
-
-    public SpatializeState getSpatializeState() {
-        return spatializeState;
-    }
-
-    public void setSpatializeState(SpatializeState spatializeState) {
-        this.spatializeState = spatializeState;
-    }
-
-    public SimState getSimState() {
-        return simState;
-    }
-
-    public void setSimState(SimState simState) {
-        this.simState = simState;
-    }
-
-    public CoocState getCoocState() {
-        return coocState;
-    }
-
-    public void setCoocState(CoocState coocState) {
-        this.coocState = coocState;
-    }
-
-    public RegionExtractorState getRegionExtractorState() {
-        return regionExtractorState;
-    }
-
-    public void setRegionExtractorState(RegionExtractorState regionExtractorState) {
-        this.regionExtractorState = regionExtractorState;
-    }
-    
-    
-    
-    
 }

@@ -64,7 +64,7 @@ public class TopicsDataInputBean implements Serializable {
                 false, // removeNonAsciiCharacters
                 null // uploaded user stopwords
         );
-        sessionBean.setTopicsState(awaitingParameters);
+        sessionBean.setFlowState(awaitingParameters);
     }
 
     public void handleFileUpload(FileUploadEvent event) {
@@ -141,8 +141,8 @@ public class TopicsDataInputBean implements Serializable {
             return null;
         }
 
-        if (sessionBean.getTopicsState() instanceof TopicsState.AwaitingParameters p) {
-            sessionBean.setTopicsState(p.withJobId(this.jobId));
+        if (sessionBean.getFlowState() instanceof TopicsState.AwaitingParameters p) {
+            sessionBean.setFlowState(p.withJobId(this.jobId));
         }
 
         return "workflow-topics.xhtml?faces-redirect=true";

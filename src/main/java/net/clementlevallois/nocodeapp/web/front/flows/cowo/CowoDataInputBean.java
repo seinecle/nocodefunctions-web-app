@@ -66,7 +66,7 @@ public class CowoDataInputBean implements Serializable {
                 null, // fileUserStopwords
                 4 // minCharNumber
         );
-        sessionBean.setCowoState(awaitingParameters);
+        sessionBean.setFlowState(awaitingParameters);
     }
 
     public void handleFileUpload(FileUploadEvent event) {
@@ -133,10 +133,10 @@ public class CowoDataInputBean implements Serializable {
             return null;
         }
 
-        CowoState currentState = sessionBean.getCowoState();
+        CowoState currentState = sessionBean.getFlowState();
 
         if (currentState instanceof CowoState.AwaitingParameters p) {
-            sessionBean.setCowoState(p.withJobId(this.jobId));
+            sessionBean.setFlowState(p.withJobId(this.jobId));
         }
 
         return "workflow-cowo?faces-redirect=true";

@@ -34,7 +34,7 @@ public class CowoAnalysisBean implements Serializable {
 
     @PostConstruct
     public void init() {
-        if (sessionBean.getCowoState() == null) {
+        if (sessionBean.getFlowState() == null) {
             try {
                 FacesContext.getCurrentInstance().getExternalContext().redirect("cowo-import.html?faces-redirect=true");
             } catch (IOException ex) {
@@ -44,7 +44,7 @@ public class CowoAnalysisBean implements Serializable {
     }
 
     public void runAnalysis() {
-        if (sessionBean.getCowoState() instanceof CowoState.AwaitingParameters parameters) {
+        if (sessionBean.getFlowState() instanceof CowoState.AwaitingParameters parameters) {
             if (parameters.jobId() == null || parameters.jobId().isBlank()) {
                 sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Error", "No data has been imported for this analysis.");
                 return;
@@ -53,7 +53,7 @@ public class CowoAnalysisBean implements Serializable {
                 logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.starting_analysis"));
                 String sessionId = FacesContext.getCurrentInstance().getExternalContext().getSessionId(false);
                 CowoState cowoState = cowoService.callCowoMicroService(parameters, sessionId);
-                sessionBean.setCowoState(cowoState);
+                sessionBean.setFlowState(cowoState);
             } catch (Exception e) {
                 LOG.log(Level.SEVERE, "Error initiating analysis", e);
                 sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Error", "Could not start analysis: " + e.getMessage());
@@ -62,9 +62,9 @@ public class CowoAnalysisBean implements Serializable {
     }
 
     public String pollingListener() {
-        if (sessionBean.getCowoState() instanceof CowoState.Processing processingState) {
-            sessionBean.setCowoState(cowoService.checkCompletion(processingState));
-            if (sessionBean.getCowoState() instanceof CowoState.ResultsReady) {
+        if (sessionBean.getFlowState() instanceof CowoState.Processing processingState) {
+            sessionBean.setFlowState(cowoService.checkCompletion(processingState));
+            if (sessionBean.getFlowState() instanceof CowoState.ResultsReady) {
                 try {
                     FacesContext.getCurrentInstance().getExternalContext()
                         .redirect(FacesContext.getCurrentInstance().getExternalContext().getRequestContextPath() + "/workflow-cowo/results.html");
@@ -77,17 +77,17 @@ public class CowoAnalysisBean implements Serializable {
     }
 
     public String getRunButtonText() {
-        return (sessionBean.getCowoState() instanceof CowoState.Processing)
+        return (sessionBean.getFlowState() instanceof CowoState.Processing)
             ? sessionBean.getLocaleBundle().getString("general.message.wait_long_operation")
             : sessionBean.getLocaleBundle().getString("general.verbs.compute");
     }
 
     public boolean isRunButtonDisabled() {
-        return sessionBean.getCowoState() instanceof CowoState.Processing;
+        return sessionBean.getFlowState() instanceof CowoState.Processing;
     }
 
     public int getProgress() {
-        return switch (sessionBean.getCowoState()) {
+        return switch (sessionBean.getFlowState()) {
             case CowoState.AwaitingParameters ap -> 0;
             case CowoState.Processing p -> p.progress();
             case CowoState.ResultsReady rr -> 100;
@@ -96,15 +96,15 @@ public class CowoAnalysisBean implements Serializable {
     }
 
     private void updateAwaitingParameters(java.util.function.Function<CowoState.AwaitingParameters, CowoState.AwaitingParameters> updater) {
-        if (sessionBean.getCowoState() instanceof CowoState.AwaitingParameters params) {
-            sessionBean.setCowoState(updater.apply(params));
+        if (sessionBean.getFlowState() instanceof CowoState.AwaitingParameters params) {
+            sessionBean.setFlowState(updater.apply(params));
         }
     }
 
     // Input parameters setters and getters
 
     public List<String> getSelectedLanguages() {
-        return (sessionBean.getCowoState() instanceof CowoState.AwaitingParameters p) ? p.selectedLanguages() : new ArrayList<>();
+        return (sessionBean.getFlowState() instanceof CowoState.AwaitingParameters p) ? p.selectedLanguages() : new ArrayList<>();
     }
 
     public void setSelectedLanguages(List<String> languages) {
@@ -112,7 +112,7 @@ public class CowoAnalysisBean implements Serializable {
     }
 
     public int getMinTermFreq() {
-        return (sessionBean.getCowoState() instanceof CowoState.AwaitingParameters p) ? p.minTermFreq() : 2;
+        return (sessionBean.getFlowState() instanceof CowoState.AwaitingParameters p) ? p.minTermFreq() : 2;
     }
 
     public void setMinTermFreq(int freq) {
@@ -120,7 +120,7 @@ public class CowoAnalysisBean implements Serializable {
     }
 
     public int getMaxNGram() {
-        return (sessionBean.getCowoState() instanceof CowoState.AwaitingParameters p) ? p.maxNGram() : 4;
+        return (sessionBean.getFlowState() instanceof CowoState.AwaitingParameters p) ? p.maxNGram() : 4;
     }
 
     public void setMaxNGram(int nGram) {
@@ -128,7 +128,7 @@ public class CowoAnalysisBean implements Serializable {
     }
 
     public Integer getMinCharNumber() {
-        return (sessionBean.getCowoState() instanceof CowoState.AwaitingParameters p) ? p.minCharNumber() : 4;
+        return (sessionBean.getFlowState() instanceof CowoState.AwaitingParameters p) ? p.minCharNumber() : 4;
     }
 
     public void setMinCharNumber(Integer minChar) {
@@ -136,7 +136,7 @@ public class CowoAnalysisBean implements Serializable {
     }
 
     public boolean isRemoveNonAsciiCharacters() {
-        return (sessionBean.getCowoState() instanceof CowoState.AwaitingParameters p) && p.removeNonAsciiCharacters();
+        return (sessionBean.getFlowState() instanceof CowoState.AwaitingParameters p) && p.removeNonAsciiCharacters();
     }
 
     public void setRemoveNonAsciiCharacters(boolean flag) {
@@ -144,7 +144,7 @@ public class CowoAnalysisBean implements Serializable {
     }
 
     public boolean isScientificCorpus() {
-        return (sessionBean.getCowoState() instanceof CowoState.AwaitingParameters p) && p.scientificCorpus();
+        return (sessionBean.getFlowState() instanceof CowoState.AwaitingParameters p) && p.scientificCorpus();
     }
 
     public void setScientificCorpus(boolean flag) {
@@ -152,7 +152,7 @@ public class CowoAnalysisBean implements Serializable {
     }
 
     public boolean isFirstNames() {
-        return (sessionBean.getCowoState() instanceof CowoState.AwaitingParameters p) && p.firstNames();
+        return (sessionBean.getFlowState() instanceof CowoState.AwaitingParameters p) && p.firstNames();
     }
 
     public void setFirstNames(boolean flag) {
@@ -160,7 +160,7 @@ public class CowoAnalysisBean implements Serializable {
     }
 
     public boolean isLemmatize() {
-        return (sessionBean.getCowoState() instanceof CowoState.AwaitingParameters p) && p.lemmatize();
+        return (sessionBean.getFlowState() instanceof CowoState.AwaitingParameters p) && p.lemmatize();
     }
 
     public void setLemmatize(boolean flag) {
@@ -168,7 +168,7 @@ public class CowoAnalysisBean implements Serializable {
     }
 
     public boolean isReplaceStopwords() {
-        return (sessionBean.getCowoState() instanceof CowoState.AwaitingParameters p) && p.replaceStopwords();
+        return (sessionBean.getFlowState() instanceof CowoState.AwaitingParameters p) && p.replaceStopwords();
     }
 
     public void setReplaceStopwords(boolean flag) {
@@ -176,7 +176,7 @@ public class CowoAnalysisBean implements Serializable {
     }
 
     public boolean isUsePMI() {
-        return (sessionBean.getCowoState() instanceof CowoState.AwaitingParameters p) && p.usePMI();
+        return (sessionBean.getFlowState() instanceof CowoState.AwaitingParameters p) && p.usePMI();
     }
 
     public void setUsePMI(boolean flag) {
@@ -184,7 +184,7 @@ public class CowoAnalysisBean implements Serializable {
     }
 
     public UploadedFile getFileUserStopwords() {
-        return (sessionBean.getCowoState() instanceof CowoState.AwaitingParameters p) ? p.fileUserStopwords() : null;
+        return (sessionBean.getFlowState() instanceof CowoState.AwaitingParameters p) ? p.fileUserStopwords() : null;
     }
 
     public void setFileUserStopwords(UploadedFile file) {

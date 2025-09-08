@@ -50,7 +50,7 @@ public class SpatializeDataInputBean implements Serializable {
                 null, // jobId to be set later
                 10 // durationInSecond default
         );
-        sessionBean.setSpatializeState(awaitingParameters);
+        sessionBean.setFlowState(awaitingParameters);
     }
 
     public void handleFileUpload(FileUploadEvent event) {
@@ -100,8 +100,8 @@ public class SpatializeDataInputBean implements Serializable {
             return null;
         }
 
-        if (sessionBean.getSpatializeState() instanceof SpatializeState.AwaitingParameters p) {
-            sessionBean.setSpatializeState(p.withJobId(this.jobId));
+        if (sessionBean.getFlowState() instanceof SpatializeState.AwaitingParameters p) {
+            sessionBean.setFlowState(p.withJobId(this.jobId));
         }
 
         return "spatialize-analyze.xhtml?faces-redirect=true";

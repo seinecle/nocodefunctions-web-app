@@ -29,10 +29,10 @@ public class CoocParametersBean implements Serializable {
 
     @PostConstruct
     public void init() {
-        CoocState currentState = sessionBean.getCoocState();
+        CoocState currentState = sessionBean.getFlowState();
         switch (currentState) {
             case CoocState.DataImported importedState -> // First time on the parameters page, initialize the state
-                sessionBean.setCoocState(new CoocState.AwaitingParameters(importedState.jobId(), this.minSharedTargets));
+                sessionBean.setFlowState(new CoocState.AwaitingParameters(importedState.jobId(), this.minSharedTargets));
             case CoocState.AwaitingParameters params -> // Re-visiting the page, retrieve existing parameters
             {
                 this.minSharedTargets = params.minSharedTargets();
@@ -48,7 +48,7 @@ public class CoocParametersBean implements Serializable {
     }
 
     public int getMinSharedTargets() {
-        return Optional.ofNullable(sessionBean.getCoocState())
+        return Optional.ofNullable(sessionBean.getFlowState())
                 .filter(CoocState.AwaitingParameters.class::isInstance)
                 .map(CoocState.AwaitingParameters.class::cast)
                 .map(CoocState.AwaitingParameters::minSharedTargets)
@@ -57,8 +57,8 @@ public class CoocParametersBean implements Serializable {
 
     public void setMinSharedTargets(int minSharedTargets) {
         this.minSharedTargets = minSharedTargets;
-        if (sessionBean.getCoocState() instanceof CoocState.AwaitingParameters p) {
-            sessionBean.setCoocState(p.withMinSharedTargets(minSharedTargets));
+        if (sessionBean.getFlowState() instanceof CoocState.AwaitingParameters p) {
+            sessionBean.setFlowState(p.withMinSharedTargets(minSharedTargets));
         }
     }
 }

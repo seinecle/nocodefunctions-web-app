@@ -36,7 +36,7 @@ public class SpatializeAnalysisBean implements Serializable {
     
      @PostConstruct
     public void init() {
-        if (sessionBean.getSpatializeState() == null) {
+        if (sessionBean.getFlowState() == null) {
             try {
                 FacesContext.getCurrentInstance().getExternalContext().redirect("spatialize-import.html?faces-redirect=true");
             } catch (IOException ex) {
@@ -46,7 +46,7 @@ public class SpatializeAnalysisBean implements Serializable {
     }
 
     public void runAnalysis() {
-        if (sessionBean.getSpatializeState() instanceof SpatializeState.AwaitingParameters params) {
+        if (sessionBean.getFlowState() instanceof SpatializeState.AwaitingParameters params) {
             if (params.jobId() == null || params.jobId().isBlank()) {
                 sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Error", "No data has been imported for this analysis.");
                 return;
@@ -54,18 +54,18 @@ public class SpatializeAnalysisBean implements Serializable {
             logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.starting_analysis"));
             SpatializeState processingState = spatializeService.startAnalysis(params);
             if (processingState != null) {
-                sessionBean.setSpatializeState(processingState);
+                sessionBean.setFlowState(processingState);
             } else {
-                sessionBean.setSpatializeState(new SpatializeState.FlowFailed(params.jobId(), params, "Failed to start analysis."));
+                sessionBean.setFlowState(new SpatializeState.FlowFailed(params.jobId(), params, "Failed to start analysis."));
                 sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Error", "Could not start analysis.");
             }
         }
     }
 
     public String pollingListener() {
-        if (sessionBean.getSpatializeState() instanceof SpatializeState.Processing processingState) {
-            sessionBean.setSpatializeState(spatializeService.checkCompletion(processingState));
-            if (sessionBean.getSpatializeState() instanceof SpatializeState.ResultsReady) {
+        if (sessionBean.getFlowState() instanceof SpatializeState.Processing processingState) {
+            sessionBean.setFlowState(spatializeService.checkCompletion(processingState));
+            if (sessionBean.getFlowState() instanceof SpatializeState.ResultsReady) {
                 try {
                     FacesContext.getCurrentInstance().getExternalContext().redirect(FacesContext.getCurrentInstance().getExternalContext().getRequestContextPath() + "results.html");
                 } catch (IOException ex) {
@@ -77,17 +77,17 @@ public class SpatializeAnalysisBean implements Serializable {
     }
 
     public String getRunButtonText() {
-        return (sessionBean.getSpatializeState() instanceof SpatializeState.Processing)
+        return (sessionBean.getFlowState() instanceof SpatializeState.Processing)
                 ? sessionBean.getLocaleBundle().getString("general.message.wait_long_operation")
                 : sessionBean.getLocaleBundle().getString("general.verbs.compute");
     }
 
     public boolean isRunButtonDisabled() {
-        return sessionBean.getSpatializeState() instanceof SpatializeState.Processing;
+        return sessionBean.getFlowState() instanceof SpatializeState.Processing;
     }
 
     public int getProgress() {
-        return switch (sessionBean.getSpatializeState()) {
+        return switch (sessionBean.getFlowState()) {
             case SpatializeState.AwaitingParameters ap ->
                 0;
             case SpatializeState.Processing p ->
@@ -102,13 +102,13 @@ public class SpatializeAnalysisBean implements Serializable {
     }
 
     private void updateAwaitingParameters(java.util.function.Function<SpatializeState.AwaitingParameters, SpatializeState.AwaitingParameters> updater) {
-        if (sessionBean.getSpatializeState() instanceof SpatializeState.AwaitingParameters params) {
-            sessionBean.setSpatializeState(updater.apply(params));
+        if (sessionBean.getFlowState() instanceof SpatializeState.AwaitingParameters params) {
+            sessionBean.setFlowState(updater.apply(params));
         }
     }
 
     public int getDurationInSeconds() {
-        if (sessionBean.getSpatializeState() instanceof SpatializeState.AwaitingParameters p) {
+        if (sessionBean.getFlowState() instanceof SpatializeState.AwaitingParameters p) {
             return p.durationInSecond();
         }
         return 3; // Default value

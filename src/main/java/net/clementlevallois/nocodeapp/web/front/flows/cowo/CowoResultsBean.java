@@ -35,7 +35,7 @@ public class CowoResultsBean implements Serializable {
 
     @PostConstruct
     public void init() {
-        if (sessionBean.getCowoState() instanceof CowoState.ResultsReady rr) {
+        if (sessionBean.getFlowState() instanceof CowoState.ResultsReady rr) {
             this.results = rr;
         } else {
             try {
@@ -85,8 +85,8 @@ public class CowoResultsBean implements Serializable {
 
     public void setShareVVPublicly(Boolean flag) {
         if (results != null) {
-            sessionBean.setCowoState(results.withShareVVPublicly(flag));
-            this.results = (CowoState.ResultsReady) sessionBean.getCowoState();
+            sessionBean.setFlowState(results.withShareVVPublicly(flag));
+            this.results = (CowoState.ResultsReady) sessionBean.getFlowState();
         }
     }
 
@@ -96,8 +96,8 @@ public class CowoResultsBean implements Serializable {
 
     public void setShareGephiLitePublicly(Boolean flag) {
         if (results != null) {
-            sessionBean.setCowoState(results.withShareGephiLitePublicly(flag));
-            this.results = (CowoState.ResultsReady) sessionBean.getCowoState();
+            sessionBean.setFlowState(results.withShareGephiLitePublicly(flag));
+            this.results = (CowoState.ResultsReady) sessionBean.getFlowState();
         }
     }
 

@@ -39,7 +39,7 @@ public class SimResultsBean implements Serializable {
 
     @PostConstruct
     public void init() {
-        if (sessionBean.getSimState() instanceof SimState.ResultsReady rr) {
+        if (sessionBean.getFlowState() instanceof SimState.ResultsReady rr) {
             this.results = rr;
         } else {
             try {
@@ -92,8 +92,8 @@ public class SimResultsBean implements Serializable {
 
     public void setShareVVPublicly(Boolean flag) {
         if (results != null) {
-            sessionBean.setSimState(results.withShareVVPublicly(flag));
-            this.results = (SimState.ResultsReady) sessionBean.getSimState();
+            sessionBean.setFlowState(results.withShareVVPublicly(flag));
+            this.results = (SimState.ResultsReady) sessionBean.getFlowState();
         }
     }
 
@@ -103,8 +103,8 @@ public class SimResultsBean implements Serializable {
 
     public void setShareGephiLitePublicly(Boolean flag) {
         if (results != null) {
-            sessionBean.setSimState(results.withShareGephiLitePublicly(flag));
-            this.results = (SimState.ResultsReady) sessionBean.getSimState();
+            sessionBean.setFlowState(results.withShareGephiLitePublicly(flag));
+            this.results = (SimState.ResultsReady) sessionBean.getFlowState();
         }
     }
 

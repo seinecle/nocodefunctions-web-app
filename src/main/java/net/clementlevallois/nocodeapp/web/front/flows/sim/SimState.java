@@ -4,9 +4,9 @@
  */
 package net.clementlevallois.nocodeapp.web.front.flows.sim;
 
-public sealed interface SimState {
+import net.clementlevallois.nocodeapp.web.front.flows.base.FlowState;
 
-    String jobId();
+public sealed interface SimState extends FlowState  {
 
     record AwaitingParameters(
             String jobId,

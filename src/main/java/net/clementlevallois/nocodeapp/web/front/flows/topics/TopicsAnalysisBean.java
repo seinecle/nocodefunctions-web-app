@@ -34,7 +34,7 @@ public class TopicsAnalysisBean implements Serializable {
 
     @PostConstruct
     public void init() {
-        if (sessionBean.getTopicsState() == null) {
+        if (sessionBean.getFlowState() == null) {
             try {
                 FacesContext.getCurrentInstance().getExternalContext().redirect("topics-data-import.xhtml?faces-redirect=true");
             } catch (IOException ex) {
@@ -44,7 +44,7 @@ public class TopicsAnalysisBean implements Serializable {
     }
 
     public void runAnalysis() {
-        if (sessionBean.getTopicsState() instanceof TopicsState.AwaitingParameters params) {
+        if (sessionBean.getFlowState() instanceof TopicsState.AwaitingParameters params) {
             if (params.jobId() == null || params.jobId().isBlank()) {
                 sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Error", "No data has been imported for this analysis.");
                 return;
@@ -52,18 +52,18 @@ public class TopicsAnalysisBean implements Serializable {
             logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.starting_analysis"));
             TopicsState processingState = topicsService.callTopicsMicroService(params);
             if (processingState != null) {
-                sessionBean.setTopicsState(processingState);
+                sessionBean.setFlowState(processingState);
             } else {
-                sessionBean.setTopicsState(new TopicsState.FlowFailed(params.jobId(), params, "Failed to start analysis."));
+                sessionBean.setFlowState(new TopicsState.FlowFailed(params.jobId(), params, "Failed to start analysis."));
                 sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Error", "Could not start analysis.");
             }
         }
     }
 
     public String pollingListener() {
-        if (sessionBean.getTopicsState() instanceof TopicsState.Processing processingState) {
-            sessionBean.setTopicsState(topicsService.checkCompletion(processingState));
-            if (sessionBean.getTopicsState() instanceof TopicsState.ResultsReady) {
+        if (sessionBean.getFlowState() instanceof TopicsState.Processing processingState) {
+            sessionBean.setFlowState(topicsService.checkCompletion(processingState));
+            if (sessionBean.getFlowState() instanceof TopicsState.ResultsReady) {
                 try {
                     FacesContext.getCurrentInstance().getExternalContext().redirect(FacesContext.getCurrentInstance().getExternalContext().getRequestContextPath() + "/workflow-topics/results.html");
                 } catch (IOException ex) {
@@ -75,17 +75,17 @@ public class TopicsAnalysisBean implements Serializable {
     }
 
     public String getRunButtonText() {
-        return (sessionBean.getTopicsState() instanceof TopicsState.Processing)
+        return (sessionBean.getFlowState() instanceof TopicsState.Processing)
                 ? sessionBean.getLocaleBundle().getString("general.message.wait_long_operation")
                 : sessionBean.getLocaleBundle().getString("general.verbs.compute");
     }
 
     public boolean isRunButtonDisabled() {
-        return sessionBean.getTopicsState() instanceof TopicsState.Processing;
+        return sessionBean.getFlowState() instanceof TopicsState.Processing;
     }
 
     public int getProgress() {
-        return switch (sessionBean.getTopicsState()) {
+        return switch (sessionBean.getFlowState()) {
             case TopicsState.AwaitingParameters ap ->
                 0;
             case TopicsState.Processing p ->
@@ -100,8 +100,8 @@ public class TopicsAnalysisBean implements Serializable {
     }
 
     private void updateAwaitingParameters(java.util.function.Function<TopicsState.AwaitingParameters, TopicsState.AwaitingParameters> updater) {
-        if (sessionBean.getTopicsState() instanceof TopicsState.AwaitingParameters params) {
-            sessionBean.setTopicsState(updater.apply(params));
+        if (sessionBean.getFlowState() instanceof TopicsState.AwaitingParameters params) {
+            sessionBean.setFlowState(updater.apply(params));
         }
     }
 
@@ -115,7 +115,7 @@ public class TopicsAnalysisBean implements Serializable {
 
     // You will need to add getters and setters for all the other parameters, similar to this example:
     public String getSelectedLanguage() {
-        if (sessionBean.getTopicsState() instanceof TopicsState.AwaitingParameters p) {
+        if (sessionBean.getFlowState() instanceof TopicsState.AwaitingParameters p) {
             return p.selectedLanguage();
         }
         return "en"; // Default value
@@ -126,7 +126,7 @@ public class TopicsAnalysisBean implements Serializable {
     }
 
     public boolean isReplaceStopwords() {
-        if (sessionBean.getTopicsState() instanceof TopicsState.AwaitingParameters p) {
+        if (sessionBean.getFlowState() instanceof TopicsState.AwaitingParameters p) {
             return p.replaceStopwords();
         }
         return false;
@@ -137,7 +137,7 @@ public class TopicsAnalysisBean implements Serializable {
     }
 
     public boolean isScientificCorpus() {
-        if (sessionBean.getTopicsState() instanceof TopicsState.AwaitingParameters p) {
+        if (sessionBean.getFlowState() instanceof TopicsState.AwaitingParameters p) {
             return p.scientificCorpus();
         }
         return false;
@@ -148,7 +148,7 @@ public class TopicsAnalysisBean implements Serializable {
     }
 
     public boolean isLemmatize() {
-        if (sessionBean.getTopicsState() instanceof TopicsState.AwaitingParameters p) {
+        if (sessionBean.getFlowState() instanceof TopicsState.AwaitingParameters p) {
             return p.lemmatize();
         }
         return false;
@@ -159,7 +159,7 @@ public class TopicsAnalysisBean implements Serializable {
     }
 
     public boolean isRemoveNonAsciiCharacters() {
-        if (sessionBean.getTopicsState() instanceof TopicsState.AwaitingParameters p) {
+        if (sessionBean.getFlowState() instanceof TopicsState.AwaitingParameters p) {
             return p.removeNonAsciiCharacters();
         }
         return false;
@@ -170,7 +170,7 @@ public class TopicsAnalysisBean implements Serializable {
     }
 
     public int getPrecision() {
-        if (sessionBean.getTopicsState() instanceof TopicsState.AwaitingParameters p) {
+        if (sessionBean.getFlowState() instanceof TopicsState.AwaitingParameters p) {
             return p.precision();
         }
         return 50; // Default value
@@ -181,7 +181,7 @@ public class TopicsAnalysisBean implements Serializable {
     }
 
     public int getMinCharNumber() {
-        if (sessionBean.getTopicsState() instanceof TopicsState.AwaitingParameters p) {
+        if (sessionBean.getFlowState() instanceof TopicsState.AwaitingParameters p) {
             return p.minCharNumber();
         }
         return 3; // Default value
@@ -192,7 +192,7 @@ public class TopicsAnalysisBean implements Serializable {
     }
 
     public int getMinTermFreq() {
-        if (sessionBean.getTopicsState() instanceof TopicsState.AwaitingParameters p) {
+        if (sessionBean.getFlowState() instanceof TopicsState.AwaitingParameters p) {
             return p.minTermFreq();
         }
         return 3; // Default value

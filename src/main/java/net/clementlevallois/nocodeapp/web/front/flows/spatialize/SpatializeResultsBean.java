@@ -44,7 +44,7 @@ public class SpatializeResultsBean implements Serializable {
 
     @PostConstruct
     public void init() {
-        if (sessionBean.getSpatializeState() instanceof SpatializeState.ResultsReady rr) {
+        if (sessionBean.getFlowState() instanceof SpatializeState.ResultsReady rr) {
             this.results = rr;
         } else {
             try {

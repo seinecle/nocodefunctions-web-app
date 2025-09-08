@@ -34,7 +34,7 @@ public class CoocAnalysisBean implements Serializable {
 
     @PostConstruct
     public void init() {
-        if (sessionBean.getCoocState() == null) {
+        if (sessionBean.getFlowState() == null) {
             try {
                 FacesContext.getCurrentInstance().getExternalContext().redirect("/cooc/cooc-import.xhtml?faces-redirect=true");
             } catch (IOException ex) {
@@ -44,23 +44,23 @@ public class CoocAnalysisBean implements Serializable {
     }
 
     public void runAnalysis() {
-        if (sessionBean.getCoocState() instanceof CoocState.AwaitingParameters params) {
-            sessionBean.setCoocState(new CoocState.Processing(params.jobId(), params, 0));
+        if (sessionBean.getFlowState() instanceof CoocState.AwaitingParameters params) {
+            sessionBean.setFlowState(new CoocState.Processing(params.jobId(), params, 0));
             logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.starting_analysis"));
             CoocState processingState = coocService.callCoocMicroService(params);
             if (processingState != null) {
-                sessionBean.setCoocState(processingState);
+                sessionBean.setFlowState(processingState);
             } else {
-                sessionBean.setCoocState(new CoocState.FlowFailed(params.jobId(), params, "Failed to start analysis."));
+                sessionBean.setFlowState(new CoocState.FlowFailed(params.jobId(), params, "Failed to start analysis."));
                 sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Error", "Could not start analysis.");
             }
         }
     }
 
     public String pollingListener() {
-        if (sessionBean.getCoocState() instanceof CoocState.Processing processingState) {
-            sessionBean.setCoocState(coocService.checkCompletion(processingState));
-            if (sessionBean.getCoocState() instanceof CoocState.ResultsReady) {
+        if (sessionBean.getFlowState() instanceof CoocState.Processing processingState) {
+            sessionBean.setFlowState(coocService.checkCompletion(processingState));
+            if (sessionBean.getFlowState() instanceof CoocState.ResultsReady) {
                 try {
                     FacesContext.getCurrentInstance().getExternalContext().redirect(FacesContext.getCurrentInstance().getExternalContext().getRequestContextPath() + "/cooc/cooc-results.html");
                 } catch (IOException ex) {
@@ -72,17 +72,17 @@ public class CoocAnalysisBean implements Serializable {
     }
 
     public String getRunButtonText() {
-        return (sessionBean.getCoocState() instanceof CoocState.Processing)
+        return (sessionBean.getFlowState() instanceof CoocState.Processing)
                 ? sessionBean.getLocaleBundle().getString("general.message.wait_long_operation")
                 : sessionBean.getLocaleBundle().getString("general.verbs.compute");
     }
 
     public boolean isRunButtonDisabled() {
-        return sessionBean.getCoocState() instanceof CoocState.Processing;
+        return sessionBean.getFlowState() instanceof CoocState.Processing;
     }
 
     public int getProgress() {
-        return switch (sessionBean.getCoocState()) {
+        return switch (sessionBean.getFlowState()) {
             case CoocState.AwaitingParameters ap ->
                 0;
             case CoocState.Processing p ->

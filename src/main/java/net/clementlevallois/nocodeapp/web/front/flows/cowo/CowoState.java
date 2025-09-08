@@ -1,17 +1,12 @@
-/*
- * Licence Apache 2.0
- * https://www.apache.org/licenses/LICENSE-2.0
- */
 package net.clementlevallois.nocodeapp.web.front.flows.cowo;
 
-
 import java.util.List;
+import net.clementlevallois.nocodeapp.web.front.flows.base.FlowState;
 import org.primefaces.model.file.UploadedFile;
 
 
-public sealed interface CowoState {
+public sealed interface CowoState extends FlowState  {
 
-    String jobId();
     record AwaitingParameters(
             String jobId,
             List<String> selectedLanguages,
@@ -101,10 +96,7 @@ public sealed interface CowoState {
             return new ResultsReady(jobId, gexf, nodesAsJson, edgesAsJson, shareVVPublicly, newFlag);
         }
     }
-
-    record FlowFailed(
-            String jobId,
-            CowoState lastKnownState,
-            String errorMessage) implements CowoState {
-    }
+    
+    record FlowFailed(String jobId, CowoState lastKnownState, String userMessage, String logMessage, Throwable exception) implements CowoState { }
+    
 }

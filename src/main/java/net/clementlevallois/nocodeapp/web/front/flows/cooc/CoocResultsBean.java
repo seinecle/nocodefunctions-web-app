@@ -39,7 +39,7 @@ public class CoocResultsBean implements Serializable {
 
     @PostConstruct
     public void init() {
-        if (sessionBean.getCoocState() instanceof CoocState.ResultsReady rr) {
+        if (sessionBean.getFlowState() instanceof CoocState.ResultsReady rr) {
             this.results = rr;
         } else {
             try {
@@ -89,8 +89,8 @@ public class CoocResultsBean implements Serializable {
 
     public void setShareVVPublicly(Boolean flag) {
         if (results != null) {
-            sessionBean.setCoocState(results.withShareVVPublicly(flag));
-            this.results = (CoocState.ResultsReady) sessionBean.getCoocState();
+            sessionBean.setFlowState(results.withShareVVPublicly(flag));
+            this.results = (CoocState.ResultsReady) sessionBean.getFlowState();
         }
     }
 
@@ -100,8 +100,8 @@ public class CoocResultsBean implements Serializable {
 
     public void setShareGephiLitePublicly(Boolean flag) {
         if (results != null) {
-            sessionBean.setCoocState(results.withShareGephiLitePublicly(flag));
-            this.results = (CoocState.ResultsReady) sessionBean.getCoocState();
+            sessionBean.setFlowState(results.withShareGephiLitePublicly(flag));
+            this.results = (CoocState.ResultsReady) sessionBean.getFlowState();
         }
     }
 

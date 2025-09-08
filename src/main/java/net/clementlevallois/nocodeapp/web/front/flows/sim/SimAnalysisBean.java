@@ -34,7 +34,7 @@ public class SimAnalysisBean implements Serializable {
 
     @PostConstruct
     public void init() {
-        if (sessionBean.getSimState() == null) {
+        if (sessionBean.getFlowState() == null) {
             try {
                 FacesContext.getCurrentInstance().getExternalContext().redirect("sim-import.html?faces-redirect=true");
             } catch (IOException ex) {
@@ -44,27 +44,27 @@ public class SimAnalysisBean implements Serializable {
     }
 
     public void runAnalysis() {
-        if (sessionBean.getSimState() instanceof SimState.AwaitingParameters params) {
+        if (sessionBean.getFlowState() instanceof SimState.AwaitingParameters params) {
             if (params.jobId() == null || params.jobId().isBlank()) {
                 sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Error", "No data has been imported for this analysis.");
-                sessionBean.setSimState(new SimState.FlowFailed(params.jobId(), sessionBean.getSimState(), "jobId not set"));
+                sessionBean.setFlowState(new SimState.FlowFailed(params.jobId(), sessionBean.getFlowState(), "jobId not set"));
                 return;
             }
             logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.starting_analysis"));
             SimState processingState = simService.callSimMicroService(params);
             if (processingState != null) {
-                sessionBean.setSimState(processingState);
+                sessionBean.setFlowState(processingState);
             } else {
-                sessionBean.setSimState(new SimState.FlowFailed(params.jobId(), params, "Failed to start analysis."));
+                sessionBean.setFlowState(new SimState.FlowFailed(params.jobId(), params, "Failed to start analysis."));
                 sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Error", "Could not start analysis.");
             }
         }
     }
 
     public String pollingListener() {
-        if (sessionBean.getSimState() instanceof SimState.Processing processingState) {
-            sessionBean.setSimState(simService.checkCompletion(processingState));
-            if (sessionBean.getSimState() instanceof SimState.ResultsReady) {
+        if (sessionBean.getFlowState() instanceof SimState.Processing processingState) {
+            sessionBean.setFlowState(simService.checkCompletion(processingState));
+            if (sessionBean.getFlowState() instanceof SimState.ResultsReady) {
                 try {
                     FacesContext.getCurrentInstance().getExternalContext().redirect(FacesContext.getCurrentInstance().getExternalContext().getRequestContextPath() + "/sim/similarities-results.html");
                 } catch (IOException ex) {
@@ -76,17 +76,17 @@ public class SimAnalysisBean implements Serializable {
     }
 
     public String getRunButtonText() {
-        return (sessionBean.getSimState() instanceof SimState.Processing)
+        return (sessionBean.getFlowState() instanceof SimState.Processing)
                 ? sessionBean.getLocaleBundle().getString("general.message.wait_long_operation")
                 : sessionBean.getLocaleBundle().getString("general.verbs.compute");
     }
 
     public boolean isRunButtonDisabled() {
-        return sessionBean.getSimState() instanceof SimState.Processing;
+        return sessionBean.getFlowState() instanceof SimState.Processing;
     }
 
     public int getProgress() {
-        return switch (sessionBean.getSimState()) {
+        return switch (sessionBean.getFlowState()) {
             case SimState.AwaitingParameters ap ->
                 0;
             case SimState.Processing p ->
@@ -101,13 +101,13 @@ public class SimAnalysisBean implements Serializable {
     }
 
     private void updateAwaitingParameters(java.util.function.Function<SimState.AwaitingParameters, SimState.AwaitingParameters> updater) {
-        if (sessionBean.getSimState() instanceof SimState.AwaitingParameters params) {
-            sessionBean.setSimState(updater.apply(params));
+        if (sessionBean.getFlowState() instanceof SimState.AwaitingParameters params) {
+            sessionBean.setFlowState(updater.apply(params));
         }
     }
 
     public int getMinSharedTargets() {
-        return (sessionBean.getSimState() instanceof SimState.AwaitingParameters p) ? p.minSharedTargets() : 1;
+        return (sessionBean.getFlowState() instanceof SimState.AwaitingParameters p) ? p.minSharedTargets() : 1;
     }
 
     public void setMinSharedTargets(int value) {
@@ -115,7 +115,7 @@ public class SimAnalysisBean implements Serializable {
     }
 
     public String getSourceColIndex() {
-        return (sessionBean.getSimState() instanceof SimState.AwaitingParameters p) ? p.sourceColIndex() : "";
+        return (sessionBean.getFlowState() instanceof SimState.AwaitingParameters p) ? p.sourceColIndex() : "";
     }
 
     public void setSourceColIndex(String value) {

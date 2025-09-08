@@ -4,9 +4,10 @@
 package net.clementlevallois.nocodeapp.web.front.flows.regionextractor;
 
 import net.clementlevallois.importers.model.ImagesPerFile;
+import net.clementlevallois.nocodeapp.web.front.flows.base.FlowState;
 import org.primefaces.model.CroppedImage;
 
-public sealed interface RegionExtractorState {
+public sealed interface RegionExtractorState extends FlowState  {
 
     // Stable discriminator if you like string checks in EL
     default String typeName() {
@@ -81,7 +82,7 @@ public sealed interface RegionExtractorState {
     }
 
     /** The initial state. */
-    record AwaitingExemplarPdf() implements RegionExtractorState {
+    record AwaitingExemplarPdf(String jobId) implements RegionExtractorState {
         @Override public AwaitingExemplarPdf asAwaitingExemplarPdf() { return this; }
         @Override public boolean isAwaitingExemplarPdf() { return true; }
     }

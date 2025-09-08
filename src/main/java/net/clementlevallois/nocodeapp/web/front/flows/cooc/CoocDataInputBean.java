@@ -59,7 +59,7 @@ public class CoocDataInputBean implements Serializable {
 
     @PostConstruct
     public void init() {
-        sessionBean.setCoocState(new CoocState.AwaitingData());
+        sessionBean.setFlowState(new CoocState.AwaitingData());
     }
 
     public void handleFileUpload(FileUploadEvent event) {
@@ -75,9 +75,9 @@ public class CoocDataInputBean implements Serializable {
     }
 
     private boolean processCoocDataSource(CoocDataSource dataSource) {
-        if (!(sessionBean.getCoocState() instanceof CoocState.AwaitingData)) {
+        if (!(sessionBean.getFlowState() instanceof CoocState.AwaitingData)) {
             sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Invalid State", "The application is in an invalid state.");
-            sessionBean.setCoocState(new CoocState.FlowFailed(null, sessionBean.getCoocState(), "invalid state"));
+            sessionBean.setFlowState(new CoocState.FlowFailed(null, sessionBean.getFlowState(), "invalid state"));
             return false;
         }
 
@@ -87,7 +87,7 @@ public class CoocDataInputBean implements Serializable {
             Files.createDirectories(jobDirectory);
         } catch (IOException ex) {
             LOG.log(Level.SEVERE, "unable to create directories for job " + jobId, ex);
-            sessionBean.setCoocState(new CoocState.FlowFailed(jobId, sessionBean.getCoocState(), "unable to create directories"));
+            sessionBean.setFlowState(new CoocState.FlowFailed(jobId, sessionBean.getFlowState(), "unable to create directories"));
             return false;
         }
 
@@ -100,7 +100,7 @@ public class CoocDataInputBean implements Serializable {
 
         if (result instanceof ImportersService.PreparationResult.Failure(String error)) {
             sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Data Preparation Failed", error);
-            sessionBean.setCoocState(new CoocState.FlowFailed(jobId, new CoocState.DataImported(jobId), "data prep failed"));
+            sessionBean.setFlowState(new CoocState.FlowFailed(jobId, new CoocState.DataImported(jobId), "data prep failed"));
         } else {
             switch (dataSource) {
                 case CoocDataSource.FileUpload(List<UploadedFile> files) -> {
@@ -110,7 +110,7 @@ public class CoocDataInputBean implements Serializable {
                 }
             }
             dataInSheets = populateDataInSheetsVariable();
-            sessionBean.setCoocState(new CoocState.DataImported(jobId));
+            sessionBean.setFlowState(new CoocState.DataImported(jobId));
         }
         return true;
     }
@@ -131,12 +131,12 @@ public class CoocDataInputBean implements Serializable {
                     return (List<SheetModel>) ois.readObject();
                 } catch (IOException | ClassNotFoundException ex) {
                     System.getLogger(CoocDataInputBean.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
-                    sessionBean.setCoocState(new CoocState.FlowFailed(jobId, awaitingParameters, "could not populate data in sheets field"));
+                    sessionBean.setFlowState(new CoocState.FlowFailed(jobId, awaitingParameters, "could not populate data in sheets field"));
                     return Collections.EMPTY_LIST;
                 }
             } catch (IOException ex) {
                 System.getLogger(CoocDataInputBean.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
-                sessionBean.setCoocState(new CoocState.FlowFailed(jobId, awaitingParameters, "could not populate data in sheets field"));
+                sessionBean.setFlowState(new CoocState.FlowFailed(jobId, awaitingParameters, "could not populate data in sheets field"));
                 return Collections.EMPTY_LIST;
             }
         } else {
@@ -185,14 +185,14 @@ public class CoocDataInputBean implements Serializable {
     }
 
     public boolean isDataReady() {
-        return sessionBean.getCoocState() instanceof CoocState.DataImported;
+        return sessionBean.getFlowState() instanceof CoocState.DataImported;
     }
 
     public String proceedToParameters() {
-        if (sessionBean.getCoocState() instanceof CoocState.DataImported importedState) {
+        if (sessionBean.getFlowState() instanceof CoocState.DataImported importedState) {
             sheetModelToCooccurrences();
             // 1 is the default value for min targets, this param can be adjusted at the parameters page
-            sessionBean.setCoocState(new CoocState.AwaitingParameters(importedState.jobId(), 1));
+            sessionBean.setFlowState(new CoocState.AwaitingParameters(importedState.jobId(), 1));
             return "/cooc/cooc-parameters.xhtml?faces-redirect=true";
         } else {
             sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Error", "You must first upload a file.");

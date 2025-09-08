@@ -74,16 +74,13 @@ public class RegionExtractorDataInputBean implements Serializable {
         globals = new Globals(applicationProperties.getTempFolderFullPath());
     }
 
-    /**
-     * @param event
-     */
     public void handleExamplarUpload(FileUploadEvent event) {
-        sessionBean.setRegionExtractorState(new RegionExtractorState.AwaitingExemplarPdf());
+        String jobId = UUID.randomUUID().toString().substring(0, 10);
+        sessionBean.setRegionExtractorState(new RegionExtractorState.AwaitingExemplarPdf(jobId));
         if (event.getFile() == null) {
             sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "File Upload Error", "No file was uploaded.");
             return;
         }
-        String jobId = UUID.randomUUID().toString().substring(0, 10);
         RegionExtractorDataSource dataSource = new RegionExtractorDataSource.FileUpload(List.of(event.getFile()));
         processRegionExtractorDataSource(jobId, dataSource);
         RegionParameters regionParameters = new RegionParameters(false, 0, null, 0, 0, 0, 0, 0, 0);
