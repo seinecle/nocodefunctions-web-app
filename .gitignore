@@ -1,0 +1,17 @@
+**/target/**
+**/private/**
+**/temp/**
+**/user_created_files/**
+list-process.sh
+nb-configuration.xml
+options.txt
+start.sh
+sys.properties
+payara-micro*.jar
+faces-config.NavData
+/analytics/target/
+/dispatcher/target/
+dispatcher/src/main/java/net/clementlevallois/middleware/Operations.java
+bfg-1.14.0.jar
+tailwind.exe
+.aider*

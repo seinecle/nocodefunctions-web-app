@@ -29,6 +29,7 @@ import net.clementlevallois.importers.model.CellRecord;
 import net.clementlevallois.importers.model.SheetModel;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.ApplicationPropertiesBean;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
+import net.clementlevallois.nocodeapp.web.front.flows.base.FlowFailed;
 import net.clementlevallois.nocodeapp.web.front.io.ImportersService;
 import net.clementlevallois.nocodeapp.web.front.utils.Converters;
 import net.clementlevallois.utils.Multiset;
@@ -77,7 +78,7 @@ public class CoocDataInputBean implements Serializable {
     private boolean processCoocDataSource(CoocDataSource dataSource) {
         if (!(sessionBean.getFlowState() instanceof CoocState.AwaitingData)) {
             sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Invalid State", "The application is in an invalid state.");
-            sessionBean.setFlowState(new CoocState.FlowFailed(null, sessionBean.getFlowState(), "invalid state"));
+            sessionBean.setFlowState(new FlowFailed(null, sessionBean.getFlowState(), "invalid state"));
             return false;
         }
 
@@ -87,7 +88,7 @@ public class CoocDataInputBean implements Serializable {
             Files.createDirectories(jobDirectory);
         } catch (IOException ex) {
             LOG.log(Level.SEVERE, "unable to create directories for job " + jobId, ex);
-            sessionBean.setFlowState(new CoocState.FlowFailed(jobId, sessionBean.getFlowState(), "unable to create directories"));
+            sessionBean.setFlowState(new FlowFailed(jobId, sessionBean.getFlowState(), "unable to create directories"));
             return false;
         }
 
@@ -100,7 +101,7 @@ public class CoocDataInputBean implements Serializable {
 
         if (result instanceof ImportersService.PreparationResult.Failure(String error)) {
             sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Data Preparation Failed", error);
-            sessionBean.setFlowState(new CoocState.FlowFailed(jobId, new CoocState.DataImported(jobId), "data prep failed"));
+            sessionBean.setFlowState(new FlowFailed(jobId, new CoocState.DataImported(jobId), "data prep failed"));
         } else {
             switch (dataSource) {
                 case CoocDataSource.FileUpload(List<UploadedFile> files) -> {
@@ -131,12 +132,12 @@ public class CoocDataInputBean implements Serializable {
                     return (List<SheetModel>) ois.readObject();
                 } catch (IOException | ClassNotFoundException ex) {
                     System.getLogger(CoocDataInputBean.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
-                    sessionBean.setFlowState(new CoocState.FlowFailed(jobId, awaitingParameters, "could not populate data in sheets field"));
+                    sessionBean.setFlowState(new FlowFailed(jobId, awaitingParameters, "could not populate data in sheets field"));
                     return Collections.EMPTY_LIST;
                 }
             } catch (IOException ex) {
                 System.getLogger(CoocDataInputBean.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
-                sessionBean.setFlowState(new CoocState.FlowFailed(jobId, awaitingParameters, "could not populate data in sheets field"));
+                sessionBean.setFlowState(new FlowFailed(jobId, awaitingParameters, "could not populate data in sheets field"));
                 return Collections.EMPTY_LIST;
             }
         } else {

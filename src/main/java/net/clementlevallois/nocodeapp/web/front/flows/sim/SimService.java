@@ -26,6 +26,8 @@ import jakarta.json.Json;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonReader;
 import java.io.StringReader;
+import net.clementlevallois.nocodeapp.web.front.flows.base.FlowFailed;
+import net.clementlevallois.nocodeapp.web.front.flows.base.FlowState;
 
 @ApplicationScoped
 public class SimService {
@@ -38,7 +40,7 @@ public class SimService {
     @Inject
     private ApplicationPropertiesBean applicationProperties;
 
-    public SimState callSimMicroService(SimState.AwaitingParameters currentState) {
+    public FlowState callSimMicroService(SimState.AwaitingParameters currentState) {
         String jobId = currentState.jobId();
         String callbackURL = RemoteLocal.getDomain() + RemoteLocal.getInternalMessageApiEndpoint() + WorkflowSimProps.ENDPOINT;
 
@@ -60,7 +62,7 @@ public class SimService {
             requestBuilder.addQueryParameter(param.name(), paramValue);
         }
 
-        AtomicReference<SimState.FlowFailed> errorFlow = new AtomicReference<>();
+        AtomicReference<FlowFailed> errorFlow = new AtomicReference<>();
         AtomicReference<Boolean> isOk = new AtomicReference<>(true);
 
         requestBuilder.sendAsync(HttpResponse.BodyHandlers.ofString())
@@ -68,13 +70,13 @@ public class SimService {
                     if (resp.statusCode() != 200) {
                         LOG.log(Level.SEVERE, "Sim task submission failed for job {0}. Status: {1}, Body: {2}",
                                 new Object[]{jobId, resp.statusCode(), resp.body()});
-                        errorFlow.set(new SimState.FlowFailed(jobId, currentState, "sim call failed with non-200 status"));
+                        errorFlow.set(new FlowFailed(jobId, currentState, "sim call failed with non-200 status"));
                         isOk.set(Boolean.FALSE);
                     }
                 })
                 .exceptionally(ex -> {
                     LOG.log(Level.SEVERE, "Exception during sim submission for job " + jobId, ex);
-                    errorFlow.set(new SimState.FlowFailed(jobId, currentState, "sim call threw exception"));
+                    errorFlow.set(new FlowFailed(jobId, currentState, "sim call threw exception"));
                     isOk.set(Boolean.FALSE);
                     return null;
                 });
@@ -82,7 +84,7 @@ public class SimService {
         return isOk.get() ? new SimState.Processing(jobId, currentState, 0) : errorFlow.get();
     }
 
-    public SimState checkCompletion(SimState.Processing currentState) {
+    public FlowState checkCompletion(SimState.Processing currentState) {
         String jobId = currentState.jobId();
         Globals globals = new Globals(applicationProperties.getTempFolderFullPath());
         Path completeSignal = globals.getWorkflowCompleteFilePath(jobId);
@@ -98,7 +100,7 @@ public class SimService {
                     switch (msg.getInfo()) {
                         case ERROR -> {
                             messages.remove(msg);
-                            return new SimState.FlowFailed(jobId, currentState.parameters(), msg.getMessage());
+                            return new FlowFailed(jobId, currentState.parameters(), msg.getMessage());
                         }
                         case PROGRESS -> {
                             if (msg.getProgress() != null) {
@@ -114,7 +116,7 @@ public class SimService {
         return currentState;
     }
 
-    private SimState processSimResults(SimState.Processing currentState) {
+    private FlowState processSimResults(SimState.Processing currentState) {
         String jobId = currentState.jobId();
         Globals globals = new Globals(applicationProperties.getTempFolderFullPath());
         WorkflowSimProps props = new WorkflowSimProps(applicationProperties.getTempFolderFullPath());
@@ -137,7 +139,7 @@ public class SimService {
 
         } catch (IOException e) {
             LOG.log(Level.SEVERE, "Failed to complete sim analysis for job " + jobId, e);
-            return new SimState.FlowFailed(jobId, currentState.parameters(), "Result file error: " + e.getMessage());
+            return new FlowFailed(jobId, currentState.parameters(), "Result file error: " + e.getMessage());
         }
     }
 }

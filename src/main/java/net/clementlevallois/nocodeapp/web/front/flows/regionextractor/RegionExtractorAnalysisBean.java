@@ -11,7 +11,8 @@ import jakarta.inject.Named;
 import java.io.IOException;
 import java.io.Serializable;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
-import net.clementlevallois.nocodeapp.web.front.logview.BackToFrontMessengerBean;
+import net.clementlevallois.nocodeapp.web.front.flows.base.FlowFailed;
+import net.clementlevallois.nocodeapp.web.front.flows.base.FlowState;
 
 
 @Named
@@ -24,25 +25,20 @@ public class RegionExtractorAnalysisBean implements Serializable {
     private SessionBean sessionBean;
 
     @Inject
-    private BackToFrontMessengerBean logBean;
-
-    @Inject
     RegionExtractorService regionExtractorService;
 
-    /**
-     * Triggers the final text extraction process on the backend.
-     */
     public void startProcessingTargets() {
-        if (sessionBean.getRegionExtractorState() instanceof RegionExtractorState.TargetPdfsUploaded current) {
-            RegionExtractorState processingState = regionExtractorService.callMicroService(current);
+        if (sessionBean.getFlowState() instanceof RegionExtractorState.TargetPdfsUploaded current) {
+            FlowState processingState = regionExtractorService.callMicroService(current);
             if (processingState != null) {
-                sessionBean.setRegionExtractorState(processingState);
+                sessionBean.setFlowState(processingState);
             } else {
-                sessionBean.setRegionExtractorState(new RegionExtractorState.FlowFailed(current.jobId(), current, "Failed to start analysis."));
+                sessionBean.setFlowState(new FlowFailed(current.jobId(), current, "Failed to start analysis."));
                 sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Error", "Could not start analysis.");
             }
         } else {
-            System.out.println("incorrect state in startProcessingTargets : " + sessionBean.getRegionExtractorState().typeName());
+                sessionBean.setFlowState(new FlowFailed(sessionBean.getFlowState().jobId(), sessionBean.getFlowState(), "Failed to start analysis."));
+                sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Error", "Could not start analysis.");
         }
     }
 
@@ -50,10 +46,10 @@ public class RegionExtractorAnalysisBean implements Serializable {
      * Called by a poller to check if the text extraction is complete.
      */
     public void checkExtractionStatus() {
-        if (sessionBean.getRegionExtractorState() instanceof RegionExtractorState.Processing processingState) {
-            RegionExtractorState stateAfterCompletionCheck = regionExtractorService.checkCompletion(processingState);
-            sessionBean.setRegionExtractorState(stateAfterCompletionCheck);
-            if (sessionBean.getRegionExtractorState() instanceof RegionExtractorState.ResultsReady) {
+        if (sessionBean.getFlowState() instanceof RegionExtractorState.Processing processingState) {
+            FlowState stateAfterCompletionCheck = regionExtractorService.checkCompletion(processingState);
+            sessionBean.setFlowState(stateAfterCompletionCheck);
+            if (sessionBean.getFlowState() instanceof RegionExtractorState.ResultsReady) {
                 try {
                     FacesContext.getCurrentInstance().getExternalContext().redirect(FacesContext.getCurrentInstance().getExternalContext().getRequestContextPath() + "/regionextractor/results.html");
                 } catch (IOException ex) {
@@ -65,27 +61,27 @@ public class RegionExtractorAnalysisBean implements Serializable {
 
     // --- Getters for state checking (used by XHTML) ---
     public boolean isStateAwaitingExemplar() {
-        return sessionBean.getRegionExtractorState() instanceof RegionExtractorState.AwaitingExemplarPdf;
+        return sessionBean.getFlowState() instanceof RegionExtractorState.AwaitingExemplarPdf;
     }
 
     public boolean isStateRegionDefinition() {
-        return sessionBean.getRegionExtractorState() instanceof RegionExtractorState.RegionDefinition;
+        return sessionBean.getFlowState() instanceof RegionExtractorState.RegionDefinition;
     }
 
     public boolean isStateAwaitingTargetPdfs() {
-        return sessionBean.getRegionExtractorState() instanceof RegionExtractorState.AwaitingTargetPdfs;
+        return sessionBean.getFlowState() instanceof RegionExtractorState.AwaitingTargetPdfs;
     }
 
     public boolean isStateProcessing() {
-        return sessionBean.getRegionExtractorState() instanceof RegionExtractorState.Processing;
+        return sessionBean.getFlowState() instanceof RegionExtractorState.Processing;
     }
 
     public boolean isStateResultsReady() {
-        return sessionBean.getRegionExtractorState() instanceof RegionExtractorState.ResultsReady;
+        return sessionBean.getFlowState() instanceof RegionExtractorState.ResultsReady;
     }
 
     public boolean isStateFlowFailed() {
-        return sessionBean.getRegionExtractorState() instanceof RegionExtractorState.FlowFailed;
+        return sessionBean.getFlowState() instanceof FlowFailed;
     }
 
 }

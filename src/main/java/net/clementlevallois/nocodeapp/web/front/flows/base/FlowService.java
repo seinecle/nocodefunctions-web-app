@@ -21,11 +21,10 @@ public class FlowService {
         Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, logMessage, exception);
 
         FacesContext facesContext = FacesContext.getCurrentInstance();
-        facesContext.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", failedState.errorMessage()));
+//        facesContext.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", failedState.errorMessage()));
         facesContext.getExternalContext().getFlash().setKeepMessages(true);
 
-        sessionBean.setCurrentFlowState(failedState);
-
+//        sessionBean.setCurrentFlowState(failedState);
         try {
             String redirectUrl = facesContext.getExternalContext().getApplicationContextPath() + "/index.xhtml?faces-redirect=true";
             facesContext.getExternalContext().redirect(redirectUrl);
@@ -33,5 +32,4 @@ public class FlowService {
             Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, "Failed to redirect.", e);
         }
     }
-}
 }

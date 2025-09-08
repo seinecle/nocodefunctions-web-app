@@ -38,7 +38,7 @@ public class RegionExtractorResultsBean implements Serializable {
 
     @PostConstruct
     public void init() {
-        if (sessionBean.getRegionExtractorState() instanceof RegionExtractorState.ResultsReady rr) {
+        if (sessionBean.getFlowState() instanceof RegionExtractorState.ResultsReady rr) {
             this.results = rr;
         } else {
             try {

@@ -16,6 +16,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.LocaleComparator;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
+import net.clementlevallois.nocodeapp.web.front.flows.base.FlowFailed;
+import net.clementlevallois.nocodeapp.web.front.flows.base.FlowState;
 import net.clementlevallois.nocodeapp.web.front.logview.BackToFrontMessengerBean;
 import org.primefaces.model.file.UploadedFile;
 
@@ -55,11 +57,11 @@ public class TopicsAnalysisBean implements Serializable {
                 return;
             }
             logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.starting_analysis"));
-            TopicsState processingState = topicsService.callTopicsMicroService(params);
+            FlowState processingState = topicsService.callTopicsMicroService(params);
             if (processingState != null) {
                 sessionBean.setFlowState(processingState);
             } else {
-                sessionBean.setFlowState(new TopicsState.FlowFailed(params.jobId(), params, "Failed to start analysis."));
+                sessionBean.setFlowState(new FlowFailed(params.jobId(), params, "Failed to start analysis."));
                 sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Error", "Could not start analysis.");
             }
         }
@@ -97,8 +99,6 @@ public class TopicsAnalysisBean implements Serializable {
                 p.progress();
             case TopicsState.ResultsReady rr ->
                 100;
-            case TopicsState.FlowFailed ff ->
-                0;
             default ->
                 0;
         };

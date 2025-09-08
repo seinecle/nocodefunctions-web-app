@@ -21,6 +21,7 @@ import java.util.logging.Logger;
 import net.clementlevallois.functions.model.Globals;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.ApplicationPropertiesBean;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
+import net.clementlevallois.nocodeapp.web.front.flows.base.FlowState;
 import net.clementlevallois.nocodeapp.web.front.flows.topics.TopicsDataInputBean;
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.file.UploadedFile;
@@ -133,7 +134,7 @@ public class CowoDataInputBean implements Serializable {
             return null;
         }
 
-        CowoState currentState = sessionBean.getFlowState();
+        FlowState currentState = sessionBean.getFlowState();
 
         if (currentState instanceof CowoState.AwaitingParameters p) {
             sessionBean.setFlowState(p.withJobId(this.jobId));

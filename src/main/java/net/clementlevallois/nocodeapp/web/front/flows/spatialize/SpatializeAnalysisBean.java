@@ -1,7 +1,3 @@
-/*
- * Licence Apache 2.0
- * https://www.apache.org/licenses/LICENSE-2.0
- */
 package net.clementlevallois.nocodeapp.web.front.flows.spatialize;
 
 import jakarta.annotation.PostConstruct;
@@ -15,6 +11,8 @@ import java.io.Serializable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
+import net.clementlevallois.nocodeapp.web.front.flows.base.FlowFailed;
+import net.clementlevallois.nocodeapp.web.front.flows.base.FlowState;
 import net.clementlevallois.nocodeapp.web.front.logview.BackToFrontMessengerBean;
 
 /**
@@ -52,11 +50,11 @@ public class SpatializeAnalysisBean implements Serializable {
                 return;
             }
             logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.starting_analysis"));
-            SpatializeState processingState = spatializeService.startAnalysis(params);
+            FlowState processingState = spatializeService.startAnalysis(params);
             if (processingState != null) {
                 sessionBean.setFlowState(processingState);
             } else {
-                sessionBean.setFlowState(new SpatializeState.FlowFailed(params.jobId(), params, "Failed to start analysis."));
+                sessionBean.setFlowState(new FlowFailed(params.jobId(), params, "Failed to start analysis."));
                 sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Error", "Could not start analysis.");
             }
         }
@@ -94,7 +92,7 @@ public class SpatializeAnalysisBean implements Serializable {
                 p.progress();
             case SpatializeState.ResultsReady rr ->
                 100;
-            case SpatializeState.FlowFailed ff ->
+            case FlowFailed ff ->
                 0;
             default ->
                 0;

@@ -1,7 +1,3 @@
-/*
- * Licence Apache 2.0
- * https://www.apache.org/licenses/LICENSE-2.0
- */
 package net.clementlevallois.nocodeapp.web.front.flows.sim;
 
 import jakarta.annotation.PostConstruct;
@@ -15,6 +11,8 @@ import java.io.Serializable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
+import net.clementlevallois.nocodeapp.web.front.flows.base.FlowFailed;
+import net.clementlevallois.nocodeapp.web.front.flows.base.FlowState;
 import net.clementlevallois.nocodeapp.web.front.logview.BackToFrontMessengerBean;
 
 @Named
@@ -47,15 +45,15 @@ public class SimAnalysisBean implements Serializable {
         if (sessionBean.getFlowState() instanceof SimState.AwaitingParameters params) {
             if (params.jobId() == null || params.jobId().isBlank()) {
                 sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Error", "No data has been imported for this analysis.");
-                sessionBean.setFlowState(new SimState.FlowFailed(params.jobId(), sessionBean.getFlowState(), "jobId not set"));
+                sessionBean.setFlowState(new FlowFailed(params.jobId(), sessionBean.getFlowState(), "jobId not set"));
                 return;
             }
             logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.starting_analysis"));
-            SimState processingState = simService.callSimMicroService(params);
+            FlowState processingState = simService.callSimMicroService(params);
             if (processingState != null) {
                 sessionBean.setFlowState(processingState);
             } else {
-                sessionBean.setFlowState(new SimState.FlowFailed(params.jobId(), params, "Failed to start analysis."));
+                sessionBean.setFlowState(new FlowFailed(params.jobId(), params, "Failed to start analysis."));
                 sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Error", "Could not start analysis.");
             }
         }
@@ -93,8 +91,6 @@ public class SimAnalysisBean implements Serializable {
                 p.progress();
             case SimState.ResultsReady rr ->
                 100;
-            case SimState.FlowFailed ff ->
-                0;
             default ->
                 0;
         };

@@ -30,6 +30,8 @@ import static net.clementlevallois.nocodeapp.web.front.MessageFromApi.Informatio
 import net.clementlevallois.nocodeapp.web.front.WatchTower;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.ApplicationPropertiesBean;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
+import net.clementlevallois.nocodeapp.web.front.flows.base.FlowFailed;
+import net.clementlevallois.nocodeapp.web.front.flows.base.FlowState;
 import net.clementlevallois.nocodeapp.web.front.flows.regionextractor.RegionExtractorState.RegionDefinition;
 import net.clementlevallois.nocodeapp.web.front.http.MicroserviceHttpClient;
 import net.clementlevallois.nocodeapp.web.front.http.RemoteLocal;
@@ -72,7 +74,7 @@ public class RegionExtractorService {
 
         RegionExtractorState.RegionParameters updatedRegionParameters = regionParameters.withProportionTopLeftX(proportionTopLeftX).withProportionTopLeftY(proportionTopLeftY).withProportionWidth(proportionWidth).withProportionHeight(proportionHeight);
         RegionExtractorState.RegionDefinition newState = new RegionExtractorState.RegionDefinition(currentState.jobId(), currentState.imagesPerFile(), updatedRegionParameters);
-        sessionBean.setRegionExtractorState(newState);
+        sessionBean.setFlowState(newState);
         return newState;
     }
 
@@ -100,7 +102,7 @@ public class RegionExtractorService {
             regionParameters = regionParameters.withPageHeight(heightImage);
             regionParameters = regionParameters.withPageWidth(widthImage);
             RegionDefinition updatedRegionDefinition = new RegionDefinition(state.jobId(), imagesPerFile, regionParameters);
-            sessionBean.setRegionExtractorState(updatedRegionDefinition);
+            sessionBean.setFlowState(updatedRegionDefinition);
             return updatedRegionDefinition;
         } catch (IOException ex) {
             System.getLogger(RegionExtractorService.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
@@ -108,10 +110,10 @@ public class RegionExtractorService {
         }
     }
 
-    public RegionExtractorState callMicroService(RegionExtractorState.TargetPdfsUploaded current) {
+    public FlowState callMicroService(RegionExtractorState.TargetPdfsUploaded current) {
         String jobId = current.jobId();
         RegionExtractorState.RegionParameters params = current.regionParameters();
-        AtomicReference<RegionExtractorState.FlowFailed> errorFlow = new AtomicReference<>();
+        AtomicReference<FlowFailed> errorFlow = new AtomicReference<>();
         AtomicReference<Boolean> isOk = new AtomicReference<>(true);
 
         var requestBuilder = microserviceClient.importService().get(FunctionRegionExtract.ENDPOINT);
@@ -153,27 +155,27 @@ public class RegionExtractorService {
                     if (resp.statusCode() != 200) {
                         LOG.log(Level.SEVERE, "region text extraction task submission failed for job {0}. Status: {1}, Body: {2}",
                                 new Object[]{jobId, resp.statusCode(), resp.body()});
-                        errorFlow.set(new RegionExtractorState.FlowFailed(jobId, current, "region extractor call failed with non-200 status"));
+                        errorFlow.set(new FlowFailed(jobId, current, "region extractor call failed with non-200 status"));
                         isOk.set(Boolean.FALSE);
                     }
                 })
                 .exceptionally(ex -> {
                     LOG.log(Level.SEVERE, "Exception during region text extraction submission for job " + jobId, ex);
-                    errorFlow.set(new RegionExtractorState.FlowFailed(jobId, current, "region extractor call threw exception"));
+                    errorFlow.set(new FlowFailed(jobId, current, "region extractor call threw exception"));
                     isOk.set(Boolean.FALSE);
                     return null;
                 });
         return isOk.get() ? new RegionExtractorState.Processing(jobId, 0) : errorFlow.get();
     }
 
-    public RegionExtractorState checkCompletion(RegionExtractorState.Processing currentState) {
+    public FlowState checkCompletion(RegionExtractorState.Processing currentState) {
         String jobId = currentState.jobId();
         Globals globals = new Globals(applicationProperties.getTempFolderFullPath());
         Path completeSignal = globals.getResultInBinaryFormat(jobId);
 
         if (Files.exists(completeSignal)) {
             RegionExtractorState updatedState = new RegionExtractorState.ResultsReady(jobId);
-            sessionBean.setRegionExtractorState(updatedState);
+            sessionBean.setFlowState(updatedState);
             return updatedState;
         } else {
             var messages = WatchTower.getDequeAPIMessages().get(jobId);
@@ -183,7 +185,7 @@ public class RegionExtractorService {
                         switch (msg.getInfo()) {
                             case ERROR -> {
                                 messages.remove(msg);
-                                return new RegionExtractorState.FlowFailed(jobId, currentState, msg.getMessage());
+                                return new FlowFailed(jobId, currentState, msg.getMessage());
                             }
                             case PROGRESS -> {
                                 if (msg.getProgress() != null) {

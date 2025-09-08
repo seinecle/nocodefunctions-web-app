@@ -22,7 +22,6 @@ public sealed interface RegionExtractorState extends FlowState  {
     default TargetPdfsUploaded asTargetPdfsUploaded() { return null; }
     default Processing asProcessing() { return null; }
     default ResultsReady asResultsReady() { return null; }
-    default FlowFailed asFlowFailed() { return null; }
 
     // -------- Boolean helpers for rendered=... etc. --------------------------------
     default boolean isAwaitingExemplarPdf() { return false; }
@@ -32,7 +31,6 @@ public sealed interface RegionExtractorState extends FlowState  {
     default boolean isTargetPdfsUploaded() { return false; }
     default boolean isProcessing() { return false; }
     default boolean isResultsReady() { return false; }
-    default boolean isFlowFailed() { return false; }
 
     /**
      * A record holding the proportional coordinates of the selected region and
@@ -130,12 +128,5 @@ public sealed interface RegionExtractorState extends FlowState  {
             implements RegionExtractorState {
         @Override public ResultsReady asResultsReady() { return this; }
         @Override public boolean isResultsReady() { return true; }
-    }
-
-    /** Terminal failure. */
-    record FlowFailed(String jobId, RegionExtractorState lastKnownState, String errorMessage)
-            implements RegionExtractorState {
-        @Override public FlowFailed asFlowFailed() { return this; }
-        @Override public boolean isFlowFailed() { return true; }
     }
 }

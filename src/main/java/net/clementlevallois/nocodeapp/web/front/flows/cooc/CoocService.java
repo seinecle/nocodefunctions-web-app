@@ -26,6 +26,8 @@ import net.clementlevallois.nocodeapp.web.front.utils.Converters;
 import jakarta.json.Json;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonReader;
+import net.clementlevallois.nocodeapp.web.front.flows.base.FlowFailed;
+import net.clementlevallois.nocodeapp.web.front.flows.base.FlowState;
 
 @ApplicationScoped
 public class CoocService {
@@ -38,7 +40,7 @@ public class CoocService {
     @Inject
     private ApplicationPropertiesBean applicationProperties;
 
-    public CoocState callCoocMicroService(CoocState.AwaitingParameters currentState) {
+    public FlowState callCoocMicroService(CoocState.AwaitingParameters currentState) {
         String jobId = currentState.jobId();
         String callbackURL = RemoteLocal.getDomain() + RemoteLocal.getInternalMessageApiEndpoint() + WorkflowCoocProps.ENDPOINT;
 
@@ -62,7 +64,7 @@ public class CoocService {
             requestBuilder.addQueryParameter(param.name(), paramValue);
         }
 
-        AtomicReference<CoocState.FlowFailed> errorFlow = new AtomicReference<>();
+        AtomicReference<FlowFailed> errorFlow = new AtomicReference<>();
         AtomicReference<Boolean> isOk = new AtomicReference<>(true);
 
         requestBuilder.sendAsync(HttpResponse.BodyHandlers.ofString())
@@ -70,13 +72,13 @@ public class CoocService {
                     if (resp.statusCode() != 200) {
                         LOG.log(Level.SEVERE, "Cooc task submission failed for job {0}. Status: {1}, Body: {2}",
                                 new Object[]{jobId, resp.statusCode(), resp.body()});
-                        errorFlow.set(new CoocState.FlowFailed(jobId, currentState, "cooc call failed with non-200 status"));
+                        errorFlow.set(new FlowFailed(jobId, currentState, "cooc call failed with non-200 status"));
                         isOk.set(Boolean.FALSE);
                     }
                 })
                 .exceptionally(ex -> {
                     LOG.log(Level.SEVERE, "Exception during cooc submission for job " + jobId, ex);
-                    errorFlow.set(new CoocState.FlowFailed(jobId, currentState, "cooc call threw exception"));
+                    errorFlow.set(new FlowFailed(jobId, currentState, "cooc call threw exception"));
                     isOk.set(Boolean.FALSE);
                     return null;
                 });
@@ -84,7 +86,7 @@ public class CoocService {
         return isOk.get() ? new CoocState.Processing(jobId, currentState, 0) : errorFlow.get();
     }
 
-    public CoocState checkCompletion(CoocState.Processing currentState) {
+    public FlowState checkCompletion(CoocState.Processing currentState) {
         String jobId = currentState.jobId();
         Globals globals = new Globals(applicationProperties.getTempFolderFullPath());
         Path completeSignal = globals.getWorkflowCompleteFilePath(jobId);
@@ -100,7 +102,7 @@ public class CoocService {
                     switch (msg.getInfo()) {
                         case ERROR -> {
                             messages.remove(msg);
-                            return new CoocState.FlowFailed(jobId, currentState.parameters(), msg.getMessage());
+                            return new FlowFailed(jobId, currentState.parameters(), msg.getMessage());
                         }
                         case PROGRESS -> {
                             if (msg.getProgress() != null) {
@@ -116,7 +118,7 @@ public class CoocService {
         return currentState;
     }
 
-    private CoocState processCoocResults(CoocState.Processing currentState) {
+    private FlowState processCoocResults(CoocState.Processing currentState) {
         String jobId = currentState.jobId();
         WorkflowCoocProps props = new WorkflowCoocProps(applicationProperties.getTempFolderFullPath());
 
@@ -138,7 +140,7 @@ public class CoocService {
 
         } catch (IOException e) {
             LOG.log(Level.SEVERE, "Failed to complete cooc analysis for job " + jobId, e);
-            return new CoocState.FlowFailed(jobId, currentState.parameters(), "Result file error: " + e.getMessage());
+            return new FlowFailed(jobId, currentState.parameters(), "Result file error: " + e.getMessage());
         }
     }
 }

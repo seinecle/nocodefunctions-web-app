@@ -15,6 +15,8 @@ import java.io.Serializable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
+import net.clementlevallois.nocodeapp.web.front.flows.base.FlowFailed;
+import net.clementlevallois.nocodeapp.web.front.flows.base.FlowState;
 import net.clementlevallois.nocodeapp.web.front.logview.BackToFrontMessengerBean;
 
 @Named
@@ -47,11 +49,11 @@ public class CoocAnalysisBean implements Serializable {
         if (sessionBean.getFlowState() instanceof CoocState.AwaitingParameters params) {
             sessionBean.setFlowState(new CoocState.Processing(params.jobId(), params, 0));
             logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.starting_analysis"));
-            CoocState processingState = coocService.callCoocMicroService(params);
+            FlowState processingState = coocService.callCoocMicroService(params);
             if (processingState != null) {
                 sessionBean.setFlowState(processingState);
             } else {
-                sessionBean.setFlowState(new CoocState.FlowFailed(params.jobId(), params, "Failed to start analysis."));
+                sessionBean.setFlowState(new FlowFailed(params.jobId(), params, "Failed to start analysis."));
                 sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Error", "Could not start analysis.");
             }
         }
@@ -89,8 +91,6 @@ public class CoocAnalysisBean implements Serializable {
                 p.progress();
             case CoocState.ResultsReady rr ->
                 100;
-            case CoocState.FlowFailed ff ->
-                0;
             default ->
                 0;
         };

@@ -28,6 +28,8 @@ import net.clementlevallois.functions.model.WorkflowCowoProps;
 import net.clementlevallois.nocodeapp.web.front.MessageFromApi;
 import net.clementlevallois.nocodeapp.web.front.WatchTower;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.ApplicationPropertiesBean;
+import net.clementlevallois.nocodeapp.web.front.flows.base.FlowFailed;
+import net.clementlevallois.nocodeapp.web.front.flows.base.FlowState;
 import net.clementlevallois.nocodeapp.web.front.http.MicroserviceHttpClient;
 import net.clementlevallois.nocodeapp.web.front.http.RemoteLocal;
 import net.clementlevallois.nocodeapp.web.front.utils.Converters;
@@ -44,7 +46,7 @@ public class CowoService {
     @Inject
     ApplicationPropertiesBean applicationProperties;
 
-    public CowoState callCowoMicroService(CowoState.AwaitingParameters currentState, String sessionId) {
+    public FlowState callCowoMicroService(CowoState.AwaitingParameters currentState, String sessionId) {
         String jobId = currentState.jobId();
         String correctionType = currentState.usePMI() ? "pmi" : "none";
 
@@ -109,20 +111,20 @@ public class CowoService {
             requestBuilder.addQueryParameter(param.name(), paramValue);
         }
 
-        AtomicReference<CowoState.FlowFailed> errorFlowFailed = new AtomicReference<>();
+        AtomicReference<FlowFailed> errorFlowFailed = new AtomicReference<>();
         AtomicReference<Boolean> isProcessSucessFul = new AtomicReference<>(true);
 
         requestBuilder.sendAsync(HttpResponse.BodyHandlers.ofString())
                 .thenAccept(response -> {
                     if (response.statusCode() != 200) {
                         LOG.log(Level.SEVERE, "Cowo task submission failed for dataId {0}. Status: {1}, Body: {2}", new Object[]{jobId, response.statusCode(), response.body()});
-                        errorFlowFailed.set(new CowoState.FlowFailed(jobId, currentState, "cowo task submission to remote service returned a not 200 code"));
+                        errorFlowFailed.set(new FlowFailed(jobId, currentState, "cowo task submission to remote service returned a not 200 code"));
                         isProcessSucessFul.set(Boolean.FALSE);
                     }
                 })
                 .exceptionally(e -> {
                     LOG.log(Level.SEVERE, "Exception during Cowo task submission for dataId " + jobId, e);
-                    errorFlowFailed.set(new CowoState.FlowFailed(jobId, currentState, "cowo task submission created an exceptional error"));
+                    errorFlowFailed.set(new FlowFailed(jobId, currentState, "cowo task submission created an exceptional error"));
                     isProcessSucessFul.set(Boolean.FALSE);
                     return null;
                 });
@@ -134,7 +136,7 @@ public class CowoService {
         }
     }
 
-    public CowoState checkCompletion(CowoState.Processing currentState) {
+    public FlowState checkCompletion(CowoState.Processing currentState) {
         String jobId = currentState.jobId();
         Globals globals = new Globals(applicationProperties.getTempFolderFullPath());
         Path pathSignalWorkflowComplete = globals.getWorkflowCompleteFilePath(jobId);
@@ -149,7 +151,7 @@ public class CowoService {
                 if (jobId.equals(msg.getjobId())) {
                     if (msg.getInfo() == MessageFromApi.Information.ERROR) {
                         messagesFromApi.remove(msg);
-                        return new CowoState.FlowFailed(jobId, currentState.parameters(), msg.getMessage());
+                        return new FlowFailed(jobId, currentState.parameters(), msg.getMessage());
                     }
                     if (msg.getInfo() == MessageFromApi.Information.PROGRESS && msg.getProgress() != null) {
                         messagesFromApi.remove(msg);
@@ -161,7 +163,7 @@ public class CowoService {
         return currentState;
     }
 
-    private CowoState processCowoResults(CowoState.Processing currentState) {
+    private FlowState processCowoResults(CowoState.Processing currentState) {
         String jobId = currentState.jobId();
         Globals globals = new Globals(applicationProperties.getTempFolderFullPath());
         WorkflowCowoProps props = new WorkflowCowoProps(applicationProperties.getTempFolderFullPath());
@@ -183,7 +185,7 @@ public class CowoService {
 
         } catch (IOException e) {
             LOG.log(Level.SEVERE, "Error finalizing analysis for job " + jobId, e);
-            return new CowoState.FlowFailed(jobId, currentState.parameters(), "Could not read result files: " + e.getMessage());
+            return new FlowFailed(jobId, currentState.parameters(), "Could not read result files: " + e.getMessage());
         }
     }
 }

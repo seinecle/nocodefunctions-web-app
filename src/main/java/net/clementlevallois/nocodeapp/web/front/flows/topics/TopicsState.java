@@ -1,10 +1,11 @@
 package net.clementlevallois.nocodeapp.web.front.flows.topics;
 
 import java.util.Map;
+import net.clementlevallois.nocodeapp.web.front.flows.base.FlowState;
 import net.clementlevallois.utils.Multiset;
 import org.primefaces.model.file.UploadedFile;
 
-public sealed interface TopicsState {
+public sealed interface TopicsState extends FlowState {
 
     String jobId();
 
@@ -85,11 +86,5 @@ public sealed interface TopicsState {
         public ResultsReady withShareVVPublicly(boolean newFlag){
             return new ResultsReady(jobId, gexf, keywordsPerTopic, shareGephiLitePublicly, newFlag);
         }
-    }
-
-    record FlowFailed(
-            String jobId,
-            AwaitingParameters parameters,
-            String errorMessage) implements TopicsState {
     }
 }

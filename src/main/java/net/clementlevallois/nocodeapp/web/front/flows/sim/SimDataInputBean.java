@@ -1,7 +1,3 @@
-/*
- * Licence Apache 2.0
- * https://www.apache.org/licenses/LICENSE-2.0
- */
 package net.clementlevallois.nocodeapp.web.front.flows.sim;
 
 import jakarta.annotation.PostConstruct;
@@ -24,6 +20,8 @@ import net.clementlevallois.functions.model.Globals;
 import net.clementlevallois.importers.model.SheetModel;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.ApplicationPropertiesBean;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
+import net.clementlevallois.nocodeapp.web.front.flows.base.FlowFailed;
+import net.clementlevallois.nocodeapp.web.front.flows.base.FlowState;
 import net.clementlevallois.nocodeapp.web.front.io.ImportersService;
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.file.UploadedFile;
@@ -75,13 +73,13 @@ public class SimDataInputBean implements Serializable {
             this.jobId = UUID.randomUUID().toString().substring(0, 10);
         }
 
-        SimState currentState = sessionBean.getFlowState();
+        FlowState currentState = sessionBean.getFlowState();
 
         if (!(currentState instanceof SimState.AwaitingParameters)) {
             // This case should ideally not happen if the flow is followed correctly,
             // but it's good practice to handle it.
             sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Invalid State", "The application is in an invalid state.");
-            sessionBean.setFlowState(new SimState.FlowFailed(jobId, currentState, "invalid state"));
+            sessionBean.setFlowState(new FlowFailed(jobId, currentState, "invalid state"));
             return;
         }
 
@@ -96,7 +94,7 @@ public class SimDataInputBean implements Serializable {
             Files.createDirectories(jobDirectory);
         } catch (IOException ex) {
             LOG.log(Level.SEVERE, "unable to create directories for job " + jobId, ex);
-            sessionBean.setFlowState(new SimState.FlowFailed(jobId, awaitingParameters, "unable to create directories"));
+            sessionBean.setFlowState(new FlowFailed(jobId, awaitingParameters, "unable to create directories"));
         }
 
         ImportersService.PreparationResult result = switch (dataSource) {
@@ -106,7 +104,7 @@ public class SimDataInputBean implements Serializable {
 
         if (result instanceof ImportersService.PreparationResult.Failure(String error)) {
             sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Data Preparation Failed", error);
-            sessionBean.setFlowState(new SimState.FlowFailed(jobId, awaitingParameters, "data prep failed"));
+            sessionBean.setFlowState(new FlowFailed(jobId, awaitingParameters, "data prep failed"));
         } else {
             switch (dataSource) {
                 case SimDataSource.FileUpload(UploadedFile file) -> {
@@ -129,16 +127,16 @@ public class SimDataInputBean implements Serializable {
                     return (List<SheetModel>) ois.readObject();
                 } catch (IOException | ClassNotFoundException ex) {
                     System.getLogger(SimDataInputBean.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
-                    sessionBean.setFlowState(new SimState.FlowFailed(jobId, awaitingParameters, "could not populate data in sheets field"));
+                    sessionBean.setFlowState(new FlowFailed(jobId, awaitingParameters, "could not populate data in sheets field"));
                     return Collections.EMPTY_LIST;
                 }
             } catch (IOException ex) {
                 System.getLogger(SimDataInputBean.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
-                sessionBean.setFlowState(new SimState.FlowFailed(jobId, awaitingParameters, "could not populate data in sheets field"));
+                sessionBean.setFlowState(new FlowFailed(jobId, awaitingParameters, "could not populate data in sheets field"));
                 return Collections.EMPTY_LIST;
             }
         } else {
-            sessionBean.setFlowState(new SimState.FlowFailed(jobId, awaitingParameters, "could not populate data in sheets field"));
+            sessionBean.setFlowState(new FlowFailed(jobId, awaitingParameters, "could not populate data in sheets field"));
             return Collections.EMPTY_LIST;
         }
     }
@@ -146,7 +144,7 @@ public class SimDataInputBean implements Serializable {
     public String proceedToParameters(String sourceColIndex, String sheetName) {
         if (jobId == null) {
             sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Error", "You must first upload a file.");
-            sessionBean.setFlowState(new SimState.FlowFailed(jobId, awaitingParameters, "job Id was null"));
+            sessionBean.setFlowState(new FlowFailed(jobId, awaitingParameters, "job Id was null"));
             return null;
         }
 
@@ -157,7 +155,7 @@ public class SimDataInputBean implements Serializable {
             return "similarities-parameters.html?faces-redirect=true";
         } else {
             sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Error", "You must first upload a file.");
-            sessionBean.setFlowState(new SimState.FlowFailed(jobId, sessionBean.getFlowState(), "sim state was not awaiting params"));
+            sessionBean.setFlowState(new FlowFailed(jobId, sessionBean.getFlowState(), "sim state was not awaiting params"));
             return null;
         }
     }

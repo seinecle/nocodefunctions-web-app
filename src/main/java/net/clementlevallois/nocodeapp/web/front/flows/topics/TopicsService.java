@@ -30,6 +30,8 @@ import net.clementlevallois.functions.model.WorkflowTopicsProps;
 import net.clementlevallois.nocodeapp.web.front.MessageFromApi;
 import net.clementlevallois.nocodeapp.web.front.WatchTower;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.ApplicationPropertiesBean;
+import net.clementlevallois.nocodeapp.web.front.flows.base.FlowFailed;
+import net.clementlevallois.nocodeapp.web.front.flows.base.FlowState;
 import net.clementlevallois.nocodeapp.web.front.http.MicroserviceHttpClient;
 import net.clementlevallois.nocodeapp.web.front.http.RemoteLocal;
 import net.clementlevallois.utils.Multiset;
@@ -48,7 +50,7 @@ public class TopicsService {
     @Inject
     ApplicationPropertiesBean applicationProperties;
 
-    public TopicsState callTopicsMicroService(TopicsState.AwaitingParameters state) {
+    public FlowState callTopicsMicroService(TopicsState.AwaitingParameters state) {
         String jobId = state.jobId();
 
         var requestBuilder = microserviceClient.api().post(WorkflowTopicsProps.ENDPOINT);
@@ -58,19 +60,19 @@ public class TopicsService {
         addQueryParams(requestBuilder, state);
 
         // Asynchronously send the request
-        AtomicReference<TopicsState.FlowFailed> resultFlowFailed = new AtomicReference<>();
+        AtomicReference<FlowFailed> resultFlowFailed = new AtomicReference<>();
         AtomicReference<Boolean> isProcessSucessFul = new AtomicReference<>(true);
         requestBuilder.sendAsync(HttpResponse.BodyHandlers.ofString())
                 .thenAccept(response -> {
                     if (response.statusCode() != 200) {
                         LOG.log(Level.SEVERE, "Microservice task submission failed for job {0}. Status: {1}, Body: {2}", new Object[]{state.jobId(), response.statusCode(), response.body()});
-                        resultFlowFailed.set(new TopicsState.FlowFailed(jobId, state, "cowo task submission to remote service returned a not 200 code"));
+                        resultFlowFailed.set(new FlowFailed(jobId, state, "cowo task submission to remote service returned a not 200 code"));
                         isProcessSucessFul.set(Boolean.FALSE);
                     }
                 })
                 .exceptionally(e -> {
                     LOG.log(Level.SEVERE, "Exception during microservice task submission for job " + jobId, e);
-                    resultFlowFailed.set(new TopicsState.FlowFailed(jobId, state, "cowo task submission created an exceptional error"));
+                    resultFlowFailed.set(new FlowFailed(jobId, state, "cowo task submission created an exceptional error"));
                     isProcessSucessFul.set(Boolean.FALSE);
                     return null;
                 });
@@ -116,7 +118,7 @@ public class TopicsService {
         requestBuilder.addQueryParameter(Globals.GlobalQueryParams.CALLBACK_URL.name(), callbackURL);
     }
 
-    public TopicsState checkCompletion(TopicsState.Processing currentState) {
+    public FlowState checkCompletion(TopicsState.Processing currentState) {
         String jobId = currentState.jobId();
         Globals globals = new Globals(applicationProperties.getTempFolderFullPath());
         Path pathSignalWorkflowComplete = globals.getWorkflowCompleteFilePath(jobId);
@@ -130,7 +132,7 @@ public class TopicsService {
             MessageFromApi latestMessage = messagesFromApi.peekLast();
             if (latestMessage.getInfo() == MessageFromApi.Information.ERROR) {
                 messagesFromApi.clear();
-                return new TopicsState.FlowFailed(jobId, currentState.parameters(), latestMessage.getMessage());
+                return new FlowFailed(jobId, currentState.parameters(), latestMessage.getMessage());
             }
             if (latestMessage.getInfo() == MessageFromApi.Information.PROGRESS && latestMessage.getProgress() != null) {
                 return currentState.withProgress(latestMessage.getProgress());
@@ -139,7 +141,7 @@ public class TopicsService {
         return currentState;
     }
 
-    private TopicsState processTopicsResults(TopicsState.Processing currentState) {
+    private FlowState processTopicsResults(TopicsState.Processing currentState) {
         String jobId = currentState.jobId();
         WorkflowTopicsProps props = new WorkflowTopicsProps(applicationProperties.getTempFolderFullPath());
         try {
@@ -150,7 +152,7 @@ public class TopicsService {
 
                 if (!Files.exists(jsonResults)) {
                     LOG.log(Level.WARNING, "JSON result file not found for dataId: {0}", jobId);
-                    return new TopicsState.FlowFailed(jobId, currentState.parameters(), "Failed to read or process results.");
+                    return new FlowFailed(jobId, currentState.parameters(), "Failed to read or process results.");
                 }
 
                 String jsonResultAsString = Files.readString(jsonResults);
@@ -183,7 +185,7 @@ public class TopicsService {
             }
         } catch (IOException e) {
             LOG.log(Level.SEVERE, "Failed to process results for job " + jobId, e);
-            return new TopicsState.FlowFailed(jobId, currentState.parameters(), "Failed to read or process results.");
+            return new FlowFailed(jobId, currentState.parameters(), "Failed to read or process results.");
         }
     }
 
@@ -193,7 +195,7 @@ public class TopicsService {
             return new DefaultStreamedContent();
         }
         try {
-            CompletableFuture<byte[]> futureBytes = microserviceClient.importService().post("/api/export/xlsx/topics")
+            CompletableFuture<byte[]> futureBytes = microserviceClient.exportService().post("xlsx/topics")
                     .addQueryParameter("nbTerms", "10")
                     .addQueryParameter("jobId", jobId)
                     .sendAsyncAndGetBody(HttpResponse.BodyHandlers.ofByteArray());
@@ -216,9 +218,5 @@ public class TopicsService {
             }
             return new DefaultStreamedContent();
         }
-    }
-
-    private <T> T tern(T a, T b, boolean condition) {
-        return condition ? a : b;
     }
 }

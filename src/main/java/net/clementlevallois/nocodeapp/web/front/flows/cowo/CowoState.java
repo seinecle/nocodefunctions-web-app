@@ -97,6 +97,4 @@ public sealed interface CowoState extends FlowState  {
         }
     }
     
-    record FlowFailed(String jobId, CowoState lastKnownState, String userMessage, String logMessage, Throwable exception) implements CowoState { }
-    
 }

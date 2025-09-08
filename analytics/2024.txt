@@ -1,0 +1,3703 @@
+1704094024,umigon en,Desktop,Unknown,Chrome
+1704100146,cowo,Desktop,Unknown,Chrome
+1704100795,cowo,Desktop,Unknown,Chrome
+1704117548,topics,Desktop,Unknown,Chrome
+1704123445,cowo,Desktop,Unknown,Edge
+1704124539,cowo,Desktop,Unknown,Edge
+1704124619,cowo,Desktop,Unknown,Edge
+1704125153,cowo,Desktop,Unknown,Chrome
+1704128357,networkconverter,Desktop,Unknown,Opera
+1704128571,networkconverter,Desktop,Unknown,Opera
+1704128674,networkconverter,Desktop,Unknown,Opera
+1704128708,networkconverter,Desktop,Unknown,Opera
+1704128746,networkconverter,Desktop,Unknown,Opera
+1704128845,networkconverter,Desktop,Unknown,Opera
+1704128874,networkconverter,Desktop,Unknown,Opera
+1704128905,networkconverter,Desktop,Unknown,Opera
+1704128935,networkconverter,Desktop,Unknown,Opera
+1704128980,networkconverter,Desktop,Unknown,Opera
+1704129009,networkconverter,Desktop,Unknown,Opera
+1704129048,networkconverter,Desktop,Unknown,Opera
+1704129078,networkconverter,Desktop,Unknown,Opera
+1704129203,networkconverter,Desktop,Unknown,Opera
+1704129249,networkconverter,Desktop,Unknown,Opera
+1704129292,networkconverter,Desktop,Unknown,Opera
+1704129346,networkconverter,Desktop,Unknown,Opera
+1704129381,networkconverter,Desktop,Unknown,Opera
+1704129420,networkconverter,Desktop,Unknown,Opera
+1704129452,networkconverter,Desktop,Unknown,Opera
+1704129492,networkconverter,Desktop,Unknown,Opera
+1704129529,networkconverter,Desktop,Unknown,Opera
+1704129577,networkconverter,Desktop,Unknown,Opera
+1704129727,networkconverter,Desktop,Unknown,Opera
+1704129835,networkconverter,Desktop,Unknown,Opera
+1704129921,networkconverter,Desktop,Unknown,Opera
+1704129990,networkconverter,Desktop,Unknown,Opera
+1704130049,networkconverter,Desktop,Unknown,Opera
+1704130077,networkconverter,Desktop,Unknown,Opera
+1704130117,networkconverter,Desktop,Unknown,Opera
+1704130140,networkconverter,Desktop,Unknown,Opera
+1704130207,networkconverter,Desktop,Unknown,Opera
+1704138793,topics,Desktop,Unknown,Chrome
+1704140176,topics,Desktop,Unknown,Chrome
+1704140250,umigon en,Desktop,Windows NT,Firefox
+1704144211,topics,Desktop,Unknown,Chrome
+1704144218,topics,Desktop,Unknown,Chrome
+1704144710,pdfmatcher,Desktop,Unknown,Chrome
+1704145011,pdfmatcher,Desktop,Unknown,Chrome
+1704178261,cowo,Desktop,Unknown,Chrome
+1704187117,cowo,Desktop,Windows NT,Firefox
+1704187727,umigon,Desktop,Unknown,Chrome
+1704188565,cowo,Desktop,Windows NT,Firefox
+1704188713,cowo,Desktop,Unknown,Chrome
+1704188823,cowo,Desktop,Unknown,Chrome
+1704188878,cowo,Desktop,Unknown,Chrome
+1704188915,umigon en,Desktop,Windows NT,Firefox
+1704188947,cowo,Desktop,Unknown,Chrome
+1704189040,cowo,Desktop,Unknown,Chrome
+1704189156,cowo,Desktop,Unknown,Chrome
+1704189222,cowo,Desktop,Unknown,Chrome
+1704189270,cowo,Desktop,Unknown,Chrome
+1704189322,cowo,Desktop,Windows NT,Firefox
+1704189382,cowo,Desktop,Unknown,Chrome
+1704189423,cowo,Desktop,Unknown,Chrome
+1704189468,cowo,Desktop,Unknown,Chrome
+1704189551,cowo,Desktop,Unknown,Chrome
+1704189605,cowo,Desktop,Unknown,Chrome
+1704189676,cowo,Desktop,Unknown,Chrome
+1704189853,cowo,Desktop,Unknown,Chrome
+1704189887,cowo,Desktop,Unknown,Chrome
+1704190234,cowo,Phone,Android,Chrome
+1704190268,cowo,Phone,Android,Chrome
+1704190484,cowo,Desktop,Unknown,Chrome
+1704190662,cowo,Desktop,Unknown,Chrome
+1704190756,cowo,Desktop,Unknown,Chrome
+1704190803,cowo,Desktop,Windows NT,Firefox
+1704191019,cowo,Desktop,Unknown,Chrome
+1704191391,cowo,Desktop,Unknown,Chrome
+1704191514,umigon,Desktop,Mac OS X,Safari
+1704191556,umigon,Desktop,Mac OS X,Safari
+1704192035,cowo,Desktop,Windows NT,Firefox
+1704192251,cowo,Desktop,Windows NT,Firefox
+1704192411,cowo,Desktop,Windows NT,Firefox
+1704192912,cowo,Desktop,Unknown,Edge
+1704193067,cowo,Desktop,Unknown,Edge
+1704193202,cowo,Desktop,Unknown,Edge
+1704193371,cowo,Desktop,Unknown,Edge
+1704193737,cowo,Desktop,Unknown,Chrome
+1704194056,cowo,Desktop,Unknown,Chrome
+1704194205,cowo,Desktop,Unknown,Chrome
+1704194270,cowo,Desktop,Unknown,Chrome
+1704194338,cowo,Desktop,Unknown,Chrome
+1704194431,cowo,Desktop,Unknown,Chrome
+1704194777,cowo,Desktop,Windows NT,Firefox
+1704195059,cowo,Desktop,Windows NT,Firefox
+1704195762,cowo,Desktop,Unknown,Edge
+1704195778,cowo,Desktop,Unknown,Edge
+1704195900,cowo,Desktop,Unknown,Chrome
+1704197835,cowo,Desktop,Unknown,Chrome
+1704214751,topics,Desktop,Unknown,Chrome
+1704214789,topics,Desktop,Unknown,Chrome
+1704216263,umigon,Desktop,Unknown,Chrome
+1704216312,cowo,Desktop,Unknown,Chrome
+1704231562,cowo,Desktop,Unknown,Chrome
+1704239554,cowo,Desktop,Unknown,Chrome
+1704239949,umigon,Desktop,Unknown,Chrome
+1704239993,umigon,Desktop,Unknown,Chrome
+1704240184,umigon,Desktop,Unknown,Chrome
+1704250371,topics,Desktop,Mac OS X,Safari
+1704250397,cowo,Desktop,Chrome OS,Chrome
+1704250432,topics,Desktop,Mac OS X,Safari
+1704250574,topics,Desktop,Mac OS X,Safari
+1704250732,topics,Desktop,Mac OS X,Safari
+1704250905,topics,Desktop,Mac OS X,Safari
+1704250997,topics,Desktop,Mac OS X,Safari
+1704251138,topics,Desktop,Mac OS X,Safari
+1704253136,topics,Desktop,Mac OS X,Safari
+1704267514,cowo,Desktop,Unknown,Chrome
+1704269051,cowo,Desktop,Unknown,Chrome
+1704269054,cowo,Desktop,Unknown,Chrome
+1704269063,cowo,Desktop,Unknown,Chrome
+1704269065,cowo,Desktop,Unknown,Chrome
+1704269075,cowo,Desktop,Unknown,Edge
+1704273369,cowo,Desktop,Unknown,Chrome
+1704274539,cowo,Desktop,Unknown,Chrome
+1704275547,cowo,Desktop,Windows NT,Firefox
+1704275653,cowo,Desktop,Windows NT,Firefox
+1704278666,cowo,Desktop,Unknown,Chrome
+1704279020,cowo,Desktop,Unknown,Chrome
+1704279800,cowo,Desktop,Windows NT,Firefox
+1704280874,cowo,Desktop,Unknown,Chrome
+1704285041,gaze,Desktop,Unknown,Chrome
+1704285307,gaze,Desktop,Unknown,Chrome
+1704285418,gaze,Desktop,Unknown,Chrome
+1704285425,gaze,Desktop,Unknown,Chrome
+1704285447,gaze,Desktop,Unknown,Chrome
+1704286117,gaze,Desktop,Unknown,Chrome
+1704291543,cowo,Desktop,Unknown,Chrome
+1704292015,cowo,Desktop,Unknown,Chrome
+1704292872,cowo,Desktop,Unknown,Chrome
+1704293735,cowo,Desktop,Unknown,Chrome
+1704294084,cowo,Desktop,Unknown,Chrome
+1704294102,cowo,Desktop,Unknown,Chrome
+1704294250,topics,Desktop,Unknown,Chrome
+1704297242,cowo,Desktop,Unknown,Chrome
+1704298101,umigon en,Desktop,Unknown,Edge
+1704298108,umigon fr,Desktop,Unknown,Edge
+1704298110,umigon es,Desktop,Unknown,Edge
+1704298144,umigon fr,Desktop,Unknown,Edge
+1704300162,cowo,Desktop,Unknown,Chrome
+1704303349,cowo,Desktop,Unknown,YaBrowser
+1704303494,cowo,Desktop,Windows NT,Firefox
+1704307442,cowo,Desktop,Windows NT,Firefox
+1704307589,cowo,Desktop,Unknown,YaBrowser
+1704314978,topics,Desktop,Unknown,Chrome
+1704317723,umigon,Desktop,Unknown,Chrome
+1704317936,umigon,Desktop,Unknown,Chrome
+1704318015,umigon,Desktop,Unknown,Chrome
+1704318633,umigon,Desktop,Unknown,Chrome
+1704319307,umigon,Desktop,Unknown,Chrome
+1704319715,umigon,Desktop,Unknown,Chrome
+1704319922,umigon,Desktop,Unknown,Chrome
+1704320036,umigon,Desktop,Unknown,Chrome
+1704320123,umigon,Desktop,Unknown,Chrome
+1704320311,umigon,Desktop,Unknown,Chrome
+1704321031,umigon,Desktop,Unknown,Chrome
+1704321493,umigon,Desktop,Unknown,Chrome
+1704321921,umigon,Desktop,Unknown,Chrome
+1704322366,umigon,Desktop,Unknown,Chrome
+1704322643,umigon,Desktop,Unknown,Chrome
+1704322924,umigon,Desktop,Unknown,Chrome
+1704323321,umigon,Desktop,Unknown,Chrome
+1704323709,umigon,Desktop,Unknown,Chrome
+1704323965,topics,Desktop,Unknown,Chrome
+1704325233,topics,Desktop,Unknown,Chrome
+1704325312,umigon,Desktop,Unknown,Chrome
+1704325367,topics,Desktop,Unknown,Chrome
+1704325660,umigon,Desktop,Unknown,Chrome
+1704325963,umigon,Desktop,Unknown,Chrome
+1704326497,umigon,Desktop,Unknown,Chrome
+1704326751,umigon,Desktop,Unknown,Chrome
+1704327201,umigon,Desktop,Unknown,Chrome
+1704327412,umigon,Desktop,Unknown,Chrome
+1704327902,umigon,Desktop,Unknown,Chrome
+1704329011,umigon,Desktop,Unknown,Chrome
+1704333009,cowo,Desktop,Unknown,Chrome
+1704344618,cowo,Desktop,Unknown,Chrome
+1704346151,cowo,Desktop,Unknown,Chrome
+1704349983,cowo,Desktop,Unknown,Chrome
+1704351887,cowo,Desktop,Unknown,Chrome
+1704359649,umigon en,Desktop,Windows NT,Firefox
+1704359653,umigon fr,Desktop,Windows NT,Firefox
+1704359672,organic en,Desktop,Windows NT,Firefox
+1704359675,organic fr,Desktop,Windows NT,Firefox
+1704359920,cowo,Desktop,Unknown,Chrome
+1704360543,umigon,Desktop,Unknown,Chrome
+1704361788,networkconverter,Desktop,Mac OS X,Firefox
+1704361824,networkconverter,Desktop,Mac OS X,Firefox
+1704363071,cowo,Desktop,Unknown,Chrome
+1704364019,umigon,Desktop,Unknown,Chrome
+1704364404,umigon,Desktop,Unknown,Chrome
+1704364709,umigon,Desktop,Unknown,Chrome
+1704365378,umigon,Desktop,Unknown,Chrome
+1704365975,umigon,Desktop,Unknown,Chrome
+1704368202,umigon,Desktop,Unknown,Chrome
+1704368258,cowo,Desktop,Unknown,Edge
+1704370452,networkconverter,Desktop,Unknown,Edge
+1704371678,cowo,Desktop,Unknown,Edge
+1704373158,cowo,Desktop,Unknown,Chrome
+1704374129,cowo,Desktop,Unknown,Chrome
+1704374167,cowo,Desktop,Unknown,Chrome
+1704374638,cowo,Desktop,Unknown,Chrome
+1704374719,cowo,Desktop,Unknown,Chrome
+1704374725,cowo,Desktop,Unknown,Chrome
+1704374738,umigon,Desktop,Unknown,Chrome
+1704374836,cowo,Desktop,Unknown,Chrome
+1704377764,umigon,Desktop,Unknown,Chrome
+1704378137,topics,Desktop,Mac OS X,Safari
+1704381193,topics,Desktop,Windows NT,Firefox
+1704382812,topics,Phone,Android,Chrome
+1704383115,topics,Phone,Android,Chrome
+1704383136,topics,Phone,Android,Chrome
+1704394239,umigon en,Desktop,Mac OS X,Safari
+1704394256,umigon en,Desktop,Mac OS X,Safari
+1704394271,umigon en,Desktop,Mac OS X,Safari
+1704394285,umigon en,Desktop,Mac OS X,Safari
+1704394303,organic en,Desktop,Mac OS X,Safari
+1704395196,topics,Desktop,Mac OS X,AppleWebKit
+1704396304,topics,Desktop,Mac OS X,AppleWebKit
+1704396391,topics,Desktop,Mac OS X,AppleWebKit
+1704413248,topics,Desktop,Mac OS X,Safari
+1704416049,cowo,Desktop,Unknown,Chrome
+1704416536,cowo,Desktop,Unknown,Chrome
+1704416901,cowo,Desktop,Unknown,Chrome
+1704417160,cowo,Desktop,Unknown,Chrome
+1704417332,topics,Desktop,Unknown,Chrome
+1704432550,umigon es,Desktop,Unknown,Chrome
+1704439266,gaze,Desktop,Unknown,Chrome
+1704443279,networkconverter,Desktop,Unknown,Chrome
+1704444107,networkconverter,Desktop,Unknown,Chrome
+1704446404,gaze,Desktop,Unknown,Chrome
+1704446697,topics,Desktop,Unknown,Chrome
+1704446707,gaze,Desktop,Unknown,Chrome
+1704451861,cowo,Desktop,Unknown,Edge
+1704452263,topics,Desktop,Mac OS X,Safari
+1704452382,topics,Desktop,Mac OS X,Safari
+1704452442,topics,Desktop,Mac OS X,Safari
+1704453347,cowo,Desktop,Unknown,Edge
+1704453682,cowo,Desktop,Unknown,Edge
+1704453760,cowo,Desktop,Mac OS X,Safari
+1704453981,cowo,Phone,Android,Chrome
+1704454195,cowo,Desktop,Unknown,Edge
+1704454416,cowo,Desktop,Unknown,Edge
+1704454985,gaze,Desktop,Unknown,Chrome
+1704455232,gaze,Desktop,Unknown,Chrome
+1704455437,gaze,Desktop,Unknown,Chrome
+1704455602,gaze,Desktop,Unknown,Chrome
+1704455728,cowo,Desktop,Unknown,Chrome
+1704455878,gaze,Desktop,Unknown,Chrome
+1704456087,gaze,Desktop,Unknown,Chrome
+1704456185,gaze,Desktop,Unknown,Chrome
+1704456525,gaze,Desktop,Unknown,Chrome
+1704462284,cowo,Desktop,Unknown,Chrome
+1704462519,cowo,Desktop,Unknown,Chrome
+1704462523,cowo,Desktop,Unknown,Chrome
+1704462982,umigon,Desktop,Unknown,Chrome
+1704463060,topics,Desktop,Mac OS X,Safari
+1704463109,umigon,Desktop,Unknown,Chrome
+1704463305,umigon,Desktop,Unknown,Chrome
+1704463425,umigon,Desktop,Unknown,Chrome
+1704464570,umigon,Desktop,Unknown,Chrome
+1704466517,cowo,Desktop,Unknown,Chrome
+1704467612,cowo,Desktop,Windows NT,Firefox
+1704467743,cowo,Desktop,Windows NT,Firefox
+1704467853,cowo,Desktop,Windows NT,Firefox
+1704474877,cowo,Desktop,Unknown,Chrome
+1704475243,topics,Desktop,Unknown,Chrome
+1704475811,cowo,Desktop,Unknown,Chrome
+1704476397,gaze,Desktop,Windows NT,Firefox
+1704478371,cowo,Desktop,Unknown,Chrome
+1704480170,cowo,Desktop,Unknown,Chrome
+1704502439,cowo,Desktop,Unknown,Chrome
+1704537009,cowo,Desktop,Unknown,Chrome
+1704537208,cowo,Desktop,Unknown,Chrome
+1704537596,cowo,Desktop,Unknown,Chrome
+1704543272,cowo,Desktop,Unknown,Chrome
+1704543330,cowo,Desktop,Unknown,Chrome
+1704543419,cowo,Desktop,Unknown,Chrome
+1704543559,cowo,Desktop,Unknown,Chrome
+1704543854,cowo,Desktop,Unknown,Chrome
+1704546998,cowo,Desktop,Unknown,Chrome
+1704547060,cowo,Desktop,Unknown,Chrome
+1704547106,cowo,Desktop,Unknown,Chrome
+1704547225,cowo,Desktop,Unknown,Chrome
+1704547230,cowo,Desktop,Unknown,Chrome
+1704547348,cowo,Desktop,Unknown,Chrome
+1704547714,cowo,Desktop,Unknown,Chrome
+1704547727,cowo,Desktop,Unknown,Chrome
+1704548609,cowo,Desktop,Windows NT,Firefox
+1704548826,cowo,Desktop,Unknown,Chrome
+1704548830,cowo,Desktop,Windows NT,Firefox
+1704551059,cowo,Desktop,Unknown,Chrome
+1704551125,cowo,Desktop,Unknown,Chrome
+1704551165,cowo,Desktop,Unknown,Chrome
+1704551342,cowo,Desktop,Unknown,Chrome
+1704551394,cowo,Desktop,Unknown,Chrome
+1704551655,cowo,Desktop,Unknown,Chrome
+1704551760,cowo,Desktop,Unknown,Chrome
+1704552720,gaze,Desktop,Mac OS X,Safari
+1704552736,cowo,Desktop,Unknown,Chrome
+1704552817,cowo,Desktop,Unknown,Chrome
+1704553051,cowo,Desktop,Unknown,Chrome
+1704553200,cowo,Desktop,Unknown,Chrome
+1704554662,cowo,Desktop,Windows NT,Firefox
+1704555828,cowo,Desktop,Windows NT,Firefox
+1704556293,umigon en,Desktop,Windows NT,Firefox
+1704556737,umigon en,Desktop,Windows NT,Firefox
+1704556741,umigon en,Desktop,Windows NT,Firefox
+1704556743,umigon en,Desktop,Windows NT,Firefox
+1704556761,umigon en,Desktop,Windows NT,Firefox
+1704556784,umigon en,Desktop,Windows NT,Firefox
+1704557133,umigon en,Desktop,Windows NT,Firefox
+1704557328,umigon en,Desktop,Windows NT,Firefox
+1704557519,umigon en,Desktop,Windows NT,Firefox
+1704557749,umigon en,Desktop,Windows NT,Firefox
+1704557764,umigon en,Desktop,Windows NT,Firefox
+1704558863,networkconverter,Desktop,Unknown,Chrome
+1704561908,umigon en,Desktop,Windows NT,Firefox
+1704561913,umigon fr,Desktop,Windows NT,Firefox
+1704561926,organic en,Desktop,Windows NT,Firefox
+1704561931,organic fr,Desktop,Windows NT,Firefox
+1704563933,networkconverter,Desktop,Unknown,Chrome
+1704567353,networkconverter,Desktop,Unknown,Chrome
+1704567695,cowo,Desktop,Unknown,Chrome
+1704567885,cowo,Desktop,Unknown,Chrome
+1704567942,cowo,Desktop,Unknown,Chrome
+1704568306,umigon,Desktop,Mac OS X,Safari
+1704568352,networkconverter,Desktop,Unknown,Chrome
+1704575771,topics,Tablet,Android,Chrome
+1704578567,topics,Tablet,Android,Chrome
+1704579762,cowo,Desktop,Unknown,Chrome
+1704584654,topics,Desktop,Unknown,Chrome
+1704584814,topics,Desktop,Unknown,Chrome
+1704584964,topics,Desktop,Unknown,Chrome
+1704585115,topics,Desktop,Unknown,Chrome
+1704585210,topics,Desktop,Unknown,Chrome
+1704604904,topics,Phone,Android,Chrome
+1704604912,topics,Phone,Android,Chrome
+1704604932,topics,Phone,Android,Chrome
+1704604943,topics,Phone,Android,Chrome
+1704604944,topics,Phone,Android,Chrome
+1704604955,topics,Phone,Android,Chrome
+1704604957,topics,Phone,Android,Chrome
+1704604964,topics,Phone,Android,Chrome
+1704604966,topics,Phone,Android,Chrome
+1704604968,topics,Phone,Android,Chrome
+1704604970,topics,Phone,Android,Chrome
+1704604973,topics,Phone,Android,Chrome
+1704604978,topics,Phone,Android,Chrome
+1704605090,topics,Phone,Android,Chrome
+1704605122,topics,Phone,Android,Chrome
+1704605137,topics,Phone,Android,Chrome
+1704605146,topics,Phone,Android,Chrome
+1704608775,umigon en,Desktop,Mac OS X,Safari
+1704608787,organic en,Desktop,Mac OS X,Safari
+1704610327,organic,Desktop,Mac OS X,Safari
+1704617485,cowo,Desktop,Unknown,Chrome
+1704623691,cowo,Desktop,Unknown,Chrome
+1704623795,cowo,Desktop,Unknown,Chrome
+1704624035,cowo,Desktop,Unknown,Chrome
+1704624166,cowo,Desktop,Unknown,Chrome
+1704624416,cowo,Desktop,Unknown,Chrome
+1704627540,gaze,Desktop,Unknown,Chrome
+1704627933,gaze,Desktop,Unknown,Chrome
+1704627965,gaze,Desktop,Unknown,Chrome
+1704628008,gaze,Desktop,Unknown,Chrome
+1704628211,gaze,Desktop,Unknown,Chrome
+1704628238,gaze,Desktop,Unknown,Chrome
+1704629167,gaze,Desktop,Unknown,Chrome
+1704629744,cowo,Desktop,Unknown,Chrome
+1704631829,networkconverter,Desktop,Unknown,Chrome
+1704631839,networkconverter,Desktop,Unknown,Chrome
+1704631913,networkconverter,Desktop,Unknown,Chrome
+1704632011,networkconverter,Desktop,Unknown,Chrome
+1704632232,gaze,Desktop,Unknown,Chrome
+1704632418,gaze,Desktop,Unknown,Chrome
+1704633025,gaze,Desktop,Unknown,Chrome
+1704633598,gaze,Desktop,Unknown,Chrome
+1704634012,gaze,Desktop,Unknown,Chrome
+1704637583,umigon,Desktop,Unknown,Chrome
+1704637583,umigon,Desktop,Unknown,Chrome
+1704638054,umigon,Desktop,Unknown,Chrome
+1704638172,umigon,Desktop,Unknown,Chrome
+1704638210,umigon,Desktop,Unknown,Chrome
+1704638221,umigon,Desktop,Unknown,Chrome
+1704640533,umigon,Desktop,Unknown,Chrome
+1704640657,umigon,Desktop,Unknown,Chrome
+1704640708,umigon,Desktop,Unknown,Chrome
+1704640758,umigon,Desktop,Unknown,Chrome
+1704640890,umigon,Desktop,Unknown,Chrome
+1704640946,umigon,Desktop,Unknown,Chrome
+1704641040,umigon,Desktop,Unknown,Chrome
+1704641051,umigon,Desktop,Unknown,Chrome
+1704641249,umigon,Desktop,Unknown,Chrome
+1704641308,umigon,Desktop,Unknown,Chrome
+1704641511,umigon,Desktop,Unknown,Chrome
+1704641715,umigon,Desktop,Unknown,Chrome
+1704643605,cowo,Desktop,Unknown,Chrome
+1704643666,cowo,Desktop,Unknown,Chrome
+1704643835,cowo,Desktop,Unknown,Chrome
+1704643999,umigon,Desktop,Unknown,Chrome
+1704644252,cowo,Desktop,Unknown,Chrome
+1704644598,umigon,Desktop,Unknown,Chrome
+1704644680,umigon,Desktop,Unknown,Chrome
+1704645529,umigon,Desktop,Unknown,Chrome
+1704648387,umigon,Desktop,Mac OS X,Safari
+1704648393,umigon,Desktop,Mac OS X,Safari
+1704651186,topics,Desktop,Unknown,Chrome
+1704653904,cowo,Desktop,Unknown,Chrome
+1704705124,umigon,Desktop,Unknown,Chrome
+1704705423,umigon,Desktop,Unknown,Chrome
+1704705424,umigon,Desktop,Unknown,Chrome
+1704705648,umigon,Desktop,Unknown,Chrome
+1704705653,umigon,Desktop,Unknown,Chrome
+1704706161,cowo,Desktop,Unknown,Chrome
+1704706197,cowo,Desktop,Unknown,Chrome
+1704706233,umigon,Desktop,Unknown,Chrome
+1704706318,cowo,Desktop,Unknown,Chrome
+1704706341,umigon,Desktop,Unknown,Chrome
+1704706394,cowo,Desktop,Unknown,Chrome
+1704706552,cowo,Desktop,Unknown,Chrome
+1704706708,cowo,Desktop,Unknown,Chrome
+1704707336,umigon,Desktop,Unknown,Chrome
+1704707560,umigon,Desktop,Unknown,Chrome
+1704710920,gaze,Desktop,Unknown,Chrome
+1704711052,gaze,Desktop,Unknown,Chrome
+1704711167,gaze,Desktop,Unknown,Chrome
+1704711360,gaze,Desktop,Unknown,Chrome
+1704711520,gaze,Desktop,Unknown,Chrome
+1704711767,cowo,Desktop,Unknown,Chrome
+1704712424,gaze,Desktop,Unknown,Chrome
+1704712613,gaze,Desktop,Unknown,Chrome
+1704712616,cowo,Desktop,Unknown,Chrome
+1704713768,gaze,Desktop,Unknown,Chrome
+1704714337,cowo,Desktop,Unknown,Chrome
+1704714391,cowo,Desktop,Unknown,Chrome
+1704717371,umigon,Desktop,Unknown,Chrome
+1704717403,umigon,Desktop,Unknown,Chrome
+1704718225,umigon,Desktop,Unknown,Chrome
+1704718466,umigon,Desktop,Unknown,Chrome
+1704718479,umigon,Desktop,Unknown,Chrome
+1704718515,networkconverter,Desktop,Unknown,Chrome
+1704718558,umigon,Desktop,Unknown,Chrome
+1704718848,umigon,Desktop,Unknown,Chrome
+1704718878,cowo,Desktop,Unknown,Chrome
+1704718972,umigon,Desktop,Unknown,Chrome
+1704719104,cowo,Desktop,Unknown,Chrome
+1704719170,cowo,Desktop,Unknown,Chrome
+1704719204,umigon,Desktop,Unknown,Chrome
+1704719235,cowo,Desktop,Unknown,Chrome
+1704719313,cowo,Desktop,Unknown,Chrome
+1704719372,umigon,Desktop,Unknown,Chrome
+1704719493,umigon,Desktop,Unknown,Chrome
+1704719831,umigon,Desktop,Unknown,Chrome
+1704719984,umigon,Desktop,Unknown,Chrome
+1704720069,umigon,Desktop,Unknown,Chrome
+1704720081,cowo,Desktop,Unknown,Chrome
+1704720089,umigon,Desktop,Unknown,Chrome
+1704720115,umigon,Desktop,Unknown,Chrome
+1704720150,cowo,Desktop,Unknown,Chrome
+1704720252,cowo,Desktop,Unknown,Chrome
+1704720329,cowo,Desktop,Unknown,Chrome
+1704720479,umigon,Desktop,Unknown,Chrome
+1704720489,umigon,Desktop,Unknown,Chrome
+1704720598,cowo,Desktop,Unknown,Chrome
+1704720630,cowo,Desktop,Unknown,Chrome
+1704720698,cowo,Desktop,Unknown,Chrome
+1704720868,cowo,Desktop,Unknown,Chrome
+1704720886,umigon,Desktop,Unknown,Chrome
+1704721157,cowo,Desktop,Unknown,Chrome
+1704721237,umigon,Desktop,Unknown,Chrome
+1704721488,cowo,Desktop,Unknown,Chrome
+1704721706,cowo,Desktop,Unknown,Chrome
+1704721963,cowo,Desktop,Unknown,Chrome
+1704722232,cowo,Desktop,Unknown,Chrome
+1704722315,umigon,Desktop,Unknown,Chrome
+1704722446,cowo,Desktop,Unknown,Chrome
+1704727997,topics,Desktop,Windows NT,Firefox
+1704728225,umigon en,Desktop,Windows NT,Firefox
+1704730284,topics,Desktop,Windows NT,Firefox
+1704737195,topics,Desktop,Windows NT,Firefox
+1704741915,umigon en,Desktop,Unknown,Chrome
+1704741916,umigon en,Desktop,Unknown,Chrome
+1704754860,topics,Desktop,Unknown,Chrome
+1704754945,topics,Desktop,Unknown,Chrome
+1704803553,topics,Desktop,Mac OS X,Safari
+1704803595,bibliocoupling,Desktop,Mac OS X,Safari
+1704803878,bibliocoupling,Desktop,Mac OS X,Safari
+1704803895,bibliocoupling,Desktop,Mac OS X,Safari
+1704803944,bibliocoupling,Desktop,Mac OS X,Safari
+1704803948,bibliocoupling,Desktop,Mac OS X,Safari
+1704804248,bibliocoupling,Desktop,Mac OS X,Safari
+1704804258,bibliocoupling,Desktop,Mac OS X,Safari
+1704804360,topics,Desktop,Mac OS X,Safari
+1704805850,umigon,Desktop,Mac OS X,Safari
+1704807333,cowo,Desktop,Mac OS X,Safari
+1704808400,gaze,Desktop,Mac OS X,Safari
+1704808623,gaze,Desktop,Mac OS X,Safari
+1704809018,gaze,Desktop,Mac OS X,Safari
+1704810060,gaze,Desktop,Mac OS X,Safari
+1704811606,cowo,Desktop,Unknown,Chrome
+1704812681,gaze,Desktop,Mac OS X,Safari
+1704814080,umigon,Desktop,Unknown,Chrome
+1704822504,cowo,Desktop,Windows NT,Firefox
+1704830759,umigon en,Desktop,Unknown,Edge
+1704834103,umigon,Phone,Android,Chrome
+1704835295,umigon,Desktop,Unknown,Chrome
+1704838520,umigon,Desktop,Unknown,Chrome
+1704838595,umigon,Desktop,Unknown,Chrome
+1704838670,umigon,Desktop,Unknown,Chrome
+1704839142,umigon,Desktop,Unknown,Chrome
+1704853816,cowo,Phone,Android,Chrome
+1704854170,topics,Desktop,Unknown,Chrome
+1704858961,cowo,Desktop,Unknown,Chrome
+1704863054,cowo,Desktop,Unknown,Chrome
+1704864573,cowo,Desktop,Unknown,Chrome
+1704864789,gaze,Desktop,Unknown,Chrome
+1704864857,cowo,Desktop,Unknown,Chrome
+1704865041,cowo,Desktop,Unknown,Chrome
+1704865144,cowo,Desktop,Unknown,Chrome
+1704865444,gaze,Desktop,Unknown,Chrome
+1704865566,cowo,Desktop,Unknown,Chrome
+1704865629,cowo,Desktop,Unknown,Chrome
+1704865708,gaze,Desktop,Unknown,Chrome
+1704865780,gaze,Desktop,Unknown,Chrome
+1704866006,cowo,Desktop,Unknown,Chrome
+1704866540,gaze,Desktop,Unknown,Chrome
+1704866612,gaze,Desktop,Unknown,Chrome
+1704868669,gaze,Desktop,Unknown,Chrome
+1704868839,gaze,Desktop,Unknown,Chrome
+1704874772,cowo,Desktop,Unknown,Edge
+1704875399,cowo,Desktop,Unknown,Chrome
+1704877433,umigon,Desktop,Unknown,Chrome
+1704877517,umigon en,Desktop,Unknown,Chrome
+1704877757,umigon,Desktop,Unknown,Chrome
+1704880180,umigon,Desktop,Unknown,Chrome
+1704880454,umigon,Desktop,Unknown,Chrome
+1704881108,umigon,Desktop,Unknown,Chrome
+1704881366,gaze,Desktop,Unknown,Chrome
+1704881384,umigon,Desktop,Unknown,Chrome
+1704881411,gaze,Desktop,Unknown,Chrome
+1704881428,umigon,Desktop,Unknown,Chrome
+1704881507,umigon,Desktop,Unknown,Edge
+1704881562,umigon,Desktop,Unknown,Edge
+1704881636,umigon,Desktop,Unknown,Edge
+1704882007,umigon,Desktop,Unknown,Chrome
+1704882678,cowo,Desktop,Linux,Firefox
+1704883127,gaze,Desktop,Linux,Firefox
+1704883473,topics,Desktop,Linux,Firefox
+1704886703,cowo,Desktop,Unknown,Chrome
+1704887896,umigon,Desktop,Unknown,Chrome
+1704887987,umigon,Desktop,Unknown,Chrome
+1704888192,umigon,Desktop,Unknown,Chrome
+1704889904,networkconverter,Desktop,Unknown,Chrome
+1704890593,cowo,Desktop,Unknown,Edge
+1704890597,cowo,Desktop,Unknown,Edge
+1704890608,cowo,Desktop,Unknown,Edge
+1704890819,cowo,Desktop,Unknown,Edge
+1704895273,umigon,Desktop,Unknown,Chrome
+1704895581,topics,Desktop,Unknown,Chrome
+1704901928,cowo,Desktop,Unknown,Chrome
+1704911094,topics,Desktop,Unknown,Chrome
+1704911106,topics,Desktop,Unknown,Chrome
+1704911163,topics,Desktop,Unknown,Chrome
+1704911217,topics,Desktop,Unknown,Chrome
+1704911460,topics,Desktop,Unknown,Chrome
+1704911492,topics,Desktop,Unknown,Chrome
+1704911501,topics,Desktop,Unknown,Chrome
+1704912206,topics,Desktop,Unknown,Chrome
+1704914798,topics,Desktop,Unknown,Chrome
+1704918707,umigon en,Desktop,Unknown,Chrome
+1704918726,umigon fr,Desktop,Unknown,Chrome
+1704918740,organic en,Desktop,Unknown,Chrome
+1704929300,networkconverter,Desktop,Unknown,Chrome
+1704936689,cowo,Phone,Android,Chrome Webview
+1704958975,cowo,Desktop,Unknown,Chrome
+1704960547,umigon,Desktop,Unknown,Chrome
+1704962325,topics,Desktop,Unknown,Chrome
+1704966720,cowo,Desktop,Unknown,Chrome
+1704968770,cowo,Desktop,Unknown,Chrome
+1704972670,umigon,Desktop,Unknown,Opera
+1704972838,umigon,Desktop,Unknown,Opera
+1704973198,umigon en,Desktop,Unknown,Opera
+1704973450,umigon,Desktop,Unknown,Chrome
+1704974260,cowo,Desktop,Unknown,Chrome
+1704974600,cowo,Desktop,Unknown,Chrome
+1704974762,cowo,Desktop,Unknown,Chrome
+1704975111,umigon,Desktop,Unknown,Opera
+1704975164,umigon,Desktop,Unknown,Opera
+1704975228,umigon,Desktop,Unknown,Opera
+1704976385,cowo,Desktop,Unknown,Chrome
+1704976622,umigon,Desktop,Unknown,Opera
+1704976633,cowo,Desktop,Unknown,Chrome
+1704976641,umigon,Desktop,Unknown,Opera
+1704976671,cowo,Desktop,Unknown,Chrome
+1704976793,umigon,Desktop,Unknown,Opera
+1704977068,umigon,Desktop,Unknown,Opera
+1704979546,networkconverter,Desktop,Unknown,Chrome
+1704982598,topics,Desktop,Unknown,Chrome
+1704984719,umigon,Desktop,Unknown,Chrome
+1704985143,cowo,Desktop,Unknown,Edge
+1704986035,topics,Desktop,Unknown,Chrome
+1704986211,cowo,Desktop,Unknown,Chrome
+1704988850,cowo,Desktop,Unknown,Chrome
+1704988882,cowo,Desktop,Unknown,Chrome
+1704989543,cowo,Desktop,Unknown,Chrome
+1704989748,cowo,Desktop,Unknown,Chrome
+1704990752,cowo,Desktop,Unknown,Chrome
+1704990838,cowo,Desktop,Unknown,Chrome
+1704990896,cowo,Desktop,Unknown,Chrome
+1704991586,cowo,Desktop,Unknown,Chrome
+1704991679,cowo,Desktop,Unknown,Chrome
+1704991889,cowo,Desktop,Unknown,Chrome
+1704992586,cowo,Desktop,Unknown,Chrome
+1704992657,cowo,Desktop,Unknown,Chrome
+1704992968,cowo,Desktop,Unknown,Chrome
+1704993005,cowo,Desktop,Unknown,Chrome
+1704993063,cowo,Desktop,Unknown,Chrome
+1704996439,cowo,Desktop,Linux,Firefox
+1705000409,cowo,Desktop,Unknown,Chrome
+1705000617,cowo,Desktop,Unknown,Chrome
+1705008434,topics,Desktop,Mac OS X,Firefox
+1705014324,cowo,Desktop,Linux,Firefox
+1705014537,cowo,Desktop,Linux,Firefox
+1705019980,cowo,Desktop,Unknown,Chrome
+1705026097,cowo,Desktop,Unknown,Chrome
+1705027016,cowo,Desktop,Unknown,Chrome
+1705027722,cowo,Phone,Android,Chrome
+1705027771,cowo,Desktop,Unknown,Chrome
+1705029928,gaze,Desktop,Unknown,Chrome
+1705032798,umigon en,Desktop,Unknown,Edge
+1705032800,umigon fr,Desktop,Unknown,Edge
+1705032802,umigon es,Desktop,Unknown,Edge
+1705034677,umigon,Desktop,Unknown,Chrome
+1705039707,umigon,Desktop,Unknown,Chrome
+1705039738,umigon,Desktop,Unknown,Chrome
+1705040864,cowo,Desktop,Unknown,Chrome
+1705041133,cowo,Desktop,Unknown,Chrome
+1705041687,cowo,Desktop,Unknown,Chrome
+1705042149,cowo,Desktop,Unknown,Chrome
+1705042607,cowo,Desktop,Unknown,Chrome
+1705043670,topics,Desktop,Unknown,Chrome
+1705043759,topics,Desktop,Unknown,Chrome
+1705043863,bibliocoupling,Desktop,Unknown,Chrome
+1705044219,bibliocoupling,Desktop,Unknown,Chrome
+1705044248,topics,Desktop,Unknown,Chrome
+1705044345,topics,Desktop,Unknown,Chrome
+1705044387,topics,Desktop,Unknown,Chrome
+1705048295,cowo,Desktop,Unknown,Chrome
+1705049095,cowo,Desktop,Unknown,Chrome
+1705049193,cowo,Desktop,Unknown,Chrome
+1705050794,cowo,Desktop,Mac OS X,Safari
+1705050874,cowo,Desktop,Mac OS X,Safari
+1705051270,topics,Desktop,Unknown,Chrome
+1705051695,cowo,Desktop,Unknown,Chrome
+1705052278,cowo,Desktop,Mac OS X,Safari
+1705055499,cowo,Desktop,Unknown,Chrome
+1705056148,cowo,Desktop,Unknown,Chrome
+1705056620,cowo,Desktop,Unknown,Chrome
+1705057015,cowo,Desktop,Unknown,Chrome
+1705060005,cowo,Desktop,Unknown,Chrome
+1705061372,cowo,Desktop,Unknown,Chrome
+1705061381,cowo,Desktop,Unknown,Chrome
+1705061962,cowo,Desktop,Unknown,Chrome
+1705062949,cowo,Desktop,Unknown,Chrome
+1705063929,cowo,Desktop,Unknown,Chrome
+1705064618,cowo,Desktop,Unknown,Chrome
+1705064629,cowo,Desktop,Unknown,Chrome
+1705065285,topics,Desktop,Unknown,Edge
+1705065364,topics,Desktop,Unknown,Chrome
+1705065486,topics,Desktop,Unknown,Chrome
+1705065609,topics,Desktop,Unknown,Chrome
+1705065902,cowo,Desktop,Unknown,Chrome
+1705066021,cowo,Desktop,Unknown,Chrome
+1705066035,cowo,Desktop,Unknown,Edge
+1705066452,cowo,Desktop,Unknown,Chrome
+1705067009,cowo,Desktop,Unknown,Chrome
+1705067280,cowo,Desktop,Unknown,Chrome
+1705068170,cowo,Desktop,Unknown,Chrome
+1705068187,cowo,Desktop,Unknown,Chrome
+1705068634,cowo,Desktop,Unknown,Chrome
+1705068913,cowo,Desktop,Unknown,Chrome
+1705068972,cowo,Desktop,Unknown,Chrome
+1705069078,cowo,Desktop,Unknown,Chrome
+1705073795,cowo,Desktop,Unknown,Chrome
+1705075429,cowo,Desktop,Unknown,Chrome
+1705076070,cowo,Desktop,Unknown,Chrome
+1705076312,cowo,Desktop,Unknown,Chrome
+1705076331,cowo,Desktop,Unknown,Chrome
+1705076411,cowo,Desktop,Unknown,Chrome
+1705076722,cowo,Desktop,Unknown,Chrome
+1705076790,cowo,Desktop,Unknown,Chrome
+1705076956,cowo,Desktop,Unknown,Chrome
+1705077037,cowo,Desktop,Unknown,Opera
+1705077084,cowo,Desktop,Unknown,Chrome
+1705078705,cowo,Desktop,Unknown,Chrome
+1705079077,cowo,Desktop,Unknown,Chrome
+1705079391,cowo,Desktop,Unknown,Chrome
+1705079433,cowo,Desktop,Unknown,Chrome
+1705079520,cowo,Desktop,Unknown,Chrome
+1705079585,cowo,Desktop,Unknown,Chrome
+1705079694,cowo,Desktop,Unknown,Chrome
+1705080128,cowo,Desktop,Unknown,Chrome
+1705080338,cowo,Desktop,Unknown,Chrome
+1705080387,cowo,Desktop,Unknown,Chrome
+1705080413,cowo,Desktop,Unknown,Chrome
+1705080716,cowo,Desktop,Unknown,Chrome
+1705081327,cowo,Desktop,Unknown,Chrome
+1705081372,cowo,Desktop,Unknown,Chrome
+1705081421,cowo,Desktop,Unknown,Chrome
+1705081470,cowo,Desktop,Unknown,Chrome
+1705082131,cowo,Desktop,Unknown,Chrome
+1705082239,cowo,Desktop,Unknown,Chrome
+1705082340,cowo,Desktop,Unknown,Chrome
+1705083217,bibliocoupling,Desktop,Linux,Firefox
+1705083650,cowo,Desktop,Unknown,Chrome
+1705084120,cowo,Desktop,Unknown,Chrome
+1705084134,bibliocoupling,Desktop,Linux,Firefox
+1705084160,cowo,Desktop,Unknown,Chrome
+1705084455,cowo,Desktop,Unknown,Chrome
+1705084849,cowo,Desktop,Unknown,Chrome
+1705084913,cowo,Desktop,Unknown,Chrome
+1705085064,bibliocoupling,Desktop,Linux,Firefox
+1705085125,networkconverter,Desktop,Unknown,Chrome
+1705085392,networkconverter,Desktop,Unknown,Chrome
+1705085596,networkconverter,Desktop,Unknown,Chrome
+1705085850,networkconverter,Desktop,Unknown,Chrome
+1705088127,cowo,Desktop,Unknown,Chrome
+1705088452,cowo,Desktop,Unknown,Chrome
+1705089056,cowo,Desktop,Unknown,Chrome
+1705089128,cowo,Desktop,Unknown,Chrome
+1705089175,cowo,Desktop,Unknown,Chrome
+1705089323,cowo,Desktop,Unknown,Chrome
+1705089480,cowo,Desktop,Unknown,Chrome
+1705089592,cowo,Desktop,Unknown,Chrome
+1705089738,cowo,Desktop,Unknown,Chrome
+1705090164,cowo,Desktop,Unknown,Chrome
+1705094537,cowo,Desktop,Unknown,Chrome
+1705094584,cowo,Desktop,Unknown,Chrome
+1705102767,cowo,Desktop,Linux,Firefox
+1705104899,cowo,Desktop,Unknown,Chrome
+1705106606,cowo,Desktop,Unknown,Edge
+1705106831,cowo,Desktop,Unknown,Chrome
+1705107040,cowo,Desktop,Unknown,Chrome
+1705109372,cowo,Desktop,Unknown,Edge
+1705109547,cowo,Desktop,Unknown,Chrome
+1705110755,umigon,Desktop,Unknown,Chrome
+1705111043,umigon,Desktop,Unknown,Chrome
+1705111132,umigon,Desktop,Unknown,Chrome
+1705111250,umigon,Desktop,Unknown,Chrome
+1705111405,umigon,Desktop,Unknown,Chrome
+1705112858,cowo,Desktop,Unknown,Chrome
+1705114065,cowo,Desktop,Unknown,Chrome
+1705119375,umigon,Desktop,Unknown,Chrome
+1705119590,cowo,Desktop,Unknown,Chrome
+1705133497,cowo,Desktop,Unknown,Chrome
+1705138628,cowo,Desktop,Unknown,Chrome
+1705138634,cowo,Desktop,Unknown,Chrome
+1705139570,cowo,Desktop,Unknown,Chrome
+1705140795,cowo,Desktop,Unknown,Chrome
+1705141162,topics,Desktop,Unknown,Chrome
+1705142690,cowo,Desktop,Unknown,Chrome
+1705143498,cowo,Desktop,Unknown,Chrome
+1705143815,cowo,Desktop,Unknown,Chrome
+1705144191,cowo,Desktop,Unknown,Chrome
+1705144761,cowo,Desktop,Unknown,Chrome
+1705145153,cowo,Desktop,Unknown,Chrome
+1705146260,cowo,Desktop,Unknown,Chrome
+1705146687,cowo,Desktop,Unknown,Chrome
+1705147033,cowo,Desktop,Unknown,Chrome
+1705147180,cowo,Desktop,Unknown,Chrome
+1705147475,cowo,Desktop,Unknown,Chrome
+1705147526,cowo,Desktop,Unknown,Chrome
+1705147527,cowo,Desktop,Unknown,Chrome
+1705148074,cowo,Desktop,Unknown,Chrome
+1705149448,cowo,Desktop,Unknown,Chrome
+1705150150,cowo,Desktop,Unknown,Chrome
+1705150614,cowo,Desktop,Unknown,Chrome
+1705154000,cowo,Desktop,Unknown,Chrome
+1705154162,cowo,Desktop,Unknown,Chrome
+1705154530,cowo,Desktop,Unknown,Chrome
+1705154696,cowo,Desktop,Unknown,Chrome
+1705155131,cowo,Desktop,Unknown,Chrome
+1705155625,cowo,Desktop,Unknown,Chrome
+1705156044,cowo,Desktop,Unknown,Chrome
+1705156418,cowo,Desktop,Unknown,Chrome
+1705157037,cowo,Desktop,Unknown,Chrome
+1705160295,cowo,Desktop,Unknown,Chrome
+1705160405,cowo,Desktop,Unknown,Chrome
+1705161385,cowo,Desktop,Unknown,Chrome
+1705161603,cowo,Desktop,Unknown,Chrome
+1705162006,cowo,Desktop,Unknown,Chrome
+1705162008,cowo,Desktop,Unknown,Chrome
+1705162055,cowo,Desktop,Unknown,Chrome
+1705162175,cowo,Desktop,Unknown,Chrome
+1705162849,cowo,Desktop,Unknown,Chrome
+1705162849,cowo,Desktop,Unknown,Chrome
+1705163781,umigon,Desktop,Unknown,Edge
+1705164110,networkconverter,Desktop,Unknown,Chrome
+1705173047,umigon,Desktop,Unknown,YaBrowser
+1705173059,umigon,Desktop,Unknown,YaBrowser
+1705184457,umigon,Desktop,Unknown,YaBrowser
+1705198631,bibliocoupling,Desktop,Unknown,Chrome
+1705215481,cowo,Desktop,Unknown,Chrome
+1705215792,spatialize,Desktop,Unknown,Chrome
+1705216323,topics,Desktop,Unknown,Chrome
+1705222742,cowo,Desktop,Unknown,Chrome
+1705223036,cowo,Desktop,Unknown,Chrome
+1705224682,cowo,Desktop,Unknown,Chrome
+1705224926,umigon en,Desktop,Windows NT,Firefox
+1705224930,umigon fr,Desktop,Windows NT,Firefox
+1705225054,cowo,Desktop,Unknown,Chrome
+1705225411,cowo,Desktop,Unknown,Chrome
+1705226153,cowo,Desktop,Unknown,Chrome
+1705226444,cowo,Desktop,Unknown,Chrome
+1705229140,cowo,Desktop,Unknown,Chrome
+1705235508,cowo,Desktop,Unknown,Chrome
+1705236266,topics,Desktop,Unknown,Chrome
+1705236271,topics,Desktop,Unknown,Chrome
+1705236277,topics,Desktop,Unknown,Chrome
+1705236278,topics,Desktop,Unknown,Chrome
+1705236278,topics,Desktop,Unknown,Chrome
+1705236278,topics,Desktop,Unknown,Chrome
+1705236282,topics,Desktop,Unknown,Chrome
+1705236292,topics,Desktop,Unknown,Chrome
+1705236300,topics,Desktop,Unknown,Chrome
+1705236301,topics,Desktop,Unknown,Chrome
+1705236367,topics,Desktop,Unknown,Chrome
+1705236615,gaze,Desktop,Unknown,Chrome
+1705236937,topics,Desktop,Unknown,Chrome
+1705236993,topics,Desktop,Unknown,Chrome
+1705247153,cowo,Desktop,Unknown,Chrome
+1705248946,topics,Desktop,Unknown,Chrome
+1705252519,cowo,Desktop,Unknown,Chrome
+1705253463,cowo,Desktop,Unknown,Chrome
+1705254247,cowo,Desktop,Unknown,Chrome
+1705254496,cowo,Desktop,Unknown,Chrome
+1705255748,gaze,Desktop,Ubuntu,Firefox
+1705255978,gaze,Desktop,Ubuntu,Firefox
+1705257380,umigon fr,Desktop,Unknown,Chrome
+1705263688,cowo,Desktop,Unknown,Chrome
+1705264094,cowo,Desktop,Unknown,Chrome
+1705264347,cowo,Desktop,Unknown,Chrome
+1705264656,cowo,Desktop,Unknown,Chrome
+1705264699,cowo,Desktop,Unknown,Chrome
+1705267892,umigon fr,Desktop,Windows NT,Firefox
+1705267915,umigon en,Desktop,Windows NT,Firefox
+1705270935,cowo,Desktop,Windows NT,Firefox
+1705278959,topics,Desktop,Unknown,Chrome
+1705279180,cowo,Desktop,Unknown,Chrome
+1705292443,cowo,Desktop,Unknown,Chrome
+1705297984,cowo,Desktop,Unknown,Chrome
+1705298124,umigon,Desktop,Unknown,Chrome
+1705298464,cowo,Desktop,Unknown,Chrome
+1705298697,topics,Desktop,Unknown,Chrome
+1705299029,gaze,Desktop,Unknown,Chrome
+1705299235,spatialize,Desktop,Unknown,Chrome
+1705302266,cowo,Desktop,Unknown,Chrome
+1705303511,cowo,Desktop,Unknown,Chrome
+1705304673,cowo,Desktop,Unknown,Chrome
+1705305626,cowo,Desktop,Unknown,Chrome
+1705305638,cowo,Desktop,Unknown,Chrome
+1705307227,cowo,Desktop,Unknown,Chrome
+1705309330,gaze,Desktop,Unknown,Chrome
+1705311138,cowo,Desktop,Mac OS X,Firefox
+1705313901,cowo,Desktop,Mac OS X,Safari
+1705313921,cowo,Desktop,Mac OS X,Safari
+1705313932,cowo,Desktop,Mac OS X,Safari
+1705313959,cowo,Desktop,Mac OS X,Safari
+1705313992,cowo,Desktop,Mac OS X,Safari
+1705314136,cowo,Desktop,Mac OS X,Safari
+1705314305,cowo,Desktop,Mac OS X,Safari
+1705315648,cowo,Desktop,Unknown,Chrome
+1705316745,cowo,Desktop,Windows NT,Firefox
+1705317075,cowo,Desktop,Windows NT,Firefox
+1705319447,umigon,Desktop,Windows NT,Firefox
+1705319528,umigon,Desktop,Windows NT,Firefox
+1705320512,umigon,Desktop,Windows NT,Firefox
+1705322058,cowo,Desktop,Windows NT,Firefox
+1705323789,cowo,Desktop,Windows NT,Firefox
+1705324234,cowo,Desktop,Windows NT,Firefox
+1705325153,topics,Desktop,Unknown,Edge
+1705325153,umigon,Desktop,Mac OS X,Firefox
+1705325921,umigon en,Desktop,Windows NT,Firefox
+1705326264,cowo,Desktop,Windows NT,Firefox
+1705326463,topics,Desktop,Unknown,Edge
+1705326640,topics,Desktop,Unknown,Edge
+1705326954,topics,Desktop,Unknown,Edge
+1705326965,topics,Desktop,Unknown,Edge
+1705331061,cowo,Phone,Android,SamsungBrowser
+1705333775,cowo,Desktop,Windows NT,Firefox
+1705333821,cowo,Desktop,Windows NT,Firefox
+1705333841,cowo,Desktop,Windows NT,Firefox
+1705333862,cowo,Desktop,Windows NT,Firefox
+1705333943,cowo,Desktop,Windows NT,Firefox
+1705336601,topics,Desktop,Unknown,Chrome
+1705343017,cowo,Desktop,Windows NT,Firefox
+1705344663,cowo,Desktop,Windows NT,Firefox
+1705344985,cowo,Desktop,Windows NT,Firefox
+1705346093,cowo,Desktop,Windows NT,Firefox
+1705350243,topics,Desktop,Unknown,Chrome
+1705350427,topics,Desktop,Unknown,Chrome
+1705352029,cowo,Desktop,Windows NT,Firefox
+1705353173,cowo,Desktop,Windows NT,Firefox
+1705353356,cowo,Desktop,Windows NT,Firefox
+1705353572,cowo,Desktop,Windows NT,Firefox
+1705353739,cowo,Desktop,Windows NT,Firefox
+1705353942,cowo,Desktop,Windows NT,Firefox
+1705357004,umigon,Desktop,Unknown,Chrome
+1705358179,umigon,Desktop,Unknown,Chrome
+1705380046,umigon,Desktop,Unknown,Chrome
+1705380319,umigon,Desktop,Unknown,Chrome
+1705385635,umigon,Desktop,Windows NT,Firefox
+1705393965,cowo,Desktop,Unknown,Chrome
+1705394453,umigon,Desktop,Unknown,Chrome
+1705394454,umigon,Desktop,Unknown,Chrome
+1705394504,umigon,Desktop,Unknown,Chrome
+1705394568,umigon,Desktop,Unknown,Chrome
+1705394630,umigon,Desktop,Unknown,Edge
+1705394631,umigon,Desktop,Unknown,Chrome
+1705394688,umigon,Desktop,Unknown,Edge
+1705394747,umigon,Desktop,Unknown,Chrome
+1705394804,umigon,Desktop,Unknown,Chrome
+1705397126,cowo,Desktop,Windows NT,Firefox
+1705397400,cowo,Desktop,Windows NT,Firefox
+1705398317,cowo,Desktop,Unknown,Chrome
+1705399245,cowo,Desktop,Unknown,Chrome
+1705399402,cowo,Desktop,Unknown,Chrome
+1705400480,cowo,Desktop,Unknown,Chrome
+1705401046,cowo,Desktop,Unknown,Chrome
+1705403363,topics,Desktop,Unknown,Chrome
+1705409962,cowo,Desktop,Unknown,Chrome
+1705420847,topics,Desktop,Unknown,Chrome
+1705422792,cowo,Desktop,Mac OS X,Safari
+1705423368,cowo,Desktop,Mac OS X,Safari
+1705423574,cowo,Desktop,Mac OS X,Safari
+1705424077,networkconverter,Desktop,Unknown,Chrome
+1705424109,networkconverter,Desktop,Unknown,Chrome
+1705424127,networkconverter,Desktop,Unknown,Chrome
+1705424922,cowo,Desktop,Unknown,Chrome
+1705424933,cowo,Desktop,Windows NT,Firefox
+1705424937,topics,Desktop,Unknown,Chrome
+1705425069,umigon,Desktop,Unknown,Chrome
+1705425106,cowo,Desktop,Unknown,Chrome
+1705425144,cowo,Desktop,Unknown,Chrome
+1705425208,cowo,Desktop,Unknown,Chrome
+1705425247,cowo,Desktop,Unknown,Chrome
+1705425382,umigon,Desktop,Unknown,Chrome
+1705425934,umigon en,Desktop,Windows NT,Firefox
+1705425962,umigon en,Desktop,Windows NT,Firefox
+1705426136,cowo,Desktop,Unknown,Chrome
+1705428100,umigon,Desktop,Unknown,Chrome
+1705429117,cowo,Desktop,Unknown,Chrome
+1705431414,cowo,Desktop,Unknown,Chrome
+1705431443,cowo,Desktop,Unknown,Chrome
+1705431446,cowo,Desktop,Unknown,Chrome
+1705431462,cowo,Desktop,Unknown,Chrome
+1705431491,cowo,Desktop,Unknown,Chrome
+1705431549,cowo,Desktop,Mac OS X,Safari
+1705432106,cowo,Desktop,Mac OS X,Safari
+1705432112,cowo,Desktop,Mac OS X,Safari
+1705432197,cowo,Desktop,Mac OS X,Safari
+1705433551,networkconverter,Desktop,Unknown,Chrome
+1705433704,networkconverter,Desktop,Windows NT,Firefox
+1705444036,umigon,Desktop,Unknown,Chrome
+1705444406,umigon,Desktop,Unknown,Chrome
+1705444712,topics,Desktop,Unknown,Chrome
+1705444961,topics,Desktop,Unknown,Chrome
+1705448611,cowo,Desktop,Windows NT,Firefox
+1705448911,cowo,Desktop,Windows NT,Firefox
+1705450909,umigon,Desktop,Unknown,Chrome
+1705450909,umigon,Desktop,Unknown,Chrome
+1705450909,umigon,Desktop,Windows NT,Firefox
+1705450909,umigon,Desktop,Unknown,Chrome
+1705450909,umigon,Desktop,Unknown,Edge
+1705450912,umigon,Desktop,Unknown,Chrome
+1705450931,umigon,Desktop,Unknown,Chrome
+1705450936,umigon,Desktop,Unknown,Chrome
+1705450939,umigon,Desktop,Unknown,Chrome
+1705450939,umigon,Desktop,Unknown,Chrome
+1705450966,umigon,Desktop,Unknown,Edge
+1705450981,umigon,Desktop,Unknown,Chrome
+1705451001,umigon,Desktop,Unknown,Chrome
+1705451015,umigon,Desktop,Unknown,Edge
+1705451040,umigon,Desktop,Unknown,Chrome
+1705451079,umigon,Desktop,Unknown,Edge
+1705471553,umigon en,Phone,Android,Chrome
+1705471914,umigon en,Phone,Android,Chrome
+1705478502,umigon en,Phone,iOS,Safari
+1705493087,cowo,Desktop,Unknown,Chrome
+1705497722,networkconverter,Desktop,Unknown,Chrome
+1705499707,cowo,Desktop,Mac OS X,Safari
+1705499723,cowo,Desktop,Unknown,Chrome
+1705499748,cowo,Desktop,Unknown,Chrome
+1705499749,cowo,Desktop,Unknown,Chrome
+1705499783,cowo,Desktop,Unknown,Chrome
+1705499791,cowo,Desktop,Unknown,Edge
+1705499818,cowo,Desktop,Windows NT,Firefox
+1705499822,cowo,Desktop,Unknown,Chrome
+1705499822,cowo,Desktop,Unknown,Chrome
+1705499900,cowo,Desktop,Unknown,Chrome
+1705500026,topics,Desktop,Unknown,Chrome
+1705500038,topics,Desktop,Mac OS X,Safari
+1705500041,topics,Desktop,Mac OS X,Safari
+1705500107,topics,Desktop,Unknown,Chrome
+1705500670,networkconverter,Desktop,Unknown,Chrome
+1705500904,networkconverter,Desktop,Unknown,Chrome
+1705501371,topics,Desktop,Windows NT,Firefox
+1705501837,topics,Desktop,Windows NT,Firefox
+1705504157,cowo,Desktop,Unknown,Chrome
+1705504352,umigon en,Desktop,Unknown,Chrome
+1705504358,umigon en,Desktop,Unknown,Chrome
+1705504359,umigon fr,Desktop,Unknown,Chrome
+1705504366,umigon en,Desktop,Unknown,Chrome
+1705504367,umigon fr,Desktop,Unknown,Chrome
+1705504371,umigon fr,Desktop,Unknown,Chrome
+1705504375,umigon fr,Desktop,Unknown,Chrome
+1705504377,umigon en,Desktop,Unknown,Chrome
+1705504383,umigon fr,Desktop,Unknown,Chrome
+1705504392,umigon fr,Desktop,Unknown,Chrome
+1705504393,umigon en,Desktop,Unknown,Chrome
+1705504399,umigon fr,Desktop,Unknown,Chrome
+1705504401,umigon en,Desktop,Unknown,Chrome
+1705504403,umigon en,Desktop,Unknown,Chrome
+1705504408,umigon en,Desktop,Unknown,Chrome
+1705504408,umigon en,Desktop,Unknown,Chrome
+1705504411,umigon en,Desktop,Unknown,Chrome
+1705504411,umigon en,Desktop,Unknown,Chrome
+1705504412,umigon en,Desktop,Unknown,Chrome
+1705504413,umigon en,Desktop,Unknown,Chrome
+1705504413,umigon en,Desktop,Unknown,Chrome
+1705504414,umigon en,Desktop,Unknown,Chrome
+1705504421,umigon fr,Desktop,Unknown,Chrome
+1705504421,umigon en,Desktop,Mac OS X,Safari
+1705504432,umigon en,Desktop,Unknown,Edge
+1705504433,umigon en,Desktop,Mac OS X,Safari
+1705504435,umigon en,Desktop,Mac OS X,Safari
+1705504437,umigon en,Desktop,Unknown,Chrome
+1705504439,umigon en,Desktop,Unknown,Chrome
+1705504442,umigon en,Desktop,Unknown,Chrome
+1705504445,umigon en,Desktop,Mac OS X,Safari
+1705504445,umigon en,Desktop,Unknown,Chrome
+1705504450,umigon en,Desktop,Unknown,Chrome
+1705504451,umigon en,Desktop,Mac OS X,Safari
+1705504464,umigon en,Desktop,Unknown,Chrome
+1705504466,umigon en,Desktop,Unknown,Edge
+1705504467,umigon en,Desktop,Unknown,Chrome
+1705504467,umigon en,Desktop,Unknown,Chrome
+1705504468,umigon en,Desktop,Unknown,Edge
+1705504469,umigon en,Desktop,Unknown,Chrome
+1705504471,umigon en,Desktop,Mac OS X,Safari
+1705504472,umigon en,Desktop,Unknown,Chrome
+1705504473,umigon en,Desktop,Unknown,Chrome
+1705504477,umigon en,Desktop,Unknown,Chrome
+1705504477,umigon en,Desktop,Unknown,Chrome
+1705504477,umigon en,Desktop,Unknown,Chrome
+1705504479,umigon en,Desktop,Unknown,Chrome
+1705504485,umigon en,Desktop,Unknown,Chrome
+1705504485,umigon en,Desktop,Unknown,Chrome
+1705504487,umigon en,Desktop,Mac OS X,Safari
+1705504487,umigon en,Desktop,Mac OS X,Safari
+1705504489,umigon en,Desktop,Unknown,Chrome
+1705504491,umigon en,Desktop,Unknown,Chrome
+1705504497,umigon en,Desktop,Mac OS X,Safari
+1705504498,umigon en,Desktop,Unknown,Chrome
+1705504499,umigon en,Desktop,Unknown,Chrome
+1705504500,umigon en,Desktop,Unknown,Chrome
+1705504501,umigon en,Desktop,Unknown,Chrome
+1705504501,umigon en,Desktop,Unknown,Chrome
+1705504502,umigon en,Desktop,Unknown,Chrome
+1705504503,umigon en,Desktop,Unknown,Chrome
+1705504505,umigon en,Desktop,Unknown,Chrome
+1705504511,umigon en,Desktop,Unknown,Chrome
+1705504512,umigon en,Desktop,Unknown,Chrome
+1705504512,umigon en,Desktop,Unknown,Chrome
+1705504512,umigon en,Desktop,Unknown,Chrome
+1705504513,umigon en,Desktop,Unknown,Chrome
+1705504515,umigon en,Desktop,Unknown,Chrome
+1705504520,umigon en,Desktop,Unknown,Chrome
+1705504521,umigon en,Desktop,Unknown,Chrome
+1705504521,umigon en,Desktop,Unknown,Chrome
+1705504522,umigon en,Desktop,Unknown,Chrome
+1705504523,umigon en,Desktop,Unknown,Edge
+1705504523,umigon en,Desktop,Unknown,Chrome
+1705504525,umigon en,Desktop,Unknown,Chrome
+1705504526,umigon en,Desktop,Unknown,Chrome
+1705504528,umigon en,Desktop,Unknown,Chrome
+1705504528,umigon en,Desktop,Unknown,Chrome
+1705504529,umigon en,Desktop,Unknown,Chrome
+1705504530,umigon en,Desktop,Unknown,Chrome
+1705504535,umigon en,Desktop,Unknown,Chrome
+1705504536,umigon en,Desktop,Unknown,Chrome
+1705504537,umigon en,Desktop,Mac OS X,Safari
+1705504542,umigon en,Desktop,Mac OS X,Safari
+1705504546,umigon en,Desktop,Unknown,Chrome
+1705504546,umigon en,Desktop,Unknown,Chrome
+1705504549,umigon en,Desktop,Unknown,Chrome
+1705504549,umigon en,Desktop,Mac OS X,Safari
+1705504555,umigon en,Desktop,Mac OS X,Safari
+1705504555,umigon en,Desktop,Unknown,Chrome
+1705504555,umigon es,Desktop,Unknown,Chrome
+1705504558,umigon fr,Desktop,Unknown,Chrome
+1705504564,umigon en,Desktop,Unknown,Chrome
+1705504567,umigon en,Desktop,Unknown,Chrome
+1705504567,umigon en,Desktop,Unknown,Chrome
+1705504568,umigon en,Desktop,Unknown,Chrome
+1705504569,umigon en,Desktop,Unknown,Chrome
+1705504570,umigon en,Desktop,Unknown,Edge
+1705504571,umigon en,Desktop,Unknown,Chrome
+1705504573,umigon en,Desktop,Unknown,Chrome
+1705504573,umigon fr,Desktop,Unknown,Chrome
+1705504573,umigon en,Desktop,Unknown,Chrome
+1705504573,umigon en,Desktop,Unknown,Chrome
+1705504574,umigon en,Desktop,Unknown,Chrome
+1705504574,umigon en,Desktop,Unknown,Chrome
+1705504574,umigon en,Desktop,Unknown,Chrome
+1705504575,umigon en,Desktop,Unknown,Chrome
+1705504575,umigon en,Desktop,Unknown,Chrome
+1705504575,umigon en,Desktop,Unknown,Chrome
+1705504575,umigon en,Desktop,Unknown,Chrome
+1705504575,umigon en,Desktop,Unknown,Chrome
+1705504576,umigon es,Desktop,Unknown,Chrome
+1705504577,umigon en,Desktop,Unknown,Chrome
+1705504577,umigon en,Desktop,Unknown,Chrome
+1705504577,umigon en,Desktop,Unknown,Edge
+1705504579,umigon,Desktop,Mac OS X,Safari
+1705504589,umigon en,Desktop,Unknown,Chrome
+1705504590,umigon en,Desktop,Unknown,Edge
+1705504591,umigon en,Desktop,Unknown,Chrome
+1705504591,umigon en,Desktop,Unknown,Chrome
+1705504592,umigon en,Desktop,Unknown,Chrome
+1705504593,umigon en,Desktop,Unknown,Edge
+1705504594,umigon en,Desktop,Unknown,Chrome
+1705504594,umigon en,Desktop,Unknown,Chrome
+1705504598,umigon en,Desktop,Unknown,Chrome
+1705504599,umigon en,Desktop,Unknown,Chrome
+1705504599,umigon en,Desktop,Unknown,Chrome
+1705504601,umigon en,Desktop,Unknown,Chrome
+1705504606,umigon en,Desktop,Unknown,Chrome
+1705504610,umigon es,Desktop,Unknown,Chrome
+1705504613,umigon en,Desktop,Unknown,Chrome
+1705504615,umigon en,Desktop,Mac OS X,Safari
+1705504616,umigon en,Desktop,Mac OS X,Safari
+1705504616,umigon en,Desktop,Mac OS X,Safari
+1705504616,umigon en,Desktop,Mac OS X,Safari
+1705504616,umigon en,Desktop,Mac OS X,Safari
+1705504617,umigon en,Desktop,Mac OS X,Safari
+1705504617,umigon en,Desktop,Mac OS X,Safari
+1705504620,umigon en,Desktop,Unknown,Chrome
+1705504625,umigon en,Desktop,Mac OS X,Safari
+1705504628,umigon en,Desktop,Unknown,Chrome
+1705504641,umigon en,Desktop,Unknown,Chrome
+1705504644,umigon en,Desktop,Unknown,Chrome
+1705504663,umigon en,Desktop,Unknown,Chrome
+1705504666,umigon en,Desktop,Mac OS X,Safari
+1705504670,umigon en,Desktop,Mac OS X,Safari
+1705504673,umigon en,Desktop,Mac OS X,Safari
+1705504679,umigon en,Desktop,Unknown,Chrome
+1705504684,umigon en,Desktop,Mac OS X,Safari
+1705504686,umigon en,Desktop,Unknown,Chrome
+1705504689,umigon en,Desktop,Unknown,Chrome
+1705504700,umigon en,Desktop,Unknown,Chrome
+1705504706,umigon fr,Desktop,Unknown,Chrome
+1705504710,umigon en,Desktop,Unknown,Chrome
+1705504712,umigon en,Desktop,Unknown,Chrome
+1705504717,umigon fr,Desktop,Unknown,Chrome
+1705504720,umigon fr,Desktop,Unknown,Chrome
+1705504721,organic en,Desktop,Mac OS X,Safari
+1705504725,umigon en,Desktop,Unknown,Chrome
+1705504725,umigon en,Desktop,Unknown,Chrome
+1705504727,organic fr,Desktop,Mac OS X,Safari
+1705504743,umigon es,Desktop,Unknown,Chrome
+1705504749,umigon en,Desktop,Unknown,Chrome
+1705504757,umigon en,Desktop,Unknown,Chrome
+1705504758,umigon en,Desktop,Unknown,Chrome
+1705504762,umigon en,Desktop,Mac OS X,Safari
+1705504763,umigon en,Desktop,Unknown,Chrome
+1705504766,umigon fr,Desktop,Unknown,Edge
+1705504771,umigon fr,Desktop,Unknown,Chrome
+1705504773,umigon en,Desktop,Unknown,Chrome
+1705504779,umigon fr,Desktop,Unknown,Edge
+1705504779,umigon fr,Desktop,Unknown,Edge
+1705504782,umigon en,Desktop,Unknown,Chrome
+1705504787,umigon fr,Desktop,Unknown,Edge
+1705504793,umigon en,Desktop,Mac OS X,Safari
+1705504797,umigon fr,Desktop,Unknown,Edge
+1705504805,umigon fr,Desktop,Unknown,Edge
+1705504805,umigon en,Desktop,Mac OS X,Safari
+1705504818,umigon en,Desktop,Mac OS X,Safari
+1705504820,organic en,Desktop,Mac OS X,Safari
+1705504822,umigon fr,Desktop,Unknown,Edge
+1705504830,umigon fr,Desktop,Unknown,Edge
+1705504847,umigon en,Desktop,Mac OS X,Safari
+1705504936,topics,Desktop,Unknown,Chrome
+1705504960,topics,Desktop,Unknown,Chrome
+1705505568,topics,Desktop,Windows NT,Firefox
+1705505689,topics,Desktop,Windows NT,Firefox
+1705505755,topics,Desktop,Windows NT,Firefox
+1705506060,cowo,Desktop,Windows NT,Firefox
+1705506606,cowo,Desktop,Windows NT,Firefox
+1705506653,cowo,Desktop,Windows NT,Firefox
+1705506926,cowo,Desktop,Windows NT,Firefox
+1705507447,umigon,Desktop,Unknown,Chrome
+1705510073,cowo,Desktop,Unknown,Chrome
+1705512446,networkconverter,Desktop,Unknown,Chrome
+1705512493,networkconverter,Desktop,Unknown,Chrome
+1705512544,networkconverter,Desktop,Unknown,Chrome
+1705512611,networkconverter,Desktop,Unknown,Chrome
+1705512659,networkconverter,Desktop,Unknown,Chrome
+1705512737,networkconverter,Desktop,Unknown,Chrome
+1705512818,networkconverter,Desktop,Unknown,Chrome
+1705512989,networkconverter,Desktop,Windows NT,Firefox
+1705518764,networkconverter,Desktop,Unknown,Chrome
+1705520654,cowo,Desktop,Mac OS X,Safari
+1705528293,cowo,Desktop,Mac OS X,Safari
+1705528532,cowo,Desktop,Unknown,Chrome
+1705537257,cowo,Desktop,Windows NT,Firefox
+1705537653,umigon,Desktop,Windows NT,Firefox
+1705538638,pdfmatcher,Desktop,Windows NT,Firefox
+1705542417,cowo,Desktop,Unknown,Chrome
+1705552784,umigon,Desktop,Unknown,Chrome
+1705561908,cowo,Desktop,Unknown,Chrome
+1705562693,gaze,Desktop,Unknown,Chrome
+1705565546,cowo,Desktop,Unknown,Chrome
+1705566197,cowo,Desktop,Unknown,Chrome
+1705566250,cowo,Desktop,Unknown,Chrome
+1705566899,umigon,Desktop,Unknown,Edge
+1705566969,umigon,Desktop,Unknown,Edge
+1705567327,cowo,Desktop,Unknown,Chrome
+1705568112,cowo,Desktop,Unknown,Chrome
+1705569502,cowo,Desktop,Unknown,Chrome
+1705574925,topics,Desktop,Unknown,Chrome
+1705575101,topics,Desktop,Unknown,Chrome
+1705587978,topics,Desktop,Unknown,Chrome
+1705588146,topics,Desktop,Unknown,Chrome
+1705588189,topics,Desktop,Unknown,Chrome
+1705588203,topics,Desktop,Unknown,Chrome
+1705588210,topics,Desktop,Unknown,Chrome
+1705594044,pdf_region_extractor,Desktop,Unknown,Chrome
+1705594079,pdf_region_extractor,Desktop,Unknown,Chrome
+1705594125,pdf_region_extractor,Desktop,Unknown,Chrome
+1705594183,umigon,Desktop,Unknown,Chrome
+1705594275,topics,Desktop,Unknown,Chrome
+1705594294,topics,Desktop,Unknown,Chrome
+1705594311,topics,Desktop,Unknown,Chrome
+1705594355,pdfmatcher,Desktop,Unknown,Chrome
+1705597292,cowo,Desktop,Unknown,Chrome
+1705597366,networkconverter,Desktop,Unknown,Chrome
+1705597630,pdf_region_extractor,Desktop,Unknown,Chrome
+1705597863,umigon,Desktop,Ubuntu,Firefox
+1705600674,pdfmatcher,Desktop,Unknown,Chrome
+1705600747,organic,Desktop,Unknown,Chrome
+1705606366,networkconverter,Desktop,Unknown,Chrome
+1705611348,cowo,Desktop,Unknown,Chrome
+1705611469,cowo,Desktop,Unknown,Chrome
+1705612766,cowo,Desktop,Mac OS X,Safari
+1705612841,topics,Desktop,Mac OS X,Safari
+1705613047,cowo,Desktop,Mac OS X,Safari
+1705615341,cowo,Desktop,Unknown,Chrome
+1705615570,topics,Desktop,Unknown,Chrome
+1705615655,cowo,Desktop,Unknown,Chrome
+1705617403,topics,Desktop,Unknown,Chrome
+1705618156,cowo,Desktop,Unknown,Chrome
+1705633866,umigon fr,Phone,iOS,Safari
+1705633889,organic en,Phone,iOS,Safari
+1705633898,organic fr,Phone,iOS,Safari
+1705651469,topics,Desktop,Unknown,Chrome
+1705655714,cowo,Desktop,Unknown,Chrome
+1705656912,umigon fr,Desktop,Unknown,Chrome
+1705656924,umigon fr,Desktop,Unknown,Chrome
+1705656926,umigon fr,Desktop,Unknown,Chrome
+1705656934,umigon fr,Desktop,Unknown,Chrome
+1705656937,umigon fr,Desktop,Unknown,Chrome
+1705656944,umigon fr,Desktop,Unknown,Chrome
+1705656954,cowo,Desktop,Unknown,Chrome
+1705658215,umigon,Desktop,Unknown,Chrome
+1705658225,cowo,Desktop,Mac OS X,Safari
+1705658481,umigon,Desktop,Unknown,Chrome
+1705658516,umigon,Desktop,Unknown,Chrome
+1705658575,gaze,Desktop,Unknown,Chrome
+1705658707,gaze,Desktop,Unknown,Chrome
+1705658721,umigon,Desktop,Unknown,Opera
+1705658755,umigon,Desktop,Unknown,Chrome
+1705658757,umigon,Desktop,Mac OS X,Safari
+1705658786,gaze,Desktop,Unknown,Chrome
+1705658845,cowo,Desktop,Unknown,Chrome
+1705658874,umigon,Desktop,Unknown,Chrome
+1705658889,umigon,Desktop,Unknown,Opera
+1705658892,umigon,Desktop,Mac OS X,Safari
+1705658895,umigon,Desktop,Unknown,Chrome
+1705658930,umigon,Desktop,Unknown,Chrome
+1705658937,umigon,Desktop,Unknown,Opera
+1705658988,umigon,Desktop,Mac OS X,Safari
+1705659004,umigon,Desktop,Unknown,Chrome
+1705659034,umigon,Desktop,Unknown,Chrome
+1705659064,umigon,Desktop,Mac OS X,Safari
+1705659132,umigon,Desktop,Unknown,Chrome
+1705659157,umigon,Desktop,Mac OS X,Safari
+1705659214,umigon,Desktop,Mac OS X,Safari
+1705659288,umigon,Desktop,Unknown,Chrome
+1705659306,umigon,Desktop,Unknown,Opera
+1705659336,umigon,Desktop,Unknown,Chrome
+1705659340,umigon,Desktop,Mac OS X,Safari
+1705659418,umigon,Desktop,Mac OS X,Safari
+1705659437,umigon,Desktop,Unknown,Chrome
+1705659445,umigon,Desktop,Mac OS X,Safari
+1705659447,umigon,Desktop,Mac OS X,Safari
+1705659552,umigon,Desktop,Unknown,Chrome
+1705659556,umigon,Desktop,Mac OS X,Safari
+1705659618,umigon,Desktop,Unknown,Chrome
+1705659711,umigon,Desktop,Unknown,Chrome
+1705659965,networkconverter,Desktop,Unknown,Chrome
+1705659968,umigon,Desktop,Mac OS X,Safari
+1705659983,umigon,Desktop,Mac OS X,Safari
+1705660112,umigon,Desktop,Mac OS X,Safari
+1705660211,umigon,Desktop,Unknown,Chrome
+1705660236,pdf_region_extractor,Desktop,Unknown,Chrome
+1705660296,umigon,Desktop,Unknown,Chrome
+1705660399,cowo,Desktop,Unknown,Chrome
+1705660443,umigon,Desktop,Unknown,Chrome
+1705660835,topics,Desktop,Unknown,Chrome
+1705661229,cowo,Desktop,Unknown,Chrome
+1705661357,cowo,Desktop,Unknown,Chrome
+1705661398,cowo,Desktop,Unknown,Chrome
+1705661586,topics,Desktop,Unknown,Chrome
+1705671211,cowo,Desktop,Unknown,Chrome
+1705672190,pdfmatcher,Desktop,Unknown,Chrome
+1705674703,umigon,Desktop,Mac OS X,Safari
+1705674736,umigon,Desktop,Mac OS X,Safari
+1705674850,umigon,Desktop,Mac OS X,Safari
+1705674868,umigon,Desktop,Mac OS X,Safari
+1705674873,umigon,Desktop,Mac OS X,Safari
+1705674952,umigon,Desktop,Mac OS X,Safari
+1705675041,umigon,Desktop,Mac OS X,Safari
+1705675243,umigon,Desktop,Mac OS X,Safari
+1705675295,umigon,Desktop,Mac OS X,Safari
+1705675541,umigon,Desktop,Mac OS X,Safari
+1705675557,umigon,Desktop,Mac OS X,Firefox
+1705675572,umigon,Desktop,Mac OS X,Firefox
+1705677195,umigon,Desktop,Unknown,Edge
+1705677332,gaze,Desktop,Unknown,Chrome
+1705680601,cowo,Desktop,Unknown,Chrome
+1705681590,topics,Desktop,Unknown,Chrome
+1705681598,umigon es,Desktop,Unknown,Chrome
+1705681688,topics,Desktop,Unknown,Chrome
+1705682330,gaze,Desktop,Unknown,Chrome
+1705682760,cowo,Desktop,Unknown,Chrome
+1705683239,cowo,Desktop,Unknown,Chrome
+1705700769,cowo,Desktop,Unknown,Chrome
+1705704963,gaze,Desktop,Unknown,Chrome
+1705751409,networkconverter,Desktop,Unknown,Chrome
+1705752146,networkconverter,Desktop,Unknown,Chrome
+1705752173,networkconverter,Desktop,Unknown,Chrome
+1705757106,cowo,Desktop,Unknown,YaBrowser
+1705757225,umigon en,Desktop,Unknown,YaBrowser
+1705758287,topics,Desktop,Unknown,YaBrowser
+1705758476,topics,Desktop,Unknown,YaBrowser
+1705758481,topics,Desktop,Unknown,YaBrowser
+1705758483,topics,Desktop,Unknown,YaBrowser
+1705758487,topics,Desktop,Unknown,YaBrowser
+1705758487,topics,Desktop,Unknown,YaBrowser
+1705758488,topics,Desktop,Unknown,YaBrowser
+1705760545,topics,Desktop,Windows NT,Firefox
+1705760635,cowo,Desktop,Windows NT,Firefox
+1705762210,topics,Desktop,Mac OS X,Firefox
+1705770416,topics,Desktop,Mac OS X,Safari
+1705777038,topics,Desktop,Mac OS X,Firefox
+1705787599,topics,Desktop,Unknown,Chrome
+1705787681,topics,Desktop,Unknown,Chrome
+1705795967,networkconverter,Desktop,Mac OS X,Firefox
+1705803633,networkconverter,Desktop,Mac OS X,Firefox
+1705828225,networkconverter,Desktop,Mac OS X,Firefox
+1705834319,cowo,Desktop,Unknown,Chrome
+1705840662,networkconverter,Desktop,Unknown,Chrome
+1705840730,topics,Desktop,Unknown,Chrome
+1705840840,networkconverter,Desktop,Unknown,Chrome
+1705841048,networkconverter,Desktop,Unknown,Chrome
+1705900202,topics,Desktop,Unknown,Chrome
+1705900524,cowo,Desktop,Unknown,Chrome
+1705901467,cowo,Desktop,Unknown,Chrome
+1705901599,umigon,Desktop,Unknown,Chrome
+1705902083,topics,Desktop,Unknown,Chrome
+1705902547,topics,Desktop,Unknown,Chrome
+1705902681,topics,Desktop,Unknown,Chrome
+1705903570,cowo,Desktop,Windows NT,Firefox
+1705903668,cowo,Desktop,Windows NT,Firefox
+1705903950,cowo,Desktop,Windows NT,Firefox
+1705904096,cowo,Desktop,Windows NT,Firefox
+1705904706,cowo,Desktop,Unknown,Chrome
+1705905363,cowo,Desktop,Unknown,Chrome
+1705905698,topics,Desktop,Unknown,Chrome
+1705905730,topics,Desktop,Unknown,Chrome
+1705905742,topics,Desktop,Unknown,Chrome
+1705905891,topics,Desktop,Unknown,Chrome
+1705905937,topics,Desktop,Unknown,Chrome
+1705905941,topics,Desktop,Unknown,Chrome
+1705906015,cowo,Desktop,Unknown,Chrome
+1705906041,topics,Desktop,Unknown,Chrome
+1705906076,cowo,Desktop,Unknown,Chrome
+1705906124,topics,Desktop,Unknown,Chrome
+1705906627,topics,Desktop,Unknown,Chrome
+1705906662,topics,Desktop,Unknown,Chrome
+1705906666,topics,Desktop,Unknown,Chrome
+1705907267,cowo,Desktop,Unknown,Chrome
+1705911880,cowo,Desktop,Unknown,YaBrowser
+1705911969,cowo,Desktop,Windows NT,Firefox
+1705911973,gaze,Desktop,Mac OS X,Safari
+1705912032,cowo,Desktop,Windows NT,Firefox
+1705913336,gaze,Desktop,Mac OS X,Safari
+1705913871,gaze,Desktop,Mac OS X,Safari
+1705914056,cowo,Desktop,Windows NT,Firefox
+1705914135,cowo,Desktop,Windows NT,Firefox
+1705914158,gaze,Desktop,Mac OS X,Safari
+1705914705,cowo,Desktop,Windows NT,Firefox
+1705914897,cowo,Desktop,Windows NT,Firefox
+1705916433,cowo,Desktop,Windows NT,Firefox
+1705917280,cowo,Desktop,Windows NT,Firefox
+1705917469,cowo,Desktop,Windows NT,Firefox
+1705918064,cowo,Desktop,Windows NT,Firefox
+1705918149,cowo,Desktop,Windows NT,Firefox
+1705918399,cowo,Desktop,Windows NT,Firefox
+1705918637,cowo,Desktop,Windows NT,Firefox
+1705918730,cowo,Desktop,Windows NT,Firefox
+1705919357,cowo,Desktop,Windows NT,Firefox
+1705919547,cowo,Desktop,Unknown,Chrome
+1705920413,cowo,Desktop,Windows NT,Firefox
+1705920636,cowo,Desktop,Windows NT,Firefox
+1705920990,cowo,Desktop,Windows NT,Firefox
+1705921355,cowo,Desktop,Windows NT,Firefox
+1705921490,cowo,Desktop,Windows NT,Firefox
+1705921520,umigon,Desktop,Windows NT,Firefox
+1705923584,gaze,Desktop,Unknown,Edge
+1705927288,linkprediction,Desktop,Windows NT,Firefox
+1705927649,linkprediction,Desktop,Windows NT,Firefox
+1705928026,networkconverter,Desktop,Unknown,Chrome
+1705932877,topics,Desktop,Unknown,Chrome
+1705932924,topics,Desktop,Unknown,Chrome
+1705937425,cowo,Desktop,Unknown,YaBrowser
+1705937503,cowo,Desktop,Unknown,YaBrowser
+1705938366,umigon,Desktop,Unknown,Chrome
+1705938817,cowo,Desktop,Unknown,Chrome
+1705939009,cowo,Desktop,Unknown,Chrome
+1705939281,gaze,Desktop,Windows NT,Firefox
+1705939372,gaze,Desktop,Windows NT,Firefox
+1705939722,umigon,Desktop,Unknown,Edge
+1705940668,topics,Phone,Android,Chrome
+1705940735,cowo,Phone,Android,Chrome
+1705944761,umigon,Desktop,Unknown,Edge
+1705949080,cowo,Desktop,Windows NT,Firefox
+1705952349,cowo,Desktop,Windows NT,Firefox
+1705953424,cowo,Desktop,Unknown,Chrome
+1705961714,umigon en,Desktop,Windows NT,Firefox
+1705961738,umigon en,Desktop,Windows NT,Firefox
+1705961782,umigon en,Desktop,Windows NT,Firefox
+1705961908,umigon en,Desktop,Windows NT,Firefox
+1705961920,umigon en,Desktop,Windows NT,Firefox
+1705961927,umigon en,Desktop,Windows NT,Firefox
+1705961960,umigon en,Desktop,Windows NT,Firefox
+1705962087,umigon en,Desktop,Windows NT,Firefox
+1705962110,umigon en,Desktop,Windows NT,Firefox
+1705962136,umigon en,Desktop,Windows NT,Firefox
+1705969052,networkconverter,Desktop,Unknown,Chrome
+1705969088,gaze,Desktop,Unknown,Chrome
+1705970068,gaze,Desktop,Unknown,Chrome
+1705973905,umigon,Desktop,Unknown,Chrome
+1705973929,umigon,Desktop,Unknown,Chrome
+1705973941,umigon,Desktop,Unknown,Chrome
+1705973951,umigon,Desktop,Unknown,Chrome
+1705997524,networkconverter,Desktop,Unknown,Chrome
+1705999258,umigon,Desktop,Unknown,Chrome
+1705999298,umigon,Desktop,Unknown,Chrome
+1705999913,umigon,Desktop,Unknown,Chrome
+1706000390,cowo,Desktop,Unknown,Chrome
+1706004511,topics,Desktop,Unknown,Chrome
+1706004598,topics,Desktop,Unknown,Chrome
+1706012727,cowo,Desktop,Unknown,Edge
+1706012951,topics,Desktop,Unknown,Chrome
+1706013252,cowo,Desktop,Windows NT,Firefox
+1706018173,cowo,Desktop,Unknown,Chrome
+1706026536,topics,Desktop,Unknown,Chrome
+1706026758,topics,Desktop,Unknown,Chrome
+1706032878,cowo,Desktop,Unknown,Chrome
+1706035815,cowo,Desktop,Windows NT,Firefox
+1706035859,cowo,Desktop,Windows NT,Firefox
+1706035890,topics,Desktop,Windows NT,Firefox
+1706036648,gaze,Desktop,Windows NT,Firefox
+1706042149,gaze,Desktop,Windows NT,Firefox
+1706042263,cowo,Desktop,Windows NT,Firefox
+1706042383,cowo,Desktop,Windows NT,Firefox
+1706043161,cowo,Desktop,Windows NT,Firefox
+1706045280,cowo,Desktop,Windows NT,Firefox
+1706045392,gaze,Desktop,Windows NT,Firefox
+1706045418,gaze,Desktop,Windows NT,Firefox
+1706045499,cowo,Desktop,Windows NT,Firefox
+1706051222,networkconverter,Desktop,Windows NT,Firefox
+1706053926,networkconverter,Desktop,Windows NT,Firefox
+1706053939,networkconverter,Desktop,Windows NT,Firefox
+1706056212,topics,Desktop,Unknown,Chrome
+1706068889,cowo,Desktop,Unknown,Chrome
+1706069156,cowo,Desktop,Unknown,Chrome
+1706069327,cowo,Desktop,Unknown,Chrome
+1706078063,cowo,Desktop,Unknown,Edge
+1706078330,cowo,Desktop,Unknown,Edge
+1706081353,cowo,Phone,Android,Chrome
+1706087538,cowo,Desktop,Unknown,Chrome
+1706087996,cowo,Desktop,Unknown,Chrome
+1706088035,cowo,Desktop,Unknown,Chrome
+1706088882,cowo,Desktop,Unknown,Chrome
+1706088918,cowo,Desktop,Unknown,Chrome
+1706096269,cowo,Desktop,Unknown,Chrome
+1706101161,topics,Desktop,Unknown,Edge
+1706101475,umigon fr,Desktop,Unknown,Chrome
+1706101488,umigon fr,Desktop,Unknown,Chrome
+1706101489,umigon fr,Desktop,Unknown,Chrome
+1706102045,cowo,Desktop,Windows NT,Firefox
+1706102248,umigon,Desktop,Unknown,Edge
+1706103399,umigon,Desktop,Unknown,Edge
+1706104930,umigon,Desktop,Unknown,Chrome
+1706108751,organic en,Desktop,Unknown,Chrome
+1706108752,cowo,Desktop,Windows NT,Firefox
+1706108897,organic en,Desktop,Unknown,Chrome
+1706108914,organic en,Desktop,Unknown,Chrome
+1706109355,networkconverter,Desktop,Windows NT,Firefox
+1706109440,networkconverter,Desktop,Windows NT,Firefox
+1706110565,umigon en,Desktop,Windows NT,Firefox
+1706110782,umigon en,Desktop,Unknown,Chrome
+1706110798,umigon en,Desktop,Unknown,Chrome
+1706110800,umigon en,Desktop,Unknown,Chrome
+1706110801,umigon en,Desktop,Unknown,Chrome
+1706110811,umigon en,Desktop,Unknown,Chrome
+1706110812,umigon en,Desktop,Unknown,Chrome
+1706110827,umigon en,Desktop,Unknown,Chrome
+1706110835,umigon en,Desktop,Unknown,Chrome
+1706110845,umigon en,Desktop,Unknown,Chrome
+1706140450,cowo,Desktop,Unknown,Chrome
+1706142075,cowo,Desktop,Unknown,Chrome
+1706143775,topics,Desktop,Unknown,Chrome
+1706155752,umigon,Desktop,Unknown,Chrome
+1706155831,umigon,Desktop,Unknown,Chrome
+1706156160,cowo,Desktop,Unknown,Chrome
+1706162735,cowo,Desktop,Unknown,Edge
+1706166190,gaze,Desktop,Unknown,Chrome
+1706166261,umigon,Desktop,Unknown,Chrome
+1706166306,networkconverter,Desktop,Unknown,Chrome
+1706166926,gaze,Desktop,Unknown,Chrome
+1706166956,gaze,Desktop,Unknown,Chrome
+1706167104,pdf_region_extractor,Phone,Android,Chrome
+1706167359,gaze,Desktop,Unknown,Chrome
+1706167397,gaze,Desktop,Unknown,Chrome
+1706168710,gaze,Desktop,Unknown,Chrome
+1706168725,gaze,Desktop,Unknown,Chrome
+1706170309,gaze,Desktop,Unknown,Chrome
+1706172442,gaze,Desktop,Unknown,Chrome
+1706172464,gaze,Desktop,Unknown,Chrome
+1706172617,gaze,Desktop,Unknown,Chrome
+1706172629,gaze,Desktop,Unknown,Chrome
+1706172770,gaze,Desktop,Unknown,Chrome
+1706172772,gaze,Desktop,Unknown,Chrome
+1706172774,gaze,Desktop,Unknown,Chrome
+1706172804,gaze,Desktop,Unknown,Chrome
+1706176088,topics,Desktop,Unknown,Chrome
+1706176139,topics,Desktop,Unknown,Chrome
+1706177797,networkconverter,Desktop,Unknown,Chrome
+1706177824,networkconverter,Desktop,Unknown,Chrome
+1706177864,gaze,Desktop,Unknown,Chrome
+1706177865,gaze,Desktop,Unknown,Chrome
+1706177879,gaze,Desktop,Unknown,Chrome
+1706177975,gaze,Desktop,Unknown,Chrome
+1706177992,gaze,Desktop,Unknown,Chrome
+1706181436,umigon en,Desktop,Unknown,Chrome
+1706181458,umigon en,Desktop,Unknown,Chrome
+1706192183,cowo,Desktop,Mac OS X,Safari
+1706197953,networkconverter,Desktop,Unknown,Chrome
+1706199120,topics,Desktop,Unknown,Edge
+1706199189,topics,Desktop,Unknown,Edge
+1706201596,topics,Desktop,Unknown,Chrome
+1706201710,topics,Desktop,Unknown,Chrome
+1706205854,networkconverter,Desktop,Unknown,Chrome
+1706205874,networkconverter,Desktop,Unknown,Chrome
+1706205965,networkconverter,Desktop,Unknown,Chrome
+1706206138,gaze,Desktop,Unknown,Chrome
+1706206161,gaze,Desktop,Unknown,Chrome
+1706206484,gaze,Desktop,Unknown,Chrome
+1706206488,gaze,Desktop,Unknown,Chrome
+1706206543,gaze,Desktop,Unknown,Chrome
+1706206558,cowo,Desktop,Unknown,Chrome
+1706206641,cowo,Desktop,Unknown,Chrome
+1706206674,cowo,Desktop,Unknown,Chrome
+1706206763,cowo,Desktop,Unknown,Chrome
+1706206796,networkconverter,Desktop,Unknown,Chrome
+1706206831,umigon,Desktop,Unknown,Chrome
+1706207650,organic en,Desktop,Unknown,Chrome
+1706207659,organic en,Desktop,Unknown,Chrome
+1706207669,organic en,Desktop,Unknown,Chrome
+1706207671,organic en,Desktop,Unknown,Chrome
+1706207680,organic en,Desktop,Unknown,Chrome
+1706209003,gaze,Desktop,Unknown,Chrome
+1706209080,gaze,Desktop,Unknown,Chrome
+1706209588,gaze,Desktop,Unknown,Chrome
+1706209625,gaze,Desktop,Unknown,Chrome
+1706209722,gaze,Desktop,Unknown,Chrome
+1706209764,gaze,Desktop,Unknown,Chrome
+1706210090,gaze,Desktop,Unknown,Chrome
+1706210117,gaze,Desktop,Unknown,Chrome
+1706210626,topics,Desktop,Unknown,Chrome
+1706215553,cowo,Desktop,Unknown,Chrome
+1706219113,cowo,Desktop,Unknown,Chrome
+1706219342,cowo,Desktop,Unknown,Chrome
+1706219484,cowo,Desktop,Unknown,Chrome
+1706227822,topics,Desktop,Unknown,Chrome
+1706228678,cowo,Desktop,Unknown,Chrome
+1706234548,cowo,Desktop,Unknown,Chrome
+1706236307,cowo,Desktop,Unknown,Edge
+1706236398,cowo,Desktop,Unknown,Edge
+1706236579,cowo,Desktop,Unknown,Edge
+1706236668,cowo,Desktop,Unknown,Edge
+1706236875,cowo,Desktop,Unknown,Edge
+1706248316,gaze,Desktop,Unknown,Chrome
+1706248413,gaze,Desktop,Unknown,Chrome
+1706255292,umigon,Desktop,Windows NT,Chrome
+1706258651,gaze,Desktop,Unknown,Chrome
+1706258681,gaze,Desktop,Unknown,Chrome
+1706259191,topics,Desktop,Windows NT,Firefox
+1706260395,umigon en,Desktop,Windows NT,Firefox
+1706261783,networkconverter,Desktop,Unknown,Chrome
+1706264271,topics,Desktop,Windows NT,Firefox
+1706269386,networkconverter,Desktop,Unknown,Chrome
+1706269430,networkconverter,Desktop,Unknown,Chrome
+1706269993,cowo,Desktop,Unknown,Chrome
+1706270120,cowo,Desktop,Unknown,Chrome
+1706270416,cowo,Desktop,Unknown,Chrome
+1706280213,umigon,Desktop,Unknown,Chrome
+1706280249,umigon,Desktop,Unknown,Chrome
+1706280291,umigon,Desktop,Unknown,Chrome
+1706280363,umigon,Desktop,Mac OS X,Safari
+1706280458,umigon,Desktop,Mac OS X,Safari
+1706280458,umigon,Desktop,Unknown,Chrome
+1706280462,umigon,Desktop,Unknown,Chrome
+1706280511,umigon,Desktop,Unknown,Chrome
+1706280712,umigon,Desktop,Unknown,Chrome
+1706280891,umigon,Desktop,Unknown,Chrome
+1706280911,umigon,Desktop,Unknown,Chrome
+1706280931,umigon,Desktop,Unknown,Chrome
+1706281079,umigon,Desktop,Mac OS X,Safari
+1706281082,umigon,Desktop,Mac OS X,Safari
+1706281163,umigon,Desktop,Unknown,Chrome
+1706282160,cowo,Phone,iOS,UIWebView
+1706282337,organic en,Desktop,Unknown,Chrome
+1706282370,umigon,Desktop,Unknown,Chrome
+1706283228,networkconverter,Desktop,Unknown,Chrome
+1706283402,networkconverter,Desktop,Unknown,Chrome
+1706288919,cowo,Desktop,Unknown,Chrome
+1706295206,networkconverter,Desktop,Unknown,Chrome
+1706301497,umigon,Desktop,Unknown,Chrome
+1706307450,cowo,Desktop,Ubuntu,Firefox
+1706307696,cowo,Desktop,Ubuntu,Firefox
+1706307838,cowo,Desktop,Ubuntu,Firefox
+1706307869,cowo,Desktop,Ubuntu,Firefox
+1706308092,cowo,Desktop,Ubuntu,Firefox
+1706308256,cowo,Desktop,Ubuntu,Firefox
+1706308484,networkconverter,Desktop,Ubuntu,Firefox
+1706312258,topics,Desktop,Unknown,Chrome
+1706328775,cowo,Desktop,Unknown,Edge
+1706328880,cowo,Desktop,Unknown,Edge
+1706329039,cowo,Desktop,Unknown,Chrome
+1706329163,cowo,Desktop,Unknown,Chrome
+1706329286,cowo,Desktop,Unknown,Chrome
+1706329392,cowo,Desktop,Unknown,Chrome
+1706329499,cowo,Desktop,Unknown,Chrome
+1706331735,cowo,Desktop,Unknown,Chrome
+1706349879,cowo,Desktop,Mac OS X,Safari
+1706349983,cowo,Desktop,Mac OS X,Safari
+1706357084,cowo,Desktop,Unknown,Chrome
+1706359221,cowo,Desktop,Unknown,Edge
+1706359844,cowo,Desktop,Unknown,Edge
+1706365883,spatialize,Desktop,Windows NT,Firefox
+1706380848,umigon,Desktop,Unknown,Chrome
+1706381095,topics,Desktop,Windows NT,Firefox
+1706382665,umigon,Desktop,Unknown,Chrome
+1706443232,umigon,Desktop,Unknown,Chrome
+1706444980,cowo,Desktop,Unknown,Chrome
+1706466791,gaze,Desktop,Unknown,Chrome
+1706466916,gaze,Desktop,Unknown,Chrome
+1706478263,umigon,Desktop,Unknown,Chrome
+1706485617,cowo,Desktop,Mac OS X,Safari
+1706485655,cowo,Desktop,Mac OS X,Safari
+1706485665,cowo,Desktop,Mac OS X,Safari
+1706500353,umigon en,Desktop,Linux,Firefox
+1706500363,umigon en,Desktop,Linux,Firefox
+1706500364,umigon en,Desktop,Linux,Firefox
+1706500364,umigon en,Desktop,Linux,Firefox
+1706500375,umigon en,Desktop,Linux,Firefox
+1706500384,umigon en,Desktop,Linux,Firefox
+1706500386,umigon en,Desktop,Linux,Firefox
+1706500393,umigon en,Desktop,Linux,Firefox
+1706525177,cowo,Desktop,Unknown,Chrome
+1706525276,cowo,Desktop,Unknown,Chrome
+1706528677,cowo,Desktop,Unknown,Chrome
+1706529580,cowo,Desktop,Unknown,Chrome
+1706536867,cowo,Desktop,Unknown,Chrome
+1706542403,gaze,Desktop,Unknown,Edge
+1706544499,bibliocoupling,Desktop,Unknown,Chrome
+1706544568,bibliocoupling,Desktop,Unknown,Chrome
+1706544582,bibliocoupling,Desktop,Unknown,Chrome
+1706545919,bibliocoupling,Desktop,Unknown,Chrome
+1706546315,umigon,Phone,Android,Chrome
+1706551282,cowo,Desktop,Unknown,Edge
+1706552444,cowo,Desktop,Unknown,Chrome
+1706558985,umigon,Desktop,Unknown,Chrome
+1706562870,topics,Desktop,Unknown,Chrome
+1706562935,cowo,Desktop,Mac OS X,Safari
+1706562990,cowo,Desktop,Mac OS X,Safari
+1706562995,cowo,Desktop,Windows NT,Firefox
+1706563349,cowo,Desktop,Mac OS X,Safari
+1706563493,cowo,Desktop,Mac OS X,Safari
+1706563745,cowo,Desktop,Mac OS X,Safari
+1706566138,umigon,Desktop,Unknown,Chrome
+1706566155,umigon,Desktop,Unknown,Chrome
+1706567978,cowo,Desktop,Mac OS X,Safari
+1706568331,cowo,Desktop,Mac OS X,Safari
+1706568416,cowo,Desktop,Mac OS X,Safari
+1706568451,cowo,Desktop,Mac OS X,Safari
+1706570313,gaze,Desktop,Unknown,Chrome
+1706570501,gaze,Desktop,Unknown,Chrome
+1706575155,gaze,Desktop,Unknown,Chrome
+1706575205,gaze,Desktop,Unknown,Chrome
+1706575215,gaze,Desktop,Unknown,Chrome
+1706577064,gaze,Desktop,Unknown,Chrome
+1706586676,gaze,Desktop,Unknown,Chrome
+1706599579,gaze,Desktop,Unknown,Chrome
+1706599983,networkconverter,Desktop,Unknown,Chrome
+1706600067,gaze,Desktop,Unknown,Chrome
+1706600100,gaze,Desktop,Unknown,Chrome
+1706600190,gaze,Desktop,Unknown,Chrome
+1706600214,gaze,Desktop,Unknown,Chrome
+1706600279,gaze,Desktop,Unknown,Chrome
+1706600294,gaze,Desktop,Unknown,Chrome
+1706603248,cowo,Desktop,Unknown,Chrome
+1706604656,topics,Desktop,Unknown,Chrome
+1706605147,gaze,Desktop,Unknown,Chrome
+1706605409,gaze,Desktop,Unknown,Chrome
+1706607421,gaze,Desktop,Unknown,Chrome
+1706607582,gaze,Desktop,Unknown,Edge
+1706607618,gaze,Desktop,Unknown,Edge
+1706607827,cowo,Desktop,Windows NT,Firefox
+1706607934,cowo,Desktop,Windows NT,Firefox
+1706608040,networkconverter,Desktop,Unknown,Chrome
+1706608231,cowo,Desktop,Windows NT,Firefox
+1706608304,cowo,Desktop,Windows NT,Firefox
+1706609417,gaze,Desktop,Unknown,Chrome
+1706609803,gaze,Desktop,Unknown,Chrome
+1706609889,gaze,Desktop,Unknown,Chrome
+1706609913,gaze,Desktop,Unknown,Chrome
+1706610026,gaze,Desktop,Unknown,Chrome
+1706610047,gaze,Desktop,Unknown,Chrome
+1706613243,cowo,Desktop,Unknown,Edge
+1706614261,cowo,Desktop,Unknown,Edge
+1706614309,cowo,Desktop,Unknown,Edge
+1706614580,topics,Desktop,Unknown,Chrome
+1706614593,topics,Desktop,Unknown,Chrome
+1706614610,umigon en,Desktop,Unknown,Edge
+1706614620,umigon en,Desktop,Unknown,Edge
+1706614627,umigon en,Desktop,Unknown,Edge
+1706615372,cowo,Desktop,Unknown,Chrome
+1706615413,cowo,Desktop,Unknown,Chrome
+1706615515,cowo,Desktop,Unknown,Chrome
+1706615528,cowo,Desktop,Mac OS X,Safari
+1706615547,cowo,Desktop,Unknown,Chrome
+1706615567,cowo,Desktop,Mac OS X,Safari
+1706615579,gaze,Desktop,Unknown,Chrome
+1706615661,gaze,Desktop,Unknown,Chrome
+1706615731,gaze,Desktop,Unknown,Chrome
+1706615767,cowo,Desktop,Mac OS X,Safari
+1706615830,cowo,Desktop,Mac OS X,Safari
+1706615951,gaze,Desktop,Unknown,Chrome
+1706615969,cowo,Desktop,Unknown,Chrome
+1706615976,gaze,Desktop,Unknown,Chrome
+1706616010,gaze,Desktop,Unknown,Chrome
+1706616010,cowo,Desktop,Unknown,Edge
+1706616044,cowo,Desktop,Unknown,Chrome
+1706616073,networkconverter,Desktop,Unknown,Chrome
+1706616163,gaze,Desktop,Unknown,Chrome
+1706616177,gaze,Desktop,Windows NT,Firefox
+1706616240,gaze,Desktop,Unknown,Chrome
+1706616248,gaze,Desktop,Unknown,Chrome
+1706616258,networkconverter,Desktop,Mac OS X,Safari
+1706616300,gaze,Desktop,Unknown,Edge
+1706616311,gaze,Desktop,Mac OS X,Safari
+1706616336,gaze,Desktop,Unknown,Edge
+1706616338,networkconverter,Desktop,Unknown,Chrome
+1706616344,gaze,Desktop,Unknown,Edge
+1706616355,cowo,Desktop,Unknown,Chrome
+1706616356,gaze,Desktop,Unknown,Edge
+1706616360,gaze,Desktop,Unknown,Edge
+1706616366,gaze,Desktop,Unknown,Edge
+1706616370,gaze,Desktop,Unknown,Chrome
+1706616382,gaze,Desktop,Unknown,Edge
+1706616388,gaze,Desktop,Mac OS X,Safari
+1706616398,gaze,Desktop,Unknown,Chrome
+1706616414,gaze,Desktop,Unknown,Edge
+1706616431,networkconverter,Desktop,Mac OS X,Safari
+1706616437,gaze,Desktop,Unknown,Edge
+1706616456,gaze,Desktop,Unknown,Chrome
+1706616463,gaze,Desktop,Unknown,Chrome
+1706616477,gaze,Desktop,Unknown,Chrome
+1706616488,gaze,Desktop,Unknown,Chrome
+1706616493,gaze,Desktop,Unknown,Chrome
+1706616506,networkconverter,Desktop,Unknown,Edge
+1706616508,networkconverter,Desktop,Mac OS X,Safari
+1706616512,gaze,Desktop,Mac OS X,Safari
+1706616548,gaze,Desktop,Unknown,Chrome
+1706616558,gaze,Desktop,Unknown,Edge
+1706616559,gaze,Desktop,Unknown,Chrome
+1706616564,gaze,Desktop,Unknown,Chrome
+1706616575,networkconverter,Desktop,Unknown,Chrome
+1706616583,gaze,Desktop,Unknown,Edge
+1706616594,gaze,Desktop,Windows NT,Firefox
+1706616596,networkconverter,Desktop,Unknown,Chrome
+1706616597,gaze,Desktop,Unknown,Chrome
+1706616614,gaze,Desktop,Unknown,Chrome
+1706616617,gaze,Desktop,Unknown,Chrome
+1706616621,gaze,Desktop,Unknown,Chrome
+1706616632,gaze,Desktop,Unknown,Edge
+1706616642,gaze,Desktop,Unknown,Edge
+1706616645,gaze,Desktop,Unknown,Chrome
+1706616648,networkconverter,Desktop,Unknown,Edge
+1706616651,gaze,Desktop,Mac OS X,Safari
+1706616653,gaze,Desktop,Unknown,Chrome
+1706616662,networkconverter,Desktop,Unknown,Chrome
+1706616664,gaze,Desktop,Unknown,Chrome
+1706616676,gaze,Desktop,Unknown,Edge
+1706616676,gaze,Desktop,Unknown,Chrome
+1706616692,gaze,Desktop,Unknown,Chrome
+1706616698,gaze,Desktop,Unknown,Chrome
+1706616718,gaze,Desktop,Unknown,Edge
+1706616726,gaze,Desktop,Unknown,Edge
+1706616751,gaze,Desktop,Unknown,Edge
+1706616762,gaze,Desktop,Unknown,Chrome
+1706616764,gaze,Desktop,Mac OS X,Safari
+1706616773,gaze,Desktop,Unknown,Chrome
+1706616775,gaze,Desktop,Unknown,Chrome
+1706616777,networkconverter,Desktop,Unknown,Chrome
+1706616779,gaze,Desktop,Unknown,Chrome
+1706616821,gaze,Desktop,Unknown,Chrome
+1706616825,gaze,Desktop,Unknown,Edge
+1706616825,gaze,Desktop,Mac OS X,Safari
+1706616829,gaze,Desktop,Unknown,Edge
+1706616849,networkconverter,Desktop,Unknown,Chrome
+1706616851,gaze,Desktop,Unknown,Edge
+1706616870,gaze,Desktop,Unknown,Chrome
+1706616871,networkconverter,Desktop,Unknown,Chrome
+1706616886,gaze,Desktop,Unknown,Chrome
+1706616890,gaze,Desktop,Mac OS X,Safari
+1706616894,networkconverter,Desktop,Windows NT,Firefox
+1706616910,networkconverter,Desktop,Windows NT,Firefox
+1706616938,gaze,Desktop,Unknown,Chrome
+1706616940,networkconverter,Desktop,Unknown,Chrome
+1706616941,gaze,Desktop,Unknown,Edge
+1706616943,networkconverter,Desktop,Unknown,Chrome
+1706616978,gaze,Desktop,Unknown,Chrome
+1706616993,gaze,Desktop,Unknown,Chrome
+1706617000,gaze,Desktop,Unknown,Chrome
+1706617012,networkconverter,Desktop,Unknown,Chrome
+1706617025,gaze,Desktop,Mac OS X,Safari
+1706617028,gaze,Desktop,Unknown,Chrome
+1706617029,networkconverter,Desktop,Unknown,Chrome
+1706617030,gaze,Desktop,Unknown,Chrome
+1706617057,gaze,Desktop,Mac OS X,Safari
+1706617080,networkconverter,Desktop,Mac OS X,Safari
+1706617097,gaze,Desktop,Unknown,Chrome
+1706617115,networkconverter,Desktop,Unknown,Chrome
+1706617222,gaze,Desktop,Unknown,Edge
+1706617236,gaze,Desktop,Unknown,Chrome
+1706617257,gaze,Desktop,Unknown,Edge
+1706617278,gaze,Desktop,Unknown,Chrome
+1706617282,gaze,Desktop,Unknown,Chrome
+1706617310,gaze,Desktop,Unknown,Chrome
+1706617347,gaze,Desktop,Mac OS X,Safari
+1706617352,gaze,Desktop,Unknown,Edge
+1706617365,gaze,Desktop,Mac OS X,Safari
+1706617375,gaze,Desktop,Unknown,Chrome
+1706617381,gaze,Desktop,Unknown,Edge
+1706617383,gaze,Desktop,Unknown,Chrome
+1706617387,gaze,Desktop,Mac OS X,Safari
+1706617408,gaze,Desktop,Unknown,Chrome
+1706617422,gaze,Desktop,Unknown,Chrome
+1706617464,gaze,Desktop,Mac OS X,Safari
+1706617496,gaze,Desktop,Unknown,Chrome
+1706617498,gaze,Desktop,Unknown,Edge
+1706617513,gaze,Desktop,Unknown,Chrome
+1706617516,gaze,Desktop,Unknown,Chrome
+1706617538,gaze,Desktop,Unknown,Chrome
+1706617561,gaze,Desktop,Unknown,Chrome
+1706617584,gaze,Desktop,Unknown,Chrome
+1706617697,gaze,Desktop,Unknown,Chrome
+1706617739,networkconverter,Desktop,Unknown,Chrome
+1706618243,gaze,Desktop,Unknown,Chrome
+1706618529,gaze,Desktop,Mac OS X,Safari
+1706620005,topics,Desktop,Unknown,Chrome
+1706620042,topics,Desktop,Unknown,Chrome
+1706621928,cowo,Desktop,Unknown,Chrome
+1706621948,umigon,Desktop,Unknown,Chrome
+1706622009,umigon,Desktop,Unknown,Chrome
+1706622267,cowo,Desktop,Unknown,Edge
+1706623147,gaze,Desktop,Unknown,Chrome
+1706623346,cowo,Desktop,Unknown,Chrome
+1706623944,gaze,Desktop,Unknown,Chrome
+1706624200,gaze,Desktop,Unknown,Chrome
+1706624461,gaze,Desktop,Unknown,Chrome
+1706626900,cowo,Desktop,Windows NT,Firefox
+1706627930,gaze,Desktop,Unknown,Chrome
+1706627955,gaze,Desktop,Unknown,Chrome
+1706627984,gaze,Desktop,Unknown,Chrome
+1706628004,gaze,Desktop,Unknown,Chrome
+1706628064,gaze,Desktop,Unknown,Chrome
+1706628084,gaze,Desktop,Unknown,Chrome
+1706628985,cowo,Desktop,Windows NT,Firefox
+1706629148,topics,Desktop,Windows NT,Firefox
+1706630208,topics,Desktop,Unknown,Edge
+1706633589,umigon fr,Desktop,Mac OS X,Firefox
+1706633591,umigon en,Desktop,Mac OS X,Firefox
+1706633598,umigon es,Desktop,Mac OS X,Firefox
+1706633605,umigon es,Desktop,Mac OS X,Firefox
+1706633611,umigon es,Desktop,Mac OS X,Firefox
+1706633615,organic en,Desktop,Mac OS X,Firefox
+1706633617,organic fr,Desktop,Mac OS X,Firefox
+1706635129,gaze,Desktop,Unknown,Edge
+1706638191,gaze,Desktop,Unknown,Edge
+1706638243,umigon fr,Desktop,Linux,Firefox
+1706638258,umigon en,Desktop,Linux,Firefox
+1706638272,umigon en,Desktop,Linux,Firefox
+1706638285,umigon en,Desktop,Linux,Firefox
+1706638700,topics,Desktop,Unknown,Chrome
+1706639091,topics,Desktop,Unknown,Chrome
+1706639612,gaze,Desktop,Unknown,Edge
+1706640806,gaze,Desktop,Unknown,Edge
+1706640843,gaze,Desktop,Unknown,Edge
+1706641883,cowo,Desktop,Unknown,Edge
+1706642076,organic en,Phone,Android,Chrome
+1706643149,networkconverter,Desktop,Unknown,Edge
+1706643762,umigon en,Desktop,Windows NT,Firefox
+1706645758,networkconverter,Desktop,Unknown,Edge
+1706646358,gaze,Desktop,Unknown,Edge
+1706646479,gaze,Desktop,Unknown,Edge
+1706646785,umigon,Desktop,Unknown,Chrome
+1706662735,cowo,Desktop,Unknown,Edge
+1706664707,networkconverter,Desktop,Unknown,Chrome
+1706666094,topics,Desktop,Unknown,Chrome
+1706668134,cowo,Desktop,Unknown,Edge
+1706670605,gaze,Desktop,Unknown,Chrome
+1706674753,cowo,Desktop,Unknown,Edge
+1706690185,cowo,Desktop,Unknown,Edge
+1706690862,cowo,Desktop,Unknown,Edge
+1706691035,cowo,Desktop,Unknown,Edge
+1706691320,cowo,Desktop,Unknown,Edge
+1706699551,cowo,Desktop,Unknown,Edge
+1706701267,cowo,Desktop,Unknown,Edge
+1706701583,topics,Desktop,Unknown,Chrome
+1706702208,umigon en,Desktop,Windows NT,Firefox
+1706702214,umigon fr,Desktop,Windows NT,Firefox
+1706702216,umigon fr,Desktop,Windows NT,Firefox
+1706702224,umigon en,Desktop,Windows NT,Firefox
+1706702476,cowo,Desktop,Mac OS X,Safari
+1706702810,cowo,Desktop,Unknown,Chrome
+1706703074,cowo,Desktop,Mac OS X,Safari
+1706703851,cowo,Desktop,Unknown,Edge
+1706704022,cowo,Desktop,Unknown,Edge
+1706704052,cowo,Desktop,Unknown,Edge
+1706705518,networkconverter,Desktop,Mac OS X,Safari
+1706705558,networkconverter,Desktop,Mac OS X,Safari
+1706709462,networkconverter,Desktop,Mac OS X,Safari
+1706716376,organic,Desktop,Windows NT,Firefox
+1706718612,organic en,Desktop,Windows NT,Firefox
+1706723018,cowo,Desktop,Unknown,Chrome
+1706725360,networkconverter,Desktop,Unknown,Chrome
+1706725449,networkconverter,Desktop,Unknown,Chrome
+1706728250,umigon,Desktop,Unknown,Chrome
+1706736710,cowo,Desktop,Mac OS X,Safari
+1706736852,cowo,Desktop,Mac OS X,Safari
+1706739403,cowo,Desktop,Unknown,Chrome
+1706751622,gaze,Desktop,Unknown,Chrome
+1706751951,gaze,Desktop,Unknown,Chrome
+1706752080,networkconverter,Desktop,Unknown,Chrome
+1706752126,networkconverter,Desktop,Unknown,Chrome
+1706756407,pdf_region_extractor,Desktop,Unknown,Chrome
+1706756677,pdf_region_extractor,Desktop,Unknown,Chrome
+1706771429,topics,Desktop,Unknown,Chrome
+1706773739,topics,Desktop,Unknown,Chrome
+1706773846,topics,Desktop,Unknown,Chrome
+1706778094,umigon,Desktop,Unknown,Chrome
+1706778231,cowo,Desktop,Unknown,Chrome
+1706780919,networkconverter,Desktop,Unknown,Chrome
+1706787784,gaze,Desktop,Unknown,Edge
+1706788335,gaze,Desktop,Unknown,Edge
+1706793159,umigon en,Desktop,Windows NT,Firefox
+1706793389,umigon en,Desktop,Windows NT,Firefox
+1706793390,umigon en,Desktop,Windows NT,Firefox
+1706793400,umigon en,Desktop,Windows NT,Firefox
+1706796214,umigon en,Desktop,Windows NT,Firefox
+1706796417,umigon en,Desktop,Windows NT,Firefox
+1706801841,cowo,Desktop,Unknown,Chrome
+1706802005,cowo,Desktop,Unknown,Chrome
+1706802516,cowo,Desktop,Unknown,Chrome
+1706803129,cowo,Desktop,Unknown,Chrome
+1706803512,cowo,Desktop,Unknown,Chrome
+1706803711,cowo,Desktop,Unknown,Chrome
+1706806753,topics,Desktop,Unknown,Chrome
+1706807533,cowo,Desktop,Unknown,Chrome
+1706807929,cowo,Desktop,Unknown,Chrome
+1706815494,networkconverter,Desktop,Mac OS X,Safari
+1706816281,gaze,Desktop,Mac OS X,Safari
+1706817568,topics,Desktop,Unknown,Avast
+1706817942,topics,Desktop,Unknown,Avast
+1706829908,organic en,Desktop,Unknown,Chrome
+1706829919,umigon es,Desktop,Unknown,Chrome
+1706829922,umigon en,Desktop,Unknown,Chrome
+1706835698,cowo,Desktop,Windows NT,Firefox
+1706836783,cowo,Desktop,Windows NT,Firefox
+1706837478,cowo,Desktop,Windows NT,Firefox
+1706837770,cowo,Desktop,Windows NT,Firefox
+1706837935,cowo,Desktop,Windows NT,Firefox
+1706843880,gaze,Desktop,Mac OS X,Safari
+1706844926,gaze,Desktop,Mac OS X,Safari
+1706844989,gaze,Desktop,Mac OS X,Safari
+1706845098,gaze,Desktop,Unknown,Chrome
+1706845100,gaze,Desktop,Mac OS X,Safari
+1706845188,gaze,Desktop,Mac OS X,Safari
+1706845284,gaze,Desktop,Mac OS X,Safari
+1706845392,gaze,Desktop,Mac OS X,Safari
+1706858909,topics,Desktop,Unknown,Edge
+1706860208,topics,Desktop,Unknown,Avast
+1706860264,organic en,Desktop,Windows NT,Firefox
+1706863576,cowo,Desktop,Unknown,Chrome
+1706864498,cowo,Desktop,Windows NT,Firefox
+1706866991,cowo,Desktop,Unknown,Edge
+1706867052,cowo,Desktop,Unknown,Edge
+1706867130,cowo,Desktop,Unknown,Edge
+1706873189,topics,Desktop,Unknown,Avast
+1706877465,cowo,Desktop,Unknown,Chrome
+1706878448,umigon,Desktop,Unknown,Chrome
+1706878490,cowo,Desktop,Unknown,Chrome
+1706880022,umigon,Desktop,Unknown,Chrome
+1706880042,umigon,Desktop,Unknown,Chrome
+1706883505,cowo,Desktop,Unknown,Chrome
+1706883652,cowo,Desktop,Unknown,Chrome
+1706883659,topics,Desktop,Unknown,Avast
+1706883776,topics,Desktop,Unknown,Avast
+1706883897,cowo,Desktop,Unknown,Chrome
+1706884495,cowo,Desktop,Unknown,Chrome
+1706884714,cowo,Desktop,Unknown,Chrome
+1706885644,umigon,Desktop,Unknown,Chrome
+1706887910,gaze,Desktop,Unknown,Chrome
+1706889635,topics,Desktop,Unknown,Chrome
+1706889722,topics,Desktop,Unknown,Chrome
+1706889816,topics,Desktop,Unknown,Avast
+1706893649,topics,Desktop,Unknown,Avast
+1706894065,cowo,Desktop,Unknown,Avast
+1706894251,cowo,Desktop,Unknown,Avast
+1706903467,umigon,Desktop,Unknown,Chrome
+1706907146,cowo,Desktop,Unknown,Chrome
+1706908154,cowo,Desktop,Unknown,Chrome
+1706908274,cowo,Desktop,Unknown,Chrome
+1706912551,cowo,Desktop,Unknown,Chrome
+1706913177,cowo,Desktop,Unknown,Chrome
+1706913476,cowo,Desktop,Unknown,Chrome
+1706913651,cowo,Desktop,Unknown,Chrome
+1706913915,cowo,Desktop,Unknown,Chrome
+1706917048,cowo,Desktop,Unknown,Chrome
+1706920033,topics,Desktop,Unknown,Chrome
+1706921795,topics,Desktop,Unknown,Chrome
+1706939187,umigon,Desktop,Unknown,Chrome
+1706945285,pdfmatcher,Desktop,Unknown,Avast
+1706945417,pdfmatcher,Desktop,Unknown,Avast
+1706945632,pdfmatcher,Desktop,Unknown,Avast
+1706945764,pdfmatcher,Desktop,Unknown,Avast
+1706945854,pdfmatcher,Desktop,Unknown,Avast
+1706945977,pdfmatcher,Desktop,Unknown,Avast
+1706946099,pdfmatcher,Desktop,Unknown,Avast
+1706946175,pdfmatcher,Desktop,Unknown,Avast
+1706946282,pdfmatcher,Desktop,Unknown,Avast
+1706949327,gaze,Desktop,Unknown,Chrome
+1706949440,pdfmatcher,Desktop,Unknown,Avast
+1706949513,pdfmatcher,Desktop,Unknown,Avast
+1706949585,pdfmatcher,Desktop,Unknown,Avast
+1706949618,pdfmatcher,Desktop,Unknown,Avast
+1706949758,pdfmatcher,Desktop,Unknown,Avast
+1706949819,pdfmatcher,Desktop,Unknown,Avast
+1706956196,organic,Desktop,Windows NT,Firefox
+1706956300,organic,Desktop,Windows NT,Firefox
+1706956441,organic,Desktop,Windows NT,Firefox
+1706956483,organic,Desktop,Windows NT,Firefox
+1706958506,umigon,Desktop,Unknown,Chrome
+1706959780,gaze,Desktop,Unknown,Chrome
+1706959830,gaze,Desktop,Unknown,Chrome
+1706960841,umigon,Desktop,Unknown,Chrome
+1706967906,umigon en,Desktop,Windows NT,Firefox
+1706968092,topics,Desktop,Windows NT,Firefox
+1706968165,umigon,Desktop,Windows NT,Firefox
+1706971441,topics,Desktop,Unknown,Chrome
+1706971531,topics,Desktop,Unknown,Chrome
+1706971823,umigon,Desktop,Unknown,Chrome
+1706972395,topics,Desktop,Unknown,Edge
+1706972480,topics,Desktop,Unknown,Chrome
+1706972533,topics,Desktop,Unknown,Chrome
+1706972570,umigon,Desktop,Unknown,Chrome
+1706972608,topics,Desktop,Unknown,Edge
+1706972640,topics,Desktop,Unknown,Edge
+1706978581,cowo,Desktop,Unknown,Chrome
+1706978665,cowo,Desktop,Unknown,Chrome
+1706978691,cowo,Desktop,Unknown,Chrome
+1706978757,cowo,Desktop,Unknown,Chrome
+1706980237,umigon,Desktop,Unknown,Chrome
+1706983423,cowo,Desktop,Unknown,Chrome
+1706984355,cowo,Desktop,Unknown,Chrome
+1706984355,cowo,Desktop,Unknown,Chrome
+1706984355,cowo,Desktop,Unknown,Chrome
+1706984361,cowo,Desktop,Unknown,Chrome
+1706995878,cowo,Desktop,Unknown,Chrome
+1706996297,cowo,Desktop,Unknown,Edge
+1706997222,cowo,Desktop,Unknown,Edge
+1706997325,cowo,Desktop,Unknown,Edge
+1706997385,cowo,Desktop,Unknown,Edge
+1706997509,cowo,Desktop,Unknown,Edge
+1706997561,cowo,Desktop,Unknown,Edge
+1706997850,cowo,Desktop,Unknown,Edge
+1706997900,cowo,Desktop,Unknown,Edge
+1706998532,cowo,Desktop,Unknown,Edge
+1706998597,cowo,Desktop,Unknown,Edge
+1706999606,cowo,Desktop,Unknown,Edge
+1706999722,cowo,Desktop,Unknown,Edge
+1706999789,cowo,Desktop,Unknown,Edge
+1706999872,cowo,Desktop,Unknown,Edge
+1707000594,cowo,Desktop,Windows NT,Firefox
+1707027263,gaze,Desktop,Unknown,Chrome
+1707031930,umigon,Desktop,Unknown,Chrome
+1707050861,gaze,Desktop,Unknown,Chrome
+1707050897,gaze,Desktop,Unknown,Chrome
+1707051004,gaze,Desktop,Unknown,Chrome
+1707051039,gaze,Desktop,Unknown,Chrome
+1707051735,gaze,Desktop,Unknown,Chrome
+1707057504,topics,Desktop,Unknown,Chrome
+1707058017,topics,Desktop,Unknown,Chrome
+1707076136,cowo,Desktop,Mac OS X,Firefox
+1707076220,cowo,Desktop,Mac OS X,Firefox
+1707076457,cowo,Desktop,Mac OS X,Firefox
+1707076629,cowo,Desktop,Mac OS X,Firefox
+1707076786,cowo,Desktop,Mac OS X,Firefox
+1707077045,cowo,Desktop,Mac OS X,Firefox
+1707077156,cowo,Desktop,Mac OS X,Firefox
+1707077977,cowo,Desktop,Mac OS X,Firefox
+1707078127,cowo,Desktop,Unknown,Chrome
+1707078270,cowo,Desktop,Mac OS X,Firefox
+1707080156,topics,Tablet,Android,Chrome
+1707080197,umigon,Desktop,Unknown,Edge
+1707081416,topics,Tablet,Android,Chrome
+1707082013,topics,Desktop,Windows NT,Firefox
+1707082534,topics,Desktop,Windows NT,Firefox
+1707083269,topics,Tablet,Android,Chrome
+1707091792,cowo,Desktop,Unknown,Chrome
+1707098513,pdf_region_extractor,Desktop,Unknown,Chrome
+1707098573,pdf_region_extractor,Desktop,Unknown,Chrome
+1707099009,pdf_region_extractor,Desktop,Unknown,Chrome
+1707121213,cowo,Desktop,Unknown,Chrome
+1707122938,cowo,Desktop,Unknown,Chrome
+1707124604,cowo,Desktop,Unknown,Chrome
+1707126038,cowo,Desktop,Unknown,Chrome
+1707135016,umigon,Desktop,Windows NT,Firefox
+1707135192,umigon,Desktop,Windows NT,Firefox
+1707138682,cowo,Desktop,Unknown,Chrome
+1707139405,umigon,Desktop,Unknown,Chrome
+1707143862,cowo,Desktop,Mac OS X,Firefox
+1707144181,cowo,Desktop,Mac OS X,Firefox
+1707144215,cowo,Desktop,Mac OS X,Firefox
+1707144369,umigon,Desktop,Unknown,Chrome
+1707144380,cowo,Desktop,Mac OS X,Firefox
+1707144592,cowo,Desktop,Mac OS X,Firefox
+1707144745,cowo,Desktop,Mac OS X,Firefox
+1707144996,cowo,Desktop,Mac OS X,Safari
+1707145663,cowo,Desktop,Mac OS X,Safari
+1707146168,cowo,Desktop,Mac OS X,Safari
+1707146537,cowo,Desktop,Mac OS X,Safari
+1707147131,cowo,Desktop,Mac OS X,Safari
+1707148181,cowo,Desktop,Mac OS X,Safari
+1707148293,cowo,Desktop,Mac OS X,Safari
+1707148725,cowo,Desktop,Mac OS X,Safari
+1707150571,cowo,Desktop,Mac OS X,Safari
+1707150827,cowo,Desktop,Mac OS X,Safari
+1707150842,cowo,Desktop,Mac OS X,Safari
+1707150868,cowo,Desktop,Mac OS X,Safari
+1707164101,cowo,Desktop,Unknown,Chrome
+1707164520,cowo,Desktop,Unknown,Chrome
+1707164588,gaze,Desktop,Mac OS X,Firefox
+1707164651,cowo,Desktop,Unknown,Chrome
+1707164691,cowo,Desktop,Unknown,Chrome
+1707164713,gaze,Desktop,Mac OS X,Firefox
+1707164815,cowo,Desktop,Unknown,Chrome
+1707164882,gaze,Desktop,Mac OS X,Firefox
+1707165067,topics,Desktop,Unknown,Chrome
+1707165443,cowo,Desktop,Unknown,Chrome
+1707165518,cowo,Desktop,Unknown,Chrome
+1707166974,cowo,Desktop,Unknown,Chrome
+1707167107,cowo,Desktop,Unknown,Chrome
+1707167175,cowo,Desktop,Unknown,Chrome
+1707168001,cowo,Desktop,Unknown,Chrome
+1707169841,gaze,Desktop,Unknown,Chrome
+1707169932,gaze,Desktop,Unknown,Chrome
+1707170908,cowo,Desktop,Mac OS X,Safari
+1707170992,cowo,Desktop,Mac OS X,Safari
+1707173023,cowo,Desktop,Unknown,Chrome
+1707173075,cowo,Desktop,Mac OS X,Safari
+1707173141,cowo,Desktop,Mac OS X,Safari
+1707173173,cowo,Desktop,Unknown,Chrome
+1707173205,cowo,Desktop,Mac OS X,Safari
+1707173311,cowo,Desktop,Mac OS X,Safari
+1707173424,cowo,Desktop,Unknown,Chrome
+1707173450,cowo,Desktop,Mac OS X,Safari
+1707173502,cowo,Desktop,Unknown,Chrome
+1707174787,cowo,Desktop,Unknown,Chrome
+1707175019,gaze,Desktop,Mac OS X,Firefox
+1707185015,topics,Desktop,Unknown,Edge
+1707185427,gaze,Desktop,Unknown,Chrome
+1707185445,gaze,Desktop,Unknown,Chrome
+1707186311,gaze,Desktop,Unknown,Edge
+1707186608,topics,Desktop,Unknown,Chrome
+1707189374,gaze,Desktop,Mac OS X,Firefox
+1707195886,gaze,Desktop,Mac OS X,Firefox
+1707195906,gaze,Desktop,Mac OS X,Firefox
+1707197522,gaze,Desktop,Unknown,Chrome
+1707205157,cowo,Desktop,Mac OS X,Safari
+1707205553,cowo,Desktop,Mac OS X,Safari
+1707205744,cowo,Desktop,Mac OS X,Safari
+1707205839,cowo,Desktop,Mac OS X,Safari
+1707214252,gaze,Desktop,Unknown,Chrome
+1707222139,cowo,Desktop,Unknown,Chrome
+1707222598,organic en,Desktop,Unknown,Chrome
+1707222646,topics,Desktop,Unknown,Chrome
+1707223507,organic,Desktop,Unknown,Chrome
+1707223553,cowo,Desktop,Unknown,Chrome
+1707228325,cowo,Desktop,Unknown,Chrome
+1707228371,cowo,Desktop,Unknown,Chrome
+1707228391,cowo,Desktop,Unknown,Chrome
+1707229028,topics,Desktop,Unknown,Chrome
+1707230374,topics,Desktop,Unknown,Chrome
+1707231307,cowo,Desktop,Windows NT,Chrome
+1707231347,cowo,Desktop,Windows NT,Chrome
+1707231409,cowo,Desktop,Windows NT,Chrome
+1707231577,cowo,Desktop,Windows NT,Chrome
+1707231691,gaze,Desktop,Windows NT,Chrome
+1707232086,topics,Desktop,Windows NT,Chrome
+1707236914,cowo,Desktop,Unknown,Chrome
+1707237520,cowo,Desktop,Unknown,Chrome
+1707238552,gaze,Desktop,Unknown,Chrome
+1707242115,cowo,Desktop,Unknown,Chrome
+1707242794,cowo,Desktop,Unknown,Chrome
+1707245946,cowo,Desktop,Unknown,Chrome
+1707246633,cowo,Desktop,Unknown,Edge
+1707246753,cowo,Desktop,Unknown,Edge
+1707249754,cowo,Desktop,Unknown,Edge
+1707249778,cowo,Desktop,Unknown,Edge
+1707249882,cowo,Desktop,Unknown,Edge
+1707251180,gaze,Desktop,Unknown,Edge
+1707253117,cowo,Desktop,Unknown,Edge
+1707254862,cowo,Desktop,Unknown,Chrome
+1707259217,topics,Desktop,Windows NT,Firefox
+1707259257,topics,Desktop,Windows NT,Firefox
+1707259650,cowo,Desktop,Windows NT,Firefox
+1707260411,topics,Desktop,Unknown,Chrome
+1707260915,cowo,Desktop,Unknown,Edge
+1707260954,cowo,Desktop,Unknown,Edge
+1707261012,cowo,Desktop,Unknown,Edge
+1707261031,cowo,Desktop,Unknown,Edge
+1707261068,cowo,Desktop,Unknown,Edge
+1707261127,cowo,Desktop,Unknown,Edge
+1707261150,cowo,Desktop,Unknown,Edge
+1707261179,cowo,Desktop,Unknown,Edge
+1707261204,cowo,Desktop,Unknown,Edge
+1707261242,cowo,Desktop,Unknown,Edge
+1707263992,cowo,Desktop,Unknown,Edge
+1707264019,cowo,Desktop,Unknown,Edge
+1707264085,cowo,Desktop,Unknown,Edge
+1707275863,umigon en,Phone,Android,Chrome
+1707275871,umigon en,Phone,Android,Chrome
+1707275873,umigon fr,Phone,Android,Chrome
+1707275881,umigon es,Phone,Android,Chrome
+1707278977,cowo,Desktop,Windows NT,Firefox
+1707285588,cowo,Desktop,Unknown,Chrome
+1707301700,cowo,Desktop,Unknown,Chrome
+1707302042,topics,Desktop,Windows NT,Firefox
+1707310874,cowo,Desktop,Unknown,Chrome
+1707311148,cowo,Desktop,Unknown,Chrome
+1707311272,cowo,Desktop,Unknown,Chrome
+1707311574,cowo,Desktop,Unknown,Chrome
+1707312368,topics,Desktop,Unknown,Chrome
+1707315136,umigon es,Desktop,Unknown,Edge
+1707315144,umigon es,Desktop,Unknown,Edge
+1707315156,umigon es,Desktop,Unknown,Edge
+1707315163,umigon es,Desktop,Unknown,Edge
+1707315165,umigon es,Desktop,Unknown,Edge
+1707315183,umigon,Desktop,Unknown,Edge
+1707316165,topics,Desktop,Ubuntu,Firefox
+1707316457,umigon,Desktop,Unknown,Edge
+1707319328,cowo,Desktop,Unknown,Edge
+1707320317,cowo,Desktop,Unknown,Opera
+1707321629,cowo,Desktop,Unknown,Opera
+1707322137,umigon,Desktop,Mac OS X,Safari
+1707322158,umigon,Desktop,Mac OS X,Safari
+1707322336,umigon,Desktop,Mac OS X,Safari
+1707322500,umigon,Desktop,Mac OS X,Safari
+1707323098,umigon,Desktop,Windows NT,Firefox
+1707323413,umigon,Desktop,Windows NT,Firefox
+1707323498,umigon,Desktop,Mac OS X,Safari
+1707329476,topics,Desktop,Windows NT,Firefox
+1707339647,cowo,Desktop,Unknown,Chrome
+1707355782,pdfmatcher,Phone,Android,Firefox
+1707356017,pdfmatcher,Phone,Android,Firefox
+1707356340,pdfmatcher,Phone,Android,Firefox
+1707364959,gaze,Desktop,Mac OS X,Firefox
+1707365036,gaze,Desktop,Mac OS X,Firefox
+1707365507,gaze,Desktop,Mac OS X,Firefox
+1707365619,gaze,Desktop,Mac OS X,Firefox
+1707366070,gaze,Desktop,Unknown,Chrome
+1707381610,umigon,Desktop,Unknown,Chrome
+1707384465,cowo,Desktop,Unknown,Chrome
+1707384709,organic en,Desktop,Unknown,Chrome
+1707386338,pdf_region_extractor,Desktop,Unknown,Chrome
+1707387760,umigon,Desktop,Unknown,Chrome
+1707388022,umigon,Desktop,Unknown,Chrome
+1707388531,umigon,Desktop,Mac OS X,Safari
+1707389501,umigon,Desktop,Mac OS X,Safari
+1707393290,umigon,Desktop,Unknown,Opera
+1707399888,umigon,Desktop,Mac OS X,Safari
+1707399909,umigon,Desktop,Mac OS X,Safari
+1707399949,umigon,Desktop,Mac OS X,Safari
+1707400794,pdfmatcher,Desktop,Unknown,Chrome
+1707401172,pdf_region_extractor,Desktop,Unknown,Chrome
+1707402278,umigon,Desktop,Windows NT,Firefox
+1707402987,umigon,Desktop,Mac OS X,Firefox
+1707405119,umigon,Desktop,Mac OS X,Firefox
+1707407659,umigon fr,Desktop,Ubuntu,Firefox
+1707407661,umigon en,Desktop,Ubuntu,Firefox
+1707407663,umigon es,Desktop,Ubuntu,Firefox
+1707407666,organic en,Desktop,Ubuntu,Firefox
+1707409898,topics,Desktop,Unknown,Chrome
+1707409943,topics,Desktop,Unknown,Chrome
+1707410427,cowo,Desktop,Unknown,Chrome
+1707413385,umigon,Desktop,Unknown,Chrome
+1707413391,umigon,Desktop,Unknown,Chrome
+1707413627,umigon,Desktop,Unknown,Chrome
+1707414567,cowo,Desktop,Unknown,Chrome
+1707423794,cowo,Desktop,Unknown,Chrome
+1707426276,cowo,Desktop,Unknown,Chrome
+1707427391,pdf_region_extractor,Desktop,Mac OS X,Firefox
+1707427536,cowo,Desktop,Mac OS X,Firefox
+1707428153,pdfmatcher,Desktop,Mac OS X,Firefox
+1707428250,pdfmatcher,Desktop,Mac OS X,Firefox
+1707429732,topics,Desktop,Unknown,Edge
+1707453827,gaze,Desktop,Mac OS X,Firefox
+1707453874,gaze,Desktop,Mac OS X,Firefox
+1707453949,gaze,Desktop,Mac OS X,Firefox
+1707454038,gaze,Desktop,Mac OS X,Firefox
+1707454148,gaze,Desktop,Mac OS X,Firefox
+1707454250,gaze,Desktop,Mac OS X,Firefox
+1707454345,gaze,Desktop,Mac OS X,Firefox
+1707456225,gaze,Desktop,Mac OS X,Firefox
+1707456287,gaze,Desktop,Mac OS X,Firefox
+1707456392,gaze,Desktop,Mac OS X,Firefox
+1707456494,gaze,Desktop,Mac OS X,Firefox
+1707456610,gaze,Desktop,Mac OS X,Firefox
+1707456694,gaze,Desktop,Mac OS X,Firefox
+1707459384,cowo,Desktop,Unknown,Edge
+1707466432,umigon,Desktop,Unknown,Chrome
+1707466497,umigon,Desktop,Unknown,Chrome
+1707474373,topics,Desktop,Unknown,Chrome
+1707478243,cowo,Desktop,Unknown,Chrome
+1707478478,cowo,Desktop,Unknown,Chrome
+1707487193,umigon,Desktop,Unknown,Chrome
+1707561255,gaze,Desktop,Unknown,Chrome
+1707561366,gaze,Desktop,Unknown,Chrome
+1707569502,topics,Desktop,Unknown,Chrome
+1707570004,topics,Desktop,Unknown,Chrome
+1707576160,cowo,Desktop,Unknown,Chrome
+1707576217,cowo,Desktop,Unknown,Chrome
+1707576317,cowo,Desktop,Unknown,Chrome
+1707576728,cowo,Desktop,Unknown,Chrome
+1707578182,topics,Desktop,Unknown,Chrome
+1707644627,gaze,Desktop,Unknown,Chrome
+1707649226,cowo,Desktop,Unknown,Opera
+1707658776,gaze,Desktop,Unknown,Chrome
+1707659397,gaze,Desktop,Unknown,Chrome
+1707676539,cowo,Desktop,Unknown,Chrome
+1707690306,topics,Desktop,Unknown,Chrome
+1707690331,topics,Desktop,Unknown,Chrome
+1707696976,topics,Desktop,Unknown,Chrome
+1707715477,cowo,Desktop,Unknown,Chrome
+1707727262,umigon,Desktop,Unknown,Chrome
+1707731234,umigon,Desktop,Unknown,Chrome
+1707731381,umigon,Desktop,Unknown,Chrome
+1707732282,umigon,Desktop,Unknown,Chrome
+1707733199,umigon,Desktop,Windows NT,Firefox
+1707735122,gaze,Desktop,Unknown,Chrome
+1707735306,gaze,Desktop,Unknown,Chrome
+1707735419,gaze,Desktop,Unknown,Chrome
+1707735699,gaze,Desktop,Unknown,Chrome
+1707735914,gaze,Desktop,Unknown,Chrome
+1707736106,topics,Desktop,Unknown,Opera
+1707736232,umigon,Desktop,Unknown,Chrome
+1707736284,umigon,Desktop,Unknown,Chrome
+1707736578,umigon,Desktop,Unknown,Chrome
+1707737188,cowo,Desktop,Unknown,Chrome
+1707737317,cowo,Desktop,Unknown,Chrome
+1707737562,cowo,Desktop,Unknown,Chrome
+1707738341,cowo,Desktop,Unknown,Chrome
+1707742272,umigon,Desktop,Unknown,Chrome
+1707745022,gaze,Desktop,Unknown,Chrome
+1707745944,gaze,Desktop,Unknown,Chrome
+1707746298,gaze,Desktop,Unknown,Chrome
+1707788196,gaze,Desktop,Mac OS X,Firefox
+1707788310,gaze,Desktop,Unknown,Edge
+1707793473,gaze,Desktop,Unknown,Chrome
+1707793527,gaze,Desktop,Unknown,Chrome
+1707804767,cowo,Desktop,Unknown,Chrome
+1707805162,cowo,Desktop,Unknown,Chrome
+1707809676,umigon,Desktop,Unknown,Edge
+1707809924,cowo,Desktop,Unknown,Edge
+1707812824,topics,Desktop,Unknown,Chrome
+1707812839,topics,Desktop,Unknown,Chrome
+1707812869,topics,Desktop,Unknown,Chrome
+1707812907,topics,Desktop,Unknown,Edge
+1707812951,topics,Desktop,Mac OS X,Safari
+1707812966,organic,Desktop,Mac OS X,Safari
+1707812989,topics,Desktop,Windows NT,Firefox
+1707813029,topics,Desktop,Windows NT,Firefox
+1707813030,topics,Desktop,Unknown,Edge
+1707813060,organic,Desktop,Mac OS X,Safari
+1707813159,umigon,Desktop,Windows NT,Firefox
+1707813183,umigon,Desktop,Mac OS X,Safari
+1707813347,topics,Desktop,Mac OS X,Safari
+1707813446,topics,Desktop,Mac OS X,Safari
+1707813450,umigon,Desktop,Unknown,Chrome
+1707813626,umigon,Desktop,Unknown,Chrome
+1707813626,umigon,Desktop,Unknown,Chrome
+1707813627,topics,Desktop,Unknown,Edge
+1707813627,topics,Desktop,Mac OS X,Safari
+1707813837,umigon,Desktop,Unknown,Edge
+1707813866,topics,Desktop,Mac OS X,Safari
+1707814028,umigon,Desktop,Unknown,Chrome
+1707814626,umigon,Desktop,Unknown,Chrome
+1707814728,umigon,Desktop,Unknown,Chrome
+1707815802,topics,Desktop,Unknown,Edge
+1707817114,topics,Desktop,Unknown,Avast
+1707817918,umigon,Desktop,Unknown,Chrome
+1707817935,topics,Desktop,Mac OS X,Safari
+1707818109,topics,Desktop,Windows NT,Firefox
+1707818112,topics,Desktop,Mac OS X,Safari
+1707818159,topics,Desktop,Unknown,Chrome
+1707818235,topics,Desktop,Mac OS X,Safari
+1707818273,umigon,Desktop,Mac OS X,Safari
+1707818397,umigon,Desktop,Unknown,Edge
+1707818402,umigon,Desktop,Windows NT,Firefox
+1707818579,umigon,Desktop,Unknown,Chrome
+1707818676,topics,Desktop,Unknown,Chrome
+1707818782,umigon,Desktop,Mac OS X,Safari
+1707818813,topics,Desktop,Windows NT,Firefox
+1707818813,topics,Desktop,Windows NT,Firefox
+1707818834,topics,Desktop,Mac OS X,Safari
+1707818937,umigon,Desktop,Unknown,Edge
+1707818993,umigon,Desktop,Unknown,Edge
+1707819006,organic,Desktop,Windows NT,Firefox
+1707819179,umigon,Desktop,Windows NT,Firefox
+1707819181,umigon,Desktop,Mac OS X,Safari
+1707819196,umigon,Desktop,Windows NT,Firefox
+1707819215,umigon,Desktop,Windows NT,Firefox
+1707819252,umigon,Desktop,Unknown,Chrome
+1707819320,umigon,Desktop,Unknown,Chrome
+1707819321,umigon,Desktop,Unknown,Chrome
+1707819334,umigon,Desktop,Unknown,Chrome
+1707819422,umigon,Desktop,Unknown,Chrome
+1707819422,topics,Desktop,Windows NT,Firefox
+1707819597,umigon,Desktop,Mac OS X,Safari
+1707819784,topics,Desktop,Windows NT,Firefox
+1707820296,bibliocoupling,Desktop,Windows NT,Firefox
+1707820468,umigon,Desktop,Mac OS X,Safari
+1707820520,topics,Desktop,Windows NT,Firefox
+1707820534,topics,Desktop,Unknown,Chrome
+1707820642,topics,Desktop,Unknown,Chrome
+1707821140,gaze,Desktop,Unknown,Chrome
+1707821157,gaze,Desktop,Unknown,Chrome
+1707821351,gaze,Desktop,Unknown,Chrome
+1707821384,gaze,Desktop,Unknown,Chrome
+1707821488,gaze,Desktop,Unknown,Chrome
+1707821494,gaze,Desktop,Unknown,Chrome
+1707822393,gaze,Desktop,Unknown,Chrome
+1707826137,gaze,Desktop,Unknown,Chrome
+1707827952,cowo,Desktop,Unknown,Chrome
+1707828567,cowo,Desktop,Unknown,Chrome
+1707839333,umigon,Desktop,Unknown,Chrome
+1707839394,umigon,Desktop,Unknown,Chrome
+1707839628,pdf_region_extractor,Desktop,Unknown,Chrome
+1707840262,umigon,Desktop,Mac OS X,Safari
+1707840286,umigon,Desktop,Mac OS X,Safari
+1707840499,pdf_region_extractor,Desktop,Mac OS X,Firefox
+1707840670,pdf_region_extractor,Desktop,Mac OS X,Firefox
+1707841256,umigon,Desktop,Mac OS X,Safari
+1707841464,umigon,Desktop,Mac OS X,Safari
+1707841513,umigon,Desktop,Mac OS X,Safari
+1707841537,umigon,Desktop,Windows NT,Firefox
+1707841635,umigon,Desktop,Windows NT,Firefox
+1707841728,umigon,Desktop,Mac OS X,Safari
+1707841752,umigon,Desktop,Mac OS X,Safari
+1707841754,umigon,Desktop,Mac OS X,Safari
+1707841809,umigon,Desktop,Mac OS X,Safari
+1707841811,umigon,Desktop,Unknown,Chrome
+1707842195,umigon,Desktop,Mac OS X,Safari
+1707842809,cowo,Desktop,Unknown,Chrome
+1707843397,cowo,Desktop,Unknown,Chrome
+1707843499,cowo,Desktop,Unknown,Chrome
+1707843540,pdf_region_extractor,Desktop,Mac OS X,Firefox
+1707843686,cowo,Desktop,Unknown,Chrome
+1707844219,topics,Desktop,Unknown,Avast
+1707844318,gaze,Desktop,Unknown,Chrome
+1707844451,cowo,Desktop,Unknown,Avast
+1707844485,gaze,Desktop,Unknown,Chrome
+1707844614,cowo,Desktop,Unknown,Chrome
+1707844676,gaze,Desktop,Unknown,Chrome
+1707845067,topics,Desktop,Mac OS X,Safari
+1707846078,gaze,Desktop,Unknown,Chrome
+1707847494,pdf_region_extractor,Desktop,Mac OS X,Firefox
+1707854197,topics,Desktop,Unknown,Chrome
+1707854224,topics,Desktop,Unknown,Chrome
+1707854244,topics,Desktop,Unknown,Avast
+1707854441,cowo,Desktop,Unknown,Avast
+1707854466,cowo,Desktop,Unknown,Avast
+1707854731,topics,Desktop,Unknown,Avast
+1707857470,cowo,Desktop,Unknown,Chrome
+1707858819,cowo,Desktop,Unknown,Chrome
+1707859763,topics,Desktop,Unknown,Chrome
+1707859895,topics,Desktop,Unknown,Chrome
+1707866745,cowo,Desktop,Unknown,Chrome
+1707868128,cowo,Desktop,Unknown,Chrome
+1707868546,cowo,Desktop,Unknown,Chrome
+1707868574,cowo,Desktop,Unknown,Chrome
+1707868604,cowo,Desktop,Unknown,Chrome
+1707868679,cowo,Desktop,Unknown,Chrome
+1707884891,gaze,Desktop,Unknown,Chrome
+1707886235,gaze,Desktop,Unknown,Chrome
+1707887335,gaze,Desktop,Unknown,Chrome
+1707889605,pdf_region_extractor,Phone,Android,Chrome
+1707900106,topics,Desktop,Unknown,Chrome
+1707903135,topics,Desktop,Unknown,Chrome
+1707907085,umigon,Desktop,Unknown,Chrome
+1707908856,gaze,Desktop,Mac OS X,Safari
+1707908933,gaze,Desktop,Mac OS X,Safari
+1707910360,gaze,Desktop,Mac OS X,Safari
+1707910546,gaze,Desktop,Mac OS X,Safari
+1707910659,gaze,Desktop,Mac OS X,Safari
+1707910686,gaze,Desktop,Mac OS X,Safari
+1707912249,topics,Desktop,Mac OS X,Safari
+1707915777,cowo,Desktop,Windows NT,Firefox
+1707915961,cowo,Desktop,Windows NT,Firefox
+1707978667,gaze,Desktop,Unknown,Chrome
+1707978725,gaze,Desktop,Unknown,Chrome
+1707980889,cowo,Desktop,Mac OS X,Safari
+1707982260,gaze,Desktop,Unknown,Chrome
+1707985077,cowo,Desktop,Linux,Firefox
+1707985517,umigon,Desktop,Mac OS X,Safari
+1707986071,gaze,Desktop,Unknown,Chrome
+1707986177,gaze,Desktop,Unknown,Chrome
+1707986187,umigon,Desktop,Mac OS X,Safari
+1707986913,networkconverter,Desktop,Unknown,Chrome
+1707987622,gaze,Desktop,Unknown,Chrome
+1707987629,gaze,Desktop,Unknown,Chrome
+1707988603,gaze,Desktop,Unknown,Chrome
+1707991840,umigon en,Desktop,Windows NT,Firefox
+1707993789,gaze,Desktop,Unknown,Chrome
+1707993952,gaze,Desktop,Unknown,Edge
+1707994121,gaze,Desktop,Unknown,Edge
+1707994560,gaze,Desktop,Unknown,Chrome
+1707994728,gaze,Desktop,Unknown,Chrome
+1707994742,gaze,Desktop,Unknown,Chrome
+1707995126,gaze,Desktop,Unknown,Chrome
+1707995231,gaze,Desktop,Unknown,Chrome
+1707995422,gaze,Desktop,Unknown,Chrome
+1707995435,gaze,Desktop,Unknown,Chrome
+1707995597,bibliocoupling,Desktop,Unknown,Chrome
+1707996521,gaze,Desktop,Unknown,Chrome
+1707996559,gaze,Desktop,Unknown,Chrome
+1707996570,gaze,Desktop,Unknown,Chrome
+1707996637,gaze,Desktop,Unknown,Chrome
+1707996652,gaze,Desktop,Unknown,Chrome
+1707997247,cowo,Desktop,Mac OS X,Safari
+1707997599,cowo,Desktop,Mac OS X,Safari
+1708007863,topics,Desktop,Unknown,Chrome
+1708008148,cowo,Desktop,Unknown,Chrome
+1708011918,cowo,Desktop,Unknown,Chrome
+1708012077,cowo,Desktop,Mac OS X,Firefox
+1708012103,cowo,Desktop,Unknown,Chrome
+1708012145,topics,Desktop,Unknown,Chrome
+1708012176,cowo,Desktop,Unknown,Chrome
+1708012250,cowo,Desktop,Mac OS X,Firefox
+1708012273,gaze,Desktop,Unknown,Edge
+1708012341,gaze,Desktop,Unknown,Edge
+1708012914,cowo,Desktop,Mac OS X,Firefox
+1708013007,topics,Desktop,Mac OS X,Firefox
+1708013245,umigon,Desktop,Unknown,Chrome
+1708013498,umigon,Desktop,Mac OS X,Safari
+1708013637,umigon,Desktop,Mac OS X,Safari
+1708013916,umigon,Desktop,Mac OS X,Safari
+1708014145,umigon,Desktop,Mac OS X,Safari
+1708014362,umigon,Desktop,Mac OS X,Safari
+1708014711,gaze,Desktop,Unknown,Chrome
+1708014781,umigon,Desktop,Mac OS X,Safari
+1708014865,umigon,Desktop,Mac OS X,Safari
+1708014943,umigon,Desktop,Mac OS X,Safari
+1708014967,gaze,Desktop,Unknown,Chrome
+1708015087,umigon,Desktop,Mac OS X,Safari
+1708015366,gaze,Desktop,Unknown,Chrome
+1708015409,gaze,Desktop,Unknown,Chrome
+1708015651,cowo,Desktop,Unknown,Chrome
+1708015898,gaze,Desktop,Unknown,Chrome
+1708015901,gaze,Desktop,Unknown,Chrome
+1708015941,gaze,Desktop,Unknown,Chrome
+1708015957,gaze,Desktop,Unknown,Chrome
+1708016331,gaze,Desktop,Unknown,Chrome
+1708016448,gaze,Desktop,Unknown,Chrome
+1708016534,gaze,Desktop,Unknown,Chrome
+1708016600,gaze,Desktop,Unknown,Chrome
+1708016810,gaze,Desktop,Unknown,Chrome
+1708016889,gaze,Desktop,Unknown,Chrome
+1708017065,gaze,Desktop,Unknown,Chrome
+1708017517,gaze,Desktop,Unknown,Chrome
+1708018464,gaze,Desktop,Windows NT,Firefox
+1708018503,gaze,Desktop,Windows NT,Firefox
+1708019579,topics,Desktop,Unknown,Chrome
+1708019646,topics,Desktop,Unknown,Chrome
+1708019925,organic en,Desktop,Unknown,Chrome
+1708019936,organic fr,Desktop,Unknown,Chrome
+1708019941,organic fr,Desktop,Unknown,Chrome
+1708019941,organic fr,Desktop,Unknown,Chrome
+1708019945,organic fr,Desktop,Unknown,Chrome
+1708019946,organic en,Desktop,Unknown,Chrome
+1708019951,organic en,Desktop,Unknown,Chrome
+1708019953,umigon fr,Desktop,Unknown,Chrome
+1708019954,umigon es,Desktop,Unknown,Chrome
+1708020621,umigon,Desktop,Windows NT,Firefox
+1708021036,umigon,Desktop,Windows NT,Firefox
+1708021214,umigon,Desktop,Windows NT,Firefox
+1708021383,umigon,Desktop,Windows NT,Firefox
+1708021579,umigon,Desktop,Windows NT,Firefox
+1708021844,umigon,Desktop,Windows NT,Firefox
+1708022119,umigon,Desktop,Windows NT,Firefox
+1708022478,umigon,Desktop,Windows NT,Firefox
+1708037151,umigon fr,Phone,Android,Chrome
+1708038377,cowo,Desktop,Unknown,Chrome
+1708042405,umigon,Desktop,Unknown,Chrome
+1708043160,umigon,Desktop,Unknown,Chrome
+1708043259,topics,Desktop,Unknown,Chrome
+1708043305,cowo,Desktop,Unknown,Chrome
+1708043710,cowo,Desktop,Unknown,Chrome
+1708044975,cowo,Desktop,Unknown,Chrome
+1708046910,gaze,Desktop,Unknown,Chrome
+1708046962,gaze,Desktop,Unknown,Chrome
+1708048301,gaze,Desktop,Unknown,Chrome
+1708048351,gaze,Desktop,Unknown,Chrome
+1708062887,cowo,Desktop,Unknown,Chrome
+1708063908,gaze,Desktop,Unknown,Chrome
+1708068305,gaze,Desktop,Unknown,Edge
+1708068406,gaze,Desktop,Unknown,Edge
+1708069276,gaze,Desktop,Unknown,Edge
+1708070924,gaze,Desktop,Unknown,Edge
+1708071106,cowo,Desktop,Unknown,Opera
+1708073780,gaze,Desktop,Unknown,Edge
+1708074711,gaze,Desktop,Unknown,Edge
+1708076226,cowo,Desktop,Unknown,Opera
+1708076270,gaze,Desktop,Unknown,Edge
+1708077728,cowo,Desktop,Unknown,Opera
+1708077778,cowo,Desktop,Unknown,Opera
+1708080139,cowo,Desktop,Mac OS X,Firefox
+1708080177,cowo,Desktop,Mac OS X,Firefox
+1708080220,cowo,Desktop,Mac OS X,Firefox
+1708080403,cowo,Desktop,Mac OS X,Firefox
+1708080447,cowo,Desktop,Mac OS X,Firefox
+1708080550,cowo,Desktop,Mac OS X,Firefox
+1708081150,cowo,Desktop,Mac OS X,Firefox
+1708081218,cowo,Desktop,Mac OS X,Firefox
+1708085379,cowo,Desktop,Unknown,Chrome
+1708086456,cowo,Desktop,Unknown,Chrome
+1708088643,gaze,Desktop,Unknown,Edge
+1708088983,gaze,Desktop,Unknown,Chrome
+1708088984,gaze,Desktop,Unknown,Chrome
+1708089050,gaze,Desktop,Unknown,Chrome
+1708089113,gaze,Desktop,Unknown,Chrome
+1708089270,topics,Desktop,Unknown,Edge
+1708089338,umigon,Desktop,Unknown,Edge
+1708089414,umigon,Desktop,Unknown,Edge
+1708089501,topics,Desktop,Unknown,Edge
+1708090616,gaze,Desktop,Unknown,Chrome
+1708090812,gaze,Desktop,Unknown,Chrome
+1708091197,gaze,Desktop,Unknown,Chrome
+1708092793,gaze,Desktop,Unknown,Chrome
+1708092867,gaze,Desktop,Unknown,Chrome
+1708093007,gaze,Desktop,Unknown,Chrome
+1708093135,gaze,Desktop,Unknown,Chrome
+1708093182,gaze,Desktop,Unknown,Chrome
+1708093307,topics,Desktop,Mac OS X,Safari
+1708094454,cowo,Desktop,Unknown,Chrome
+1708094685,umigon,Desktop,Unknown,Chrome
+1708099229,umigon,Desktop,Unknown,Chrome
+1708100221,gaze,Desktop,Unknown,Chrome
+1708100323,gaze,Desktop,Unknown,Chrome
+1708101685,cowo,Desktop,Unknown,Chrome
+1708101797,gaze,Desktop,Unknown,Chrome
+1708101835,gaze,Desktop,Unknown,Chrome
+1708103743,umigon,Desktop,Mac OS X,Safari
+1708105382,cowo,Desktop,Unknown,Chrome
+1708105957,cowo,Desktop,Unknown,Chrome
+1708106795,umigon,Desktop,Unknown,Chrome
+1708107161,cowo,Desktop,Unknown,Chrome
+1708107434,umigon,Desktop,Unknown,Chrome
+1708107550,umigon,Desktop,Unknown,Chrome
+1708107800,cowo,Desktop,Unknown,Chrome
+1708109381,cowo,Desktop,Unknown,Chrome
+1708109608,cowo,Desktop,Unknown,Chrome
+1708109813,cowo,Desktop,Unknown,Chrome
+1708110936,cowo,Desktop,Unknown,Chrome
+1708111726,cowo,Desktop,Unknown,Chrome
+1708114313,cowo,Desktop,Unknown,Chrome
+1708114488,cowo,Desktop,Unknown,Chrome
+1708133844,umigon,Desktop,Windows NT,Firefox
+1708148104,topics,Desktop,Unknown,Chrome
+1708148179,topics,Desktop,Unknown,Chrome
+1708151269,gaze,Desktop,Unknown,Chrome
+1708165308,gaze,Desktop,Unknown,Chrome
+1708165673,gaze,Desktop,Unknown,Chrome
+1708165819,gaze,Desktop,Unknown,Chrome
+1708165919,gaze,Desktop,Unknown,Chrome
+1708166081,gaze,Desktop,Unknown,Chrome
+1708166144,gaze,Desktop,Unknown,Chrome
+1708166239,gaze,Desktop,Unknown,Chrome
+1708166511,gaze,Desktop,Unknown,Chrome
+1708166544,gaze,Desktop,Unknown,Chrome
+1708166590,gaze,Desktop,Unknown,Chrome
+1708166869,gaze,Desktop,Unknown,Chrome
+1708167382,cowo,Desktop,Unknown,Edge
+1708167569,cowo,Desktop,Unknown,Edge
+1708168120,umigon,Desktop,Windows NT,Chrome
+1708168516,gaze,Desktop,Unknown,Chrome
+1708168966,gaze,Desktop,Unknown,Chrome
+1708168988,gaze,Desktop,Unknown,Chrome
+1708169003,gaze,Desktop,Unknown,Chrome
+1708169037,gaze,Desktop,Unknown,Chrome
+1708169894,gaze,Desktop,Unknown,Chrome
+1708169941,gaze,Desktop,Unknown,Chrome
+1708170005,gaze,Desktop,Unknown,Chrome
+1708170791,gaze,Desktop,Mac OS X,Safari
+1708171068,gaze,Desktop,Unknown,Chrome
+1708171080,gaze,Desktop,Unknown,Chrome
+1708171443,gaze,Desktop,Mac OS X,Safari
+1708171504,gaze,Desktop,Unknown,Chrome
+1708172126,gaze,Desktop,Unknown,Chrome
+1708172621,networkconverter,Desktop,Mac OS X,Safari
+1708172679,gaze,Desktop,Mac OS X,Safari
+1708173596,cowo,Desktop,Windows NT,Firefox
+1708177547,gaze,Desktop,Unknown,Chrome
+1708177640,gaze,Desktop,Unknown,Chrome
+1708177661,gaze,Desktop,Unknown,Chrome
+1708177777,gaze,Desktop,Unknown,Chrome
+1708177988,gaze,Desktop,Unknown,Chrome
+1708178087,gaze,Desktop,Unknown,Chrome
+1708178289,gaze,Desktop,Unknown,Chrome
+1708180526,cowo,Desktop,Windows NT,Firefox
+1708181505,networkconverter,Desktop,Unknown,Chrome
+1708181783,networkconverter,Desktop,Unknown,Chrome
+1708182262,gaze,Desktop,Unknown,Chrome
+1708182528,gaze,Desktop,Unknown,Chrome
+1708182996,networkconverter,Desktop,Unknown,Chrome
+1708183063,linkprediction,Desktop,Unknown,Chrome
+1708183091,gaze,Desktop,Unknown,Chrome
+1708183104,gaze,Desktop,Unknown,Chrome
+1708183176,gaze,Desktop,Unknown,Chrome
+1708183224,gaze,Desktop,Unknown,Chrome
+1708183507,gaze,Desktop,Unknown,Chrome
+1708183632,gaze,Desktop,Unknown,Chrome
+1708187046,umigon en,Desktop,Windows NT,Firefox
+1708187049,organic en,Desktop,Windows NT,Firefox
+1708187053,organic fr,Desktop,Windows NT,Firefox
+1708187175,gaze,Desktop,Windows NT,Firefox
+1708215206,gaze,Desktop,Unknown,Chrome
+1708215610,gaze,Desktop,Unknown,Chrome
+1708215756,gaze,Desktop,Unknown,Chrome
+1708223032,gaze,Desktop,Unknown,Chrome
+1708224660,gaze,Desktop,Unknown,Chrome
+1708225042,gaze,Desktop,Unknown,Chrome
+1708225163,gaze,Desktop,Unknown,Chrome
+1708227373,umigon en,Phone,iOS,Safari
+1708228341,cowo,Desktop,Unknown,Edge
+1708228485,cowo,Desktop,Unknown,Edge
+1708228639,organic,Desktop,Unknown,Edge
+1708229398,cowo,Desktop,Unknown,Edge
+1708229841,bibliocoupling,Desktop,Unknown,Chrome
+1708231761,gaze,Desktop,Unknown,Edge
+1708231823,gaze,Desktop,Unknown,Edge
+1708234010,gaze,Desktop,Unknown,Chrome
+1708234044,gaze,Desktop,Unknown,Chrome
+1708239368,gaze,Desktop,Unknown,Chrome
+1708239374,gaze,Desktop,Unknown,Chrome
+1708239391,gaze,Desktop,Unknown,Chrome
+1708239438,gaze,Desktop,Unknown,Chrome
+1708239791,gaze,Desktop,Unknown,Chrome
+1708239825,gaze,Desktop,Unknown,Chrome
+1708239851,gaze,Desktop,Unknown,Chrome
+1708240172,gaze,Desktop,Unknown,Chrome
+1708240190,gaze,Desktop,Unknown,Chrome
+1708240216,gaze,Desktop,Unknown,Chrome
+1708240244,gaze,Desktop,Unknown,Chrome
+1708240351,gaze,Desktop,Unknown,Chrome
+1708240352,gaze,Desktop,Unknown,Chrome
+1708240354,gaze,Desktop,Unknown,Chrome
+1708240356,gaze,Desktop,Unknown,Chrome
+1708240357,gaze,Desktop,Unknown,Chrome
+1708240358,gaze,Desktop,Unknown,Chrome
+1708240546,gaze,Desktop,Unknown,Chrome
+1708240689,gaze,Desktop,Unknown,Chrome
+1708240765,gaze,Desktop,Unknown,Chrome
+1708240767,gaze,Desktop,Unknown,Chrome
+1708240786,gaze,Desktop,Unknown,Edge
+1708240790,gaze,Desktop,Unknown,Edge
+1708240857,gaze,Desktop,Unknown,Chrome
+1708241011,gaze,Desktop,Unknown,Edge
+1708241077,gaze,Desktop,Unknown,Chrome
+1708241097,gaze,Desktop,Unknown,Chrome
+1708241382,gaze,Desktop,Unknown,Chrome
+1708243339,gaze,Desktop,Unknown,Chrome
+1708243361,gaze,Desktop,Unknown,Chrome
+1708246161,umigon,Desktop,Unknown,Chrome
+1708246619,umigon,Desktop,Unknown,Chrome
+1708247448,gaze,Desktop,Unknown,Chrome
+1708248107,gaze,Desktop,Unknown,Chrome
+1708249596,gaze,Desktop,Mac OS X,Safari
+1708249676,gaze,Desktop,Mac OS X,Safari
+1708250369,gaze,Desktop,Mac OS X,Safari
+1708250418,gaze,Desktop,Mac OS X,Safari
+1708250750,gaze,Desktop,Mac OS X,Safari
+1708251510,gaze,Desktop,Mac OS X,Safari
+1708251530,gaze,Desktop,Mac OS X,Safari
+1708252321,gaze,Desktop,Mac OS X,Safari
+1708252340,gaze,Desktop,Mac OS X,Safari
+1708252392,gaze,Desktop,Mac OS X,Safari
+1708253281,gaze,Desktop,Unknown,Chrome
+1708253602,gaze,Desktop,Mac OS X,Safari
+1708253621,gaze,Desktop,Mac OS X,Safari
+1708253821,umigon,Desktop,Unknown,Chrome
+1708253914,umigon,Desktop,Unknown,Chrome
+1708254092,gaze,Desktop,Mac OS X,Safari
+1708254303,cowo,Desktop,Unknown,Chrome
+1708254448,cowo,Desktop,Unknown,Chrome
+1708254544,gaze,Desktop,Unknown,Chrome
+1708254556,gaze,Desktop,Unknown,Chrome
+1708254561,gaze,Desktop,Unknown,Chrome
+1708254951,gaze,Desktop,Mac OS X,Safari
+1708254958,umigon,Desktop,Unknown,Chrome
+1708254967,gaze,Desktop,Mac OS X,Safari
+1708254986,umigon,Desktop,Unknown,Chrome
+1708254995,umigon,Desktop,Unknown,Chrome
+1708255014,gaze,Desktop,Mac OS X,Safari
+1708255050,gaze,Desktop,Unknown,Chrome
+1708255064,gaze,Desktop,Unknown,Chrome
+1708256178,gaze,Desktop,Unknown,Chrome
+1708260038,gaze,Desktop,Unknown,Chrome
+1708260112,gaze,Desktop,Unknown,Chrome
+1708260337,gaze,Desktop,Unknown,Chrome
+1708268751,gaze,Desktop,Unknown,Chrome
+1708268977,umigon,Desktop,Unknown,Chrome
+1708278340,cowo,Desktop,Unknown,Chrome
+1708278418,cowo,Desktop,Unknown,Chrome
+1708278476,cowo,Desktop,Unknown,Chrome
+1708279338,cowo,Desktop,Unknown,Chrome
+1708280128,cowo,Desktop,Unknown,Chrome
+1708287613,topics,Desktop,Unknown,Chrome
+1708321107,cowo,Desktop,Unknown,Chrome
+1708331843,cowo,Desktop,Mac OS X,Firefox
+1708331960,cowo,Desktop,Mac OS X,Firefox
+1708332712,cowo,Desktop,Mac OS X,Firefox
+1708334880,cowo,Desktop,Mac OS X,Firefox
+1708337692,pdf_region_extractor,Desktop,Unknown,Chrome
+1708338865,gaze,Desktop,Windows NT,Firefox
+1708345912,cowo,Desktop,Unknown,Chrome
+1708348911,umigon,Desktop,Unknown,Chrome
+1708350134,topics,Desktop,Unknown,Chrome
+1708350155,topics,Desktop,Mac OS X,Safari
+1708356366,cowo,Desktop,Unknown,Edge
+1708358563,cowo,Desktop,Unknown,Edge
+1708358831,cowo,Desktop,Unknown,Edge
+1708358866,cowo,Desktop,Unknown,Edge
+1708358911,cowo,Desktop,Unknown,Edge
+1708373524,cowo,Desktop,Unknown,Chrome
+1708373681,cowo,Desktop,Unknown,Chrome
+1708373735,cowo,Desktop,Unknown,Chrome
+1708382599,gaze,Desktop,Windows NT,Firefox
+1708382615,gaze,Desktop,Windows NT,Firefox
+1708382912,gaze,Desktop,Windows NT,Firefox
+1708386159,gaze,Desktop,Mac OS X,Firefox
+1708390583,cowo,Desktop,Unknown,Chrome
+1708400957,topics,Desktop,Unknown,Chrome
+1708404082,cowo,Desktop,Unknown,Chrome
+1708405260,cowo,Desktop,Unknown,Chrome
+1708407666,topics,Desktop,Unknown,Opera
+1708421433,umigon,Desktop,Unknown,Chrome
+1708421718,umigon,Desktop,Unknown,Chrome
+1708421931,umigon,Desktop,Unknown,Chrome
+1708421956,umigon,Desktop,Unknown,Chrome
+1708422057,umigon,Desktop,Unknown,Chrome
+1708422313,umigon fr,Desktop,Windows NT,Firefox
+1708422357,umigon fr,Desktop,Windows NT,Firefox
+1708422361,umigon fr,Desktop,Windows NT,Firefox
+1708422378,umigon en,Desktop,Windows NT,Firefox
+1708422419,umigon en,Desktop,Windows NT,Firefox
+1708422421,umigon en,Desktop,Windows NT,Firefox
+1708422469,organic en,Desktop,Windows NT,Firefox
+1708422478,organic fr,Desktop,Windows NT,Firefox
+1708424347,umigon,Desktop,Unknown,Chrome
+1708424706,umigon,Desktop,Unknown,Chrome
+1708424795,umigon,Desktop,Unknown,Chrome
+1708424860,umigon,Desktop,Unknown,Chrome
+1708425087,umigon,Desktop,Unknown,Chrome
+1708425241,umigon,Desktop,Unknown,Chrome
+1708425271,umigon,Desktop,Unknown,Chrome
+1708426162,umigon,Desktop,Unknown,Chrome
+1708426182,umigon,Desktop,Unknown,Chrome
+1708426404,umigon,Desktop,Unknown,Chrome
+1708428105,cowo,Desktop,Mac OS X,Chrome
+1708428128,cowo,Desktop,Unknown,Chrome
+1708428154,cowo,Desktop,Unknown,Chrome
+1708429186,umigon,Desktop,Unknown,Chrome
+1708429282,umigon,Desktop,Unknown,Chrome
+1708429657,cowo,Desktop,Unknown,Chrome
+1708429662,cowo,Desktop,Mac OS X,Chrome
+1708430114,cowo,Desktop,Mac OS X,Chrome
+1708430218,cowo,Desktop,Mac OS X,Chrome
+1708430231,cowo,Desktop,Unknown,Chrome
+1708430318,cowo,Desktop,Mac OS X,Chrome
+1708430350,cowo,Desktop,Unknown,Chrome
+1708430375,cowo,Desktop,Mac OS X,Chrome
+1708430855,topics,Desktop,Mac OS X,Chrome
+1708431978,umigon,Desktop,Unknown,Chrome
+1708432394,umigon,Desktop,Unknown,Edge
+1708432458,umigon,Desktop,Unknown,Edge
+1708433107,cowo,Desktop,Unknown,Chrome
+1708433150,cowo,Desktop,Unknown,Chrome
+1708433273,cowo,Desktop,Unknown,Chrome
+1708433416,cowo,Desktop,Unknown,Chrome
+1708435212,topics,Desktop,Mac OS X,Safari
+1708436889,umigon,Desktop,Windows NT,Firefox
+1708437423,umigon,Desktop,Windows NT,Firefox
+1708437559,umigon,Desktop,Windows NT,Firefox
+1708437696,umigon,Desktop,Windows NT,Firefox
+1708438161,umigon,Desktop,Windows NT,Firefox
+1708438192,umigon,Desktop,Windows NT,Firefox
+1708438195,umigon,Desktop,Windows NT,Firefox
+1708438701,umigon,Desktop,Windows NT,Firefox
+1708438789,umigon,Desktop,Unknown,Edge
+1708438965,umigon,Desktop,Unknown,Edge
+1708443987,umigon,Desktop,Windows NT,Firefox
+1708446775,topics,Desktop,Unknown,Edge
+1708447932,topics,Desktop,Unknown,Edge
+1708447957,topics,Desktop,Unknown,Edge
+1708447977,topics,Desktop,Unknown,Edge
+1708448164,cowo,Desktop,Unknown,Edge
+1708451658,umigon,Desktop,Unknown,Chrome
+1708641044,umigon,Desktop,Unknown,Chrome
+1708642191,cowo,Desktop,Unknown,Opera
+1708642361,cowo,Desktop,Unknown,Opera
+1708645904,gaze,Desktop,Windows NT,Firefox
+1708646745,gaze,Desktop,Windows NT,Firefox
+1708647373,gaze,Desktop,Windows NT,Firefox
+1708648365,cowo,Desktop,Unknown,Chrome
+1708648708,cowo,Desktop,Unknown,Chrome
+1708648858,cowo,Desktop,Unknown,Chrome
+1708653176,cowo,Desktop,Linux,Firefox
+1708656769,cowo,Desktop,Unknown,Chrome
+1708656850,cowo,Desktop,Unknown,Chrome
+1708656949,cowo,Desktop,Unknown,Chrome
+1708657416,cowo,Desktop,Unknown,Chrome
+1708657519,cowo,Desktop,Unknown,Chrome
+1708657907,cowo,Desktop,Unknown,Chrome
+1708658554,cowo,Desktop,Unknown,Chrome
+1708659615,topics,Desktop,Unknown,Chrome
+1708660224,cowo,Desktop,Unknown,Edge
+1708661119,cowo,Desktop,Unknown,Chrome
+1708661240,cowo,Desktop,Unknown,Chrome
+1708661399,cowo,Desktop,Unknown,Chrome
+1708661496,cowo,Desktop,Unknown,Chrome
+1708662171,gaze,Desktop,Unknown,Chrome
+1708662736,gaze,Desktop,Unknown,Chrome
+1708663647,cowo,Desktop,Unknown,Chrome
+1708665687,topics,Desktop,Unknown,Chrome
+1708665785,topics,Desktop,Unknown,Chrome
+1708668477,cowo,Desktop,Unknown,Chrome
+1708674162,topics,Desktop,Unknown,Chrome
+1708674322,umigon,Desktop,Unknown,Chrome
+1708674338,umigon en,Desktop,Unknown,Edge
+1708674357,umigon en,Desktop,Unknown,Edge
+1708674498,umigon en,Desktop,Unknown,Edge
+1708674532,umigon,Desktop,Unknown,Chrome
+1708674546,umigon en,Desktop,Unknown,Edge
+1708674548,umigon en,Desktop,Unknown,Edge
+1708674563,umigon,Desktop,Unknown,Edge
+1708674570,umigon,Desktop,Unknown,Chrome
+1708674602,umigon,Desktop,Unknown,Chrome
+1708674687,umigon,Desktop,Unknown,Chrome
+1708674705,umigon,Desktop,Unknown,Chrome
+1708674718,umigon,Desktop,Unknown,Chrome
+1708674721,umigon,Desktop,Unknown,Edge
+1708674751,umigon,Desktop,Unknown,Edge
+1708674803,umigon,Desktop,Unknown,Chrome
+1708674818,umigon,Desktop,Unknown,Chrome
+1708674824,umigon,Desktop,Unknown,Chrome
+1708674832,umigon,Desktop,Unknown,Edge
+1708674853,umigon,Desktop,Unknown,Edge
+1708681825,cowo,Desktop,Mac OS X,Safari
+1708681884,cowo,Desktop,Mac OS X,Safari
+1708684615,topics,Phone,Android,Chrome
+1708686229,gaze,Desktop,Windows NT,Firefox
+1708688230,umigon,Desktop,Unknown,Chrome
+1708688414,umigon,Desktop,Unknown,Chrome
+1708688614,umigon,Desktop,Unknown,Chrome
+1708688669,umigon,Desktop,Unknown,Chrome
+1708688680,umigon,Desktop,Unknown,Chrome
+1708688688,umigon,Desktop,Unknown,Chrome
+1708688861,gaze,Desktop,Windows NT,Firefox
+1708688958,umigon,Desktop,Unknown,Chrome
+1708689432,umigon,Desktop,Unknown,Chrome
+1708689451,umigon,Desktop,Unknown,Chrome
+1708690197,umigon,Desktop,Unknown,Chrome
+1708692960,umigon,Desktop,Unknown,Chrome
+1708694342,umigon,Desktop,Unknown,Chrome
+1708694429,umigon,Desktop,Unknown,Chrome
+1708695437,gaze,Desktop,Unknown,Chrome
+1708695682,umigon,Desktop,Unknown,Chrome
+1708695866,umigon,Desktop,Unknown,Chrome
+1708696101,cowo,Desktop,Unknown,Chrome
+1708696284,gaze,Desktop,Windows NT,Firefox
+1708696701,gaze,Desktop,Windows NT,Firefox
+1708703074,umigon en,Desktop,Unknown,Chrome
+1708703085,umigon fr,Desktop,Unknown,Chrome
+1708703089,cowo,Desktop,Unknown,Chrome
+1708703100,umigon en,Desktop,Unknown,Chrome
+1708703169,organic en,Desktop,Unknown,Chrome
+1708704129,gaze,Desktop,Unknown,Chrome
+1708705875,gaze,Desktop,Windows NT,Firefox
+1708707421,gaze,Desktop,Windows NT,Firefox
+1708708270,cowo,Desktop,Unknown,YaBrowser
+1708708357,gaze,Desktop,Windows NT,Firefox
+1708708414,cowo,Desktop,Unknown,YaBrowser
+1708709011,gaze,Desktop,Windows NT,Firefox
+1708711149,umigon,Desktop,Windows NT,Chrome
+1708988726,cowo,Desktop,Unknown,Chrome
+1709016381,cowo,Desktop,Windows NT,Firefox
+1709021871,umigon,Desktop,Unknown,Edge
+1709021915,umigon,Desktop,Unknown,Edge
+1709022208,umigon,Desktop,Unknown,Edge
+1709022805,umigon,Desktop,Unknown,Chrome
+1709031080,umigon,Desktop,Unknown,Chrome
+1709050541,cowo,Phone,iOS,Safari
+1709050840,topics,Phone,iOS,Safari
+1709050950,topics,Phone,iOS,Safari
+1709063483,topics,Desktop,Unknown,Edge
+1709065679,umigon en,Phone,Android,Chrome
+1709087396,gaze,Desktop,Mac OS X,Safari
+1709095993,cowo,Desktop,Mac OS X,Safari
+1709099170,cowo,Desktop,Unknown,Chrome
+1709112746,topics,Desktop,Unknown,Chrome
+1709119349,umigon,Desktop,Unknown,Chrome
+1709119459,umigon,Desktop,Unknown,Chrome
+1709119830,umigon,Desktop,Unknown,Chrome
+1709119996,gaze,Desktop,Unknown,Chrome
+1709132497,umigon,Desktop,Unknown,Chrome
+1709132624,cowo,Desktop,Unknown,Chrome
+1709132764,cowo,Desktop,Unknown,Chrome
+1709134771,umigon en,Desktop,Unknown,Chrome
+1709134774,umigon fr,Desktop,Unknown,Chrome
+1709134775,umigon es,Desktop,Unknown,Chrome
+1709134779,organic en,Desktop,Unknown,Chrome
+1709134784,organic fr,Desktop,Unknown,Chrome
+1709136226,cowo,Desktop,Unknown,Chrome
+1709136769,cowo,Desktop,Unknown,Chrome
+1709146854,umigon,Desktop,Unknown,Edge
+1709148076,umigon,Desktop,Unknown,Edge
+1709149169,cowo,Desktop,Unknown,YaBrowser
+1709149203,umigon,Desktop,Unknown,Chrome
+1709149331,umigon,Desktop,Unknown,Chrome
+1709150264,umigon,Desktop,Unknown,Chrome
+1709152194,topics,Desktop,Unknown,Edge
+1709155715,topics,Desktop,Unknown,Chrome
+1709157330,umigon,Desktop,Unknown,Chrome
+1709158498,topics,Desktop,Unknown,Edge
+1709158630,topics,Desktop,Unknown,Edge
+1709161909,topics,Desktop,Unknown,Chrome
+1709162019,topics,Desktop,Unknown,Chrome
+1709165601,gaze,Desktop,Mac OS X,Safari
+1709166593,gaze,Desktop,Mac OS X,Safari
+1709167779,gaze,Desktop,Mac OS X,Safari
+1709169457,gaze,Desktop,Mac OS X,Safari
+1709169767,gaze,Desktop,Mac OS X,Safari
+1709170142,gaze,Desktop,Mac OS X,Safari
+1709170390,gaze,Desktop,Mac OS X,Safari
+1709170925,gaze,Desktop,Mac OS X,Safari
+1709171298,gaze,Desktop,Mac OS X,Safari
+1709171300,gaze,Desktop,Mac OS X,Safari
+1709171637,gaze,Desktop,Mac OS X,Safari
+1709171921,gaze,Desktop,Mac OS X,Safari
+1709172373,gaze,Desktop,Mac OS X,Safari
+1709172741,gaze,Desktop,Mac OS X,Safari
+1709173269,gaze,Desktop,Mac OS X,Safari
+1709175355,topics,Desktop,Unknown,Edge
+1709183749,cowo,Desktop,Unknown,Chrome
+1709190138,topics,Desktop,Mac OS X,Firefox
+1709190533,topics,Desktop,Mac OS X,Firefox
+1709195526,topics,Desktop,Mac OS X,Firefox
+1709196596,umigon,Desktop,Unknown,Chrome
+1709197219,umigon,Desktop,Unknown,Chrome
+1709202547,cowo,Desktop,Windows NT,Firefox
+1709204322,umigon,Desktop,Unknown,Chrome
+1709204377,umigon,Desktop,Unknown,Chrome
+1709204724,umigon,Desktop,Unknown,Chrome
+1709205208,umigon,Desktop,Unknown,Chrome
+1709205454,umigon,Desktop,Unknown,Edge
+1709206012,umigon,Desktop,Unknown,Chrome
+1709206043,cowo,Desktop,Unknown,Chrome
+1709206161,umigon,Desktop,Unknown,Chrome
+1709206168,cowo,Desktop,Unknown,Chrome
+1709206288,cowo,Desktop,Unknown,Chrome
+1709206294,umigon,Desktop,Unknown,Chrome
+1709206478,cowo,Desktop,Unknown,Chrome
+1709206543,umigon,Desktop,Unknown,Chrome
+1709206547,umigon,Desktop,Unknown,Chrome
+1709206580,umigon,Desktop,Unknown,Edge
+1709206613,umigon,Desktop,Unknown,Chrome
+1709206617,umigon en,Desktop,Mac OS X,Safari
+1709206627,umigon,Desktop,Unknown,Chrome
+1709206635,umigon,Desktop,Windows NT,Firefox
+1709206638,umigon,Desktop,Mac OS X,Safari
+1709206645,umigon,Desktop,Unknown,Chrome
+1709206674,cowo,Desktop,Unknown,Chrome
+1709206686,umigon,Desktop,Unknown,Chrome
+1709206715,umigon,Desktop,Unknown,Chrome
+1709206719,umigon,Desktop,Mac OS X,Safari
+1709206722,umigon,Desktop,Unknown,Chrome
+1709206723,umigon,Desktop,Unknown,Chrome
+1709206723,umigon,Desktop,Unknown,Chrome
+1709206735,cowo,Desktop,Unknown,Chrome
+1709206739,umigon,Desktop,Unknown,Chrome
+1709206752,umigon,Desktop,Unknown,Chrome
+1709206753,umigon,Desktop,Unknown,Chrome
+1709206766,umigon,Desktop,Unknown,Chrome
+1709206767,umigon,Desktop,Unknown,Chrome
+1709206775,umigon,Desktop,Mac OS X,Safari
+1709206779,umigon,Desktop,Unknown,Chrome
+1709206798,umigon,Desktop,Unknown,Chrome
+1709206811,umigon,Desktop,Mac OS X,Safari
+1709206828,umigon,Desktop,Unknown,Chrome
+1709206857,umigon,Desktop,Mac OS X,Safari
+1709206867,cowo,Desktop,Unknown,Chrome
+1709206907,umigon,Desktop,Unknown,Chrome
+1709206917,umigon,Desktop,Unknown,Edge
+1709206939,umigon en,Desktop,Mac OS X,Safari
+1709206943,umigon,Desktop,Mac OS X,Safari
+1709206957,umigon en,Desktop,Mac OS X,Safari
+1709206967,umigon,Desktop,Unknown,Chrome
+1709206969,umigon,Desktop,Unknown,Chrome
+1709206971,umigon,Desktop,Unknown,Chrome
+1709206972,umigon,Desktop,Unknown,Chrome
+1709206980,umigon,Desktop,Unknown,Chrome
+1709206998,umigon en,Desktop,Mac OS X,Safari
+1709207000,umigon en,Desktop,Mac OS X,Safari
+1709207001,umigon en,Desktop,Mac OS X,Safari
+1709207004,umigon,Desktop,Unknown,Chrome
+1709207005,topics,Desktop,Unknown,Chrome
+1709207006,umigon,Desktop,Unknown,Chrome
+1709207038,umigon,Desktop,Unknown,Chrome
+1709207048,umigon,Desktop,Mac OS X,Safari
+1709207050,umigon,Desktop,Mac OS X,Safari
+1709207052,umigon,Desktop,Unknown,Chrome
+1709207061,umigon en,Desktop,Unknown,Chrome
+1709207067,umigon,Desktop,Unknown,Edge
+1709207072,umigon,Desktop,Unknown,Edge
+1709207075,umigon,Desktop,Unknown,Chrome
+1709207075,umigon,Desktop,Unknown,Chrome
+1709207086,umigon,Desktop,Mac OS X,Safari
+1709207088,umigon,Desktop,Unknown,Chrome
+1709207136,umigon,Desktop,Mac OS X,Safari
+1709207138,umigon,Desktop,Unknown,Edge
+1709207150,umigon,Desktop,Unknown,YaBrowser
+1709207154,umigon,Desktop,Unknown,Chrome
+1709207165,umigon,Desktop,Unknown,Edge
+1709207183,umigon,Desktop,Windows NT,Firefox
+1709207184,umigon,Desktop,Unknown,Chrome
+1709207190,topics,Desktop,Unknown,Chrome
+1709207198,umigon,Desktop,Unknown,Chrome
+1709207223,topics,Desktop,Mac OS X,Safari
+1709207230,umigon,Desktop,Unknown,Chrome
+1709207245,umigon,Desktop,Unknown,Chrome
+1709207245,umigon,Desktop,Mac OS X,Safari
+1709207250,topics,Desktop,Unknown,Chrome
+1709207252,topics,Desktop,Mac OS X,Safari
+1709207252,umigon,Desktop,Mac OS X,Safari
+1709207265,umigon,Desktop,Unknown,Chrome
+1709207286,topics,Desktop,Unknown,Chrome
+1709207316,topics,Desktop,Mac OS X,Safari
+1709207328,topics,Desktop,Unknown,Chrome
+1709207351,umigon,Desktop,Unknown,Edge
+1709207369,umigon,Desktop,Mac OS X,Safari
+1709207374,umigon,Desktop,Unknown,Edge
+1709207378,umigon,Desktop,Windows NT,Firefox
+1709207379,topics,Desktop,Mac OS X,Safari
+1709207407,topics,Desktop,Unknown,Chrome
+1709207419,topics,Desktop,Unknown,Edge
+1709207428,topics,Desktop,Unknown,Chrome
+1709207446,topics,Desktop,Unknown,Chrome
+1709207462,topics,Desktop,Unknown,Chrome
+1709207463,umigon,Desktop,Unknown,Chrome
+1709207464,topics,Desktop,Unknown,Chrome
+1709207469,topics,Desktop,Windows NT,Firefox
+1709207476,topics,Desktop,Unknown,Chrome
+1709207483,topics,Desktop,Unknown,Chrome
+1709207501,topics,Desktop,Mac OS X,Safari
+1709207510,topics,Desktop,Unknown,Chrome
+1709207515,topics,Desktop,Windows NT,Firefox
+1709207529,topics,Desktop,Unknown,Chrome
+1709207532,topics,Desktop,Unknown,Edge
+1709207566,topics,Desktop,Unknown,Chrome
+1709207587,topics,Desktop,Unknown,Chrome
+1709207592,topics,Desktop,Mac OS X,Safari
+1709207595,umigon en,Phone,iOS,WeChat
+1709207607,topics,Desktop,Mac OS X,Safari
+1709207610,topics,Desktop,Windows NT,Firefox
+1709207612,topics,Desktop,Unknown,Chrome
+1709207612,umigon en,Phone,iOS,WeChat
+1709207613,topics,Desktop,Unknown,Edge
+1709207613,topics,Desktop,Unknown,Chrome
+1709207625,umigon en,Phone,iOS,WeChat
+1709207626,topics,Desktop,Unknown,Chrome
+1709207632,umigon en,Phone,iOS,WeChat
+1709207638,topics,Desktop,Unknown,Chrome
+1709207656,topics,Desktop,Unknown,Chrome
+1709207668,topics,Desktop,Unknown,Chrome
+1709207676,topics,Desktop,Unknown,Chrome
+1709207676,topics,Desktop,Unknown,Chrome
+1709207677,topics,Desktop,Windows NT,Firefox
+1709207681,topics,Desktop,Unknown,Chrome
+1709207683,topics,Desktop,Mac OS X,Safari
+1709207690,umigon en,Phone,iOS,WeChat
+1709207693,cowo,Desktop,Unknown,Chrome
+1709207698,topics,Desktop,Mac OS X,Safari
+1709207711,topics,Desktop,Unknown,Chrome
+1709207733,topics,Desktop,Mac OS X,Safari
+1709207743,topics,Desktop,Mac OS X,Safari
+1709207755,cowo,Desktop,Unknown,Chrome
+1709207775,topics,Desktop,Unknown,Chrome
+1709207779,topics,Desktop,Unknown,Chrome
+1709207785,umigon,Desktop,Unknown,Chrome
+1709207786,cowo,Desktop,Windows NT,Firefox
+1709207792,topics,Desktop,Unknown,Chrome
+1709207793,topics,Desktop,Mac OS X,Safari
+1709207798,topics,Desktop,Unknown,Chrome
+1709207822,topics,Desktop,Unknown,Chrome
+1709207843,cowo,Desktop,Windows NT,Firefox
+1709207846,topics,Desktop,Unknown,Chrome
+1709207854,topics,Desktop,Mac OS X,Safari
+1709207857,umigon en,Desktop,Unknown,Edge
+1709207861,topics,Desktop,Mac OS X,Safari
+1709207875,topics,Desktop,Unknown,Chrome
+1709207879,topics,Desktop,Unknown,Chrome
+1709207880,umigon,Desktop,Unknown,Chrome
+1709207891,topics,Desktop,Unknown,Edge
+1709207907,topics,Desktop,Unknown,Edge
+1709207916,cowo,Desktop,Windows NT,Firefox
+1709207924,cowo,Desktop,Unknown,Chrome
+1709207925,topics,Desktop,Mac OS X,Safari
+1709207937,topics,Desktop,Unknown,Chrome
+1709207943,topics,Desktop,Unknown,Chrome
+1709207947,cowo,Desktop,Windows NT,Firefox
+1709207963,topics,Desktop,Unknown,Chrome
+1709207967,topics,Desktop,Unknown,Edge
+1709207993,topics,Desktop,Mac OS X,Safari
+1709207994,umigon,Desktop,Unknown,Chrome
+1709208024,topics,Desktop,Unknown,Edge
+1709208025,topics,Desktop,Unknown,Chrome
+1709208028,umigon,Desktop,Unknown,Chrome
+1709208030,gaze,Desktop,Unknown,Chrome
+1709208035,topics,Desktop,Unknown,Chrome
+1709208035,cowo,Desktop,Mac OS X,Safari
+1709208044,umigon,Desktop,Unknown,Chrome
+1709208054,topics,Desktop,Unknown,Chrome
+1709208059,topics,Desktop,Unknown,Chrome
+1709208062,topics,Desktop,Unknown,Chrome
+1709208064,topics,Desktop,Unknown,Chrome
+1709208065,gaze,Desktop,Unknown,Chrome
+1709208069,gaze,Desktop,Unknown,Chrome
+1709208075,topics,Desktop,Unknown,Chrome
+1709208079,topics,Desktop,Mac OS X,Safari
+1709208085,topics,Desktop,Unknown,Chrome
+1709208086,cowo,Desktop,Unknown,Chrome
+1709208088,topics,Desktop,Unknown,Chrome
+1709208099,umigon,Desktop,Mac OS X,Safari
+1709208100,topics,Desktop,Mac OS X,Safari
+1709208106,cowo,Desktop,Mac OS X,Safari
+1709208111,topics,Desktop,Unknown,Chrome
+1709208118,umigon,Desktop,Unknown,Chrome
+1709208126,topics,Desktop,Unknown,Edge
+1709208138,topics,Desktop,Unknown,Chrome
+1709208143,topics,Desktop,Unknown,Chrome
+1709208149,gaze,Desktop,Unknown,Chrome
+1709208174,topics,Desktop,Unknown,Chrome
+1709208184,topics,Desktop,Unknown,Chrome
+1709208187,gaze,Desktop,Unknown,Chrome
+1709208189,topics,Desktop,Mac OS X,Safari
+1709208199,topics,Desktop,Mac OS X,Safari
+1709208209,topics,Desktop,Unknown,Chrome
+1709208214,topics,Desktop,Unknown,Chrome
+1709208220,topics,Desktop,Unknown,Chrome
+1709208221,topics,Desktop,Unknown,Chrome
+1709208222,topics,Desktop,Unknown,Chrome
+1709208227,umigon,Desktop,Mac OS X,Safari
+1709208235,gaze,Desktop,Unknown,Chrome
+1709208246,topics,Desktop,Mac OS X,Safari
+1709208254,cowo,Desktop,Mac OS X,Safari
+1709208257,cowo,Desktop,Unknown,Chrome
+1709208275,topics,Desktop,Unknown,Chrome
+1709208279,topics,Desktop,Unknown,Edge
+1709208285,topics,Desktop,Unknown,Chrome
+1709208287,gaze,Desktop,Unknown,Chrome
+1709208301,cowo,Desktop,Unknown,Chrome
+1709208325,topics,Desktop,Unknown,Chrome
+1709208325,cowo,Desktop,Mac OS X,Safari
+1709208325,topics,Desktop,Unknown,Chrome
+1709208329,topics,Desktop,Unknown,Chrome
+1709208331,topics,Desktop,Unknown,Edge
+1709208349,gaze,Desktop,Unknown,Chrome
+1709208355,topics,Desktop,Unknown,Chrome
+1709208362,cowo,Desktop,Unknown,Chrome
+1709208384,umigon,Desktop,Mac OS X,Safari
+1709208393,topics,Desktop,Unknown,Chrome
+1709208394,gaze,Desktop,Mac OS X,Safari
+1709208398,topics,Desktop,Unknown,Chrome
+1709208399,gaze,Desktop,Unknown,Edge
+1709208413,topics,Desktop,Unknown,Chrome
+1709208414,cowo,Desktop,Unknown,Chrome
+1709208418,cowo,Desktop,Unknown,Chrome
+1709208418,cowo,Desktop,Unknown,Chrome
+1709208419,umigon,Desktop,Mac OS X,Safari
+1709208419,cowo,Desktop,Unknown,Chrome
+1709208425,gaze,Desktop,Mac OS X,Safari
+1709208429,cowo,Desktop,Unknown,Edge
+1709208436,umigon,Desktop,Unknown,Chrome
+1709208436,gaze,Desktop,Mac OS X,Safari
+1709208436,topics,Desktop,Mac OS X,Safari
+1709208446,cowo,Desktop,Unknown,Chrome
+1709208448,gaze,Desktop,Mac OS X,Safari
+1709208449,topics,Desktop,Unknown,Edge
+1709208452,gaze,Desktop,Unknown,Chrome
+1709208452,cowo,Desktop,Mac OS X,Safari
+1709208454,cowo,Desktop,Unknown,Chrome
+1709208458,topics,Desktop,Unknown,Chrome
+1709208461,cowo,Desktop,Windows NT,Firefox
+1709208465,gaze,Desktop,Unknown,Chrome
+1709208487,cowo,Desktop,Unknown,Chrome
+1709208490,topics,Desktop,Windows NT,Firefox
+1709208491,topics,Desktop,Mac OS X,Safari
+1709208492,umigon,Desktop,Unknown,Chrome
+1709208504,cowo,Desktop,Unknown,Chrome
+1709208508,umigon,Desktop,Mac OS X,Safari
+1709208520,topics,Desktop,Mac OS X,Safari
+1709208526,gaze,Desktop,Unknown,Edge
+1709208527,organic,Desktop,Mac OS X,Safari
+1709208530,topics,Desktop,Unknown,Edge
+1709208533,topics,Desktop,Unknown,Chrome
+1709208534,umigon,Desktop,Mac OS X,Safari
+1709208542,topics,Desktop,Unknown,Chrome
+1709208545,cowo,Desktop,Mac OS X,Safari
+1709208545,cowo,Desktop,Unknown,Chrome
+1709208552,cowo,Desktop,Unknown,Edge
+1709208569,cowo,Desktop,Unknown,Chrome
+1709208570,cowo,Desktop,Unknown,Chrome
+1709208571,cowo,Desktop,Unknown,Chrome
+1709208574,cowo,Desktop,Windows NT,Firefox
+1709208574,cowo,Desktop,Unknown,Edge
+1709208575,cowo,Desktop,Unknown,Chrome
+1709208578,topics,Desktop,Unknown,Chrome
+1709208585,cowo,Desktop,Mac OS X,Safari
+1709208591,cowo,Desktop,Unknown,Chrome
+1709208600,cowo,Desktop,Unknown,Chrome
+1709208603,cowo,Desktop,Unknown,Chrome
+1709208608,gaze,Desktop,Unknown,Chrome
+1709208611,topics,Desktop,Mac OS X,Safari
+1709208615,cowo,Desktop,Mac OS X,Safari
+1709208615,topics,Desktop,Unknown,Chrome
+1709208629,topics,Desktop,Unknown,Chrome
+1709208639,topics,Desktop,Windows NT,Firefox
+1709208640,cowo,Desktop,Unknown,Chrome
+1709208640,cowo,Desktop,Unknown,Chrome
+1709208640,cowo,Desktop,Unknown,Chrome
+1709208642,topics,Desktop,Unknown,Chrome
+1709208644,cowo,Desktop,Mac OS X,Safari
+1709208653,gaze,Desktop,Unknown,Edge
+1709208676,cowo,Desktop,Mac OS X,Safari
+1709208687,cowo,Desktop,Windows NT,Firefox
+1709208708,cowo,Desktop,Unknown,Chrome
+1709208711,topics,Desktop,Mac OS X,Safari
+1709208725,cowo,Desktop,Unknown,Chrome
+1709208753,gaze,Desktop,Unknown,Chrome
+1709208766,topics,Desktop,Mac OS X,Safari
+1709208775,cowo,Desktop,Unknown,Edge
+1709208781,gaze,Desktop,Windows NT,Firefox
+1709208784,cowo,Desktop,Mac OS X,Safari
+1709208798,topics,Desktop,Unknown,Chrome
+1709208802,cowo,Desktop,Mac OS X,Safari
+1709208838,cowo,Desktop,Unknown,Chrome
+1709208839,gaze,Desktop,Unknown,Chrome
+1709208850,cowo,Desktop,Unknown,Chrome
+1709208858,topics,Desktop,Mac OS X,Safari
+1709208866,cowo,Desktop,Unknown,Chrome
+1709208871,topics,Desktop,Mac OS X,Safari
+1709208879,gaze,Desktop,Unknown,Chrome
+1709208880,cowo,Desktop,Unknown,Chrome
+1709208884,cowo,Desktop,Unknown,Chrome
+1709208884,cowo,Desktop,Mac OS X,Safari
+1709208888,cowo,Desktop,Unknown,Chrome
+1709208900,cowo,Desktop,Windows NT,Firefox
+1709208901,topics,Desktop,Unknown,Chrome
+1709208958,gaze,Desktop,Unknown,Chrome
+1709208966,topics,Desktop,Unknown,Chrome
+1709208973,cowo,Desktop,Windows NT,Firefox
+1709208984,cowo,Desktop,Mac OS X,Safari
+1709209002,gaze,Desktop,Unknown,Chrome
+1709209004,cowo,Desktop,Unknown,Chrome
+1709209027,cowo,Desktop,Unknown,Chrome
+1709209028,cowo,Desktop,Unknown,Edge
+1709209029,cowo,Desktop,Unknown,Chrome
+1709209029,cowo,Desktop,Windows NT,Firefox
+1709209031,cowo,Desktop,Unknown,Chrome
+1709209044,cowo,Desktop,Unknown,Chrome
+1709209045,topics,Desktop,Unknown,Edge
+1709209051,cowo,Desktop,Unknown,Chrome
+1709209077,gaze,Desktop,Mac OS X,Safari
+1709209078,cowo,Desktop,Unknown,Chrome
+1709209092,cowo,Desktop,Mac OS X,Safari
+1709209115,cowo,Desktop,Windows NT,Firefox
+1709209117,gaze,Desktop,Unknown,Chrome
+1709209130,cowo,Desktop,Unknown,Edge
+1709209130,cowo,Desktop,Mac OS X,Safari
+1709209145,cowo,Desktop,Unknown,Chrome
+1709209150,cowo,Desktop,Unknown,Chrome
+1709209162,cowo,Desktop,Unknown,Chrome
+1709209163,cowo,Desktop,Unknown,Chrome
+1709209168,cowo,Desktop,Mac OS X,Safari
+1709209178,cowo,Desktop,Unknown,Chrome
+1709209180,gaze,Desktop,Unknown,Chrome
+1709209184,cowo,Desktop,Unknown,Edge
+1709209188,cowo,Desktop,Mac OS X,Safari
+1709209189,cowo,Desktop,Mac OS X,Safari
+1709209192,gaze,Desktop,Unknown,Chrome
+1709209206,cowo,Desktop,Unknown,Chrome
+1709209212,topics,Desktop,Unknown,Chrome
+1709209214,gaze,Desktop,Unknown,Chrome
+1709209217,cowo,Desktop,Unknown,Edge
+1709209221,umigon,Desktop,Unknown,Chrome
+1709209227,topics,Desktop,Unknown,Chrome
+1709209229,cowo,Desktop,Unknown,Chrome
+1709209239,gaze,Desktop,Unknown,Chrome
+1709209263,cowo,Desktop,Unknown,Chrome
+1709209279,cowo,Desktop,Unknown,Chrome
+1709209280,gaze,Desktop,Unknown,Chrome
+1709209283,cowo,Desktop,Mac OS X,Safari
+1709209284,cowo,Desktop,Mac OS X,Safari
+1709209285,cowo,Desktop,Mac OS X,Safari
+1709209289,gaze,Desktop,Unknown,Chrome
+1709209324,topics,Desktop,Unknown,Chrome
+1709209325,cowo,Desktop,Mac OS X,Safari
+1709209326,cowo,Desktop,Mac OS X,Safari
+1709209332,cowo,Desktop,Unknown,Chrome
+1709209349,cowo,Desktop,Unknown,Edge
+1709209352,cowo,Desktop,Unknown,Chrome
+1709209370,cowo,Desktop,Windows NT,Firefox
+1709209376,topics,Desktop,Unknown,Chrome
+1709209416,cowo,Desktop,Unknown,Chrome
+1709209429,cowo,Desktop,Unknown,Chrome
+1709209491,cowo,Desktop,Unknown,Chrome
+1709209492,cowo,Desktop,Unknown,Edge
+1709209501,cowo,Desktop,Unknown,Edge
+1709209502,cowo,Desktop,Unknown,Chrome
+1709209525,cowo,Desktop,Unknown,Chrome
+1709209541,cowo,Desktop,Unknown,Chrome
+1709209545,cowo,Desktop,Windows NT,Firefox
+1709209553,cowo,Desktop,Windows NT,Firefox
+1709209596,cowo,Desktop,Mac OS X,Safari
+1709209611,topics,Desktop,Unknown,Chrome
+1709209613,cowo,Desktop,Windows NT,Firefox
+1709209638,cowo,Desktop,Unknown,Chrome
+1709209642,cowo,Desktop,Windows NT,Firefox
+1709209652,cowo,Desktop,Unknown,Edge
+1709209657,cowo,Desktop,Mac OS X,Safari
+1709209660,cowo,Desktop,Unknown,Chrome
+1709209666,cowo,Desktop,Unknown,Chrome
+1709209681,cowo,Desktop,Windows NT,Firefox
+1709209683,cowo,Desktop,Unknown,Chrome
+1709209691,topics,Desktop,Mac OS X,Safari
+1709209693,topics,Desktop,Unknown,Chrome
+1709209739,cowo,Desktop,Mac OS X,Safari
+1709209743,cowo,Desktop,Unknown,Edge
+1709209758,topics,Desktop,Mac OS X,Safari
+1709209762,cowo,Desktop,Unknown,Chrome
+1709209774,cowo,Desktop,Unknown,Chrome
+1709209792,cowo,Desktop,Unknown,Edge
+1709209797,cowo,Desktop,Mac OS X,Safari
+1709209801,cowo,Desktop,Unknown,Chrome
+1709209817,cowo,Desktop,Mac OS X,Safari
+1709209823,cowo,Desktop,Mac OS X,Safari
+1709209855,cowo,Desktop,Unknown,Edge
+1709209884,cowo,Desktop,Unknown,Chrome
+1709209932,cowo,Desktop,Mac OS X,Safari
+1709210026,topics,Desktop,Unknown,Chrome
+1709210642,topics,Desktop,Mac OS X,Firefox
+1709210679,topics,Desktop,Mac OS X,Firefox
+1709211312,topics,Desktop,Unknown,Chrome
+1709211726,cowo,Desktop,Unknown,Chrome
+1709213895,cowo,Phone,Android,Chrome
+1709213952,topics,Desktop,Unknown,Edge
+1709214038,topics,Desktop,Unknown,Edge
+1709214147,networkconverter,Desktop,Windows NT,Firefox
+1709214200,topics,Desktop,Unknown,Edge
+1709214240,cowo,Desktop,Mac OS X,Safari
+1709214285,networkconverter,Desktop,Windows NT,Firefox
+1709214384,cowo,Desktop,Mac OS X,Safari
+1709214491,topics,Desktop,Windows NT,Firefox
+1709214689,topics,Desktop,Mac OS X,Firefox
+1709214847,topics,Desktop,Windows NT,Firefox
+1709215021,cowo,Desktop,Windows NT,Firefox
+1709215199,networkconverter,Desktop,Unknown,Chrome
+1709215700,topics,Desktop,Mac OS X,Firefox
+1709215720,topics,Desktop,Mac OS X,Firefox
+1709215752,umigon,Desktop,Mac OS X,Firefox
+1709218462,topics,Desktop,Windows NT,Firefox
+1709218609,topics,Desktop,Windows NT,Firefox
+1709218749,topics,Desktop,Windows NT,Firefox
+1709219028,cowo,Desktop,Unknown,Chrome
+1709219457,topics,Desktop,Windows NT,Firefox
+1709219548,umigon,Desktop,Windows NT,Firefox
+1709220049,cowo,Desktop,Unknown,Chrome
+1709221911,topics,Desktop,Mac OS X,Safari
+1709222032,cowo,Desktop,Unknown,Chrome
+1709222083,cowo,Desktop,Unknown,Chrome
+1709222167,cowo,Desktop,Unknown,Chrome
+1709222254,cowo,Desktop,Unknown,Chrome
+1709222468,cowo,Desktop,Unknown,Chrome
+1709222638,cowo,Desktop,Unknown,Edge
+1709222708,cowo,Desktop,Unknown,Chrome
+1709222802,topics,Desktop,Unknown,Chrome
+1709222860,cowo,Desktop,Unknown,Chrome
+1709222869,topics,Desktop,Unknown,Chrome
+1709222902,topics,Desktop,Unknown,Chrome
+1709222992,cowo,Desktop,Unknown,Chrome
+1709223551,cowo,Desktop,Unknown,Chrome
+1709223962,topics,Desktop,Unknown,Chrome
+1709224057,umigon,Desktop,Unknown,Chrome
+1709224448,umigon,Desktop,Unknown,Chrome
+1709224882,cowo,Desktop,Unknown,Chrome
+1709224942,cowo,Desktop,Unknown,Chrome
+1709225136,cowo,Desktop,Unknown,Chrome
+1709225273,cowo,Desktop,Unknown,Chrome
+1709225407,topics,Desktop,Unknown,Edge
+1709225437,cowo,Desktop,Unknown,Chrome
+1709225446,topics,Desktop,Unknown,Edge
+1709225649,topics,Desktop,Unknown,Edge
+1709225744,topics,Desktop,Unknown,Edge
+1709225965,gaze,Desktop,Unknown,Edge
+1709226054,gaze,Desktop,Unknown,Edge
+1709226395,topics,Desktop,Unknown,Chrome
+1709226492,topics,Desktop,Mac OS X,Firefox
+1709226534,topics,Desktop,Unknown,Chrome
+1709226591,topics,Desktop,Unknown,Chrome
+1709226630,topics,Desktop,Unknown,Chrome
+1709226784,topics,Phone,iOS,Safari
+1709227230,cowo,Desktop,Mac OS X,Firefox
+1709227396,cowo,Desktop,Unknown,Chrome
+1709227563,cowo,Desktop,Mac OS X,Safari
+1709227638,cowo,Desktop,Unknown,Chrome
+1709227982,cowo,Desktop,Unknown,Chrome
+1709228086,cowo,Desktop,Unknown,Chrome
+1709228313,cowo,Desktop,Unknown,Chrome
+1709228383,cowo,Desktop,Unknown,Chrome
+1709228599,cowo,Desktop,Mac OS X,Safari
+1709229244,cowo,Desktop,Unknown,Edge
+1709229435,cowo,Desktop,Unknown,Chrome
+1709229697,topics,Desktop,Unknown,Chrome
+1709230319,umigon,Desktop,Windows NT,Firefox
+1709230367,cowo,Desktop,Unknown,Chrome
+1709231372,umigon,Desktop,Unknown,Chrome
+1709231438,umigon,Desktop,Unknown,Chrome
+1709231492,umigon,Desktop,Unknown,Chrome
+1709231726,umigon en,Desktop,Unknown,Chrome
+1709232205,organic,Desktop,Unknown,Chrome
+1709232279,cowo,Desktop,Unknown,Chrome
+1709234086,topics,Desktop,Unknown,Chrome
+1709238259,cowo,Desktop,Unknown,Edge
+1709239719,topics,Desktop,Unknown,Chrome
+1709245427,umigon,Desktop,Windows NT,Firefox
+1709245666,topics,Desktop,Unknown,Chrome
+1709245695,topics,Desktop,Unknown,Chrome
+1709246439,umigon,Desktop,Unknown,Chrome
+1709246589,topics,Desktop,Unknown,Chrome
+1709246632,topics,Desktop,Unknown,Chrome
+1709246718,topics,Desktop,Unknown,Chrome
+1709246974,topics,Desktop,Unknown,Chrome
+1709247157,umigon,Desktop,Unknown,Chrome
+1709254409,umigon en,Desktop,Mac OS X,Chrome
+1709254410,umigon en,Desktop,Mac OS X,Chrome
+1709254411,umigon en,Desktop,Mac OS X,Chrome
+1709254412,umigon en,Desktop,Mac OS X,Chrome
+1709254412,umigon en,Desktop,Mac OS X,Chrome
+1709254412,umigon en,Desktop,Mac OS X,Chrome
+1709254415,umigon fr,Desktop,Mac OS X,Chrome
+1709254416,umigon fr,Desktop,Mac OS X,Chrome
+1709254417,umigon fr,Desktop,Mac OS X,Chrome
+1709254422,umigon es,Desktop,Mac OS X,Chrome
+1709254426,umigon es,Desktop,Mac OS X,Chrome
+1709254435,umigon es,Desktop,Mac OS X,Chrome
+1709256116,umigon,Desktop,Unknown,Chrome
+1709256225,gaze,Desktop,Unknown,Chrome
+1709256242,gaze,Desktop,Unknown,Chrome
+1709256277,gaze,Desktop,Unknown,Chrome
+1709256287,gaze,Desktop,Unknown,Chrome
+1709261548,cowo,Desktop,Unknown,Chrome
+1709270161,topics,Desktop,Mac OS X,Firefox
+1709270269,cowo,Desktop,Mac OS X,Firefox
+1709274454,topics,Desktop,Mac OS X,Firefox
+1709274571,cowo,Desktop,Mac OS X,Firefox
+1709274669,cowo,Desktop,Mac OS X,Firefox
+1709274766,cowo,Desktop,Mac OS X,Firefox
+1709274836,umigon,Desktop,Mac OS X,Firefox
+1709274942,cowo,Desktop,Mac OS X,Firefox
+1709275240,topics,Desktop,Mac OS X,Firefox
+1709275370,networkconverter,Desktop,Mac OS X,Firefox
+1709278810,topics,Desktop,Mac OS X,Firefox
+1709278842,topics,Desktop,Mac OS X,Firefox
+1709278946,topics,Desktop,Mac OS X,Firefox
+1709279029,topics,Desktop,Mac OS X,Firefox
+1709279092,topics,Desktop,Mac OS X,Firefox
+1709279168,topics,Desktop,Mac OS X,Firefox
+1709279358,topics,Desktop,Mac OS X,Firefox
+1709279550,topics,Desktop,Mac OS X,Firefox
+1709279730,topics,Desktop,Mac OS X,Firefox
+1709279872,topics,Desktop,Mac OS X,Firefox
+1709280831,topics,Desktop,Mac OS X,Firefox
+1709280956,topics,Desktop,Mac OS X,Firefox
+1709285712,cowo,Desktop,Unknown,Chrome
+1709285926,cowo,Desktop,Unknown,Chrome
+1709285958,cowo,Desktop,Unknown,Chrome
+1709285965,topics,Desktop,Unknown,Chrome
+1709290092,umigon,Desktop,Mac OS X,Safari
+1709290358,umigon,Desktop,Mac OS X,Safari
+1709290478,cowo,Desktop,Mac OS X,Safari
+1709290626,umigon,Desktop,Mac OS X,Safari
+1709290899,topics,Desktop,Mac OS X,Safari
+1709291066,topics,Desktop,Mac OS X,Safari
+1709291148,topics,Desktop,Mac OS X,Safari
+1709292404,topics,Desktop,Windows NT,Firefox
+1709293154,topics,Desktop,Windows NT,Firefox
+1709294723,cowo,Desktop,Unknown,Edge
+1709295233,umigon,Desktop,Unknown,Chrome
+1709296220,cowo,Desktop,Unknown,Edge
+1709297302,gaze,Desktop,Unknown,Chrome
+1709297307,gaze,Desktop,Unknown,Chrome
+1709297311,gaze,Desktop,Unknown,Chrome
+1709297320,gaze,Desktop,Unknown,Chrome
+1709297324,gaze,Desktop,Unknown,Chrome
+1709297337,gaze,Desktop,Unknown,Chrome
+1709297368,gaze,Desktop,Unknown,Chrome
+1709297453,gaze,Desktop,Unknown,Chrome
+1709297486,gaze,Desktop,Unknown,Chrome
+1709297501,networkconverter,Desktop,Unknown,Chrome
+1709297710,gaze,Desktop,Unknown,Chrome
+1709297723,gaze,Desktop,Unknown,Chrome
+1709297873,gaze,Desktop,Unknown,Chrome
+1709298312,cowo,Desktop,Unknown,Chrome
+1709298552,gaze,Desktop,Unknown,Chrome
+1709300060,umigon,Desktop,Unknown,Chrome
+1709301461,cowo,Desktop,Unknown,Chrome
+1709302237,cowo,Desktop,Unknown,Chrome
+1709302512,umigon,Desktop,Unknown,Chrome
+1709303833,umigon,Desktop,Unknown,Chrome
+1709304587,umigon,Desktop,Unknown,Chrome
+1709305170,umigon es,Desktop,Unknown,Edge
+1709311551,gaze,Desktop,Unknown,Chrome
+1709314446,umigon,Desktop,Unknown,Chrome

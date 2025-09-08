@@ -60,12 +60,4 @@ public sealed interface SimState extends FlowState  {
             return new ResultsReady(jobId, gexf, nodesAsJson, edgesAsJson, shareVVPublicly, newFlag);
         }
     }
-
-    record FlowFailed(
-            String jobId,
-            SimState lastKnownState,
-            String errorMessage
-            ) implements SimState {
-
-    }
 }

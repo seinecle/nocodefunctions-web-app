@@ -15,6 +15,7 @@ import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
+import net.clementlevallois.nocodeapp.web.front.flows.base.FlowState;
 
 @Named
 @ViewScoped
@@ -29,7 +30,7 @@ public class CoocParametersBean implements Serializable {
 
     @PostConstruct
     public void init() {
-        CoocState currentState = sessionBean.getFlowState();
+        FlowState currentState = sessionBean.getFlowState();
         switch (currentState) {
             case CoocState.DataImported importedState -> // First time on the parameters page, initialize the state
                 sessionBean.setFlowState(new CoocState.AwaitingParameters(importedState.jobId(), this.minSharedTargets));

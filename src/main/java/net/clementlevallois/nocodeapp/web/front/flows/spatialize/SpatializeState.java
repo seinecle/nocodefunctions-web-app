@@ -1,16 +1,9 @@
-/*
- * Licence Apache 2.0
- * https://www.apache.org/licenses/LICENSE-2.0
- */
 package net.clementlevallois.nocodeapp.web.front.flows.spatialize;
 
-public sealed interface SpatializeState {
+import net.clementlevallois.nocodeapp.web.front.flows.base.FlowState;
 
-    String jobId();
+public sealed interface SpatializeState extends FlowState  {
 
-    /**
-     * Initial state where only parameters are set.
-     */
     record AwaitingParameters(
             String jobId,
             int durationInSecond
@@ -45,17 +38,6 @@ public sealed interface SpatializeState {
     record ResultsReady(
             String jobId,
             String gexf
-            ) implements SpatializeState {
-
-    }
-
-    /**
-     * State representing a failure.
-     */
-    record FlowFailed(
-            String jobId,
-            AwaitingParameters parameters,
-            String errorMessage
             ) implements SpatializeState {
 
     }

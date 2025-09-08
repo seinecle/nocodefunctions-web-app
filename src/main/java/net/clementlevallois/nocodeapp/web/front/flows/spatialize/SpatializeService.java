@@ -1,7 +1,3 @@
-/*
- * Licence Apache 2.0
- * https://www.apache.org/licenses/LICENSE-2.0
- */
 package net.clementlevallois.nocodeapp.web.front.flows.spatialize;
 
 import jakarta.enterprise.context.ApplicationScoped;
@@ -22,6 +18,8 @@ import static net.clementlevallois.functions.model.Globals.GlobalQueryParams.JOB
 import net.clementlevallois.nocodeapp.web.front.MessageFromApi;
 import net.clementlevallois.nocodeapp.web.front.WatchTower;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.ApplicationPropertiesBean;
+import net.clementlevallois.nocodeapp.web.front.flows.base.FlowFailed;
+import net.clementlevallois.nocodeapp.web.front.flows.base.FlowState;
 import net.clementlevallois.nocodeapp.web.front.http.MicroserviceHttpClient;
 import net.clementlevallois.nocodeapp.web.front.http.RemoteLocal;
 
@@ -36,7 +34,7 @@ public class SpatializeService {
     @Inject
     private ApplicationPropertiesBean applicationProperties;
 
-    public SpatializeState startAnalysis(SpatializeState.AwaitingParameters currentState) {
+    public FlowState startAnalysis(SpatializeState.AwaitingParameters currentState) {
         String jobId = currentState.jobId();
         String callbackURL = RemoteLocal.getDomain() + RemoteLocal.getInternalMessageApiEndpoint() + FunctionSpatialization.ENDPOINT;
 
@@ -55,20 +53,20 @@ public class SpatializeService {
             requestBuilder.addQueryParameter(param.name(), paramValue);
         }
 
-        AtomicReference<SpatializeState.FlowFailed> errorFlowFailed = new AtomicReference<>();
+        AtomicReference<FlowFailed> errorFlowFailed = new AtomicReference<>();
         AtomicReference<Boolean> isProcessSucessFul = new AtomicReference<>(true);
 
         requestBuilder.sendAsync(HttpResponse.BodyHandlers.ofByteArray())
                 .thenAccept(resp -> {
                     if (resp.statusCode() != 200) {
                         LOG.log(Level.SEVERE, "Spatialize task submission failed for job {0}. Status: {1}, Body: {2}", new Object[]{jobId, resp.statusCode(), new String(resp.body(), StandardCharsets.UTF_8)});
-                        errorFlowFailed.set(new SpatializeState.FlowFailed(jobId, currentState, "cowo task submission to remote service returned a not 200 code"));
+                        errorFlowFailed.set(new FlowFailed(jobId, currentState, "cowo task submission to remote service returned a not 200 code"));
                         isProcessSucessFul.set(Boolean.FALSE);
                     }
                 })
                 .exceptionally(ex -> {
                     LOG.log(Level.SEVERE, "Exception during Spatialize task submission for job " + jobId, ex);
-                    errorFlowFailed.set(new SpatializeState.FlowFailed(jobId, currentState, "cowo task submission created an exceptional error"));
+                    errorFlowFailed.set(new FlowFailed(jobId, currentState, "cowo task submission created an exceptional error"));
                     isProcessSucessFul.set(Boolean.FALSE);
                     return null;
                 });
@@ -93,7 +91,7 @@ public class SpatializeService {
 
     }
 
-    public SpatializeState checkCompletion(SpatializeState.Processing currentState) {
+    public FlowState checkCompletion(SpatializeState.Processing currentState) {
         String jobId = currentState.jobId();
         Globals globals = new Globals(applicationProperties.getTempFolderFullPath());
         Path pathToSignalCompletion = globals.getWorkflowCompleteFilePath(jobId);
@@ -109,7 +107,7 @@ public class SpatializeService {
                     switch (msg.getInfo()) {
                         case ERROR -> {
                             messagesFromApi.remove(msg);
-                            return new SpatializeState.FlowFailed(jobId, currentState.parameters(), msg.getMessage());
+                            return new FlowFailed(jobId, currentState.parameters(), msg.getMessage());
                         }
                         case PROGRESS -> {
                             if (msg.getProgress() != null) {
@@ -124,7 +122,7 @@ public class SpatializeService {
         return currentState;
     }
 
-    private SpatializeState processSpatializationResults(SpatializeState.Processing currentState) {
+    private FlowState processSpatializationResults(SpatializeState.Processing currentState) {
         String jobId = currentState.jobId();
         Globals globals = new Globals(applicationProperties.getTempFolderFullPath());
         try {
@@ -133,7 +131,7 @@ public class SpatializeService {
             return new SpatializeState.ResultsReady(jobId, gexf);
         } catch (IOException ex) {
             LOG.log(Level.SEVERE, "Error finalizing spatialization analysis for job " + jobId, ex);
-            return new SpatializeState.FlowFailed(jobId, currentState.parameters(), "Could not read GEXF file: " + ex.getMessage());
+            return new FlowFailed(jobId, currentState.parameters(), "Could not read GEXF file: " + ex.getMessage());
         }
     }
 }
