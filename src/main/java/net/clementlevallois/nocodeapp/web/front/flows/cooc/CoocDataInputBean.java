@@ -78,7 +78,7 @@ public class CoocDataInputBean implements Serializable {
         try {
             Files.createDirectories(jobDirectory);
         } catch (IOException ex) {
-            throw new NocodeApplicationException("An error occurred while processing the file.", ex);
+            throw new NocodeApplicationException("An IO error occurred", ex);
         }
 
         sessionBean.sendFunctionPageReport(Globals.Names.COOC.name());

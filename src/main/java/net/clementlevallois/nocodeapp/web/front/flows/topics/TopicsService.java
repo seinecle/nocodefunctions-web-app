@@ -184,8 +184,7 @@ public class TopicsService {
                 throw new IOException("Result file not found for job " + jobId);
             }
         } catch (IOException e) {
-            LOG.log(Level.SEVERE, "Failed to process results for job " + jobId, e);
-            return new FlowFailed(jobId, currentState.parameters(), "Failed to read or process results.");
+            throw new NocodeApplicationException("An IO error occurred", e);
         }
     }
 

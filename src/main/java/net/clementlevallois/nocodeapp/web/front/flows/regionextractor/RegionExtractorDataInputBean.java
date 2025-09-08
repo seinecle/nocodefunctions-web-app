@@ -133,8 +133,7 @@ public class RegionExtractorDataInputBean implements Serializable {
             Files.createDirectories(jobDirectory);
             Files.copy(((RegionExtractorDataSource.FileUpload) dataSource).files().get(0).getInputStream(), jobDirectory.resolve("template.pdf"), REPLACE_EXISTING);
         } catch (IOException ex) {
-            LOG.log(Level.SEVERE, "unable to create directories for job " + jobId, ex);
-            sessionBean.setFlowState(new FlowFailed(jobId, sessionBean.getFlowState(), "unable to create directories"));
+            throw new NocodeApplicationException("An IO error occurred", ex);
         }
 
         sessionBean.sendFunctionPageReport(Globals.Names.REGION_EXTRACTOR.name());

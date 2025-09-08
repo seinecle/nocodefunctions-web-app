@@ -93,8 +93,7 @@ public class SimDataInputBean implements Serializable {
         try {
             Files.createDirectories(jobDirectory);
         } catch (IOException ex) {
-            LOG.log(Level.SEVERE, "unable to create directories for job " + jobId, ex);
-            sessionBean.setFlowState(new FlowFailed(jobId, awaitingParameters, "unable to create directories"));
+            throw new NocodeApplicationException("An IO error occurred", ex);
         }
 
         ImportersService.PreparationResult result = switch (dataSource) {

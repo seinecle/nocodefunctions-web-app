@@ -107,7 +107,7 @@ public class CowoDataInputBean implements Serializable {
         try {
             Files.createDirectories(jobDirectory);
         } catch (IOException ex) {
-            LOG.log(Level.SEVERE, () -> "unable to create directories for job " + jobId);
+            throw new NocodeApplicationException("An IO error occurred", ex);
         }
 
         sessionBean.sendFunctionPageReport(Globals.Names.COWO.name());

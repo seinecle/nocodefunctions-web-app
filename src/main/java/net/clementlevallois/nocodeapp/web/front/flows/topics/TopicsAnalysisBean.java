@@ -45,7 +45,7 @@ public class TopicsAnalysisBean implements Serializable {
             try {
                 FacesContext.getCurrentInstance().getExternalContext().redirect("topics-data-import.xhtml?faces-redirect=true");
             } catch (IOException ex) {
-                LOG.log(Level.SEVERE, "Redirect failed in topics analysis bean init", ex);
+                throw new NocodeApplicationException("An IO error occurred", ex);
             }
         }
     }

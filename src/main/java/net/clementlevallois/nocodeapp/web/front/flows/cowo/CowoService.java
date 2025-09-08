@@ -184,8 +184,7 @@ public class CowoService {
             return new CowoState.ResultsReady(jobId, gexf, nodesAsJson, edgesAsJson, false, false);
 
         } catch (IOException e) {
-            LOG.log(Level.SEVERE, "Error finalizing analysis for job " + jobId, e);
-            return new FlowFailed(jobId, currentState.parameters(), "Could not read result files: " + e.getMessage());
+            throw new NocodeApplicationException("An IO error occurred", e);
         }
     }
 }

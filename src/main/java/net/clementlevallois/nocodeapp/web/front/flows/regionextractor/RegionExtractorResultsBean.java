@@ -44,7 +44,7 @@ public class RegionExtractorResultsBean implements Serializable {
             try {
                 FacesContext.getCurrentInstance().getExternalContext().redirect("regionextractor.html?faces-redirect=true");
             } catch (IOException ex) {
-                LOG.log(Level.SEVERE, "Redirection failed in results bean init", ex);
+                throw new NocodeApplicationException("An IO error occurred", ex);
             }
         }
     }

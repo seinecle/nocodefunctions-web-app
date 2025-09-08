@@ -139,8 +139,7 @@ public class CoocService {
             return new CoocState.ResultsReady(jobId, gexf, nodesJson, edgesJson, false, false);
 
         } catch (IOException e) {
-            LOG.log(Level.SEVERE, "Failed to complete cooc analysis for job " + jobId, e);
-            return new FlowFailed(jobId, currentState.parameters(), "Result file error: " + e.getMessage());
+            throw new NocodeApplicationException("An IO error occurred", e);
         }
     }
 }

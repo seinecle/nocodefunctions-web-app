@@ -53,7 +53,7 @@ public class RegionExtractorAnalysisBean implements Serializable {
                 try {
                     FacesContext.getCurrentInstance().getExternalContext().redirect(FacesContext.getCurrentInstance().getExternalContext().getRequestContextPath() + "/regionextractor/results.html");
                 } catch (IOException ex) {
-                    System.out.println("Redirect to results.html failed");
+                    throw new NocodeApplicationException("An IO error occurred", ex);
                 }
             }
         }

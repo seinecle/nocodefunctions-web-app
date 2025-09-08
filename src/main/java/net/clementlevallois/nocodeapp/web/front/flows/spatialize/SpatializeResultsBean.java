@@ -50,7 +50,7 @@ public class SpatializeResultsBean implements Serializable {
             try {
                 FacesContext.getCurrentInstance().getExternalContext().redirect("spatialize-import.html?faces-redirect=true");
             } catch (IOException ex) {
-                LOG.log(Level.SEVERE, "Redirection failed in results bean init", ex);
+                throw new NocodeApplicationException("An IO error occurred", ex);
             }
         }
     }

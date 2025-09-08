@@ -138,8 +138,7 @@ public class SimService {
             return new SimState.ResultsReady(jobId, gexf, nodesJson, edgesJson, false, false);
 
         } catch (IOException e) {
-            LOG.log(Level.SEVERE, "Failed to complete sim analysis for job " + jobId, e);
-            return new FlowFailed(jobId, currentState.parameters(), "Result file error: " + e.getMessage());
+            throw new NocodeApplicationException("An IO error occurred", e);
         }
     }
 }

@@ -45,7 +45,7 @@ public class SimResultsBean implements Serializable {
             try {
                 FacesContext.getCurrentInstance().getExternalContext().redirect("sim-import.html?faces-redirect=true");
             } catch (IOException ex) {
-                LOG.log(Level.SEVERE, "Redirect failed in SimResultsBean init", ex);
+                throw new NocodeApplicationException("An IO error occurred", ex);
             }
         }
     }
