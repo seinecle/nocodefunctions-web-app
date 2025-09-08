@@ -23,6 +23,11 @@ import org.primefaces.model.file.UploadedFile;
 @ViewScoped
 public class TopicsAnalysisBean implements Serializable {
 
+    public void quart() {
+        // Implémentez ici la logique de la méthode quart
+        System.out.println("Méthode quart appelée");
+    }
+
     private static final Logger LOG = Logger.getLogger(TopicsAnalysisBean.class.getName());
 
     @Inject
