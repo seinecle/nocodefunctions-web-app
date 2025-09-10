@@ -19,12 +19,8 @@ import java.net.http.HttpResponse;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import net.clementlevallois.functions.model.Globals;
@@ -32,7 +28,6 @@ import net.clementlevallois.importers.model.ImagesPerFile;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.ApplicationPropertiesBean;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.exceptions.NocodeApplicationException;
-import net.clementlevallois.nocodeapp.web.front.flows.base.FlowFailed;
 import net.clementlevallois.nocodeapp.web.front.flows.base.FlowState;
 import net.clementlevallois.nocodeapp.web.front.flows.regionextractor.RegionExtractorState.AwaitingTargetPdfs;
 import net.clementlevallois.nocodeapp.web.front.flows.regionextractor.RegionExtractorState.ExemplarPdfUploaded;
@@ -40,7 +35,6 @@ import net.clementlevallois.nocodeapp.web.front.flows.regionextractor.RegionExtr
 import net.clementlevallois.nocodeapp.web.front.flows.regionextractor.RegionExtractorState.RegionParameters;
 import net.clementlevallois.nocodeapp.web.front.flows.regionextractor.RegionExtractorState.TargetPdfsUploaded;
 import net.clementlevallois.nocodeapp.web.front.http.MicroserviceHttpClient;
-import net.clementlevallois.nocodeapp.web.front.logview.BackToFrontMessengerBean;
 import org.primefaces.PrimeFaces;
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.CroppedImage;
@@ -57,9 +51,6 @@ public class RegionExtractorDataInputBean implements Serializable {
 
     @Inject
     private SessionBean sessionBean;
-
-    @Inject
-    private BackToFrontMessengerBean logBean;
 
     @Inject
     private MicroserviceHttpClient microserviceClient;
@@ -104,8 +95,10 @@ public class RegionExtractorDataInputBean implements Serializable {
                 Path pathToFile = applicationProperties.getTempFolderFullPath().resolve(state.jobId()).resolve(fileNameForPersistence);
                 Files.write(pathToFile, event.getFile().getContent());
             } catch (IOException ex) {
-                System.getLogger(RegionExtractorDataInputBean.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
+                throw new NocodeApplicationException("An IO error occurred", ex);
             }
+        }else {
+            throw new IllegalStateException("wrong state " + sessionBean.getFlowState().getClass().getSimpleName());
         }
     }
 
@@ -115,15 +108,13 @@ public class RegionExtractorDataInputBean implements Serializable {
         if (regionExtractorState instanceof RegionExtractorState.AwaitingTargetPdfs state) {
             sessionBean.setFlowState(new RegionExtractorState.TargetPdfsUploaded(state.jobId(), state.regionParameters()));
         } else {
-            System.out.println("incorrect state in onAllTargetFilesUploadsComplete: " + regionExtractorState.jobId());
+            throw new IllegalStateException("wrong state " + sessionBean.getFlowState().getClass().getSimpleName());
         }
     }
 
     private void processRegionExtractorDataSource(String jobId, RegionExtractorDataSource dataSource) {
         if (!(sessionBean.getFlowState() instanceof RegionExtractorState.AwaitingExemplarPdf)) {
-            sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Invalid State", "The application is in an invalid state.");
-            sessionBean.setFlowState(new FlowFailed(null, sessionBean.getFlowState(), "invalid state"));
-            return;
+            throw new IllegalStateException("wrong state " + sessionBean.getFlowState().getClass().getSimpleName());
         }
 
         Path jobDirectory = applicationProperties.getTempFolderFullPath().resolve(jobId);
@@ -133,7 +124,6 @@ public class RegionExtractorDataInputBean implements Serializable {
         } catch (IOException ex) {
             throw new NocodeApplicationException("An IO error occurred", ex);
         }
-
         sessionBean.sendFunctionPageReport(Globals.Names.REGION_EXTRACTOR.name());
     }
 
@@ -147,8 +137,7 @@ public class RegionExtractorDataInputBean implements Serializable {
 
     public List<UploadedFile> handleTargetPdfs(RegionExtractorDataSource dataSource) {
         if (!(dataSource instanceof RegionExtractorDataSource.FileUpload pdfDataSource)) {
-            logBean.addOneNotificationFromString("Error: incorrect data source type for target PDFs.");
-            return new ArrayList<>();
+            throw new IllegalStateException("wrong state " + sessionBean.getFlowState().getClass().getSimpleName());
         } else {
             return pdfDataSource.files();
         }
@@ -162,23 +151,23 @@ public class RegionExtractorDataInputBean implements Serializable {
                 ImagesPerFile imagesPerFile = (ImagesPerFile) ois.readObject();
                 return imagesPerFile;
             } catch (IOException | ClassNotFoundException ex) {
-                Logger.getLogger(RegionExtractorDataInputBean.class.getName()).log(Level.SEVERE, null, ex);
+                throw new NocodeApplicationException("An IO error or ClassNotFound error occurred", ex);
             }
         } else {
             throw new IllegalStateException("wrong state " + sessionBean.getFlowState().getClass().getSimpleName());
         }
-        return null;
     }
 
     public List<Integer> getPageIndices() {
         if (sessionBean.getFlowState() instanceof RegionDefinition(String jobId, ImagesPerFile images, RegionParameters regionParameters)) {
-            if (getAllPages()) {
-                return IntStream.range(0, images.getImages().length).boxed().collect(Collectors.toList());
-            } else {
+            if (getExtractSameRegionOnAllPages()) {
                 return List.of(0); // Just the first page
+            } else {
+                return IntStream.range(0, images.getImages().length).boxed().collect(Collectors.toList());
             }
+        } else {
+            throw new IllegalStateException("wrong state " + sessionBean.getFlowState().getClass().getSimpleName());
         }
-        return Collections.emptyList();
     }
 
     public StreamedContent getImageByIndex() {
@@ -205,7 +194,7 @@ public class RegionExtractorDataInputBean implements Serializable {
     public boolean getThisPageSelected() {
         if (sessionBean.getFlowState() instanceof RegionDefinition(String jobId, ImagesPerFile images, RegionParameters regionParameters)) {
             FacesContext context = FacesContext.getCurrentInstance();
-            String indexRow = context.getExternalContext().getRequestParameterMap().get("rowIndex3");
+            String indexRow = context.getExternalContext().getRequestParameterMap().get("pageIndex");
             if (indexRow == null) {
                 return false;
             } else {
@@ -219,7 +208,7 @@ public class RegionExtractorDataInputBean implements Serializable {
 
     public void setThisPageSelected(boolean selectPage) {
         FacesContext context = FacesContext.getCurrentInstance();
-        String index = context.getExternalContext().getRequestParameterMap().get("rowIndex3");
+        String index = context.getExternalContext().getRequestParameterMap().get("pageIndex");
         if (index != null) {
             try {
                 if (sessionBean.getFlowState() instanceof RegionDefinition(String jobId, ImagesPerFile images, RegionParameters regionParameters)) {
@@ -236,7 +225,7 @@ public class RegionExtractorDataInputBean implements Serializable {
         }
     }
 
-    public boolean getAllPages() {
+    public boolean getExtractSameRegionOnAllPages() {
         if (sessionBean.getFlowState() instanceof RegionDefinition(String jobId, ImagesPerFile images, RegionParameters regionParameters)) {
             return regionParameters.allPages();
         } else {
@@ -244,7 +233,7 @@ public class RegionExtractorDataInputBean implements Serializable {
         }
     }
 
-    public void setAllPages(boolean allPagesParam) {
+    public void setExtractSameRegionOnAllPages(boolean allPagesParam) {
         if (sessionBean.getFlowState() instanceof RegionDefinition(String jobId, ImagesPerFile images, RegionParameters regionParameters)) {
             regionParameters = regionParameters.withAllPages(allPagesParam);
             sessionBean.setFlowState(new RegionExtractorState.RegionDefinition(jobId, images, regionParameters));
@@ -273,6 +262,16 @@ public class RegionExtractorDataInputBean implements Serializable {
 
     public String goToPdfUpload() {
         if (sessionBean.getFlowState() instanceof RegionDefinition rd) {
+            var fc = FacesContext.getCurrentInstance();
+            var params = fc.getExternalContext().getRequestParameterMap();
+            String pageParam = params.get("pageIndex");
+            if (pageParam == null) {
+                throw new IllegalStateException("param should not be null " + sessionBean.getFlowState().getClass().getSimpleName());
+            }
+
+            RegionParameters withSelectedPage = rd.regionParameters().withSelectedPage(Integer.parseInt(pageParam));
+            rd = new RegionDefinition(rd.jobId(), rd.imagesPerFile(), withSelectedPage);
+
             RegionDefinition updatedRegionDefinition = helperMethodsService.getDocumentDimensions(rd);
             updatedRegionDefinition = helperMethodsService.defineRegion(updatedRegionDefinition);
             updatedRegionDefinition = helperMethodsService.getDocumentDimensions(updatedRegionDefinition);
@@ -293,5 +292,4 @@ public class RegionExtractorDataInputBean implements Serializable {
     public boolean areTargetPdfsUploaded() {
         return sessionBean.getFlowState() instanceof TargetPdfsUploaded;
     }
-
 }

@@ -9,21 +9,16 @@ import jakarta.inject.Named;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.LocaleComparator;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.logview.BackToFrontMessengerBean;
-
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.*;
-import java.util.logging.Level;
 import java.util.logging.Logger;
-import net.clementlevallois.nocodeapp.web.front.exceptions.NocodeApplicationException;
 import net.clementlevallois.nocodeapp.web.front.flows.base.FlowState;
+import net.clementlevallois.nocodeapp.web.front.utils.FacesUtils;
 import org.primefaces.model.file.UploadedFile;
 
 @Named
 @ViewScoped
 public class CowoAnalysisBean implements Serializable {
-
-    private static final Logger LOG = Logger.getLogger(CowoAnalysisBean.class.getName());
 
     @Inject
     private BackToFrontMessengerBean logBean;
@@ -37,11 +32,7 @@ public class CowoAnalysisBean implements Serializable {
     @PostConstruct
     public void init() {
         if (sessionBean.getFlowState() == null) {
-            try {
-                FacesContext.getCurrentInstance().getExternalContext().redirect("cowo-import.html?faces-redirect=true");
-            } catch (IOException ex) {
-                LOG.log(Level.SEVERE, "Redirection error", ex);
-            }
+            FacesUtils.redirectTo("cowo-import.html?faces-redirect=true");
         }
     }
 
@@ -61,7 +52,6 @@ public class CowoAnalysisBean implements Serializable {
             }
         } else {
             throw new IllegalStateException("State is not CowoState.AwaitingParameters " + sessionBean.getFlowState().getClass().getSimpleName());
-
         }
     }
 
@@ -69,12 +59,7 @@ public class CowoAnalysisBean implements Serializable {
         if (sessionBean.getFlowState() instanceof CowoState.Processing processingState) {
             sessionBean.setFlowState(cowoService.checkCompletion(processingState));
             if (sessionBean.getFlowState() instanceof CowoState.ResultsReady) {
-                try {
-                    FacesContext.getCurrentInstance().getExternalContext()
-                            .redirect(FacesContext.getCurrentInstance().getExternalContext().getRequestContextPath() + "/workflow-cowo/results.html");
-                } catch (IOException ex) {
-                    throw new NocodeApplicationException("An IO error occurred", ex);
-                }
+                FacesUtils.redirectTo("results.html?faces-redirect=true");
             }
         } else {
             throw new IllegalStateException("State is not CowoState.Processing " + sessionBean.getFlowState().getClass().getSimpleName());
@@ -113,7 +98,6 @@ public class CowoAnalysisBean implements Serializable {
         }
     }
 
-    // Input parameters setters and getters
     public List<String> getSelectedLanguages() {
         return (sessionBean.getFlowState() instanceof CowoState.AwaitingParameters p) ? p.selectedLanguages() : new ArrayList<>();
     }

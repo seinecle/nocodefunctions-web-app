@@ -14,6 +14,7 @@ import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.flows.base.FlowFailed;
 import net.clementlevallois.nocodeapp.web.front.flows.base.FlowState;
 import net.clementlevallois.nocodeapp.web.front.logview.BackToFrontMessengerBean;
+import net.clementlevallois.nocodeapp.web.front.utils.FacesUtils;
 
 /**
  *
@@ -31,15 +32,11 @@ public class SpatializeAnalysisBean implements Serializable {
     private BackToFrontMessengerBean logBean;
     @Inject
     private SpatializeService spatializeService;
-    
-     @PostConstruct
+
+    @PostConstruct
     public void init() {
         if (sessionBean.getFlowState() == null) {
-            try {
-                FacesContext.getCurrentInstance().getExternalContext().redirect("spatialize-import.html?faces-redirect=true");
-            } catch (IOException ex) {
-                LOG.log(Level.SEVERE, "Redirect failed in spatialize analysis bean init", ex);
-            }
+            FacesUtils.redirectTo("spatialize-import.html?faces-redirect=true");
         }
     }
 
@@ -55,7 +52,7 @@ public class SpatializeAnalysisBean implements Serializable {
                 sessionBean.setFlowState(processingState);
             } else {
                 sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Error", "Could not start analysis.");
-                
+
             }
         }
     }
@@ -64,11 +61,7 @@ public class SpatializeAnalysisBean implements Serializable {
         if (sessionBean.getFlowState() instanceof SpatializeState.Processing processingState) {
             sessionBean.setFlowState(spatializeService.checkCompletion(processingState));
             if (sessionBean.getFlowState() instanceof SpatializeState.ResultsReady) {
-                try {
-                    FacesContext.getCurrentInstance().getExternalContext().redirect(FacesContext.getCurrentInstance().getExternalContext().getRequestContextPath() + "results.html");
-                } catch (IOException ex) {
-                    LOG.log(Level.SEVERE, "Redirect to results.xhtml failed", ex);
-                }
+                FacesUtils.redirectTo("results.html?faces-redirect=true");
             }
         }
         return null;
@@ -108,8 +101,9 @@ public class SpatializeAnalysisBean implements Serializable {
     public int getDurationInSeconds() {
         if (sessionBean.getFlowState() instanceof SpatializeState.AwaitingParameters p) {
             return p.durationInSecond();
+        } else {
+            throw new IllegalStateException("wrong state " + sessionBean.getFlowState().getClass().getSimpleName());
         }
-        return 3; // Default value
     }
 
     public void setDurationInSeconds(int duration) {

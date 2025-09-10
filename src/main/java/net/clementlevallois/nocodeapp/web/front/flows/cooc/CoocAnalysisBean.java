@@ -1,23 +1,18 @@
-/*
- * Licence Apache 2.0
- * https://www.apache.org/licenses/LICENSE-2.0
- */
 package net.clementlevallois.nocodeapp.web.front.flows.cooc;
 
 import jakarta.annotation.PostConstruct;
-import jakarta.faces.context.FacesContext;
-import jakarta.faces.view.ViewScoped;
+import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
-import java.io.IOException;
 import java.io.Serializable;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.flows.base.FlowFailed;
 import net.clementlevallois.nocodeapp.web.front.flows.base.FlowState;
 import net.clementlevallois.nocodeapp.web.front.logview.BackToFrontMessengerBean;
+import net.clementlevallois.nocodeapp.web.front.utils.FacesUtils;
 
 @Named
-@ViewScoped
+@RequestScoped
 public class CoocAnalysisBean implements Serializable {
 
     @Inject
@@ -32,13 +27,7 @@ public class CoocAnalysisBean implements Serializable {
     @PostConstruct
     public void init() {
         if (sessionBean.getFlowState() == null) {
-            try {
-                FacesContext.getCurrentInstance().getExternalContext().redirect("/cooc/cooc-import.xhtml?faces-redirect=true");
-            } catch (IOException ex) {
-                throw new IllegalStateException("Cannot redirect to cooc-import "
-                        + sessionBean.getFlowState().getClass().getSimpleName());
-
-            }
+            FacesUtils.redirectTo("/cooc/cooc-import.xhtml?faces-redirect=true");
         }
     }
 
@@ -47,14 +36,13 @@ public class CoocAnalysisBean implements Serializable {
             sessionBean.setFlowState(new CoocState.Processing(params.jobId(), params, 0));
             logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.starting_analysis"));
             FlowState processingState = coocService.callCoocMicroService(params);
-            if (processingState instanceof FlowFailed) {
-                throw new IllegalStateException("State is null "
-                        + sessionBean.getFlowState().getClass().getSimpleName());
+            if (processingState instanceof FlowFailed flowFailed) {
+                throw new IllegalStateException("Flow has Failed" + sessionBean.getFlowState().getClass().getSimpleName() + flowFailed.userMessage());
             } else {
                 sessionBean.setFlowState(processingState);
             }
         } else {
-            throw new IllegalStateException("State is not CoocState.AwaitingParameters "+ sessionBean.getFlowState().getClass().getSimpleName());
+            throw new IllegalStateException("State is not CoocState.AwaitingParameters " + sessionBean.getFlowState().getClass().getSimpleName());
         }
     }
 
@@ -62,16 +50,11 @@ public class CoocAnalysisBean implements Serializable {
         if (sessionBean.getFlowState() instanceof CoocState.Processing processingState) {
             sessionBean.setFlowState(coocService.checkCompletion(processingState));
             if (sessionBean.getFlowState() instanceof CoocState.ResultsReady) {
-                try {
-                    FacesContext.getCurrentInstance().getExternalContext().redirect(FacesContext.getCurrentInstance().getExternalContext().getRequestContextPath() + "/cooc/cooc-results.html");
-                    return null;
-                } catch (IOException ex) {
-                    throw new IllegalStateException("Redirect to cooc-results.html failed "
-                            + sessionBean.getFlowState().getClass().getSimpleName());
-                }
+                FacesUtils.redirectTo("/cooc/cooc-results.html");
+                return null;
             } else {
-                throw new IllegalStateException("State is not CoocState.ResultsReady "
-                        + sessionBean.getFlowState().getClass().getSimpleName());
+                // results have not arrived yet, this is a nominal state.
+                return null;
             }
         } else {
             throw new IllegalStateException("State is not CoocState.Processing "

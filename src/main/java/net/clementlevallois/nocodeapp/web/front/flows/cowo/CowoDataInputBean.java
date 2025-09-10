@@ -16,28 +16,23 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import net.clementlevallois.functions.model.Globals;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.ApplicationPropertiesBean;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.exceptions.NocodeApplicationException;
 import net.clementlevallois.nocodeapp.web.front.flows.base.FlowState;
-import net.clementlevallois.nocodeapp.web.front.flows.topics.TopicsDataInputBean;
+import net.clementlevallois.nocodeapp.web.front.flows.cowo.CowoState.AwaitingDataSource;
 import org.primefaces.event.FileUploadEvent;
-import org.primefaces.model.file.UploadedFile;
 
 @Named
 @ViewScoped
 public class CowoDataInputBean implements Serializable {
 
-    private String jobId;
     private String url;
     private String websiteUrl;
     private String jsonKey;
     private int maxUrlsToCrawl = 10;
     private final List<String> uploadedFileNames = new ArrayList<>();
-    private static final Logger LOG = Logger.getLogger(TopicsDataInputBean.class.getName());
 
     @Inject
     ApplicationPropertiesBean applicationProperties;
@@ -49,26 +44,10 @@ public class CowoDataInputBean implements Serializable {
     private SessionBean sessionBean;
 
     public void init() {
-        this.jobId = null;
         this.url = null;
         this.websiteUrl = null;
         this.uploadedFileNames.clear();
-        // Initialize with default parameters
-        CowoState.AwaitingParameters awaitingParameters = new CowoState.AwaitingParameters(
-                jobId,
-                new ArrayList<>(), // selectedLanguages
-                2, // minTermFreq
-                4, // maxNGram
-                false, // removeNonAsciiCharacters
-                false, // scientificCorpus
-                true, // firstNames
-                true, // lemmatize
-                false, // replaceStopwords
-                false, // usePMI
-                null, // fileUserStopwords
-                4 // minCharNumber
-        );
-        sessionBean.setFlowState(awaitingParameters);
+        sessionBean.setFlowState(new AwaitingDataSource(null));
     }
 
     public void handleFileUpload(FileUploadEvent event) {
@@ -101,9 +80,7 @@ public class CowoDataInputBean implements Serializable {
     }
 
     private void processCowoDataSource(CowoDataSource dataSource) {
-        if (this.jobId == null) {
-            this.jobId = UUID.randomUUID().toString().substring(0, 10);
-        }
+        String jobId = UUID.randomUUID().toString().substring(0, 10);
         Path jobDirectory = applicationProperties.getTempFolderFullPath().resolve(jobId);
         try {
             Files.createDirectories(jobDirectory);
@@ -115,44 +92,55 @@ public class CowoDataInputBean implements Serializable {
 
         ImportersService.PreparationResult result;
         switch (dataSource) {
-            case CowoDataSource.FileUpload fileUpload -> result = importersService.handleFileUpload(fileUpload.files(), jobId, Globals.Names.COWO);
-            case CowoDataSource.WebPage webPage -> result = importersService.parseWebPage(webPage.url(), jobId);
-            case CowoDataSource.WebSite webSite -> result = importersService.crawlWebSite(webSite.rootUrl(), webSite.maxUrls(), webSite.exclusionTerms(), jobId);
-            default -> throw new IllegalArgumentException("Unsupported data source type");
+            case CowoDataSource.FileUpload fileUpload ->
+                result = importersService.handleFileUpload(fileUpload.files(), jobId, Globals.Names.COWO);
+            case CowoDataSource.WebPage webPage ->
+                result = importersService.parseWebPage(webPage.url(), jobId);
+            case CowoDataSource.WebSite webSite ->
+                result = importersService.crawlWebSite(webSite.rootUrl(), webSite.maxUrls(), webSite.exclusionTerms(), jobId);
+            default ->
+                throw new IllegalArgumentException("Unsupported data source type");
         }
 
         if (result instanceof ImportersService.PreparationResult.Failure(String error)) {
             sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Data Preparation Failed", error);
-        } else if (dataSource instanceof CowoDataSource.FileUpload) {
-            sessionBean.addMessage(FacesMessage.SEVERITY_INFO, "File Processed", "The file has been added to your dataset.");
+            throw new NocodeApplicationException("Data Preparation Failed", new Throwable(error));
+        } else {
+            // Initialize with default parameters
+            CowoState.AwaitingParameters awaitingParameters = new CowoState.AwaitingParameters(
+                    jobId,
+                    new ArrayList<>(), // selectedLanguages
+                    2, // minTermFreq
+                    4, // maxNGram
+                    false, // removeNonAsciiCharacters
+                    false, // scientificCorpus
+                    true, // firstNames
+                    true, // lemmatize
+                    false, // replaceStopwords
+                    false, // usePMI
+                    null, // fileUserStopwords
+                    4 // minCharNumber
+            );
+            sessionBean.setFlowState(awaitingParameters);
+            if (dataSource instanceof CowoDataSource.FileUpload) {
+                sessionBean.addMessage(FacesMessage.SEVERITY_INFO, "File Processed", "The file has been added to your dataset.");
+            }
         }
     }
 
     public String proceedToParameters() {
-        if (jobId == null) {
-            sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Error", "You must first import at least one data source.");
-            return null;
-        }
 
         FlowState currentState = sessionBean.getFlowState();
 
         if (currentState instanceof CowoState.AwaitingParameters p) {
-            sessionBean.setFlowState(p.withJobId(this.jobId));
+            sessionBean.setFlowState(p.withJobId(p.jobId()));
         }
 
-        return "workflow-cowo?faces-redirect=true";
+        return "workflow-cowo.html?faces-redirect=true";
     }
 
     public boolean isDataReady() {
-        return this.jobId != null;
-    }
-
-    public String getJobId() {
-        return this.jobId;
-    }
-
-    public void setJobId(String jobId) {
-        this.jobId = jobId;
+        return sessionBean.getFlowState() instanceof CowoState.AwaitingParameters;
     }
 
     public String getUrl() {
@@ -190,5 +178,4 @@ public class CowoDataInputBean implements Serializable {
     public void setJsonKey(String jsonKey) {
         this.jsonKey = jsonKey;
     }
-
 }

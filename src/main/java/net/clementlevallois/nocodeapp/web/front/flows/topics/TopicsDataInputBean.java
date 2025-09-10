@@ -17,6 +17,7 @@ import java.util.logging.Logger;
 import net.clementlevallois.functions.model.Globals;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.ApplicationPropertiesBean;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
+import net.clementlevallois.nocodeapp.web.front.exceptions.NocodeApplicationException;
 import net.clementlevallois.nocodeapp.web.front.io.ImportersService;
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.file.UploadedFile;
@@ -33,8 +34,6 @@ public class TopicsDataInputBean implements Serializable {
     private String websiteUrl;
     private int maxUrlsToCrawl = 10;
     private final List<String> uploadedFileNames = new ArrayList<>();
-
-    private static final Logger LOG = Logger.getLogger(TopicsDataInputBean.class.getName());
 
     @Inject
     ApplicationPropertiesBean applicationProperties;
@@ -104,7 +103,7 @@ public class TopicsDataInputBean implements Serializable {
         try {
             Files.createDirectories(jobDirectory);
         } catch (IOException ex) {
-            LOG.log(Level.SEVERE, "unable to create directories for job " + jobId);
+            throw new NocodeApplicationException("An IO error occurred", ex);
         }
 
         sessionBean.sendFunctionPageReport(Globals.Names.TOPICS.name());

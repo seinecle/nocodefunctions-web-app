@@ -18,6 +18,7 @@ import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.exceptions.NocodeApplicationException;
 import net.clementlevallois.nocodeapp.web.front.http.MicroserviceHttpClient;
 import net.clementlevallois.nocodeapp.web.front.http.RemoteLocal;
+import net.clementlevallois.nocodeapp.web.front.utils.FacesUtils;
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
 
@@ -38,11 +39,7 @@ public class RegionExtractorResultsBean implements Serializable {
         if (sessionBean.getFlowState() instanceof RegionExtractorState.ResultsReady rr) {
             this.results = rr;
         } else {
-            try {
-                FacesContext.getCurrentInstance().getExternalContext().redirect("regionextractor.html?faces-redirect=true");
-            } catch (IOException ex) {
-                throw new NocodeApplicationException("An IO error occurred", ex);
-            }
+            FacesUtils.redirectTo("regionextractor.html?faces-redirect=true");
         }
     }
 

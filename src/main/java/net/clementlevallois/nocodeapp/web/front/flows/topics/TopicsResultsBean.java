@@ -10,10 +10,9 @@ import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.exceptions.NocodeApplicationException;
+import net.clementlevallois.nocodeapp.web.front.utils.FacesUtils;
 import net.clementlevallois.nocodeapp.web.front.utils.GEXFSaver;
 import net.clementlevallois.utils.Multiset;
 import org.primefaces.model.DefaultStreamedContent;
@@ -22,8 +21,6 @@ import org.primefaces.model.StreamedContent;
 @Named
 @ViewScoped
 public class TopicsResultsBean implements Serializable {
-
-    private static final Logger LOG = Logger.getLogger(TopicsResultsBean.class.getName());
 
     @Inject
     private SessionBean sessionBean;
@@ -37,11 +34,7 @@ public class TopicsResultsBean implements Serializable {
         if (sessionBean.getFlowState() instanceof TopicsState.ResultsReady results) {
             this.results = results;
         } else {
-            try {
-                FacesContext.getCurrentInstance().getExternalContext().redirect("topics-data-import.xhtml?faces-redirect=true");
-            } catch (IOException ex) {
-                throw new NocodeApplicationException("An IO error occurred", ex);
-            }
+            FacesUtils.redirectTo("topics-data-import.xhtml?faces-redirect=true");
         }
     }
 
@@ -56,11 +49,9 @@ public class TopicsResultsBean implements Serializable {
         String jobId = results.jobId();
         String gexf = results.gexf();
         if (jobId == null || jobId.isEmpty()) {
-            LOG.warning("Cannot provide GEXF file, jobId is null or empty.");
             return new DefaultStreamedContent();
         }
         if (gexf == null) {
-            LOG.warning("Cannot provide GEXF file, gexf is null");
             return new DefaultStreamedContent();
         }
         StreamedContent exportGexfAsStreamedFile = GEXFSaver.exportGexfAsStreamedFile(gexf, "network_file_with_topics");
@@ -95,12 +86,11 @@ public class TopicsResultsBean implements Serializable {
             this.results = (TopicsState.ResultsReady) sessionBean.getFlowState();
         }
     }
-    
-      public Map<Integer, Multiset<String>> getCommunitiesResult() {
+
+    public Map<Integer, Multiset<String>> getCommunitiesResult() {
         return results.keywordsPerTopic();
     }
 
     public void setCommunitiesResult(Map<Integer, Multiset<String>> communitiesResult) {
     }
-    
 }

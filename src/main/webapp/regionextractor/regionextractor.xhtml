@@ -93,7 +93,7 @@
                         <br/>
                         <p:selectBooleanCheckbox
                             id="allPages"
-                            value="#{regionExtractorDataInputBean.allPages}"
+                            value="#{regionExtractorDataInputBean.extractSameRegionOnAllPages}"
                             escape="false"
                             itemLabel= "#{text['pdfregionextractor.tool.all_pages_or_selected_short']}">
                             <p:ajax update="dataTable"/>
@@ -125,10 +125,11 @@
                                     </p:imageCropper>
                                 </p:column>
                                 <p:column>
-                                    <p:outputPanel rendered="#{regionExtractorDataInputBean.allPages}">
+                                    <p:outputPanel rendered="#{not regionExtractorDataInputBean.extractSameRegionOnAllPages}">
                                         <p:outputLabel value="#{text['pdfregionextractor.tool.region_on_this_page']}" escape="false"/>
                                         <br/>
                                         <p:selectBooleanCheckbox id="setThisPage" value="#{regionExtractorDataInputBean.thisPageSelected}" escape="false">
+                                            <f:param name="pageIndex" value="#{page}"/>
                                             <p:ajax/>
                                         </p:selectBooleanCheckbox>
                                     </p:outputPanel>
@@ -140,7 +141,6 @@
                                         styleClass="btn btn-primary"
                                         process="@this cropper"
                                         >
-                                        <!-- Pass row context to the dynamic resource request -->
                                         <f:param name="pageIndex" value="#{page}"/>
                                     </p:commandButton>
                                 </p:column>

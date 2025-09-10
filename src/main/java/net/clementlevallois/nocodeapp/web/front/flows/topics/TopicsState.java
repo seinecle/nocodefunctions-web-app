@@ -7,8 +7,6 @@ import org.primefaces.model.file.UploadedFile;
 
 public sealed interface TopicsState extends FlowState {
 
-    String jobId();
-
     record AwaitingParameters(
             String jobId,
             String selectedLanguage,

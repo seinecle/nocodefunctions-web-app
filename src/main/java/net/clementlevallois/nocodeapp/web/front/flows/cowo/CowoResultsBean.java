@@ -1,18 +1,19 @@
 package net.clementlevallois.nocodeapp.web.front.flows.cowo;
 
 import jakarta.annotation.PostConstruct;
+import jakarta.faces.application.FacesMessage;
 import jakarta.faces.context.FacesContext;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.exceptions.NocodeApplicationException;
 import net.clementlevallois.nocodeapp.web.front.io.ExportToGephiLite;
 import net.clementlevallois.nocodeapp.web.front.io.ExportToVosViewer;
+import net.clementlevallois.nocodeapp.web.front.utils.FacesUtils;
 import net.clementlevallois.nocodeapp.web.front.utils.GEXFSaver;
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
@@ -20,8 +21,6 @@ import org.primefaces.model.StreamedContent;
 @Named
 @ViewScoped
 public class CowoResultsBean implements Serializable {
-
-    private static final Logger LOG = Logger.getLogger(CowoResultsBean.class.getName());
 
     @Inject
     private SessionBean sessionBean;
@@ -39,12 +38,7 @@ public class CowoResultsBean implements Serializable {
         if (sessionBean.getFlowState() instanceof CowoState.ResultsReady rr) {
             this.results = rr;
         } else {
-            try {
-                FacesContext.getCurrentInstance().getExternalContext().redirect("cowo-import.html?faces-redirect=true");
-            } catch (IOException ex) {
-                throw new NocodeApplicationException("An IO error occurred", ex);
-
-            }
+            FacesUtils.redirectTo("cowo-import.html?faces-redirect=true");
         }
     }
 
@@ -56,9 +50,10 @@ public class CowoResultsBean implements Serializable {
                     FacesContext.getCurrentInstance().getExternalContext().redirect(linkToVosViewer);
                 } catch (IOException ex) {
                     throw new NocodeApplicationException("An IO error occurred", ex);
-
                 }
             }
+        } else {
+            sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "Error", "results are null, can't redirect to vosviewer");
         }
     }
 
@@ -72,6 +67,8 @@ public class CowoResultsBean implements Serializable {
                     throw new NocodeApplicationException("An IO error occurred", ex);
                 }
             }
+        } else {
+            sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "Error", "results are null, can't redirect to gephi lite");
         }
     }
 
@@ -90,6 +87,8 @@ public class CowoResultsBean implements Serializable {
         if (results != null) {
             sessionBean.setFlowState(results.withShareVVPublicly(flag));
             this.results = (CowoState.ResultsReady) sessionBean.getFlowState();
+        } else {
+            sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "Error", "results are null, can't redirect to vosviewer");
         }
     }
 
@@ -101,6 +100,8 @@ public class CowoResultsBean implements Serializable {
         if (results != null) {
             sessionBean.setFlowState(results.withShareGephiLitePublicly(flag));
             this.results = (CowoState.ResultsReady) sessionBean.getFlowState();
+        } else {
+            sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "Error", "results are null, can't redirect to gephi lite");
         }
     }
 

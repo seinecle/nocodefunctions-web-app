@@ -97,7 +97,7 @@ public class TopicsService {
                     userSuppliedStopwordsBuilder.add(String.valueOf(i), userSuppliedStopwords.get(i));
                 }
             } catch (IOException ex) {
-                LOG.log(Level.SEVERE, "Error reading user-supplied stopwords file", ex);
+                throw new NocodeApplicationException("An IO error occurred", ex);
             }
         }
         overallObject.add(WorkflowTopicsProps.BodyJsonKeys.USER_SUPPLIED_STOPWORDS.name(), userSuppliedStopwordsBuilder);

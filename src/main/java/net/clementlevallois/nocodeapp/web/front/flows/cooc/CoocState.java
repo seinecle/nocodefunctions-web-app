@@ -12,17 +12,10 @@ import net.clementlevallois.nocodeapp.web.front.flows.base.FlowState;
  */
 public sealed interface CoocState extends FlowState {
     
-    @Override
-    String jobId();
-    
     /**
      * The initial state of the workflow. No data has been uploaded yet.
      */
-    record AwaitingData() implements CoocState {
-        @Override
-        public String jobId() {
-            return null;
-        }
+    record AwaitingData(String jobId) implements CoocState {
     }
 
     /**

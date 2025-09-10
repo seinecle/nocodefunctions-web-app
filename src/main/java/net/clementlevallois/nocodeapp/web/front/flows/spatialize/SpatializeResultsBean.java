@@ -15,6 +15,7 @@ import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.exceptions.NocodeApplicationException;
 import net.clementlevallois.nocodeapp.web.front.io.ExportToGephiLite;
 import net.clementlevallois.nocodeapp.web.front.io.ExportToVosViewer;
+import net.clementlevallois.nocodeapp.web.front.utils.FacesUtils;
 import net.clementlevallois.nocodeapp.web.front.utils.GEXFSaver;
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
@@ -30,12 +31,6 @@ public class SpatializeResultsBean implements Serializable {
     @Inject
     private SessionBean sessionBean;
 
-    @Inject
-    private ExportToVosViewer exportToVosViewer;
-
-    @Inject
-    private ExportToGephiLite exportToGephiLite;
-
     private SpatializeState.ResultsReady results;
 
     @PostConstruct
@@ -43,11 +38,7 @@ public class SpatializeResultsBean implements Serializable {
         if (sessionBean.getFlowState() instanceof SpatializeState.ResultsReady rr) {
             this.results = rr;
         } else {
-            try {
-                FacesContext.getCurrentInstance().getExternalContext().redirect("spatialize-import.html?faces-redirect=true");
-            } catch (IOException ex) {
-                throw new NocodeApplicationException("An IO error occurred", ex);
-            }
+            FacesUtils.redirectTo("spatialize-import.html?faces-redirect=true");
         }
     }
 

@@ -38,7 +38,6 @@ import org.primefaces.model.file.UploadedFile;
 @ViewScoped
 public class CoocDataInputBean implements Serializable {
 
-    private String jobId;
     private List<SheetModel> dataInSheets;
     private boolean hasHeaders;
     private Integer activeSheetIndex = 0;
@@ -54,7 +53,8 @@ public class CoocDataInputBean implements Serializable {
 
     @PostConstruct
     public void init() {
-        sessionBean.setFlowState(new CoocState.AwaitingData());
+        sessionBean.setFlowState(new CoocState.AwaitingData(null // jobId to be set later
+        ));
     }
 
     public void handleFileUpload(FileUploadEvent event) {
@@ -68,12 +68,10 @@ public class CoocDataInputBean implements Serializable {
 
     private boolean processCoocDataSource(CoocDataSource dataSource) {
         if (!(sessionBean.getFlowState() instanceof CoocState.AwaitingData)) {
-            throw new IllegalStateException("Cannot proceed because the current state is "
-                    + sessionBean.getFlowState().getClass().getSimpleName()
-                    + " instead of " + CoocState.AwaitingData.class.getName());
+            throw new IllegalStateException("wrong state " + sessionBean.getFlowState().getClass().getSimpleName());
         }
 
-        this.jobId = UUID.randomUUID().toString().substring(0, 10);
+        String jobId = UUID.randomUUID().toString().substring(0, 10);
         Path jobDirectory = applicationProperties.getTempFolderFullPath().resolve(jobId);
         try {
             Files.createDirectories(jobDirectory);
@@ -108,10 +106,7 @@ public class CoocDataInputBean implements Serializable {
     }
 
     private List<SheetModel> populateDataInSheetsVariable() {
-
-        if (jobId == null) {
-            return Collections.EMPTY_LIST;
-        }
+        String jobId = sessionBean.getFlowState().jobId();
 
         Globals globals = new Globals(applicationProperties.getTempFolderFullPath());
         Path sheetsModelFile = globals.getDataSheetPath(jobId);
@@ -135,6 +130,7 @@ public class CoocDataInputBean implements Serializable {
 
     private void sheetModelToCooccurrences() {
         try {
+            String jobId = sessionBean.getFlowState().jobId();
             Globals globals = new Globals(applicationProperties.getTempFolderFullPath());
             Path tempDataPathToSheetModel = globals.getDataSheetPath(jobId);
             byte[] byteArray = Files.readAllBytes(tempDataPathToSheetModel);
@@ -169,7 +165,7 @@ public class CoocDataInputBean implements Serializable {
             Files.write(coocProps.getPathForCooccurrencesFormattedAsMap(jobId), coocsAsByteArray);
             Files.deleteIfExists(tempDataPathToSheetModel);
         } catch (IOException ex) {
-           throw new NocodeApplicationException("An IO error occurred", ex);
+            throw new NocodeApplicationException("An IO error occurred", ex);
         }
     }
 

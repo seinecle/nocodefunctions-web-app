@@ -8,8 +8,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import net.clementlevallois.functions.model.FunctionSpatialization;
 import static net.clementlevallois.functions.model.FunctionSpatialization.QueryParams.DURATION_IN_SECONDS;
 import net.clementlevallois.functions.model.Globals;

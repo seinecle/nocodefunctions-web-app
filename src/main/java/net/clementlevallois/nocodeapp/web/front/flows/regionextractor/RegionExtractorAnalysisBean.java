@@ -37,8 +37,7 @@ public class RegionExtractorAnalysisBean implements Serializable {
                 sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Error", "Could not start analysis.");
             }
         } else {
-            sessionBean.setFlowState(new FlowFailed(sessionBean.getFlowState().jobId(), sessionBean.getFlowState(), "Failed to start analysis."));
-            sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Error", "Could not start analysis.");
+             throw new IllegalStateException("state should be TargetPdfsUploaded " + sessionBean.getFlowState().getClass().getSimpleName());
         }
     }
 

@@ -7,6 +7,9 @@ import org.primefaces.model.file.UploadedFile;
 
 public sealed interface CowoState extends FlowState  {
 
+    record AwaitingDataSource(String jobId)implements CowoState{
+    }
+    
     record AwaitingParameters(
             String jobId,
             List<String> selectedLanguages,

@@ -11,12 +11,11 @@ import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.exceptions.NocodeApplicationException;
 import net.clementlevallois.nocodeapp.web.front.io.ExportToGephiLite;
 import net.clementlevallois.nocodeapp.web.front.io.ExportToVosViewer;
+import net.clementlevallois.nocodeapp.web.front.utils.FacesUtils;
 import net.clementlevallois.nocodeapp.web.front.utils.GEXFSaver;
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
@@ -24,8 +23,6 @@ import org.primefaces.model.StreamedContent;
 @Named
 @ViewScoped
 public class CoocResultsBean implements Serializable {
-
-    private static final Logger LOG = Logger.getLogger(CoocResultsBean.class.getName());
 
     @Inject
     private SessionBean sessionBean;
@@ -43,11 +40,7 @@ public class CoocResultsBean implements Serializable {
         if (sessionBean.getFlowState() instanceof CoocState.ResultsReady rr) {
             this.results = rr;
         } else {
-            try {
-                FacesContext.getCurrentInstance().getExternalContext().redirect("/cooc/cooc-import.xhtml?faces-redirect=true");
-            } catch (IOException ex) {
-                throw new NocodeApplicationException("An IO error occurred", ex);
-            }
+             FacesUtils.redirectTo("/cooc/cooc-import.xhtml?faces-redirect=true");
         }
     }
 

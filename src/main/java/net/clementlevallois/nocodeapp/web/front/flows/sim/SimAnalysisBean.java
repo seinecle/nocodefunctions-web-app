@@ -2,18 +2,16 @@ package net.clementlevallois.nocodeapp.web.front.flows.sim;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.faces.application.FacesMessage;
-import jakarta.faces.context.FacesContext;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
-import java.io.IOException;
 import java.io.Serializable;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.flows.base.FlowFailed;
 import net.clementlevallois.nocodeapp.web.front.flows.base.FlowState;
 import net.clementlevallois.nocodeapp.web.front.logview.BackToFrontMessengerBean;
+import net.clementlevallois.nocodeapp.web.front.utils.FacesUtils;
 
 @Named
 @ViewScoped
@@ -33,11 +31,7 @@ public class SimAnalysisBean implements Serializable {
     @PostConstruct
     public void init() {
         if (sessionBean.getFlowState() == null) {
-            try {
-                FacesContext.getCurrentInstance().getExternalContext().redirect("sim-import.html?faces-redirect=true");
-            } catch (IOException ex) {
-                LOG.log(Level.SEVERE, "Redirect failed in sim analysis bean init", ex);
-            }
+            FacesUtils.redirectTo("sim-import.html?faces-redirect=true");
         }
     }
 
@@ -56,6 +50,8 @@ public class SimAnalysisBean implements Serializable {
                 sessionBean.setFlowState(new FlowFailed(params.jobId(), params, "Failed to start analysis."));
                 sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Error", "Could not start analysis.");
             }
+        }else {
+            throw new IllegalStateException("wrong state " + sessionBean.getFlowState().getClass().getSimpleName());
         }
     }
 
@@ -63,11 +59,7 @@ public class SimAnalysisBean implements Serializable {
         if (sessionBean.getFlowState() instanceof SimState.Processing processingState) {
             sessionBean.setFlowState(simService.checkCompletion(processingState));
             if (sessionBean.getFlowState() instanceof SimState.ResultsReady) {
-                try {
-                    FacesContext.getCurrentInstance().getExternalContext().redirect(FacesContext.getCurrentInstance().getExternalContext().getRequestContextPath() + "/sim/similarities-results.html");
-                } catch (IOException ex) {
-                    LOG.log(Level.SEVERE, "Redirect to results.xhtml failed", ex);
-                }
+                FacesUtils.redirectTo("/sim/similarities-results.html?faces-redirect=true");
             }
         }
         return null;
@@ -99,6 +91,8 @@ public class SimAnalysisBean implements Serializable {
     private void updateAwaitingParameters(java.util.function.Function<SimState.AwaitingParameters, SimState.AwaitingParameters> updater) {
         if (sessionBean.getFlowState() instanceof SimState.AwaitingParameters params) {
             sessionBean.setFlowState(updater.apply(params));
+        }else {
+            throw new IllegalStateException("wrong state " + sessionBean.getFlowState().getClass().getSimpleName());
         }
     }
 

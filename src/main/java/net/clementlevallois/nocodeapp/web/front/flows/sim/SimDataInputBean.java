@@ -14,14 +14,12 @@ import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
-import java.util.logging.Logger;
 import net.clementlevallois.functions.model.Globals;
 import net.clementlevallois.importers.model.SheetModel;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.ApplicationPropertiesBean;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.exceptions.NocodeApplicationException;
 import net.clementlevallois.nocodeapp.web.front.flows.base.FlowFailed;
-import net.clementlevallois.nocodeapp.web.front.flows.base.FlowState;
 import net.clementlevallois.nocodeapp.web.front.io.ImportersService;
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.file.UploadedFile;
@@ -30,13 +28,9 @@ import org.primefaces.model.file.UploadedFile;
 @ViewScoped
 public class SimDataInputBean implements Serializable {
 
-    private String jobId;
     private List<SheetModel> dataInSheets;
     private Boolean hasHeaders = false;
     private String selectedColumnIndex;
-    private SimState.AwaitingParameters awaitingParameters;
-
-    private static final Logger LOG = Logger.getLogger(SimDataInputBean.class.getName());
 
     @Inject
     ApplicationPropertiesBean applicationProperties;
@@ -49,8 +43,7 @@ public class SimDataInputBean implements Serializable {
 
     @PostConstruct
     public void init() {
-        this.jobId = null;
-        this.awaitingParameters = new SimState.AwaitingParameters(
+        SimState.AwaitingParameters awaitingParameters = new SimState.AwaitingParameters(
                 null, // jobId to be set later
                 1, // minSharedTargets default
                 "Sheet1", // placeholder for sheet name
@@ -69,95 +62,81 @@ public class SimDataInputBean implements Serializable {
     }
 
     private void processSimDataSource(SimDataSource dataSource) {
-        if (this.jobId == null) {
-            this.jobId = UUID.randomUUID().toString().substring(0, 10);
-        }
 
-        FlowState currentState = sessionBean.getFlowState();
+        if (sessionBean.getFlowState() instanceof SimState.AwaitingParameters awaitingParameters) {
+            String jobId = UUID.randomUUID().toString().substring(0, 10);
+            awaitingParameters = awaitingParameters.withJobId(jobId);
+            sessionBean.setFlowState(awaitingParameters);
+            sessionBean.sendFunctionPageReport(Globals.Names.SIM.name());
 
-        if (!(currentState instanceof SimState.AwaitingParameters)) {
-            // This case should ideally not happen if the flow is followed correctly,
-            // but it's good practice to handle it.
-            sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Invalid State", "The application is in an invalid state.");
-            sessionBean.setFlowState(new FlowFailed(jobId, currentState, "invalid state"));
-            return;
-        }
+            Path jobDirectory = applicationProperties.getTempFolderFullPath().resolve(jobId);
+            try {
+                Files.createDirectories(jobDirectory);
+            } catch (IOException ex) {
+                throw new NocodeApplicationException("An IO error occurred", ex);
+            }
 
-        awaitingParameters = (SimState.AwaitingParameters) currentState;
-        awaitingParameters = awaitingParameters.withJobId(this.jobId);
-        sessionBean.setFlowState(awaitingParameters);
+            ImportersService.PreparationResult result;
+            if (dataSource instanceof SimDataSource.FileUpload fileUpload) {
+                result = importersService.handleFileUpload(List.of(fileUpload.file()), jobId, Globals.Names.SIM);
+            } else {
+                throw new IllegalArgumentException("Unsupported data source type");
+            }
 
-        sessionBean.sendFunctionPageReport(Globals.Names.SIM.name());
-
-        Path jobDirectory = applicationProperties.getTempFolderFullPath().resolve(jobId);
-        try {
-            Files.createDirectories(jobDirectory);
-        } catch (IOException ex) {
-            throw new NocodeApplicationException("An IO error occurred", ex);
-        }
-
-        ImportersService.PreparationResult result;
-        if (dataSource instanceof SimDataSource.FileUpload fileUpload) {
-            result = importersService.handleFileUpload(List.of(fileUpload.file()), jobId, Globals.Names.SIM);
-        } else {
-            throw new IllegalArgumentException("Unsupported data source type");
-        }
-
-        if (result instanceof ImportersService.PreparationResult.Failure(String error)) {
-            sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Data Preparation Failed", error);
-            sessionBean.setFlowState(new FlowFailed(jobId, awaitingParameters, "data prep failed"));
-        } else {
-            switch (dataSource) {
-                case SimDataSource.FileUpload(UploadedFile file) -> {
-                    sessionBean.addMessage(FacesMessage.SEVERITY_INFO, "Success", file.getFileName() + " has been added to your dataset.");
-                    dataInSheets = populateDataInSheetsVariable();
+            if (result instanceof ImportersService.PreparationResult.Failure(String error)) {
+                sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Data Preparation Failed", error);
+                sessionBean.setFlowState(new FlowFailed(jobId, awaitingParameters, "data prep failed"));
+            } else {
+                switch (dataSource) {
+                    case SimDataSource.FileUpload(UploadedFile file) -> {
+                        sessionBean.addMessage(FacesMessage.SEVERITY_INFO, "Success", file.getFileName() + " has been added to your dataset.");
+                        dataInSheets = populateDataInSheetsVariable();
+                    }
                 }
             }
+        } else {
+            throw new IllegalStateException("wrong state " + sessionBean.getFlowState().getClass().getSimpleName());
         }
     }
 
     private List<SheetModel> populateDataInSheetsVariable() {
+        if (sessionBean.getFlowState() instanceof SimState.AwaitingParameters awaitingParameters) {
+            String jobId = awaitingParameters.jobId();
+            Globals globals = new Globals(applicationProperties.getTempFolderFullPath());
+            Path sheetsModelFile = globals.getDataSheetPath(jobId);
+            if (Files.exists(sheetsModelFile)) {
+                try {
+                    byte[] fileBytes = Files.readAllBytes(sheetsModelFile);
 
-        Globals globals = new Globals(applicationProperties.getTempFolderFullPath());
-        Path sheetsModelFile = globals.getDataSheetPath(jobId);
-        if (Files.exists(sheetsModelFile)) {
-            try {
-                byte[] fileBytes = Files.readAllBytes(sheetsModelFile);
-
-                try (ByteArrayInputStream bis = new ByteArrayInputStream(fileBytes); ObjectInputStream ois = new ObjectInputStream(bis)) {
-                    return (List<SheetModel>) ois.readObject();
-                } catch (IOException | ClassNotFoundException ex) {
+                    try (ByteArrayInputStream bis = new ByteArrayInputStream(fileBytes); ObjectInputStream ois = new ObjectInputStream(bis)) {
+                        return (List<SheetModel>) ois.readObject();
+                    } catch (IOException | ClassNotFoundException ex) {
+                        System.getLogger(SimDataInputBean.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
+                        sessionBean.setFlowState(new FlowFailed(jobId, awaitingParameters, "could not populate data in sheets field"));
+                        return Collections.EMPTY_LIST;
+                    }
+                } catch (IOException ex) {
                     System.getLogger(SimDataInputBean.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
                     sessionBean.setFlowState(new FlowFailed(jobId, awaitingParameters, "could not populate data in sheets field"));
                     return Collections.EMPTY_LIST;
                 }
-            } catch (IOException ex) {
-                System.getLogger(SimDataInputBean.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
+            } else {
                 sessionBean.setFlowState(new FlowFailed(jobId, awaitingParameters, "could not populate data in sheets field"));
                 return Collections.EMPTY_LIST;
             }
-        } else {
-            sessionBean.setFlowState(new FlowFailed(jobId, awaitingParameters, "could not populate data in sheets field"));
-            return Collections.EMPTY_LIST;
+        }else{
+            throw new IllegalStateException("wrong state " + sessionBean.getFlowState().getClass().getSimpleName());
         }
     }
 
     public String proceedToParameters(String sourceColIndex, String sheetName) {
-        if (jobId == null) {
-            sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Error", "You must first upload a file.");
-            sessionBean.setFlowState(new FlowFailed(jobId, awaitingParameters, "job Id was null"));
-            return null;
-        }
-
         if (sessionBean.getFlowState() instanceof SimState.AwaitingParameters p) {
-            sessionBean.setFlowState(p.withJobId(this.jobId));
+            sessionBean.setFlowState(p.withJobId(p.jobId()));
             sessionBean.setFlowState(p.withSheetName(sheetName));
             sessionBean.setFlowState(p.withSourceColIndex(sourceColIndex));
             return "similarities-parameters.html?faces-redirect=true";
         } else {
-            sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Error", "You must first upload a file.");
-            sessionBean.setFlowState(new FlowFailed(jobId, sessionBean.getFlowState(), "sim state was not awaiting params"));
-            return null;
+            throw new IllegalStateException("wrong state " + sessionBean.getFlowState().getClass().getSimpleName());
         }
     }
 

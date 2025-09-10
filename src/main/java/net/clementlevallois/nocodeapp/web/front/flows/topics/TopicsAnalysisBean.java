@@ -12,26 +12,18 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.LocaleComparator;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.exceptions.NocodeApplicationException;
 import net.clementlevallois.nocodeapp.web.front.flows.base.FlowFailed;
 import net.clementlevallois.nocodeapp.web.front.flows.base.FlowState;
 import net.clementlevallois.nocodeapp.web.front.logview.BackToFrontMessengerBean;
+import net.clementlevallois.nocodeapp.web.front.utils.FacesUtils;
 import org.primefaces.model.file.UploadedFile;
 
 @Named
 @ViewScoped
 public class TopicsAnalysisBean implements Serializable {
-
-    public void quart() {
-        // Implémentez ici la logique de la méthode quart
-        System.out.println("Méthode quart appelée");
-    }
-
-    private static final Logger LOG = Logger.getLogger(TopicsAnalysisBean.class.getName());
 
     @Inject
     private SessionBean sessionBean;
@@ -43,11 +35,7 @@ public class TopicsAnalysisBean implements Serializable {
     @PostConstruct
     public void init() {
         if (sessionBean.getFlowState() == null) {
-            try {
-                FacesContext.getCurrentInstance().getExternalContext().redirect("topics-data-import.xhtml?faces-redirect=true");
-            } catch (IOException ex) {
-                throw new NocodeApplicationException("An IO error occurred", ex);
-            }
+            FacesUtils.redirectTo("topics-data-import.xhtml?faces-redirect=true");
         }
     }
 
@@ -75,7 +63,7 @@ public class TopicsAnalysisBean implements Serializable {
                 try {
                     FacesContext.getCurrentInstance().getExternalContext().redirect(FacesContext.getCurrentInstance().getExternalContext().getRequestContextPath() + "/workflow-topics/results.html");
                 } catch (IOException ex) {
-                    LOG.log(Level.SEVERE, "Redirect to results.xhtml failed", ex);
+                    throw new NocodeApplicationException("An IO error occurred", ex);
                 }
             }
         }
@@ -124,7 +112,9 @@ public class TopicsAnalysisBean implements Serializable {
         if (sessionBean.getFlowState() instanceof TopicsState.AwaitingParameters p) {
             return p.selectedLanguage();
         }
-        return "en"; // Default value
+        else {
+            throw new IllegalStateException("wrong state " + sessionBean.getFlowState().getClass().getSimpleName());
+        }
     }
 
     public void setSelectedLanguage(String language) {
@@ -135,7 +125,9 @@ public class TopicsAnalysisBean implements Serializable {
         if (sessionBean.getFlowState() instanceof TopicsState.AwaitingParameters p) {
             return p.replaceStopwords();
         }
-        return false;
+        else {
+            throw new IllegalStateException("wrong state " + sessionBean.getFlowState().getClass().getSimpleName());
+        }
     }
 
     public void setReplaceStopwords(boolean replace) {
@@ -146,7 +138,9 @@ public class TopicsAnalysisBean implements Serializable {
         if (sessionBean.getFlowState() instanceof TopicsState.AwaitingParameters p) {
             return p.scientificCorpus();
         }
-        return false;
+        else {
+            throw new IllegalStateException("wrong state " + sessionBean.getFlowState().getClass().getSimpleName());
+        }
     }
 
     public void setScientificCorpus(boolean scientific) {
@@ -157,7 +151,9 @@ public class TopicsAnalysisBean implements Serializable {
         if (sessionBean.getFlowState() instanceof TopicsState.AwaitingParameters p) {
             return p.lemmatize();
         }
-        return false;
+        else {
+            throw new IllegalStateException("wrong state " + sessionBean.getFlowState().getClass().getSimpleName());
+        }
     }
 
     public void setLemmatize(boolean lemmatize) {
@@ -168,7 +164,9 @@ public class TopicsAnalysisBean implements Serializable {
         if (sessionBean.getFlowState() instanceof TopicsState.AwaitingParameters p) {
             return p.removeNonAsciiCharacters();
         }
-        return false;
+        else {
+            throw new IllegalStateException("wrong state " + sessionBean.getFlowState().getClass().getSimpleName());
+        }
     }
 
     public void setRemoveNonAsciiCharacters(boolean remove) {
@@ -179,7 +177,9 @@ public class TopicsAnalysisBean implements Serializable {
         if (sessionBean.getFlowState() instanceof TopicsState.AwaitingParameters p) {
             return p.precision();
         }
-        return 50; // Default value
+        else {
+            throw new IllegalStateException("wrong state " + sessionBean.getFlowState().getClass().getSimpleName());
+        }
     }
 
     public void setPrecision(int precision) {
@@ -190,7 +190,9 @@ public class TopicsAnalysisBean implements Serializable {
         if (sessionBean.getFlowState() instanceof TopicsState.AwaitingParameters p) {
             return p.minCharNumber();
         }
-        return 3; // Default value
+        else {
+            throw new IllegalStateException("wrong state " + sessionBean.getFlowState().getClass().getSimpleName());
+        }
     }
 
     public void setMinCharNumber(int minChar) {
@@ -201,7 +203,9 @@ public class TopicsAnalysisBean implements Serializable {
         if (sessionBean.getFlowState() instanceof TopicsState.AwaitingParameters p) {
             return p.minTermFreq();
         }
-        return 3; // Default value
+        else {
+            throw new IllegalStateException("wrong state " + sessionBean.getFlowState().getClass().getSimpleName());
+        }
     }
 
     public void setMinTermFreq(int minFreq) {
