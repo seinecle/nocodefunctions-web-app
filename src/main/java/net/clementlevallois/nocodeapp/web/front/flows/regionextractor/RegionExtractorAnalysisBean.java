@@ -49,7 +49,7 @@ public class RegionExtractorAnalysisBean implements Serializable {
                 try {
                     FacesContext.getCurrentInstance().getExternalContext().redirect(FacesContext.getCurrentInstance().getExternalContext().getRequestContextPath() + "/regionextractor/results.html");
                 } catch (IOException ex) {
-                    throw new NocodeApplicationException("An IO error occurred", ex);
+                    throw new NocodeApplicationException("An IO error occurred in addJsonBody method while processing user-supplied stopwords for jobId: " + params.jobId(), ex);
                 }
             } else {
                 throw new IllegalStateException("wrong state " + sessionBean.getFlowState().getClass().getSimpleName());

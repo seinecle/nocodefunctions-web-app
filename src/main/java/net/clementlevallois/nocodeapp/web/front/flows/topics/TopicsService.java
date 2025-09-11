@@ -185,7 +185,7 @@ public class TopicsService {
                 throw new IOException("Result file not found for job " + jobId);
             }
         } catch (IOException e) {
-            throw new NocodeApplicationException("An IO error occurred", e);
+            throw new NocodeApplicationException("Error in processCoocResults method: Failed to read GEXF or JSON results for jobId: " + currentState.jobId(), e);
         }
     }
 
