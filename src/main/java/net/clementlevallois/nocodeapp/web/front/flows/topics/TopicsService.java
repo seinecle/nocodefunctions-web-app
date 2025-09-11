@@ -97,7 +97,7 @@ public class TopicsService {
                     userSuppliedStopwordsBuilder.add(String.valueOf(i), userSuppliedStopwords.get(i));
                 }
             } catch (IOException ex) {
-                throw new NocodeApplicationException("An IO error occurred", ex);
+                throw new NocodeApplicationException("An IO error occurred in addJsonBody method while processing user-supplied stopwords for jobId: " + params.jobId(), ex);
             }
         }
         overallObject.add(WorkflowTopicsProps.BodyJsonKeys.USER_SUPPLIED_STOPWORDS.name(), userSuppliedStopwordsBuilder);

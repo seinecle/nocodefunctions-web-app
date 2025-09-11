@@ -151,7 +151,7 @@ public class RegionExtractorDataInputBean implements Serializable {
                 ImagesPerFile imagesPerFile = (ImagesPerFile) ois.readObject();
                 return imagesPerFile;
             } catch (IOException | ClassNotFoundException ex) {
-                throw new NocodeApplicationException("An IO error or ClassNotFound error occurred", ex);
+                throw new NocodeApplicationException("Error in getImagesOfExemplar method: Failed to read images for jobId: " + rd.jobId(), ex);
             }
         } else {
             throw new IllegalStateException("wrong state " + sessionBean.getFlowState().getClass().getSimpleName());

@@ -98,7 +98,7 @@ public class RegionExtractorService {
             sessionBean.setFlowState(updatedRegionDefinition);
             return updatedRegionDefinition;
         } catch (IOException ex) {
-            throw new NocodeApplicationException("An IO error occurred", ex);
+            throw new NocodeApplicationException("Error in getDocumentDimensions method: Failed to read image dimensions for jobId: " + state.jobId(), ex);
         }
     }
 

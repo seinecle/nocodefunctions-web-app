@@ -125,7 +125,7 @@ public class SpatializeService {
             String gexf = Files.readString(gexfPath, StandardCharsets.UTF_8);
             return new SpatializeState.ResultsReady(jobId, gexf);
         } catch (IOException ex) {
-            throw new NocodeApplicationException("An IO error occurred", ex);
+            throw new NocodeApplicationException("Error in processSpatializationResults method: Failed to read GEXF results for jobId: " + currentState.jobId(), ex);
         }
     }
 }

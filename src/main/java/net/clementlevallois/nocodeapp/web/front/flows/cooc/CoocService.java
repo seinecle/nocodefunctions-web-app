@@ -140,7 +140,7 @@ public class CoocService {
             return new CoocState.ResultsReady(jobId, gexf, nodesJson, edgesJson, false, false);
 
         } catch (IOException e) {
-            throw new NocodeApplicationException("An IO error occurred", e);
+            throw new NocodeApplicationException("Error in processCoocResults method: Failed to read GEXF or JSON results for jobId: " + currentState.jobId(), e);
         }
     }
 }
