@@ -45,11 +45,11 @@ public class RegionExtractorAnalysisBean implements Serializable {
         if (sessionBean.getFlowState() instanceof RegionExtractorState.Processing processingState) {
             FlowState stateAfterCompletionCheck = regionExtractorService.checkCompletion(processingState);
             sessionBean.setFlowState(stateAfterCompletionCheck);
-            if (sessionBean.getFlowState() instanceof RegionExtractorState.ResultsReady) {
+            if (sessionBean.getFlowState() instanceof RegionExtractorState.ResultsReady resultsReady) {
                 try {
                     FacesContext.getCurrentInstance().getExternalContext().redirect(FacesContext.getCurrentInstance().getExternalContext().getRequestContextPath() + "/regionextractor/results.html");
                 } catch (IOException ex) {
-                    throw new NocodeApplicationException("An IO error occurred in addJsonBody method while processing user-supplied stopwords for jobId: " + params.jobId(), ex);
+                    throw new NocodeApplicationException("An IO error occurred in addJsonBody method while processing user-supplied stopwords for jobId: " + resultsReady.jobId(), ex);
                 }
             } else {
                 throw new IllegalStateException("wrong state " + sessionBean.getFlowState().getClass().getSimpleName());

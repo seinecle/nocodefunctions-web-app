@@ -26,14 +26,12 @@ import net.clementlevallois.functions.model.Globals;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.ApplicationPropertiesBean;
 
 /**
- * An injectable, application-scoped HTTP client for communicating with internal microservices.
- * It provides a fluent builder API for constructing and sending requests with consistent
- * configuration, error handling, and timeout settings.
+ * An injectable, application-scoped HTTP client for communicating with internal
+ * microservices. It provides a fluent builder API for constructing and sending
+ * requests with consistent configuration, error handling, and timeout settings.
  */
 @ApplicationScoped
 public class MicroserviceHttpClient {
-
-    private static final Logger LOG = Logger.getLogger(MicroserviceHttpClient.class.getName());
 
     @Inject
     private ApplicationPropertiesBean applicationProperties;
@@ -50,7 +48,6 @@ public class MicroserviceHttpClient {
         this.httpClient = HttpClient.newBuilder()
                 .connectTimeout(Duration.ofSeconds(30))
                 .build();
-        LOG.info("MicroserviceHttpClient initialized.");
     }
 
     /**
@@ -66,7 +63,6 @@ public class MicroserviceHttpClient {
             URI baseUri = new URI(scheme, null, host, port, null, null, null);
             return new ServiceClientBuilder(httpClient, baseUri);
         } catch (URISyntaxException e) {
-            LOG.log(Level.SEVERE, "Invalid URI components provided to target", e);
             throw new IllegalArgumentException("Invalid URI components", e);
         }
     }
@@ -106,13 +102,14 @@ public class MicroserviceHttpClient {
         try {
             return new URI("http", null, host, Integer.parseInt(port), endpointRootPath, null, null);
         } catch (NumberFormatException | URISyntaxException e) {
-            LOG.log(Level.SEVERE, "Invalid port number: " + port, e);
             throw new IllegalStateException("Invalid port configuration", e);
         }
     }
-    
+
     /**
-     * Validates the HttpResponse, throwing a MicroserviceCallException for non-2xx status codes.
+     * Validates the HttpResponse, throwing a MicroserviceCallException for
+     * non-2xx status codes.
+     *
      * @param <T>
      * @param response
      */
@@ -121,23 +118,20 @@ public class MicroserviceHttpClient {
             return;
         }
         String errorBody = "Could not read error response body.";
-        try {
-            if (response.body() instanceof String s) {
+        switch (response.body()) {
+            case String s ->
                 errorBody = s;
-            } else if (response.body() instanceof byte[] bs) {
+            case byte[] bs ->
                 errorBody = new String(bs, StandardCharsets.UTF_8);
+            default -> {
             }
-        } catch (Exception e) {
-            LOG.log(Level.FINEST, "Exception while reading error body from failed microservice call", e);
         }
-        LOG.log(Level.WARNING, "Microservice call failed. Status: {0}, URI: {1}, Body: {2}",
-                new Object[]{response.statusCode(), response.uri(), errorBody});
         throw new MicroserviceCallException("Microservice call failed with status code " + response.statusCode(), response.statusCode(), errorBody, response.uri().toString());
     }
 
-
     /**
-     * Builder for specifying the request path (e.g., GET, POST) after a target is set.
+     * Builder for specifying the request path (e.g., GET, POST) after a target
+     * is set.
      */
     public static class ServiceClientBuilder {
 
@@ -230,7 +224,8 @@ public class MicroserviceHttpClient {
         }
 
         /**
-         * Sends the request asynchronously and returns the body upon successful completion.
+         * Sends the request asynchronously and returns the body upon successful
+         * completion.
          */
         public <T> CompletableFuture<T> sendAsyncAndGetBody(HttpResponse.BodyHandler<T> bodyHandler) {
             return sendAsync(bodyHandler).thenApply(HttpResponse::body);
@@ -243,6 +238,7 @@ public class MicroserviceHttpClient {
     }
 
     public static class GetRequestBuilder extends AbstractRequestBuilder<GetRequestBuilder> {
+
         private GetRequestBuilder(HttpClient httpClient, URI uri) {
             super(httpClient, uri);
         }
@@ -255,6 +251,7 @@ public class MicroserviceHttpClient {
     }
 
     public static class PostRequestBuilder extends AbstractRequestBuilder<PostRequestBuilder> {
+
         private HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.noBody();
 
         private PostRequestBuilder(HttpClient httpClient, URI uri) {
@@ -287,6 +284,7 @@ public class MicroserviceHttpClient {
     }
 
     public static class MicroserviceCallException extends RuntimeException {
+
         private final int statusCode;
         private final String errorBody;
         private final String uri;
@@ -297,8 +295,17 @@ public class MicroserviceHttpClient {
             this.errorBody = errorBody;
             this.uri = uri;
         }
-        public int getStatusCode() { return statusCode; }
-        public String getErrorBody() { return errorBody; }
-        public String getUri() { return uri; }
+
+        public int getStatusCode() {
+            return statusCode;
+        }
+
+        public String getErrorBody() {
+            return errorBody;
+        }
+
+        public String getUri() {
+            return uri;
+        }
     }
 }

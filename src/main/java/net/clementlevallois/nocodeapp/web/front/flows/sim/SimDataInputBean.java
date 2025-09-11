@@ -73,7 +73,7 @@ public class SimDataInputBean implements Serializable {
             try {
                 Files.createDirectories(jobDirectory);
             } catch (IOException ex) {
-                throw new NocodeApplicationException("An IO error occurred", ex);
+                throw new NocodeApplicationException("Error in getDocumentDimensions method: Failed to read image dimensions for jobId: " + jobId, ex);
             }
 
             ImportersService.PreparationResult result;

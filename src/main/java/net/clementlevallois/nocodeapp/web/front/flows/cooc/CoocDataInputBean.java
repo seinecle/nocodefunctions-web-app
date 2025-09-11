@@ -76,7 +76,7 @@ public class CoocDataInputBean implements Serializable {
         try {
             Files.createDirectories(jobDirectory);
         } catch (IOException ex) {
-            throw new NocodeApplicationException("An IO error occurred", ex);
+            throw new NocodeApplicationException("Error in processSpatializationResults method: Failed to read GEXF results for jobId: " + jobId, ex);
         }
 
         sessionBean.sendFunctionPageReport(Globals.Names.COOC.name());
