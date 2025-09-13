@@ -2,15 +2,11 @@ package net.clementlevallois.nocodeapp.web.front.flows.cowo;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.faces.application.FacesMessage;
-import jakarta.faces.context.FacesContext;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
-import java.io.IOException;
 import java.io.Serializable;
-import java.util.logging.Logger;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
-import net.clementlevallois.nocodeapp.web.front.exceptions.NocodeApplicationException;
 import net.clementlevallois.nocodeapp.web.front.io.ExportToGephiLite;
 import net.clementlevallois.nocodeapp.web.front.io.ExportToVosViewer;
 import net.clementlevallois.nocodeapp.web.front.utils.FacesUtils;
@@ -46,11 +42,7 @@ public class CowoResultsBean implements Serializable {
         if (results != null) {
             String linkToVosViewer = exportToVosViewer.exportAndReturnLinkFromGexfWithGet(results.jobId(), results.shareVVPublicly());
             if (linkToVosViewer != null && !linkToVosViewer.isBlank()) {
-                try {
-                    FacesContext.getCurrentInstance().getExternalContext().redirect(linkToVosViewer);
-                } catch (IOException ex) {
-                    throw new NocodeApplicationException("An IO error occurred", ex);
-                }
+                FacesUtils.redirectTo(linkToVosViewer);
             }
         } else {
             sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "Error", "results are null, can't redirect to vosviewer");
@@ -61,11 +53,7 @@ public class CowoResultsBean implements Serializable {
         if (results != null) {
             String urlToGephiLite = exportToGephiLite.exportAndReturnLinkFromId(results.jobId(), results.shareGephiLitePublicly());
             if (urlToGephiLite != null && !urlToGephiLite.isBlank()) {
-                try {
-                    FacesContext.getCurrentInstance().getExternalContext().redirect(urlToGephiLite);
-                } catch (IOException ex) {
-                    throw new NocodeApplicationException("An IO error occurred", ex);
-                }
+                FacesUtils.redirectTo(urlToGephiLite);
             }
         } else {
             sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "Error", "results are null, can't redirect to gephi lite");

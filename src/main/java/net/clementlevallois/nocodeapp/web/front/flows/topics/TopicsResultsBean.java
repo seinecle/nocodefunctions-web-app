@@ -1,17 +1,14 @@
 package net.clementlevallois.nocodeapp.web.front.flows.topics;
 
 import jakarta.annotation.PostConstruct;
-import jakarta.faces.context.FacesContext;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
-import net.clementlevallois.nocodeapp.web.front.exceptions.NocodeApplicationException;
 import net.clementlevallois.nocodeapp.web.front.utils.FacesUtils;
 import net.clementlevallois.nocodeapp.web.front.utils.GEXFSaver;
 import net.clementlevallois.utils.Multiset;
@@ -31,8 +28,8 @@ public class TopicsResultsBean implements Serializable {
 
     @PostConstruct
     public void init() {
-        if (sessionBean.getFlowState() instanceof TopicsState.ResultsReady results) {
-            this.results = results;
+        if (sessionBean.getFlowState() instanceof TopicsState.ResultsReady resultsParam) {
+            this.results = resultsParam;
         } else {
             FacesUtils.redirectTo("topics-data-import.xhtml?faces-redirect=true");
         }

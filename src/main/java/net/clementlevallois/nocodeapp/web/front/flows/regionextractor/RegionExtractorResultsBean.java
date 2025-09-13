@@ -2,7 +2,6 @@ package net.clementlevallois.nocodeapp.web.front.flows.regionextractor;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.faces.application.FacesMessage;
-import jakarta.faces.context.FacesContext;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;

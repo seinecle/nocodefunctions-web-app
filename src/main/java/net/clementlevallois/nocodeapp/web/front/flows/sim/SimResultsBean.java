@@ -5,16 +5,12 @@
 package net.clementlevallois.nocodeapp.web.front.flows.sim;
 
 import jakarta.annotation.PostConstruct;
-import jakarta.faces.context.FacesContext;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
-import java.io.IOException;
 import java.io.Serializable;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
-import net.clementlevallois.nocodeapp.web.front.exceptions.NocodeApplicationException;
 import net.clementlevallois.nocodeapp.web.front.io.ExportToGephiLite;
 import net.clementlevallois.nocodeapp.web.front.io.ExportToVosViewer;
 import net.clementlevallois.nocodeapp.web.front.utils.FacesUtils;
@@ -55,11 +51,7 @@ public class SimResultsBean implements Serializable {
         if (results != null) {
             String link = exportToVosViewer.exportAndReturnLinkFromGexfWithGet(results.jobId(), results.shareVVPublicly());
             if (link != null && !link.isBlank()) {
-                try {
-                    FacesContext.getCurrentInstance().getExternalContext().redirect(link);
-                } catch (IOException ex) {
-                    throw new NocodeApplicationException("An IO error occurred redirecting to vosviewer", ex);
-                }
+                FacesUtils.redirectTo(link);
             }
         }
     }
@@ -68,11 +60,7 @@ public class SimResultsBean implements Serializable {
         if (results != null) {
             String link = exportToGephiLite.exportAndReturnLinkFromId(results.jobId(), results.shareGephiLitePublicly());
             if (link != null && !link.isBlank()) {
-                try {
-                    FacesContext.getCurrentInstance().getExternalContext().redirect(link);
-                } catch (IOException ex) {
-                    throw new NocodeApplicationException("An IO error occurred redirecting to Gephi lite", ex);
-                }
+                FacesUtils.redirectTo(link);
             }
         }
     }
