@@ -34,13 +34,13 @@ public class CowoResultsBean implements Serializable {
         if (sessionBean.getFlowState() instanceof CowoState.ResultsReady rr) {
             this.results = rr;
         } else {
-            FacesUtils.redirectTo("cowo-import.html?faces-redirect=true");
+            FacesUtils.redirectTo("cowo-import.html");
         }
     }
 
     public void gotoVV() {
         if (results != null) {
-            String linkToVosViewer = exportToVosViewer.exportAndReturnLinkFromGexfWithGet(results.jobId(), results.shareVVPublicly());
+            String linkToVosViewer = exportToVosViewer.exportAndReturnLinkForConversionToVV(results.jobId(), results.shareVVPublicly(), "each node is a term or expression appearing frequently in the corpus", "a link means the two connected term are cooccurring in the corpus", "strength of the connection reflects the frequency of coccurrences between the two connected terms");
             if (linkToVosViewer != null && !linkToVosViewer.isBlank()) {
                 FacesUtils.redirectTo(linkToVosViewer);
             }

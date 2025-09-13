@@ -90,7 +90,11 @@
                         <p:button id="simButton" value="#{text['index.button.sim']}" outcome="sim/similarities-network-builder-tool.html" style="padding: 30px;" styleClass="bg-blue-500 hover:bg-blue-600 text-white font-bold rounded mx-2 mb-2"/>
                     </div>
                     <div class="flex justify-center items-center">
-                        <p:button id="networkconverterButton" value="#{text['index.button.networkconverter']}" outcome="networkconverter/network_format_converter.html" style="padding: 30px;" styleClass="bg-blue-500 hover:bg-blue-600 text-white font-bold rounded mx-2 mb-2"/>
+                        <p:button value="Convert GEXF → VOSviewer"
+                                  id="gexf2vvButton" 
+                                  outcome="gexf2vv/gexf2vv-import.html"
+                                   style="padding: 30px;"
+                                   styleClass="bg-blue-500 hover:bg-blue-600 text-white font-bold rounded mx-2 mb-2"/>
                     </div>
                     <div class="flex justify-center items-center">
                         <p:button id="spatializeButton" value="#{text['index.button.spatialize']}" outcome="spatialize/spatialize-import.html" style="padding: 30px;" styleClass="bg-blue-500 hover:bg-blue-600 text-white font-bold rounded mx-2 mb-2"/>
@@ -519,7 +523,11 @@
                         <p:button id="simButton_2" value="#{text['index.button.sim']}" outcome="sim/similarities-network-builder-tool.html" style="padding: 30px;" styleClass="bg-blue-500 hover:bg-blue-600 text-white font-bold rounded mx-2 mb-2"/>
                     </div>
                     <div class="flex justify-center items-center">
-                        <p:button id="networkconverterButton_2" value="#{text['index.button.networkconverter']}" outcome="networkconverter/network_format_converter.html" style="padding: 30px;" styleClass="bg-blue-500 hover:bg-blue-600 text-white font-bold rounded mx-2 mb-2"/>
+                        <p:button value="Convert GEXF → VOSviewer"
+                                  id="gexf2vvButton" 
+                                  outcome="gexf2vv/gexf2vv-import.html"
+                                   style="padding: 30px;"
+                                   styleClass="bg-blue-500 hover:bg-blue-600 text-white font-bold rounded mx-2 mb-2"/>
                     </div>
                     <div class="flex justify-center items-center">
                         <p:button id="spatializeButton_2" value="#{text['index.button.spatialize']}" outcome="spatialize/spatialize-import.html" style="padding: 30px;" styleClass="bg-blue-500 hover:bg-blue-600 text-white font-bold rounded mx-2 mb-2"/>

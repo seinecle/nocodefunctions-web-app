@@ -37,13 +37,13 @@ public class CoocResultsBean implements Serializable {
         if (sessionBean.getFlowState() instanceof CoocState.ResultsReady rr) {
             this.results = rr;
         } else {
-            FacesUtils.redirectTo("/cooc/cooc-import.xhtml?faces-redirect=true");
+            FacesUtils.redirectTo("/cooc/cooc-import.html");
         }
     }
 
     public void gotoVV() {
         if (results != null) {
-            String linkToVosViewer = exportToVosViewer.exportAndReturnLinkFromGexfWithGet(results.jobId(), results.shareVVPublicly());
+            String linkToVosViewer = exportToVosViewer.exportAndReturnLinkForConversionToVV(results.jobId(), results.shareVVPublicly(), "item", "cooccurring items", "link strength is the number of cooccurrences betwee 2 items");
             if (linkToVosViewer != null && !linkToVosViewer.isBlank()) {
                 FacesUtils.redirectTo(linkToVosViewer);
             }

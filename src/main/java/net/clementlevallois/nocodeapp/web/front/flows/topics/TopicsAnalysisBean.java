@@ -35,7 +35,7 @@ public class TopicsAnalysisBean implements Serializable {
     @PostConstruct
     public void init() {
         if (sessionBean.getFlowState() == null) {
-            FacesUtils.redirectTo("topics-data-import.xhtml?faces-redirect=true");
+            FacesUtils.redirectTo("topics-data-import.html");
         }
     }
 

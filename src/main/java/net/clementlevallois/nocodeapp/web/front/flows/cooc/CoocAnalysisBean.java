@@ -27,7 +27,7 @@ public class CoocAnalysisBean implements Serializable {
     @PostConstruct
     public void init() {
         if (sessionBean.getFlowState() == null) {
-            FacesUtils.redirectTo("/cooc/cooc-import.xhtml?faces-redirect=true");
+            FacesUtils.redirectTo("/cooc/cooc-import.html");
         }
     }
 

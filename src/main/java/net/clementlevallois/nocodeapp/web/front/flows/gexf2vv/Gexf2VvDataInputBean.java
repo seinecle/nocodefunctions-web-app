@@ -11,6 +11,7 @@ import java.util.UUID;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.ApplicationPropertiesBean;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.exceptions.NocodeApplicationException;
+import net.clementlevallois.nocodeapp.web.front.utils.FacesUtils;
 import org.primefaces.event.FileUploadEvent;
 
 @Named
@@ -36,4 +37,18 @@ public class Gexf2VvDataInputBean implements Serializable {
             throw new NocodeApplicationException("Handling of uploaded gexf file failed", ex);
         }
     }
+
+    public boolean isDataReady() {
+        return sessionBean.getFlowState() instanceof Gexf2VvState.AwaitingParameters;
+    }
+
+    public void proceedToParameters() {
+        if (sessionBean.getFlowState() instanceof Gexf2VvState.AwaitingParameters p) {
+            sessionBean.setFlowState(p.withJobId(p.jobId()));
+            FacesUtils.redirectTo("gexf2vv-parameters.html");
+        } else {
+            throw new IllegalStateException("Wrong state: " + sessionBean.getFlowState().getClass().getSimpleName());
+        }
+    }
+
 }

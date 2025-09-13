@@ -36,7 +36,7 @@ public class SpatializeAnalysisBean implements Serializable {
     @PostConstruct
     public void init() {
         if (sessionBean.getFlowState() == null) {
-            FacesUtils.redirectTo("spatialize-import.html?faces-redirect=true");
+            FacesUtils.redirectTo("spatialize-import.html");
         }
     }
 
@@ -61,7 +61,7 @@ public class SpatializeAnalysisBean implements Serializable {
         if (sessionBean.getFlowState() instanceof SpatializeState.Processing processingState) {
             sessionBean.setFlowState(spatializeService.checkCompletion(processingState));
             if (sessionBean.getFlowState() instanceof SpatializeState.ResultsReady) {
-                FacesUtils.redirectTo("results.html?faces-redirect=true");
+                FacesUtils.redirectTo("results.html");
             }
         }
         return null;

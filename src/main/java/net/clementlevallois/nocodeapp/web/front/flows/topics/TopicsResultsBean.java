@@ -31,7 +31,7 @@ public class TopicsResultsBean implements Serializable {
         if (sessionBean.getFlowState() instanceof TopicsState.ResultsReady resultsParam) {
             this.results = resultsParam;
         } else {
-            FacesUtils.redirectTo("topics-data-import.xhtml?faces-redirect=true");
+            FacesUtils.redirectTo("topics-data-import.html");
         }
     }
 

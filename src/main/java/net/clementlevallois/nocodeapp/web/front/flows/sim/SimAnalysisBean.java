@@ -31,7 +31,7 @@ public class SimAnalysisBean implements Serializable {
     @PostConstruct
     public void init() {
         if (sessionBean.getFlowState() == null) {
-            FacesUtils.redirectTo("sim-import.html?faces-redirect=true");
+            FacesUtils.redirectTo("sim-import.html");
         }
     }
 
@@ -59,7 +59,7 @@ public class SimAnalysisBean implements Serializable {
         if (sessionBean.getFlowState() instanceof SimState.Processing processingState) {
             sessionBean.setFlowState(simService.checkCompletion(processingState));
             if (sessionBean.getFlowState() instanceof SimState.ResultsReady) {
-                FacesUtils.redirectTo("/sim/similarities-results.html?faces-redirect=true");
+                FacesUtils.redirectTo("/sim/similarities-results.html");
             }
         }
         return null;

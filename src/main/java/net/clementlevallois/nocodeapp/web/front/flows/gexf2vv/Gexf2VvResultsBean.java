@@ -5,6 +5,7 @@ import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import java.io.Serializable;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
+import net.clementlevallois.nocodeapp.web.front.exceptions.NocodeApplicationException;
 import net.clementlevallois.nocodeapp.web.front.utils.FacesUtils;
 
 @Named
@@ -22,6 +23,8 @@ public class Gexf2VvResultsBean implements Serializable {
         var url = getVosviewerUrl();
         if (url != null && !url.isBlank()) {
             FacesUtils.redirectTo(url);
+        } else {
+            throw new NocodeApplicationException("gexf2vv conversion : vosviewer url was null or empty", new Throwable());
         }
     }
 }

@@ -38,7 +38,7 @@ public class SpatializeResultsBean implements Serializable {
         if (sessionBean.getFlowState() instanceof SpatializeState.ResultsReady rr) {
             this.results = rr;
         } else {
-            FacesUtils.redirectTo("spatialize-import.html?faces-redirect=true");
+            FacesUtils.redirectTo("spatialize-import.html");
         }
     }
 

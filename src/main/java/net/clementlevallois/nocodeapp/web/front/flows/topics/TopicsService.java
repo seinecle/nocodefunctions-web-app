@@ -54,9 +54,7 @@ public class TopicsService {
     public FlowState callTopicsMicroService(TopicsState.AwaitingParameters state) {
         String jobId = state.jobId();
 
-        var requestBuilder = microserviceClient.api().post(WorkflowTopicsProps.ENDPOINT);
-
-        addJsonBody(requestBuilder, state);
+        var requestBuilder = microserviceClient.api().get(WorkflowTopicsProps.ENDPOINT);
 
         addQueryParams(requestBuilder, state);
 
@@ -67,7 +65,7 @@ public class TopicsService {
                 .thenAccept(response -> {
                     if (response.statusCode() != 200) {
                         LOG.log(Level.SEVERE, "Microservice task submission failed for job {0}. Status: {1}, Body: {2}", new Object[]{state.jobId(), response.statusCode(), response.body()});
-                        resultFlowFailed.set(new FlowFailed(jobId, state, "cowo task submission to remote service returned a not 200 code"));
+                        resultFlowFailed.set(new FlowFailed(jobId, state, "topics task submission to remote service did not return a 200 code"));
                         isProcessSucessFul.set(Boolean.FALSE);
                     }
                 })
@@ -104,7 +102,7 @@ public class TopicsService {
         requestBuilder.withJsonPayload(overallObject.build());
     }
 
-    private void addQueryParams(MicroserviceHttpClient.PostRequestBuilder requestBuilder, TopicsState.AwaitingParameters params) {
+    private void addQueryParams(MicroserviceHttpClient.GetRequestBuilder requestBuilder, TopicsState.AwaitingParameters params) {
         requestBuilder.addQueryParameter(WorkflowTopicsProps.QueryParams.LANG.name(), params.selectedLanguage() != null ? params.selectedLanguage() : "en");
         requestBuilder.addQueryParameter(WorkflowTopicsProps.QueryParams.REPLACE_STOPWORDS.name(), String.valueOf(params.replaceStopwords()));
         requestBuilder.addQueryParameter(WorkflowTopicsProps.QueryParams.IS_SCIENTIFIC_CORPUS.name(), String.valueOf(params.scientificCorpus()));

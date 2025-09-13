@@ -9,7 +9,6 @@ import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import java.io.Serializable;
-import java.util.logging.Logger;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.io.ExportToGephiLite;
 import net.clementlevallois.nocodeapp.web.front.io.ExportToVosViewer;
@@ -21,8 +20,6 @@ import org.primefaces.model.StreamedContent;
 @Named
 @ViewScoped
 public class SimResultsBean implements Serializable {
-
-    private static final Logger LOG = Logger.getLogger(SimResultsBean.class.getName());
 
     @Inject
     private SessionBean sessionBean;
@@ -40,7 +37,7 @@ public class SimResultsBean implements Serializable {
         if (sessionBean.getFlowState() instanceof SimState.ResultsReady rr) {
             this.results = rr;
         } else {
-             FacesUtils.redirectTo("sim-import.html?faces-redirect=true");
+             FacesUtils.redirectTo("sim-import.html");
         }
     }
 
@@ -49,7 +46,7 @@ public class SimResultsBean implements Serializable {
 
     public void gotoVV() {
         if (results != null) {
-            String link = exportToVosViewer.exportAndReturnLinkFromGexfWithGet(results.jobId(), results.shareVVPublicly());
+            String link = exportToVosViewer.exportAndReturnLinkForConversionToVV(results.jobId(), results.shareVVPublicly(), "each node is an item in the column you selected", "a link or connection means the two nodes had an attribute in common in your source files", "strength of the connection reflects how similar are the attributes of the two connected nodes");
             if (link != null && !link.isBlank()) {
                 FacesUtils.redirectTo(link);
             }

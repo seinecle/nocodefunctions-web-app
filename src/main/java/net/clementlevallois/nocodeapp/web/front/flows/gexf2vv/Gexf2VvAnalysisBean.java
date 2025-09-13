@@ -15,10 +15,11 @@ public class Gexf2VvAnalysisBean implements Serializable {
     @Inject
     Gexf2VvService service;
 
-    public void convert() {
+    public String convert() {
         if (sessionBean.getFlowState() instanceof Gexf2VvState.AwaitingParameters p) {
             String url = service.buildVosviewerUrl(p.jobId(), p.shareVVPublicly(), p.item(), p.link(), p.linkStrength());
             sessionBean.setFlowState(new Gexf2VvState.ResultsReady(p.jobId(), url, p.shareVVPublicly()));
+            return "results.xhtml?faces-redirect=true";
         } else {
             throw new IllegalStateException("Wrong state for conversion");
         }

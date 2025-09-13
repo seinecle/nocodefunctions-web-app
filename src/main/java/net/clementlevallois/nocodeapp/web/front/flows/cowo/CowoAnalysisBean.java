@@ -32,7 +32,7 @@ public class CowoAnalysisBean implements Serializable {
     @PostConstruct
     public void init() {
         if (sessionBean.getFlowState() == null) {
-            FacesUtils.redirectTo("cowo-import.html?faces-redirect=true");
+            FacesUtils.redirectTo("cowo-import.html");
         }
     }
 
@@ -59,7 +59,7 @@ public class CowoAnalysisBean implements Serializable {
         if (sessionBean.getFlowState() instanceof CowoState.Processing processingState) {
             sessionBean.setFlowState(cowoService.checkCompletion(processingState));
             if (sessionBean.getFlowState() instanceof CowoState.ResultsReady) {
-                FacesUtils.redirectTo("results.html?faces-redirect=true");
+                FacesUtils.redirectTo("results.html");
             }
         } else {
             throw new IllegalStateException("State is not CowoState.Processing " + sessionBean.getFlowState().getClass().getSimpleName());

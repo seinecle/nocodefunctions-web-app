@@ -38,7 +38,7 @@ public class RegionExtractorResultsBean implements Serializable {
         if (sessionBean.getFlowState() instanceof RegionExtractorState.ResultsReady rr) {
             this.results = rr;
         } else {
-            FacesUtils.redirectTo("regionextractor.html?faces-redirect=true");
+            FacesUtils.redirectTo("regionextractor.html");
         }
     }
 
