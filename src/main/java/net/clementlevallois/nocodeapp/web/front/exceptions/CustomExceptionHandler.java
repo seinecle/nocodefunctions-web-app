@@ -1,5 +1,6 @@
 package net.clementlevallois.nocodeapp.web.front.exceptions;
 
+import jakarta.faces.application.ViewExpiredException;
 import jakarta.faces.context.ExceptionHandler;
 import jakarta.faces.context.ExceptionHandlerWrapper;
 import jakarta.faces.context.FacesContext;
@@ -42,8 +43,13 @@ public class CustomExceptionHandler extends ExceptionHandlerWrapper {
                 t.printStackTrace(pw);
                 flashMap.put("errorMsg", t.getMessage());
                 flashMap.put("stackTrace", sw.toString());
+
             }
-            fc.getApplication().getNavigationHandler().handleNavigation(fc, null, "/error.xhtml?faces-redirect=true");
+            if (t instanceof ViewExpiredException) {
+                fc.getApplication().getNavigationHandler().handleNavigation(fc, null, "/index.xhtml?faces-redirect=true");
+            } else {
+                fc.getApplication().getNavigationHandler().handleNavigation(fc, null, "/error.xhtml?faces-redirect=true");
+            }
             i.remove();
         }
         getWrapped().handle();

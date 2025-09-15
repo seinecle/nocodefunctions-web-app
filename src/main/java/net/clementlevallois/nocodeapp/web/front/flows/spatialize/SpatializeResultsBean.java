@@ -16,7 +16,7 @@ import net.clementlevallois.nocodeapp.web.front.exceptions.NocodeApplicationExce
 import net.clementlevallois.nocodeapp.web.front.io.ExportToGephiLite;
 import net.clementlevallois.nocodeapp.web.front.io.ExportToVosViewer;
 import net.clementlevallois.nocodeapp.web.front.utils.FacesUtils;
-import net.clementlevallois.nocodeapp.web.front.utils.GEXFSaver;
+import net.clementlevallois.nocodeapp.web.front.io.ExportToGexf;
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
 
@@ -44,7 +44,7 @@ public class SpatializeResultsBean implements Serializable {
 
     public StreamedContent getFileToSave() {
         if (results != null) {
-            return GEXFSaver.exportGexfAsStreamedFile(results.gexf(), "spatializef_graph");
+            return ExportToGexf.exportGexfAsStreamedFile(results.gexf(), "spatializef_graph");
         }
         return new DefaultStreamedContent();
     }

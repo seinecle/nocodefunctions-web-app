@@ -6,7 +6,6 @@ package net.clementlevallois.nocodeapp.web.front;
 import jakarta.servlet.annotation.WebListener;
 import jakarta.servlet.http.HttpSessionEvent;
 import jakarta.servlet.http.HttpSessionListener;
-import net.clementlevallois.nocodeapp.web.front.backingbeans.SingletonBean;
 
 /**
  *

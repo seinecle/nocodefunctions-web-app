@@ -1,14 +1,16 @@
 package net.clementlevallois.nocodeapp.web.front.flows.vv2gexf;
 
 import net.clementlevallois.nocodeapp.web.front.flows.base.FlowState;
-import java.nio.file.Path;
 
-public sealed interface Vv2GexfState extends FlowState {
+public sealed interface Vv2gexfState extends FlowState {
 
-    record AwaitingFile(String jobId, Path jsonFile) implements Vv2GexfState {
-        public AwaitingFile withJsonFile(Path p){ return new AwaitingFile(jobId, p); }
+    record AwaitingFile(String jobId, String uploadedFileName) implements Vv2gexfState {}
+
+    record Processing(String jobId, AwaitingFile parameters, int progress) implements Vv2gexfState {
+        public Processing withProgress(int newProgress) {
+            return new Processing(jobId, parameters, newProgress);
+        }
     }
-    record Processing(String jobId) implements Vv2GexfState {}
-    record ResultsReady(String jobId, Path gexfPath, int nodeCount, int edgeCount) implements Vv2GexfState {}
-    record Failed(String jobId, String message) implements Vv2GexfState {}
+
+    record ResultsReady(String jobId, byte[] gexfBytes) implements Vv2gexfState {}
 }

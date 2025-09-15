@@ -2,49 +2,54 @@ package net.clementlevallois.nocodeapp.web.front.flows.vv2gexf;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import java.io.IOException;
-import java.nio.file.*;
-import java.util.Objects;
+import java.net.http.HttpResponse;
+import java.util.concurrent.CompletionException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import net.clementlevallois.functions.model.FunctionNetworkConverter;
+import net.clementlevallois.functions.model.Globals;
+import net.clementlevallois.nocodeapp.web.front.exceptions.NocodeApplicationException;
 import net.clementlevallois.nocodeapp.web.front.http.MicroserviceHttpClient;
-
-// import your actual microservice client type:
-import net.clementlevallois.nocodeapp.web.front.microservices.MicroserviceHttpClient;
+import net.clementlevallois.nocodeapp.web.front.http.MicroserviceHttpClient.MicroserviceCallException;
+import net.clementlevallois.nocodeapp.web.front.http.RemoteLocal;
 
 @ApplicationScoped
-public class Vv2GexfService {
+public class Vv2gexfService {
 
     @Inject
-    MicroserviceHttpClient micro;
-
-    // Align this path with your converter microservice (same style as your other flows)
-    private static final String ENDPOINT = "/converter/v1/vv-json-to-gexf";
+    private MicroserviceHttpClient microserviceClient;
 
     /**
-     * Sends the VV JSON to the microservice and writes the returned GEXF to disk.
-     * Returns the path to the written .gexf (in the same job folder).
+     * Appelle le microservice de conversion VOSviewer JSON -> GEXF. Le fichier
+     * JSON a été préalablement écrit dans le dossier temp avec le nom == jobId
+     * (convention historique de ConverterBean).
+     * @param jobId
+     * @return 
      */
-    public Path convert(String jobId, Path vvJson) {
+    public byte[] convert(String jobId) {
         try {
-            Objects.requireNonNull(vvJson, "vvJson");
-            Path jobDir = vvJson.getParent();
-            if (jobDir == null) jobDir = Files.createTempDirectory("vv2gexf-" + jobId + "-");
-            Path out = jobDir.resolve(jobId + "-from-vv.json.gexf");
-            var response = micro.api()
-                    .get(jobId)query("jobId", jobId)                 // optional, if your MS expects it
-                    .multipart("file", vvJson)             // attach the JSON file (param name "file" or whatever your MS expects)
-                    .send();                                // executes the HTTP request
-            
-            int status = response.statusCode();
-            if (status != 200) {
-                throw new IOException("vv2gexf microservice error: HTTP " + status + " — " + response.bodyAsString());
+            var callbackURL = RemoteLocal.getDomain() + RemoteLocal.getInternalMessageApiEndpoint()
+                    + FunctionNetworkConverter.ENDPOINT;
+
+            var request = microserviceClient.api()
+                    .get(FunctionNetworkConverter.ENDPOINT_VV_TO_GEXF)
+                    .addQueryParameter(Globals.GlobalQueryParams.JOB_ID.name(), jobId)
+                    .addQueryParameter(Globals.GlobalQueryParams.CALLBACK_URL.name(), callbackURL);
+
+            // Réponse attendue: bytes GEXF (synchrones)
+            return request.sendAsync(HttpResponse.BodyHandlers.ofByteArray())
+                    .thenApply(HttpResponse::body)
+                    .join();
+
+        } catch (CompletionException ce) {
+            Throwable cause = ce.getCause() != null ? ce.getCause() : ce;
+            if (cause instanceof MicroserviceCallException msce) {
+                throw new NocodeApplicationException("Conversion VV->GEXF failed (status " + msce.getStatusCode() + ")", msce);
+            } else {
+                throw new NocodeApplicationException("Error when calling microservice VV->GEXF", cause);
             }
-            
-            byte[] gexfBytes = response.bodyAsBytes();
-            Files.write(out, gexfBytes, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
-            
-            return out;
-        } catch (IOException ex) {
-            System.getLogger(Vv2GexfService.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
+        } catch (Exception e) {
+            throw new NocodeApplicationException("Error while calling microservice VV->GEXF", e);
         }
     }
 }

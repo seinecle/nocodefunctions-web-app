@@ -1,4 +1,4 @@
-package net.clementlevallois.nocodeapp.web.front.utils;
+package net.clementlevallois.nocodeapp.web.front.io;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -11,7 +11,7 @@ import org.primefaces.model.StreamedContent;
  *
  * @author LEVALLOIS
  */
-public class GEXFSaver {
+public class ExportToGexf {
 
     public static StreamedContent exportGexfAsStreamedFile(String gexf, String resultFileNameWithoutExtension) {
         StreamedContent file = null;

@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="jakarta.faces.core"
+      xmlns:ui="jakarta.faces.facelets">
+    <f:view locale="#{localeBean.currentLocale}">
+        <h:head>
+            <title>VV → GEXF | Convert</title>
+            <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+            <meta name="robots" content="noindex"/>
+            <h:outputStylesheet name="css/output.css" />
+        </h:head>
+        <h:body>
+            <ui:include src="/WEB-INF/includes/header.xhtml"/>
+            <h:form>
+                <p:commandButton value="Convertir"
+                                 icon="pi pi-refresh"
+                                 action="#{vv2gexfAnalysisBean.convert}"
+                                 ajax="false"/>
+            </h:form>
+            <ui:include src="/WEB-INF/includes/footer.xhtml" />
+        </h:body>
+    </f:view>
+</html>

@@ -10,7 +10,7 @@ import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.io.ExportToGephiLite;
 import net.clementlevallois.nocodeapp.web.front.io.ExportToVosViewer;
 import net.clementlevallois.nocodeapp.web.front.utils.FacesUtils;
-import net.clementlevallois.nocodeapp.web.front.utils.GEXFSaver;
+import net.clementlevallois.nocodeapp.web.front.io.ExportToGexf;
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
 
@@ -62,7 +62,7 @@ public class CowoResultsBean implements Serializable {
 
     public StreamedContent getFileToSave() {
         if (results != null) {
-            return GEXFSaver.exportGexfAsStreamedFile(results.gexf(), "results_cowo");
+            return ExportToGexf.exportGexfAsStreamedFile(results.gexf(), "results_cowo");
         }
         return new DefaultStreamedContent();
     }

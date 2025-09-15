@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Map;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.utils.FacesUtils;
-import net.clementlevallois.nocodeapp.web.front.utils.GEXFSaver;
+import net.clementlevallois.nocodeapp.web.front.io.ExportToGexf;
 import net.clementlevallois.utils.Multiset;
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
@@ -51,7 +51,7 @@ public class TopicsResultsBean implements Serializable {
         if (gexf == null) {
             return new DefaultStreamedContent();
         }
-        StreamedContent exportGexfAsStreamedFile = GEXFSaver.exportGexfAsStreamedFile(gexf, "network_file_with_topics");
+        StreamedContent exportGexfAsStreamedFile = ExportToGexf.exportGexfAsStreamedFile(gexf, "network_file_with_topics");
         return exportGexfAsStreamedFile;
     }
 

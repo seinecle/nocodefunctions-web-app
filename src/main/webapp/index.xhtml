@@ -97,6 +97,13 @@
                                    styleClass="bg-blue-500 hover:bg-blue-600 text-white font-bold rounded mx-2 mb-2"/>
                     </div>
                     <div class="flex justify-center items-center">
+                        <p:button value="Convert VOSviewer → GEXF"
+                                  id="vv2gexfButton" 
+                                  outcome="vv2gexf/vv2gexf-import.html"
+                                   style="padding: 30px;"
+                                   styleClass="bg-blue-500 hover:bg-blue-600 text-white font-bold rounded mx-2 mb-2"/>
+                    </div>
+                    <div class="flex justify-center items-center">
                         <p:button id="spatializeButton" value="#{text['index.button.spatialize']}" outcome="spatialize/spatialize-import.html" style="padding: 30px;" styleClass="bg-blue-500 hover:bg-blue-600 text-white font-bold rounded mx-2 mb-2"/>
                     </div>
                     <div class="flex justify-center items-center">
@@ -524,8 +531,15 @@
                     </div>
                     <div class="flex justify-center items-center">
                         <p:button value="Convert GEXF → VOSviewer"
-                                  id="gexf2vvButton" 
+                                  id="gexf2vvButton_2" 
                                   outcome="gexf2vv/gexf2vv-import.html"
+                                   style="padding: 30px;"
+                                   styleClass="bg-blue-500 hover:bg-blue-600 text-white font-bold rounded mx-2 mb-2"/>
+                    </div>
+                    <div class="flex justify-center items-center">
+                        <p:button value="Convert VOSviewer → GEXF"
+                                  id="vv2gexfButton_2" 
+                                  outcome="vv2gexf/vv2gexf-import.html"
                                    style="padding: 30px;"
                                    styleClass="bg-blue-500 hover:bg-blue-600 text-white font-bold rounded mx-2 mb-2"/>
                     </div>
