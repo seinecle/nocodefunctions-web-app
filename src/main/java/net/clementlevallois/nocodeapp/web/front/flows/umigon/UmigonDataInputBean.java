@@ -79,13 +79,12 @@ public class UmigonDataInputBean implements Serializable {
             throw new IllegalArgumentException("Unsupported data source type");
         }
 
-        if (result instanceof ImportersService.PreparationResult.Failure(String error)) {
+        if (result instanceof ImportersService.PreparationResult.Failure) {
+            String error = ((ImportersService.PreparationResult.Failure) result).errorMessage();
             sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Data Preparation Failed", error);
-        } else {
-            switch (dataSource) {
-                case UmigonDataSource.FileUpload(UploadedFile file) ->
-                    sessionBean.addMessage(FacesMessage.SEVERITY_INFO, "Success", file.getFileName() + " has been added to your dataset.");
-            }
+        } else if (dataSource instanceof UmigonDataSource.FileUpload) {
+            UploadedFile file = ((UmigonDataSource.FileUpload) dataSource).file();
+            sessionBean.addMessage(FacesMessage.SEVERITY_INFO, "Success", file.getFileName() + " has been added to your dataset.");
         }
     }
 
