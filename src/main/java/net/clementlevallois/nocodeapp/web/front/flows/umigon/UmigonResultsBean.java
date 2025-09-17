@@ -10,6 +10,7 @@ import java.io.InputStream;
 import java.io.Serializable;
 import java.util.List;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
+import net.clementlevallois.nocodeapp.web.front.utils.Converters;
 import net.clementlevallois.nocodeapp.web.front.utils.FacesUtils;
 import net.clementlevallois.umigon.model.classification.Document;
 import org.primefaces.model.DefaultStreamedContent;
