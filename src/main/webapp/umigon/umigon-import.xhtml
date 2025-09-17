@@ -1,69 +1,107 @@
-<html
-    lang="#{localeBean.languageTag}"
-    xmlns="http://www.w3.org/1999/xhtml"
-    xmlns:h="jakarta.faces.html"
-    xmlns:f="jakarta.faces.core"
-    xmlns:p="http://primefaces.org/ui"
-    xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
-    <f:view locale="#{localeBean.currentLocale}">
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+    <h:head>
+        <title>#{sessionBean.localeBundle['app.title']} - #{sessionBean.localeBundle['umigon.sentiment_analysis_tool.title']}</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+        <meta name="robots" content="noindex"/>
+        <h:outputStylesheet name="css/output.css" />
+    </h:head>
+    <h:body>
+        <ui:include src="/WEB-INF/includes/header.xhtml"/>
+        <div class="layout-content">
+            <h:form id="umigonImportForm" enctype="multipart/form-data">
+                <p:growl id="growl" showDetail="true" skipDetailIfEqualsSummary="true" life="5000"/>
 
-        <h:head>
-            <title>#{text['umigon.sentiment_analysis_tool.title']}</title>
-            <meta name="description" content="#{text['umigon.sentiment_analysis_tool.description']}"/>
+                <div class="card">
+                    <div class="flex justify-content-between">
+                        <div>
+                            <p:outputLabel styleClass="text-900 font-medium" value="#{sessionBean.localeBundle['general.message.import_your_data']}"/>
+                            <p>
+                                <p:outputLabel styleClass="text-500" value="#{sessionBean.localeBundle['data_import.page.subheader']}"/>
+                            </p>
+                        </div>
+                    </div>
+                    <p:divider/>
+                    <p:tabView activeIndex="#{umigonDataInputBean.selectedTab}" styleClass="mt-3">
+                        <p:ajax event="tabChange" listener="#{umigonDataInputBean.setSelectedTab(e.activeIndex)}"/>
 
-            <meta http-equiv="content-language" content="en-us"/>
-            <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
-            <meta http-equiv="cleartype" content="on"/>
-            <meta name="HandheldFriendly" content="true"/>
-            <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+                        <!-- File Upload Tab -->
+                        <p:tab>
+                            <f:facet name="title">
+                                <i class="pi pi-upload mr-2"/>
+                                <span>#{sessionBean.localeBundle['data_import.tab.files']}</span>
+                            </f:facet>
+                            <div class="p-4">
+                                <p class="text-gray-600 mb-4">
+                                    #{sessionBean.localeBundle['data_import.tab.files.description']}
+                                </p>
+                                <p:fileUpload mode="advanced"
+                                              skinSimple="true"
+                                              multiple="true"
+                                              listener="#{umigonDataInputBean.handleFileUpload}"
+                                              label="Choose Files"
+                                              allowTypes="/(\.|\/)(txt|csv|xlsx|json)$/"
+                                              sizeLimit="10000000" />
+                            </div>
+                        </p:tab>
 
-            <link rel="apple-touch-icon" sizes="180x180" href="#{resource['images/favicons/apple-touch-icon.png']}"/>
-            <link rel="icon" type="image/png" sizes="32x32" href="#{resource['images/favicons/favicon-32x32.png']}"/>
-            <link rel="icon" type="image/png" sizes="16x16" href="#{resource['images/favicons/favicon-16x16.png']}"/>
-            <link rel="manifest" href="#{resource['images/favicons/site.webmanifest']}"/>
-            <link rel="mask-icon" href="#{resource['images/favicons/safari-pinned-tab.svg']}" color="#5bbad5"/>
-            <link rel.="shortcut icon" href="#{resource['images/favicons/favicon.ico']}"/>
-            <meta name="msapplication-TileColor" content="#da532c"/>
-            <meta name="msapplication-config" content="#{resource['images/favicons/browserconfig.xml']}"/>
-            <meta name="theme-color" content="#ffffff"/>
-            <link rel="shortcut icon" type="image/x-icon" href="#{resource['images/favicons/favicon.ico']}"/>
-            <meta name="robots" content="noindex"/>
-        </h:head>
-        <h:body>
-            <h:outputStylesheet name="css/output.css"/>
-            <p:panel>
-                <ui:include src="/WEB-INF/includes/header.xhtml"/>
-                <h1>#{text['general.message.import_your_data']}</h1>
-            </p:panel>
-            <p:spacer height="20"/>
-            <p:panel>
-                <h:form enctype="multipart/form-data">
-                    <p:growl id="messages" showDetail="true"/>
+                        <!-- Web Page Tab -->
+                        <p:tab>
+                            <f:facet name="title">
+                                <i class="pi pi-globe mr-2"/>
+                                <span>#{sessionBean.localeBundle['data_import.tab.webpage']}</span>
+                            </f:facet>
+                            <div class="p-4">
+                                <p class="text-gray-600 mb-2">#{sessionBean.localeBundle['data_import.tab.webpage.description']}</p>
+                                <p:inputText value="#{umigonDataInputBean.url}" styleClass="w-full p-inputtext-lg" placeholder="https://example.com/article"/>
+                            </div>
+                        </p:tab>
 
-                    <p:fileUpload listener="#{umigonDataInputBean.handleFileUpload}"
-                                  mode="advanced"
-                                  dragDropSupport="false"
-                                  multiple="false"
-                                  update="messages uploadFileName proceedButton"
-                                  sizeLimit="10000000"
-                                  allowTypes="/(\.|\/)(txt|csv|xlsx|json)$/"/>
+                        <!-- Website Crawl Tab -->
+                        <p:tab>
+                            <f:facet name="title">
+                                <i class="pi pi-sitemap mr-2"/>
+                                <span>#{sessionBean.localeBundle['data_import.tab.website']}</span>
+                            </f:facet>
+                            <div class="p-4">
+                                <p class="text-gray-600 mb-4">#{sessionBean.localeBundle['data_import.tab.website.description']}</p>
+                                <div class="formgrid grid">
+                                    <div class="field col-12 md:col-6">
+                                        <label for="rootUrl" class="block text-900 font-medium mb-2">#{sessionBean.localeBundle['data_import.tab.website.root_url']}</label>
+                                        <p:inputText id="rootUrl" value="#{umigonDataInputBean.websiteUrl}" styleClass="w-full" placeholder="https://example.com"/>
+                                    </div>
+                                    <div class="field col-12 md:col-6">
+                                        <label for="maxUrls" class="block text-900 font-medium mb-2">#{sessionBean.localeBundle['data_import.tab.website.max_pages']}</label>
+                                        <p:spinner id="maxUrls" value="#{umigonDataInputBean.maxUrlsToCrawl}" min="1" max="100" styleClass="w-full"/>
+                                    </div>
+                                    <div class="field col-12">
+                                        <label for="exclusions" class="block text-900 font-medium mb-2">#{sessionBean.localeBundle['data_import.tab.website.exclusions']}</label>
+                                        <p:inputText id="exclusions" value="#{umigonDataInputBean.exclusionTerms}" styleClass="w-full" placeholder="blog,forum,archive"/>
+                                        <small class="block text-500 mt-1">#{sessionBean.localeBundle['data_import.tab.website.exclusions.hint']}</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </p:tab>
+                    </p:tabView>
 
-                    <p:spacer height="20"/>
+                    <p:divider/>
 
-                    <h:panelGroup layout="block" id="uploadFileName">
-                        <p:outputLabel value="#{text['general.message.uploaded_file']}: #{umigonDataInputBean.uploadedFileName}" rendered="#{not empty umigonDataInputBean.uploadedFileName}"/>
-                    </h:panelGroup>
-
-                    <p:spacer height="20"/>
-
-                    <p:commandButton id="proceedButton"
-                                     value="#{text['general.verbs.proceed_to_parameters']}"
-                                     action="#{umigonDataInputBean.proceedToParameters}"
-                                     disabled="#{!umigonDataInputBean.dataReady}"
-                                     styleClass="btn btn-primary"/>
-                </h:form>
-            </p:panel>
-            <ui:include src="/WEB-INF/includes/footer.xhtml"/>
-        </h:body>
-    </f:view>
+                    <div class="flex justify-content-end mt-4">
+                        <p:commandButton value="#{sessionBean.localeBundle['data_import.start_analysis_button']}"
+                                         action="#{umigonDataInputBean.proceedToParameters()}"
+                                         styleClass="ui-button-primary"
+                                         icon="pi pi-arrow-right"
+                                         iconPos="right"
+                                         ajax="false"/>
+                    </div>
+                </div>
+            </h:form>
+        </div>
+        <ui:include src="/WEB-INF/includes/footer.xhtml" />
+    </h:body>
 </html>

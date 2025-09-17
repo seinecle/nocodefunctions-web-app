@@ -23,8 +23,13 @@ import org.primefaces.model.file.UploadedFile;
 @ViewScoped
 public class UmigonDataInputBean implements Serializable {
 
+    private int selectedTab;
     private String jobId;
-    private String uploadedFileName;
+    private String exclusionTerms;
+    private String url;
+    private String websiteUrl;
+    private int maxUrlsToCrawl = 10;
+    private final List<String> uploadedFileNames = new ArrayList<>();
 
     @Inject
     ApplicationPropertiesBean applicationProperties;
@@ -38,7 +43,9 @@ public class UmigonDataInputBean implements Serializable {
     @PostConstruct
     public void init() {
         this.jobId = null;
-        this.uploadedFileName = null;
+        this.url = null;
+        this.websiteUrl = null;
+        this.uploadedFileNames.clear();
         UmigonState.AwaitingParameters awaitingParameters = new UmigonState.AwaitingParameters(
                 null, // jobId to be set later
                 "en", // default language
@@ -48,23 +55,38 @@ public class UmigonDataInputBean implements Serializable {
     }
 
     public void handleFileUpload(FileUploadEvent event) {
-        if (event.getFile() == null) {
-            sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "File Upload Error", "No file was uploaded.");
+        if (event.getFile() == null || event.getFile().getFileName() == null || event.getFile().getFileName().isBlank()) {
+            sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "File Upload Error", "No file was selected or the file is empty.");
             return;
         }
-        UmigonDataSource dataSource = new UmigonDataSource.FileUpload(event.getFile());
-        uploadedFileName = event.getFile().getFileName();
+        UmigonDataSource dataSource = new UmigonDataSource.FileUpload(List.of(event.getFile()));
+        processUmigonDataSource(dataSource);
+        uploadedFileNames.add(event.getFile().getFileName());
+    }
+
+    public void processWebPage() {
+        if (url == null || url.isBlank()) {
+            sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "Input Error", "Please provide a valid URL.");
+            return;
+        }
+        UmigonDataSource dataSource = new UmigonDataSource.WebPage(url);
+        processUmigonDataSource(dataSource);
+    }
+
+    public void processWebSite() {
+        if (websiteUrl == null || websiteUrl.isBlank()) {
+            sessionBean.addMessage(FacesMessage.SEVERITY_WARN, "Input Error", "Please provide a valid website URL.");
+            return;
+        }
+        UmigonDataSource dataSource = new UmigonDataSource.WebSite(websiteUrl, maxUrlsToCrawl, exclusionTerms);
         processUmigonDataSource(dataSource);
     }
 
     private void processUmigonDataSource(UmigonDataSource dataSource) {
-
+        // Create a new job ID if this is the first data processing action
         if (this.jobId == null) {
             this.jobId = UUID.randomUUID().toString().substring(0, 10);
         }
-
-        sessionBean.sendFunctionPageReport(Globals.Names.UMIGON.name());
-
         Path jobDirectory = applicationProperties.getTempFolderFullPath().resolve(jobId);
         try {
             Files.createDirectories(jobDirectory);
@@ -72,23 +94,35 @@ public class UmigonDataInputBean implements Serializable {
             throw new NocodeApplicationException("An IO error occurred", ex);
         }
 
-        ImportersService.PreparationResult result;
-        if (dataSource instanceof UmigonDataSource.FileUpload fileUpload) {
-            result = importersService.handleFileUpload(List.of(fileUpload.file()), jobId, Globals.Names.UMIGON);
-        } else {
-            throw new IllegalArgumentException("Unsupported data source type");
-        }
+        sessionBean.sendFunctionPageReport(Globals.Names.UMIGON.name());
+
+        ImportersService.PreparationResult result = switch (dataSource) {
+            case UmigonDataSource.FileUpload(List<UploadedFile> files) ->
+                importersService.handleFileUpload(files, jobId, Globals.Names.UMIGON);
+            case UmigonDataSource.WebPage(String url) ->
+                importersService.parseWebPage(url, jobId);
+            case UmigonDataSource.WebSite(String rootUrl, int maxUrls, String exclusionTermsParams) ->
+                importersService.crawlWebSite(rootUrl, maxUrls, exclusionTerms, jobId);
+        };
 
         if (result instanceof ImportersService.PreparationResult.Failure failure) {
             sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Data Preparation Failed", failure.errorMessage());
-        } else if (dataSource instanceof UmigonDataSource.FileUpload fileUploadVar) {
-            sessionBean.addMessage(FacesMessage.SEVERITY_INFO, "Success", fileUploadVar.file().getFileName() + " has been added to your dataset.");
+        } else {
+            String successMessage = switch (dataSource) {
+                case UmigonDataSource.FileUpload f ->
+                    f.files().getFirst().getFileName() + " has been added to your dataset.";
+                case UmigonDataSource.WebPage w ->
+                    "The web page content has been added to your dataset.";
+                case UmigonDataSource.WebSite ws ->
+                    "The website content has been added to your dataset.";
+            };
+            sessionBean.addMessage(FacesMessage.SEVERITY_INFO, "Success", successMessage);
         }
     }
 
     public String proceedToParameters() {
         if (jobId == null) {
-            sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Error", "You must first upload a file.");
+            sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Error", "You must first import at least one data source.");
             return null;
         }
 
@@ -99,10 +133,6 @@ public class UmigonDataInputBean implements Serializable {
         return "umigon.xhtml?faces-redirect=true";
     }
 
-    public boolean isDataReady() {
-        return this.jobId != null;
-    }
-
     public String getJobId() {
         return jobId;
     }
@@ -111,7 +141,47 @@ public class UmigonDataInputBean implements Serializable {
         this.jobId = jobId;
     }
 
-    public String getUploadedFileName() {
-        return uploadedFileName;
+    public List<String> getUploadedFileNames() {
+        return uploadedFileNames;
+    }
+
+    public int getSelectedTab() {
+        return selectedTab;
+    }
+
+    public void setSelectedTab(int selectedTab) {
+        this.selectedTab = selectedTab;
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
+    }
+
+    public String getWebsiteUrl() {
+        return websiteUrl;
+    }
+
+    public void setWebsiteUrl(String websiteUrl) {
+        this.websiteUrl = websiteUrl;
+    }
+
+    public int getMaxUrlsToCrawl() {
+        return maxUrlsToCrawl;
+    }
+
+    public void setMaxUrlsToCrawl(int maxUrlsToCrawl) {
+        this.maxUrlsToCrawl = maxUrlsToCrawl;
+    }
+
+    public String getExclusionTerms() {
+        return exclusionTerms;
+    }
+
+    public void setExclusionTerms(String exclusionTerms) {
+        this.exclusionTerms = exclusionTerms;
     }
 }
