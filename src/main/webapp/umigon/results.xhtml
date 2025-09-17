@@ -62,7 +62,7 @@
                         onclick="PrimeFaces.monitorDownload(start, stop);"
                         icon="pi pi-arrow-down" styleClass="p-mr-2">
 
-                        <p:fileDownload value="#{umigonBean.fileToSave}"/>
+                        <p:fileDownload value="#{umigonResultsBean.fileToSave}"/>
                     </p:commandButton>
 
                     <p:spacer width="10"/>
@@ -72,8 +72,8 @@
                         <p:dataTable
                             id ="resultsTable"
                             var="doc" 
-                            value="#{umigonBean.results}" 
-                            filteredValue="#{umigonBean.filteredDocuments}" 
+                            value="#{umigonResultsBean.results}" 
+                            filteredValue="#{umigonResultsBean.filteredDocuments}" 
                             widgetVar="resultsTableWidgetVar" paginator="true" 
                             rows ="200"
                             rowIndexVar="rowId"
@@ -86,7 +86,7 @@
                                 <f:facet name="filter">
                                     <p:selectOneMenu onchange="PF('resultsTableWidgetVar').filter()" styleClass="custom-filter">
                                         <f:selectItem itemLabel="#{text['general.small_words.all']}" itemValue="#{null}" noSelectionOption="true" />
-                                        <f:selectItems value="#{umigonBean.sentiments}"/>
+                                        <f:selectItems value="#{umigonResultsBean.sentiments}"/>
                                     </p:selectOneMenu>
                                 </f:facet>
                                 <h:outputText value="#{doc.categoryLocalizedPlainText}"/>
@@ -97,7 +97,7 @@
                             <p:column headerText="#{text['general.small_words.why']} 🤔">
                                 <p:commandLink style="text-align: center;font-size: 80%"
                                                value="#{text['general.small_words.why']} 🤔"
-                                               actionListener="#{umigonBean.showExplanation(rowId)}"
+                                               actionListener="#{umigonResultsBean.showExplanation(rowId)}"
                                                rendered="#{!doc.showExplanation}"
                                                update="resultsTable"
                                                oncomplete="PF('resultsTableWidgetVar').filter()"/>
@@ -111,7 +111,7 @@
                                 </div>
                                 <p:commandLink style="text-align: center;font-size: 80%;"
                                                value="#{text['general.verbs.hide']} ↩️"
-                                               actionListener="#{umigonBean.hideExplanation(rowId)}"
+                                               actionListener="#{umigonResultsBean.hideExplanation(rowId)}"
                                                rendered="#{doc.showExplanation}"
                                                update="resultsTable"
                                                oncomplete="PF('resultsTableWidgetVar').filter()"/>
@@ -121,7 +121,7 @@
                             <p:column headerText="#{text['general.verbs.signal_error']}">
                                 <p:commandButton style="text-align: center;font-size: 80%" 
                                                  value="#{text['general.verbs.signal_error']}"
-                                                 actionListener="#{umigonBean.signal(rowId)}" 
+                                                 actionListener="#{umigonResultsBean.signal(rowId)}" 
                                                  update="resultsTable"
                                                  rendered ="#{!doc.flaggedAsFalseLabel}"
                                                  oncomplete="PF('resultsTableWidgetVar').filter()">

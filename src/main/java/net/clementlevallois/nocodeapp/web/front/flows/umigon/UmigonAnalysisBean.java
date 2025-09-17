@@ -32,6 +32,26 @@ public class UmigonAnalysisBean implements Serializable {
         }
     }
 
+    public String getSelectedLanguage() {
+        if (sessionBean.getFlowState() instanceof UmigonState.AwaitingParameters p) {
+            return p.selectedLanguage();
+        }
+        return "en";
+    }
+
+    public void setSelectedLanguage(String language) {
+        if (sessionBean.getFlowState() instanceof UmigonState.AwaitingParameters p) {
+            sessionBean.setFlowState(p.withSelectedLanguage(language));
+        }
+    }
+
+    public int getMaxCapacity() {
+        if (sessionBean.getFlowState() instanceof UmigonState.AwaitingParameters p) {
+            return p.maxCapacity();
+        }
+        return 0;
+    }
+
     public void runAnalysis() {
         if (sessionBean.getFlowState() instanceof UmigonState.AwaitingParameters params) {
             if (params.jobId() == null || params.jobId().isBlank()) {

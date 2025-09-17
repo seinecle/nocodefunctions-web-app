@@ -38,9 +38,9 @@
             <p:spacer height="20"/>
                <div class="flex w-full gap-4 flew-wrap">
                     <div class="sm:w-[70%] flex flex-col">
- 
+
                     <p:panel>
-                        #{text['general.message.max_items_capacity_to_analyze']} #{umigonBean.maxCapacity}
+                        #{text['general.message.max_items_capacity_to_analyze']} #{umigonAnalysisBean.maxCapacity}
                         <br/>
                         <br/>
                         <i>#{text['general.message.please_use_api_for_bigger_capacity']}</i>
@@ -50,15 +50,15 @@
                         <br/>
                         <br/>
                         <h:form>
-                            <p:selectOneListbox id="lang" value="#{umigonBean.selectedLanguage}" style="width: 50px !important">
+                            <p:selectOneListbox id="lang" value="#{umigonAnalysisBean.selectedLanguage}" style="width: 50px !important">
                                 <f:selectItem itemLabel="#{text['general.languages.english']}" itemValue="en"/>
                                 <f:selectItem itemLabel="#{text['general.languages.french']}" itemValue="fr"/>
                                 <f:selectItem itemLabel="#{text['general.languages.spanish']}" itemValue="es">
                                 </f:selectItem>
-                                <p:ajax event="change" update="@this" />
+                                <p:ajax event="change" update="@form" />
                             </p:selectOneListbox>
                         </h:form>
-                    </p:panel> 
+                    </p:panel>
                     <div>
                         <p:spacer height="20"/>
                     </div>
@@ -67,19 +67,18 @@
                             <!--RUN ANALYSIS BUTTON-->
                             <p:commandButton
                                 id="computeButton"
-                                value="#{text['general.verbs.compute']}"
+                                value="#{umigonAnalysisBean.runButtonText}"
+                                disabled="#{umigonAnalysisBean.runButtonDisabled}"
                                 widgetVar="umigonButton"
-                                action="#{umigonBean.runAnalysis}"
-                                onclick="PF('pbAjaxLong').start();PF('umigonButton').disable()"
+                                action="#{umigonAnalysisBean.runAnalysis}"
                                 update=":notifications"
                                 styleClass="btn btn-primary"/>
                             <br/>
                             <br/>
-
+                            <p:poll interval="3" listener="#{umigonAnalysisBean.pollingListener}" rendered="#{umigonAnalysisBean.runButtonDisabled}"/>
                             <!--PROGRESS BAR FOR RUN ANALYSIS-->
-                            <p:progressBar id="pb" widgetVar="pbAjaxLong" ajax="true" value="#{umigonBean.progress}"
-                                           labelTemplate="{value}%" styleClass="p-mt-3" global="false" interval="500">
-                                <p:ajax event="complete" update=":notifications"/>
+                            <p:progressBar id="pb" widgetVar="pbAjaxLong" ajax="true" value="#{umigonAnalysisBean.progress}"
+                                           labelTemplate="{value}%" styleClass="p-mt-3" global="false" interval="1000">
                             </p:progressBar>
                         </p:panel>
                     </h:form>
