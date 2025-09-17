@@ -97,12 +97,12 @@ public class UmigonDataInputBean implements Serializable {
         sessionBean.sendFunctionPageReport(Globals.Names.UMIGON.name());
 
         ImportersService.PreparationResult result = switch (dataSource) {
-            case UmigonDataSource.FileUpload(List<UploadedFile> files) ->
-                importersService.handleFileUpload(files, jobId, Globals.Names.UMIGON);
-            case UmigonDataSource.WebPage(String url) ->
-                importersService.parseWebPage(url, jobId);
-            case UmigonDataSource.WebSite(String rootUrl, int maxUrls, String exclusionTermsParams) ->
-                importersService.crawlWebSite(rootUrl, maxUrls, exclusionTerms, jobId);
+            case UmigonDataSource.FileUpload fileUpload ->
+                importersService.handleFileUpload(fileUpload.files(), jobId, Globals.Names.UMIGON);
+            case UmigonDataSource.WebPage webPage ->
+                importersService.parseWebPage(webPage.url(), jobId);
+            case UmigonDataSource.WebSite webSite ->
+                importersService.crawlWebSite(webSite.rootUrl(), webSite.maxUrls(), webSite.exclusionTerms(), jobId);
         };
 
         if (result instanceof ImportersService.PreparationResult.Failure failure) {
