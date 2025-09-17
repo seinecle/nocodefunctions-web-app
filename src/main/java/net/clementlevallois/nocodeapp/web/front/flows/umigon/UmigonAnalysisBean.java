@@ -28,7 +28,7 @@ public class UmigonAnalysisBean implements Serializable {
     @PostConstruct
     public void init() {
         if (sessionBean.getFlowState() == null) {
-            FacesUtils.redirectTo("umigon-import.html");
+            FacesUtils.redirectTo("umigon-import.xhtml");
         }
     }
 
@@ -72,7 +72,7 @@ public class UmigonAnalysisBean implements Serializable {
         if (sessionBean.getFlowState() instanceof UmigonState.Processing processingState) {
             sessionBean.setFlowState(umigonService.checkCompletion(processingState));
             if (sessionBean.getFlowState() instanceof UmigonState.ResultsReady) {
-                FacesUtils.redirectTo("results.html");
+                FacesUtils.redirectTo("results.xhtml");
             }
         }
         return null;

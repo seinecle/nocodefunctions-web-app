@@ -36,7 +36,7 @@ public class UmigonResultsBean implements Serializable {
         if (sessionBean.getFlowState() instanceof UmigonState.ResultsReady rr) {
             this.results = rr;
         } else {
-            FacesUtils.redirectTo("umigon-import.html");
+            FacesUtils.redirectTo("umigon-import.xhtml");
         }
     }
 

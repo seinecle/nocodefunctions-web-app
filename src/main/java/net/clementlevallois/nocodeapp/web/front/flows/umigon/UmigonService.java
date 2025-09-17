@@ -2,10 +2,15 @@ package net.clementlevallois.nocodeapp.web.front.flows.umigon;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import java.io.IOException;
 import java.net.http.HttpResponse;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import net.clementlevallois.functions.model.FunctionUmigon;
+import net.clementlevallois.umigon.model.classification.Document;
+import net.clementlevallois.nocodeapp.web.front.utils.Converters;
 import net.clementlevallois.functions.model.Globals;
 import net.clementlevallois.nocodeapp.web.front.MessageFromApi;
 import net.clementlevallois.nocodeapp.web.front.WatchTower;
@@ -115,8 +120,18 @@ public class UmigonService {
     }
 
     private FlowState processResults(UmigonState.Processing currentState) {
-        // Logic to process results and return a ResultsReady state
-        // This is a placeholder for the actual implementation
-        return new UmigonState.ResultsReady(currentState.jobId(), List.of());
+        Path jobDirectory = applicationProperties.getTempFolderFullPath().resolve(currentState.jobId());
+        Path resultsPath = jobDirectory.resolve("umigon_results.bin");
+        if (!Files.exists(resultsPath)) {
+            return new FlowFailed(currentState.jobId(), currentState.parameters(), "Result file not found.");
+        }
+        try {
+            byte[] resultsBytes = Files.readAllBytes(resultsPath);
+            @SuppressWarnings("unchecked")
+            List<Document> documents = (List<Document>) Converters.byteArrayDeserializerForAnyObject(resultsBytes);
+            return new UmigonState.ResultsReady(currentState.jobId(), documents);
+        } catch (IOException | ClassNotFoundException e) {
+            return new FlowFailed(currentState.jobId(), currentState.parameters(), "Error reading or deserializing results.");
+        }
     }
 }

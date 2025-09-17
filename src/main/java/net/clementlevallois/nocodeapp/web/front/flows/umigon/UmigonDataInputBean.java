@@ -96,7 +96,7 @@ public class UmigonDataInputBean implements Serializable {
             sessionBean.setFlowState(p.withJobId(this.jobId));
         }
 
-        return "umigon-analyze.xhtml?faces-redirect=true";
+        return "umigon.xhtml?faces-redirect=true";
     }
 
     public boolean isDataReady() {
