@@ -80,9 +80,9 @@ public class UmigonDataInputBean implements Serializable {
         }
 
         if (result instanceof ImportersService.PreparationResult.Failure failure) {
-            sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Data Preparation Failed", failure.error());
-        } else if (dataSource instanceof UmigonDataSource.FileUpload fileUpload) {
-            sessionBean.addMessage(FacesMessage.SEVERITY_INFO, "Success", fileUpload.file().getFileName() + " has been added to your dataset.");
+            sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Data Preparation Failed", failure.errorMessage());
+        } else if (dataSource instanceof UmigonDataSource.FileUpload fileUploadVar) {
+            sessionBean.addMessage(FacesMessage.SEVERITY_INFO, "Success", fileUploadVar.file().getFileName() + " has been added to your dataset.");
         }
     }
 
