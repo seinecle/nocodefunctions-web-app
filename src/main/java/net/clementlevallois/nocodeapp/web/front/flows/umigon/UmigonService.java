@@ -3,6 +3,7 @@ package net.clementlevallois.nocodeapp.web.front.flows.umigon;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import java.net.http.HttpResponse;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import net.clementlevallois.functions.model.FunctionUmigon;
 import net.clementlevallois.functions.model.Globals;
@@ -10,12 +11,10 @@ import net.clementlevallois.nocodeapp.web.front.MessageFromApi;
 import net.clementlevallois.nocodeapp.web.front.WatchTower;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.ApplicationPropertiesBean;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
-import net.clementlevallois.nocodeapp.web.front.exceptions.NocodeApplicationException;
 import net.clementlevallois.nocodeapp.web.front.flows.base.FlowFailed;
 import net.clementlevallois.nocodeapp.web.front.flows.base.FlowState;
 import net.clementlevallois.nocodeapp.web.front.http.MicroserviceHttpClient;
 import net.clementlevallois.nocodeapp.web.front.http.RemoteLocal;
-import net.clementlevallois.umigon.model.classification.Document;
 
 @ApplicationScoped
 public class UmigonService {
@@ -34,22 +33,32 @@ public class UmigonService {
         String callbackURL = RemoteLocal.getDomain() + RemoteLocal.getInternalMessageApiEndpoint() + FunctionUmigon.ENDPOINT;
 
         var requestBuilder = microserviceClient.api().post(FunctionUmigon.ENDPOINT);
-
+        String owner = applicationProperties.getPrivateProperties().getProperty("pwdOwner");
         for (FunctionUmigon.QueryParams param : FunctionUmigon.QueryParams.values()) {
             String value = switch (param) {
-                case TEXT_LANG -> currentState.selectedLanguage();
-                case EXPLANATION -> "on";
-                case SHORTER -> "true";
-                case OUTPUT_FORMAT -> "bytes";
-                case EXPLANATION_LANG -> sessionBean.getCurrentLocale().toLanguageTag();
+                case TEXT_LANG ->
+                    currentState.selectedLanguage();
+                case EXPLANATION ->
+                    "on";
+                case SHORTER ->
+                    "true";
+                case OWNER ->
+                    owner;
+                case OUTPUT_FORMAT ->
+                    "bytes";
+                case EXPLANATION_LANG ->
+                    sessionBean.getCurrentLocale().toLanguageTag();
             };
+
             requestBuilder.addQueryParameter(param.name(), value);
         }
 
         for (Globals.GlobalQueryParams param : Globals.GlobalQueryParams.values()) {
             String value = switch (param) {
-                case JOB_ID -> jobId;
-                case CALLBACK_URL -> callbackURL;
+                case JOB_ID ->
+                    jobId;
+                case CALLBACK_URL ->
+                    callbackURL;
             };
             requestBuilder.addQueryParameter(param.name(), value);
         }
