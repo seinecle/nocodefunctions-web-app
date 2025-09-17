@@ -4,17 +4,13 @@ import jakarta.annotation.PostConstruct;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import jakarta.faces.context.FacesContext;
 import jakarta.faces.model.SelectItem;
-import java.io.InputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
-import net.clementlevallois.nocodeapp.web.front.utils.Converters;
 import net.clementlevallois.nocodeapp.web.front.utils.FacesUtils;
 import net.clementlevallois.umigon.model.classification.Document;
 import org.primefaces.model.DefaultStreamedContent;
@@ -26,6 +22,9 @@ public class UmigonResultsBean implements Serializable {
 
     @Inject
     private SessionBean sessionBean;
+
+    @Inject
+    UmigonService umigonService;
 
     private UmigonState.ResultsReady results;
 
@@ -75,22 +74,8 @@ public class UmigonResultsBean implements Serializable {
         if (results == null || results.results().isEmpty()) {
             return new DefaultStreamedContent();
         }
-        try {
-            byte[] documentsAsByteArray = Converters.byteArraySerializerForAnyObject(results.results());
-
-            try (InputStream is = new ByteArrayInputStream(documentsAsByteArray)) {
-                return DefaultStreamedContent.builder()
-                        .name("results_umigon.xlsx")
-                        .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-                        .stream(() -> is)
-                        .build();
-            } catch (IOException e) {
-                throw new RuntimeException("Error creating StreamedContent from results", e);
-            }
-
-        } catch (IOException ex) {
-            throw new RuntimeException("Error serializing results", ex);
-        }
+        StreamedContent createExcelFileFromBinaryResults = umigonService.createExcelFileFromBinaryResults(sessionBean.getCurrentLocale().getLanguage(), results.jobId());
+        return createExcelFileFromBinaryResults;
     }
 
     public List<Document> getFilteredDocuments() {

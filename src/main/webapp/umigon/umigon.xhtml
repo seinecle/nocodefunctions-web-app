@@ -75,7 +75,7 @@
                                 styleClass="btn btn-primary"/>
                             <br/>
                             <br/>
-                            <p:poll interval="3" listener="#{umigonAnalysisBean.pollingListener}" rendered="#{umigonAnalysisBean.runButtonDisabled}" update=":notifications"/>
+                            <p:poll interval="3" listener="#{umigonAnalysisBean.pollingListener}" update=":notifications"/>
                             <!--PROGRESS BAR FOR RUN ANALYSIS-->
                             <p:progressBar id="pb" widgetVar="pbAjaxLong" ajax="true" value="#{umigonAnalysisBean.progress}"
                                            labelTemplate="{value}%" styleClass="p-mt-3" global="false" interval="1000">

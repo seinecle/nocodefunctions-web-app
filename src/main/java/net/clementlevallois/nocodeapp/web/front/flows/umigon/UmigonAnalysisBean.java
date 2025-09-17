@@ -61,9 +61,9 @@ public class UmigonAnalysisBean implements Serializable {
             logBean.addOneNotificationFromString(sessionBean.getLocaleBundle().getString("general.message.starting_analysis"));
             FlowState processingState = umigonService.startAnalysis(params);
             if (processingState instanceof FlowFailed) {
-                sessionBean.setFlowState(processingState);
-            } else {
                 sessionBean.addMessage(FacesMessage.SEVERITY_ERROR, "Error", "Could not start analysis.");
+            } else {
+                sessionBean.setFlowState(processingState);
             }
         }
     }
@@ -72,7 +72,7 @@ public class UmigonAnalysisBean implements Serializable {
         if (sessionBean.getFlowState() instanceof UmigonState.Processing processingState) {
             sessionBean.setFlowState(umigonService.checkCompletion(processingState));
             if (sessionBean.getFlowState() instanceof UmigonState.ResultsReady) {
-                FacesUtils.redirectTo("results.xhtml");
+                FacesUtils.redirectTo("results.html");
             }
         }
         return null;

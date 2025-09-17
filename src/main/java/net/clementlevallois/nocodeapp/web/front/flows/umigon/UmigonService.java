@@ -2,15 +2,19 @@ package net.clementlevallois.nocodeapp.web.front.flows.umigon;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
 import java.net.http.HttpResponse;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.atomic.AtomicReference;
 import net.clementlevallois.functions.model.FunctionUmigon;
 import net.clementlevallois.umigon.model.classification.Document;
-import net.clementlevallois.nocodeapp.web.front.utils.Converters;
 import net.clementlevallois.functions.model.Globals;
 import net.clementlevallois.nocodeapp.web.front.MessageFromApi;
 import net.clementlevallois.nocodeapp.web.front.WatchTower;
@@ -20,6 +24,8 @@ import net.clementlevallois.nocodeapp.web.front.flows.base.FlowFailed;
 import net.clementlevallois.nocodeapp.web.front.flows.base.FlowState;
 import net.clementlevallois.nocodeapp.web.front.http.MicroserviceHttpClient;
 import net.clementlevallois.nocodeapp.web.front.http.RemoteLocal;
+import org.primefaces.model.DefaultStreamedContent;
+import org.primefaces.model.StreamedContent;
 
 @ApplicationScoped
 public class UmigonService {
@@ -37,7 +43,7 @@ public class UmigonService {
         String jobId = currentState.jobId();
         String callbackURL = RemoteLocal.getDomain() + RemoteLocal.getInternalMessageApiEndpoint() + FunctionUmigon.ENDPOINT;
 
-        var requestBuilder = microserviceClient.api().post(FunctionUmigon.ENDPOINT);
+        var requestBuilder = microserviceClient.api().get(FunctionUmigon.ENDPOINT_DATA_FROM_FILE);
         String owner = applicationProperties.getPrivateProperties().getProperty("pwdOwner");
         for (FunctionUmigon.QueryParams param : FunctionUmigon.QueryParams.values()) {
             String value = switch (param) {
@@ -93,6 +99,13 @@ public class UmigonService {
 
     public FlowState checkCompletion(UmigonState.Processing currentState) {
         String jobId = currentState.jobId();
+        Globals globals = new Globals(applicationProperties.getTempFolderFullPath());
+        Path resultsPath = globals.getResultInBinaryFormat(currentState.jobId());
+
+        if (Files.exists(resultsPath)) {
+            return processResults(currentState);
+        }
+
         var messagesFromApi = WatchTower.getDequeAPIMessages().get(jobId);
         if (messagesFromApi != null) {
             for (MessageFromApi msg : messagesFromApi) {
@@ -120,18 +133,48 @@ public class UmigonService {
     }
 
     private FlowState processResults(UmigonState.Processing currentState) {
-        Path jobDirectory = applicationProperties.getTempFolderFullPath().resolve(currentState.jobId());
-        Path resultsPath = jobDirectory.resolve("umigon_results.bin");
-        if (!Files.exists(resultsPath)) {
-            return new FlowFailed(currentState.jobId(), currentState.parameters(), "Result file not found.");
-        }
+        Globals globals = new Globals(applicationProperties.getTempFolderFullPath());
+        Path resultsPath = globals.getResultInBinaryFormat(currentState.jobId());
         try {
             byte[] resultsBytes = Files.readAllBytes(resultsPath);
-            @SuppressWarnings("unchecked")
-            List<Document> documents = (List<Document>) Converters.byteArrayDeserializerForAnyObject(resultsBytes);
-            return new UmigonState.ResultsReady(currentState.jobId(), documents);
+            try (ByteArrayInputStream bais = new ByteArrayInputStream(resultsBytes); ObjectInputStream ois = new ObjectInputStream(bais)) {
+
+                @SuppressWarnings("unchecked")
+                List<Document> documents = (List<Document>) ois.readObject();
+                return new UmigonState.ResultsReady(currentState.jobId(), documents);
+            }
         } catch (IOException | ClassNotFoundException e) {
             return new FlowFailed(currentState.jobId(), currentState.parameters(), "Error reading or deserializing results.");
         }
     }
+
+    public StreamedContent createExcelFileFromBinaryResults(String lang, String jobId) {
+        if (jobId == null || jobId.isEmpty()) {
+            return new DefaultStreamedContent();
+        }
+        try {
+            CompletableFuture<byte[]> futureBytes = microserviceClient.exportService().get("xlsx/umigon")
+                    .addQueryParameter("lang", lang)
+                    .addQueryParameter("jobId", jobId)
+                    .sendAsyncAndGetBody(HttpResponse.BodyHandlers.ofByteArray());
+
+            byte[] body = futureBytes.join();
+
+            InputStream is = new ByteArrayInputStream(body);
+            return DefaultStreamedContent.builder()
+                    .name("results_topics.xlsx")
+                    .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                    .stream(() -> is)
+                    .build();
+
+        } catch (CompletionException cex) {
+            Throwable cause = cex.getCause();
+            String errorMessage = "Error exporting data to Excel: " + cause.getMessage();
+            if (cause instanceof MicroserviceHttpClient.MicroserviceCallException msce) {
+                errorMessage = "Error exporting data: Status " + msce.getStatusCode() + ", " + msce.getErrorBody();
+            }
+            return new DefaultStreamedContent();
+        }
+    }
+
 }

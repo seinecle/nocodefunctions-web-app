@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import net.clementlevallois.functions.model.Globals;
@@ -17,7 +18,6 @@ import net.clementlevallois.nocodeapp.web.front.backingbeans.SessionBean;
 import net.clementlevallois.nocodeapp.web.front.exceptions.NocodeApplicationException;
 import net.clementlevallois.nocodeapp.web.front.io.ImportersService;
 import org.primefaces.event.FileUploadEvent;
-import org.primefaces.model.file.UploadedFile;
 
 @Named
 @ViewScoped

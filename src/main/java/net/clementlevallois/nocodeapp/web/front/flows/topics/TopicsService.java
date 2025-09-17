@@ -193,7 +193,7 @@ public class TopicsService {
             return new DefaultStreamedContent();
         }
         try {
-            CompletableFuture<byte[]> futureBytes = microserviceClient.exportService().post("xlsx/topics")
+            CompletableFuture<byte[]> futureBytes = microserviceClient.exportService().get("xlsx/topics")
                     .addQueryParameter("nbTerms", "10")
                     .addQueryParameter("jobId", jobId)
                     .sendAsyncAndGetBody(HttpResponse.BodyHandlers.ofByteArray());
