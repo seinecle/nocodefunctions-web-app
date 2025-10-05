@@ -1,0 +1,595 @@
+<html 
+    lang="#{localeBean.languageTag}"
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="jakarta.faces.html"
+    xmlns:f="jakarta.faces.core"
+    xmlns:p="http://primefaces.org/ui"
+    xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+    <f:view locale="#{localeBean.currentLocale}">
+        <f:metadata>
+            <f:viewParam name="lang" value="#{localeBean.languageTag}" />
+            <f:viewParam name="hash" value="#{sessionBean.hash}" />
+            <f:viewParam name="stripe_session_id" value="#{stripeBean.urlParamStripeSessionIdReturnedByCheckout}" />
+            <f:viewAction action="#{sessionBean.init()}" />
+            <f:event type="preRenderView" listener="#{stripeBean.decisionTreeBeforeRenderingIndexPage()}" />
+        </f:metadata>
+        <h:head>
+            <!-- Primary Meta Tags -->
+            <title>#{text['index.title']}</title>
+            <meta name="description" content="#{text['index.description']}"/>
+
+            <meta http-equiv="content-language" content="en-us"/>
+            <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+            <meta http-equiv="cleartype" content="on"/>
+            <meta name="HandheldFriendly" content="true"/>
+            <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+            <!-- Open Graph / Facebook -->
+            <meta property="og:type" content="website"/>
+            <meta property="og:site_name" content="Nocode functions"/>
+            <meta property="og:url" content="https://nocodefunctions.com/"/>
+            <meta property="og:title" content="#{text['index.tagline']}"/>
+            <meta property="og:description" content="#{text['index.description']}"/>
+            <meta property="og:image" content="/images/workflow_medium.jpg"/>
+
+            <!-- Twitter -->
+            <meta property="twitter:card" content="summary_large_image"/>
+            <meta property="twitter:url" content="https://nocodefunctions.com/"/>
+            <meta property="twitter:title" content="#{text['index.tagline']}"/>
+            <meta property="twitter:description" content="#{text['index.description']}"/>
+            <meta property="twitter:image" content="/images/workflow_medium.jpg"/>
+
+            <link rel="apple-touch-icon" sizes="180x180" href="#{resource['images/favicons/apple-touch-icon.png']}"/>
+            <link rel="icon" type="image/png" sizes="32x32" href="#{resource['images/favicons/favicon-32x32.png']}"/>
+            <link rel="icon" type="image/png" sizes="16x16" href="#{resource['images/favicons/favicon-16x16.png']}"/>
+            <link rel="manifest" href="#{resource['images/favicons/site.webmanifest']}"/>
+            <link rel="mask-icon" href="#{resource['images/favicons/safari-pinned-tab.svg']}" color="#5bbad5"/>
+            <link rel="shortcut icon" href="#{resource['images/favicons/favicon.ico']}"/>
+            <meta name="msapplication-TileColor" content="#da532c"/>
+            <meta name="msapplication-config" content="#{resource['images/favicons/browserconfig.xml']}"/>
+            <meta name="theme-color" content="#ffffff"/>
+            <link rel="shortcut icon" type="image/x-icon" href="#{resource['images/favicons/favicon.ico']}"/>
+
+            <p:outputLabel value="#{sessionBean.noRobot}" escape="false" rendered="#{sessionBean.testServer}"/>
+        </h:head>
+        <h:body class="bg-gray-50">
+            <h:outputStylesheet name="css/output.css" />
+            <p:panel styleClass="shadow-sm rounded-md bg-white mb-3">
+                <ui:include src="/WEB-INF/includes/header.xhtml" />
+                <div class="flex flex-col text-center">
+                    <div class="text-5xl">🔎</div>
+                    <h1 class="text-3xl font-bold">Nocode functions</h1>
+                    <h3 class="text-xl">#{text['index.tagline']}</h3>
+                    <h4 class="text-lg opacity-60">#{text['index.argument1']}</h4>
+                    <h4 class="text-lg opacity-60">#{text['index.argument2']}</h4>
+                </div>
+            </p:panel>
+            <div class="h-3"></div>
+            <p:panel styleClass="shadow-sm rounded-md bg-white mb-3">
+                <div class="w-full flex justify-center">
+                    <h3 class="text-center text-xl opacity-80">#{text['index.calltochooseafunction']}</h3>
+                </div>
+                <div class="h-5"></div>
+                <div class="flex justify-center flex-wrap gap-4" align="center">
+                    <div class="flex justify-center items-center">
+                        <p:button id="umigonButton" value="#{text['index.button.umigon']}" outcome="umigon/sentiment_analysis_tool.html" style="padding: 30px;" class="bg-blue-500 hover:bg-blue-600 text-white font-bold p-12 rounded mx-2 mb-2"/>
+                    </div>
+                    <div class="flex justify-center items-center">
+                        <p:button id="organicButton" value="#{text['index.button.organic']}" outcome="organic/organic_listening_voice_of_customer_tool.html" style="padding: 30px;" styleClass="bg-blue-500 hover:bg-blue-600 text-white font-bold rounded mx-2 mb-2"/>
+                    </div>
+                    <div class="flex justify-center items-center">
+                        <p:button id="cowoButton" value="#{text['index.button.cowo']}" outcome="workflow-cowo/semantic_networks_tool.html?function=workflow-cowo" style="padding: 30px;" styleClass="bg-blue-500 hover:bg-blue-600 text-white font-bold rounded mx-2 mb-2"/>
+                    </div>
+                    <div class="flex justify-center items-center">
+                        <p:button id="topicsButton" value="#{text['index.button.topics']}" outcome="topics/topic_extraction_tool.html" style="padding: 30px;" styleClass="bg-blue-500 hover:bg-blue-600 text-white font-bold rounded mx-2 mb-2"/>
+                    </div>
+                    <div class="flex justify-center items-center">
+                        <p:button id="coocButton" value="#{text['index.button.cooc']}" outcome="cooc/cooc.html" style="padding: 30px;" styleClass="bg-blue-500 hover:bg-blue-600 text-white font-bold rounded mx-2 mb-2"/>
+                    </div>
+                    <div class="flex justify-center items-center">
+                        <p:button id="simButton" value="#{text['index.button.sim']}" outcome="sim/similarities-network-builder-tool.html" style="padding: 30px;" styleClass="bg-blue-500 hover:bg-blue-600 text-white font-bold rounded mx-2 mb-2"/>
+                    </div>
+                    <div class="flex justify-center items-center">
+                        <p:button value="Convert GEXF → VOSviewer"
+                                  id="gexf2vvButton" 
+                                  outcome="gexf2vv/gexf2vv-import.html"
+                                   style="padding: 30px;"
+                                   styleClass="bg-blue-500 hover:bg-blue-600 text-white font-bold rounded mx-2 mb-2"/>
+                    </div>
+                    <div class="flex justify-center items-center">
+                        <p:button value="Convert VOSviewer → GEXF"
+                                  id="vv2gexfButton" 
+                                  outcome="vv2gexf/vv2gexf-import.html"
+                                   style="padding: 30px;"
+                                   styleClass="bg-blue-500 hover:bg-blue-600 text-white font-bold rounded mx-2 mb-2"/>
+                    </div>
+                    <div class="flex justify-center items-center">
+                        <p:button id="spatializeButton" value="#{text['index.button.spatialize']}" outcome="spatialize/spatialize-import.html" style="padding: 30px;" styleClass="bg-blue-500 hover:bg-blue-600 text-white font-bold rounded mx-2 mb-2"/>
+                    </div>
+                    <div class="flex justify-center items-center">
+                        <p:button id="pdf_region_extractorButton" value="#{text['index.button.pdfregionextractor']}" outcome="regionextractor/regionextractor.html" style="padding: 30px;" styleClass="bg-blue-500 hover:bg-blue-600 text-white font-bold rounded mx-2 mb-2"/>
+                    </div>
+                </div>
+            </p:panel>
+            <p:panel>
+                <div class="surface-section">
+                    <p:panel rendered ="#{not sessionBean.hashPresent}" style="border: none; background: none; padding: 0; margin: 0;">
+                        <div id="input-email-container-anchor" class="input-email-container text-center my-6 relative border-round-3xl border-solid border-white p-3  w-full sm:w-[50%] mx-auto" style="border-width: 12px;">
+                            <h:form>
+                                <p:inputText
+                                    id="msg" 
+                                    value="#{stripeBean.emailInputField}"
+                                    placeholder="#{text['general.message.type_your_email']}"
+                                    styleClass="w-full mb-3 border-round-3xl border-solid #{component.valid ? '' : 'email-field-alert'}"
+                                    style="border-width: 12px;"
+                                    required="true"
+                                    requiredMessage="#{text['general.message.email_is_required']}">
+                                </p:inputText>
+                                <div class="h-3 w-3"></div>
+                                <p:commandButton
+                                    value="#{text['general.message.send_email_and_choose_plan']}"
+                                    action="#{stripeBean.sendPricingInfoOrLoginUrlViaEmail()}"
+                                    oncomplete="if (args &amp;&amp; !args.validationFailed) PF('checkYourEmails').show()"
+                                    process="@form"
+                                    update="@form"
+                                    styleClass="w-full mb-1 glow-button"
+                                    disabled="#{stripeBean.emailButtonIsDisabled}">
+                                </p:commandButton>
+                                <p:dialog id="email-sent" header="📧 nocodefunctions.com" widgetVar="checkYourEmails" modal="true" resizable="false">
+                                    #{text['general.message.check_your_email_at']}
+                                    <div class="h-2">
+                                    </div>
+                                    <b><h:outputText value="#{stripeBean.emailInputField}"/></b>
+                                    <div class="h-2"></div>
+                                    #{text['general.message.click_link_in_email_for_enhanced_access']} #{text['general.message.check_spam_folder']}
+                                </p:dialog>
+                            </h:form>
+                            <div class="h-3 w-3"></div>
+                            <p class="text-xs text-blue">#{text['billing.message.we_will_log_you_in_if_you_have_an_account']}</p>
+                        </div>
+                    </p:panel>
+                </div>
+                <div class="flex flex-col flex-wrap md:flex-row m-6 gap-4 w-full sm:w-[50%] mx-auto">
+                    <!-- Pro Plan -->
+                    <div class="mb-6 md:mb-0 mr-0 md:mr-4 flex flex-col flex-grow-1">
+                        <div class="bg-gray-500 text-center p-3">
+                            <div class="h-4rem flex align-items-center justify-content-center">
+                                <div class="flex-1 text-0 text-white font-bold text-sm p-2">
+                                    #{text['billing.message.enhanced_access']}
+                                </div>
+                            </div>
+                            <div class="text-white mb-3">
+                                <div class="text-2xl font-bold">Pro</div>
+                                <span class="font-bold text-5xl">9$</span>
+                                <span class="text-2xl"> / #{text['general.nouns.month']}</span>
+                            </div>
+                        </div>
+                        <div class="flex mt-2 mb-2">
+                            <p:button href="#input-email-container-anchor" value="#{text['general.verbs.subscribe']}"
+                                      styleClass="flex-1 ui-button-secondary w-6 m-1 rounded-sm bg-gray-950"/>
+                        </div>
+                        <div class="bg-gray-500 p-4 flex flex-col flex-grow-1"
+                             style="box-shadow: inset 0px 2px 8px rgba(0, 0, 0, 0.1); border-radius: 0 0 6px 6px; border-color: #d61a1a;">
+                            <div class="text-white font-bold line-height-3 mb-4">100 #{text['billing.noun.units']}</div>
+                            <ul class="list-none p-0 m-0 mb-5 text-white">
+                                <li class="flex align-items-center mb-3">
+                                    <i class="pi pi-check mr-2 text-sm"/>
+                                    <span>#{text['billing.message.increased_crawling']}</span>
+                                </li>
+                                <li class="flex align-items-center mb-3">
+                                    <i class="pi pi-check mr-2 text-sm"/>
+                                    <span>#{text['billing.message.more_exciting_features_to_come']}</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <!-- Patron Plan -->
+                    <div class="mb-6 md:mb-0 mr-0 md:mr-4 flex flex-col flex-grow-1">
+                        <div class="bg-slate-700 text-white text-center p-3"
+                             style="border-radius: 6px 6px 0 0; border-color: #d61a1a;">
+                            <div class="h-4rem flex align-items-center items-center justify-content-center">
+                                <div class="flex-1 text-0 font-bold text-sm inline-block p-2">
+                                    #{text['billing.message.become_patron_support_nocodefunctions']}
+                                </div>
+                            </div>
+                            <div class="text-white mb-3">
+                                <div class="text-2xl font-bold">#{text['billing.message.become_patron']}</div>
+                                <span class="font-bold text-5xl">19$</span>
+                                <span class="text-2xl"> / #{text['general.nouns.month']}</span>
+                            </div>
+                        </div>
+                        <div class="flex justify-content-center mt-2 mb-2">
+                            <p:button href="#input-email-container-anchor" value="#{text['general.verbs.subscribe']}"
+                                      styleClass="flex-1 ui-button-secondary w-6 m-1 rounded-sm bg-gray-950"/>
+                        </div>
+                        <div class="bg-slate-700 p-4 flex flex-col flex-grow-1"
+                             style="box-shadow: inset 0px 2px 8px rgba(0, 0, 0, 0.1); border-radius: 0 0 6px 6px; border-color: #d61a1a;">
+                            <ul class="list-none p-0 m-0 mb-5 text-white">
+                                <li class="flex align-items-center mb-3">
+                                    <i class="pi pi-check mr-2 text-sm"/>
+                                    <span>#{text['billing.message.all_features_pro_plan']}</span>
+                                </li>
+                                <li class="flex align-items-center mb-3">
+                                    <i class="pi pi-check mr-2 text-sm"/>
+                                    <span>#{text['billing.message.early_access_new_features']}</span>
+                                </li>
+                                <li class="flex align-items-center mb-3">
+                                    <i class="pi pi-check mr-2 text-sm"/>
+                                    <span>#{text['billing.message.become_patron_support_nocodefunctions.details']}</span>
+                                </li>
+                                <li class="flex align-items-center mb-3">
+                                    <i class="pi pi-check mr-2 text-sm"/>
+                                    <div class="flex flex-col">
+                                        <div class="flex">
+                                            <p:outputLabel value="#{text['billing.message.strengthen_open_source_given_back_to_gephi.title']}" escape="false"/>
+                                        </div>
+                                        <div class="flex">
+                                            <p:outputLabel class="text-xs"
+                                                           value="#{text['billing.message.strengthen_open_source_given_back_to_gephi.details']}"
+                                                           escape="false"
+                                                           styleClass="outputLabel-blue-links"/>
+                                        </div>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </p:panel>
+            <p:spacer height="10" width="10"/>
+            <p:panel>
+                <h3 style="text-align: center; opacity: 0.8;">#{text['index.ordosometestshere']}</h3>
+                <p:spacer height="10" width="10"/>
+                <div class="flex justify-center flex-wrap gap-4" align="center">
+                    <p:card style="width: 30rem; margin-bottom: 2em">
+                        <f:facet name="title">
+                            #{text['index.testsentimentanalysisuk']}
+                        </f:facet>
+                        <h:form id="umigonEN">
+                            <div class="ui-inputgroup">
+                                <p:inputText id="umigonTestEN" value="#{cardTestBean.umigonTestInputEN}"/>
+                                <p:commandButton
+                                    value="#{text['general.verbs.compute']}"
+                                    widgetVar="umigonButtonEN"
+                                    action="#{cardTestBean.runUmigonTestEN}"
+                                    update="resultEN umigonEN:explanationEN"
+                                    styleClass="btn btn-primary"/>
+                            </div>
+                            <p:outputPanel id="resultEN">   
+                                <h:outputText value="#{cardTestBean.umigonResultEN}" style="width:40px;"/>
+                                <p:spacer width="15"/>
+                                <p:commandLink
+                                    value="#{text['general.small_words.why']} 🤔"
+                                    action="#{cardTestBean.setShowENExplanation(true)}"
+                                    rendered="#{cardTestBean.renderSignalEN}"
+                                    update="umigonEN:explanationEN"/>
+                                <p:spacer width="15"/>
+                                <p:commandLink
+                                    style="text-align: center;font-size: 80%"
+                                    value="#{text['general.verbs.signal_error']}"
+                                    action="#{cardTestBean.signalUmigonEN}"
+                                    update="resultEN"
+                                    rendered="#{cardTestBean.renderSignalEN}"/>
+                                <p:spacer width="20" rendered ="#{cardTestBean.reportResultENRendered}"/>
+                                <p:outputLabel style="font-size: 80%" value="#{text['general.message.reportsent']}" rendered ="#{cardTestBean.reportResultENRendered}" />
+                                <p:graphicImage name="images/check.png" width="24px" rendered ="#{cardTestBean.reportResultENRendered}"  alt="check mark"/>
+                                <p:outputPanel id="explanationEN">
+                                    <br/>
+                                    <br/>
+                                    <small>
+                                        <h:outputText value="#{cardTestBean.umigonResultENExplanation}" escape="false" rendered="#{cardTestBean.showENExplanation}"/>
+                                    </small>
+                                    <br/>
+                                    <br/>
+                                    <p:commandLink
+                                        value="#{text['general.verbs.hide']} ↩️"
+                                        action="#{cardTestBean.setShowENExplanation(false)}"
+                                        rendered="#{cardTestBean.showENExplanation}"
+                                        update="umigonEN:explanationEN"/>
+                                    <p:spacer width="15"/>
+                                </p:outputPanel>
+                            </p:outputPanel>
+                        </h:form>
+                    </p:card>
+                    <p:spacer width="10"/>
+                    <p:card style="width: 30rem; margin-bottom: 2em">
+                        <f:facet name="title">
+                            #{text['index.testsentimentanalysisfr']}
+                        </f:facet>
+                        <h:form id="umigonFR">
+                            <div class="ui-inputgroup">
+                                <p:inputText id="umigonTestFR" value="#{cardTestBean.umigonTestInputFR}"/>
+                                <p:commandButton
+                                    value="#{text['general.verbs.compute']}"
+                                    widgetVar="umigonButtonFR"
+                                    action="#{cardTestBean.runUmigonTestFR}"
+                                    update="resultFR umigonFR:explanationFR"
+                                    styleClass="btn btn-primary"/>
+                            </div>
+                            <p:outputPanel id="resultFR">
+                                <h:outputText value="#{cardTestBean.umigonResultFR}" style="width:40px;"/>
+                                <p:spacer width="15"/>
+                                <p:commandLink
+                                    value="#{text['general.small_words.why']} 🤔"
+                                    action="#{cardTestBean.setShowFRExplanation(true)}"
+                                    rendered="#{cardTestBean.renderSignalFR}"
+                                    update="umigonFR:explanationFR"/>
+                                <p:spacer width="15"/>
+                                <p:commandLink
+                                    style="text-align: center;font-size: 80%"
+                                    value="#{text['general.verbs.signal_error']}"
+                                    action="#{cardTestBean.signalUmigonFR}" update="resultFR"
+                                    rendered="#{cardTestBean.renderSignalFR}"/>
+                                <p:spacer width="20" rendered ="#{cardTestBean.reportResultFRRendered}"/>
+                                <p:outputLabel style="font-size: 80%" value="#{text['general.message.reportsent']}" rendered ="#{cardTestBean.reportResultFRRendered}" />
+                                <p:graphicImage name="images/check.png" width="24px" rendered ="#{cardTestBean.reportResultFRRendered}" alt="check mark"/>
+                                <p:outputPanel id="explanationFR">
+                                    <br/>
+                                    <br/>
+                                    <small>
+                                        <h:outputText value="#{cardTestBean.umigonResultFRExplanation}" escape="false" rendered="#{cardTestBean.showFRExplanation}"/>
+                                    </small>
+                                    <br/>
+                                    <br/>
+                                    <p:commandLink
+                                        value="#{text['general.verbs.hide']} ↩️"
+                                        action="#{cardTestBean.setShowFRExplanation(false)}"
+                                        rendered="#{cardTestBean.showFRExplanation}"
+                                        update="umigonFR:explanationFR"/>
+                                    <p:spacer width="15"/>
+                                </p:outputPanel>
+                            </p:outputPanel>
+                        </h:form>
+                    </p:card>
+                    <p:spacer width="10"/>
+                    <p:card style="width: 30rem; margin-bottom: 2em">
+                        <f:facet name="title">
+                            #{text['index.testsentimentanalysises']}
+                        </f:facet>
+                        <h:form id="umigonES">
+                            <div class="ui-inputgroup">
+                                <p:inputText id="umigonTestES" value="#{cardTestBean.umigonTestInputES}"/>
+                                <p:commandButton
+                                    value="#{text['general.verbs.compute']}"
+                                    widgetVar="umigonButtonES"
+                                    action="#{cardTestBean.runUmigonTestES}"
+                                    update="resultES umigonES:explanationES"
+                                    styleClass="btn btn-primary"/>
+                            </div>
+                            <p:outputPanel id="resultES">
+                                <h:outputText value="#{cardTestBean.umigonResultES}" style="width:40px;"/>
+                                <p:spacer width="15"/>
+                                <p:commandLink
+                                    value="#{text['general.small_words.why']} 🤔"
+                                    action="#{cardTestBean.setShowESExplanation(true)}"
+                                    rendered="#{cardTestBean.renderSignalES}"
+                                    update="umigonES:explanationES"/>
+                                <p:spacer width="15"/>
+                                <p:commandLink 
+                                    style="text-align: center;font-size: 80%"
+                                    value="#{text['general.verbs.signal_error']}"
+                                    action="#{cardTestBean.signalUmigonES}" update="resultES"
+                                    rendered="#{cardTestBean.renderSignalES}"/>
+                                <p:spacer width="20" rendered ="#{cardTestBean.reportResultESRendered}"/>
+                                <p:outputLabel style="font-size: 80%" value="#{text['general.message.reportsent']}" rendered ="#{cardTestBean.reportResultESRendered}" />
+                                <p:graphicImage name="images/check.png" width="24px" rendered ="#{cardTestBean.reportResultESRendered}" alt="check mark"/>
+                                <p:outputPanel id="explanationES">
+                                    <br/>
+                                    <br/>
+                                    <small>
+                                        <h:outputText value="#{cardTestBean.umigonResultESExplanation}" escape="false" rendered="#{cardTestBean.showESExplanation}"/>
+                                    </small>
+                                    <br/>
+                                    <br/>
+                                    <p:commandLink
+                                        value="#{text['general.verbs.hide']} ↩️"
+                                        action="#{cardTestBean.setShowESExplanation(false)}"
+                                        rendered="#{cardTestBean.showESExplanation}"
+                                        update="umigonES:explanationES"/>
+                                    <p:spacer width="15"/>
+                                </p:outputPanel>
+                            </p:outputPanel>
+                        </h:form>
+                    </p:card>
+                </div>
+                <div class="flex justify-center flex-wrap gap-4" align="center">
+                    <p:card style="width: 30rem; margin-bottom: 2em">
+                        <f:facet name="title">
+                            #{text['index.button.organic']}<br/>
+                            <small>#{text['index.testorganic.analysisforUK']}</small>
+                        </f:facet>
+                        <h:form id="organicEN">
+                            <div class="ui-inputgroup">
+                                <p:inputText id="organicTestEN" value="#{cardTestBean.organicTestInputEN}"/>
+                                <p:commandButton
+                                    value="#{text['general.verbs.compute']}"
+                                    widgetVar="organicButtonEN"
+                                    action="#{cardTestBean.runOrganicTestEN}"
+                                    update="resultOrganicEN organicEN:explanationOrganicEN"
+                                    styleClass="btn btn-primary"/>
+                            </div>
+                            <p:outputPanel id="resultOrganicEN">
+                                <h:outputText value="#{cardTestBean.organicResultEN}" style="width:40px;"/>
+                                <p:spacer width="15"/>
+                                <p:commandLink
+                                    value="#{text['general.small_words.why']} 🤔"
+                                    action="#{cardTestBean.setShowENExplanationOrganic(true)}"
+                                    rendered="#{cardTestBean.renderSignalOrganicEN}"
+                                    update="organicEN:explanationOrganicEN"/>
+                                <p:spacer width="15"/>
+                                <p:commandLink style="text-align: center;font-size: 80%"
+                                               value="#{text['general.verbs.signal_error']}"
+                                               action="#{cardTestBean.signalOrganicEN}"
+                                               update="resultOrganicEN"
+                                               rendered="#{cardTestBean.renderSignalOrganicEN}"/>
+                                <p:spacer width="20" rendered ="#{cardTestBean.reportResultENOrganicRendered}"/>
+                                <p:outputLabel style="font-size: 80%" value="#{text['general.message.reportsent']}" rendered ="#{cardTestBean.reportResultENOrganicRendered}" />
+                                <p:graphicImage name="images/check.png" width="24px" rendered ="#{cardTestBean.reportResultENOrganicRendered}" alt="check mark"/>
+                                <p:outputPanel id="explanationOrganicEN">
+                                    <br/>
+                                    <br/>
+                                    <small>
+                                        <h:outputText value="#{cardTestBean.organicResultENExplanation}" escape="false" rendered="#{cardTestBean.showENExplanationOrganic}"/>
+                                    </small>
+                                    <br/>
+                                    <br/>
+                                    <p:commandLink
+                                        value="#{text['general.verbs.hide']} ↩️"
+                                        action="#{cardTestBean.setShowENExplanationOrganic(false)}"
+                                        rendered="#{cardTestBean.showENExplanationOrganic}"
+                                        update="organicEN:explanationOrganicEN"/>
+                                    <p:spacer width="15"/>
+                                </p:outputPanel>
+                            </p:outputPanel>
+                        </h:form>
+                    </p:card>
+                    <p:spacer width="10"/>
+                    <p:card style="width: 30rem; margin-bottom: 2em">
+                        <f:facet name="title">
+                            #{text['index.button.organic']}<br/>
+                            <small>#{text['index.testorganic.analysisforFR']}</small>
+                        </f:facet>
+                        <h:form id="organicFR">
+                            <div class="ui-inputgroup">
+                                <p:inputText id="organicTestFR" value="#{cardTestBean.organicTestInputFR}"/>
+                                <p:commandButton value="#{text['general.verbs.compute']}" widgetVar="organicButtonFR" action="#{cardTestBean.runOrganicTestFR}" update="resultOrganicFR organicFR:explanationOrganicFR" styleClass="btn btn-primary"/>
+                            </div>
+                            <p:outputPanel id="resultOrganicFR">
+                                <h:outputText value="#{cardTestBean.organicResultFR}" style="width:40px;"/>
+                                <p:spacer width="15"/>
+                                <p:commandLink value="#{text['general.small_words.why']} 🤔" action="#{cardTestBean.setShowFRExplanationOrganic(true)}" rendered="#{cardTestBean.renderSignalOrganicFR}" update="organicFR:explanationOrganicFR"/>
+                                <p:spacer width="15"/>
+                                <p:commandLink style="text-align: center;font-size: 80%"
+                                               value="#{text['general.verbs.signal_error']}"
+                                               action="#{cardTestBean.signalOrganicFR}"
+                                               update="resultOrganicFR"
+                                               rendered="#{cardTestBean.renderSignalOrganicFR}"/>
+                                <p:spacer width="20" rendered ="#{cardTestBean.reportResultFROrganicRendered}"/>
+                                <p:outputLabel style="font-size: 80%" value="#{text['general.message.reportsent']}" rendered ="#{cardTestBean.reportResultFROrganicRendered}" />
+                                <p:graphicImage name="images/check.png" width="24px" rendered ="#{cardTestBean.reportResultFROrganicRendered}" alt="check mark"/>
+                                <p:outputPanel id="explanationOrganicFR">
+                                    <br/>
+                                    <br/>
+                                    <small>
+                                        <h:outputText value="#{cardTestBean.organicResultFRExplanation}" escape="false" rendered="#{cardTestBean.showFRExplanationOrganic}"/>
+                                    </small>
+                                    <br/>
+                                    <br/>
+                                    <p:commandLink
+                                        value="#{text['general.verbs.hide']} ↩️"
+                                        action="#{cardTestBean.setShowFRExplanationOrganic(false)}"
+                                        rendered="#{cardTestBean.showFRExplanationOrganic}"
+                                        update="organicFR:explanationOrganicFR"/>
+                                    <p:spacer width="15"/>
+                                </p:outputPanel>
+                            </p:outputPanel>
+                        </h:form>
+                    </p:card>
+                </div>
+                <p:spacer height="20"/>
+            </p:panel>
+            <p:spacer height="10" width="10"/>
+            <p:panel>
+                <h3 style="text-align: center;opacity: 0.8;">
+                    <small>
+                        #{text['index.togetstarted']}
+                        <br/>
+                        <br/>
+                        #{text['index.togettheresults']}
+                    </small>
+                </h3>
+                <p><p:spacer height="20"/></p>
+                <div id="reduce-desktop"> 
+                    <h:graphicImage name="images/workflow_medium.jpg"  alt="workflow for nocode function"/>
+                </div>
+                <br/>
+            </p:panel>
+            <p:spacer height="10" width="10"/>
+            <p:panel>
+                <div class="w-full flex justify-center">
+                    <h3 class="text-center text-xl opacity-80">#{text['index.calltochooseafunction']}</h3>
+                </div>
+                <div class="h-5"></div>
+                <div class="flex justify-center flex-wrap gap-4" align="center">
+                    <div class="flex justify-center items-center">
+                        <p:button id="umigonButton_2" value="#{text['index.button.umigon']}" outcome="umigon/sentiment_analysis_tool.html" style="padding: 30px;" class="bg-blue-500 hover:bg-blue-600 text-white font-bold p-12 rounded mx-2 mb-2"/>
+                    </div>
+                    <div class="flex justify-center items-center">
+                        <p:button id="organicButton_2" value="#{text['index.button.organic']}" outcome="organic/organic_listening_voice_of_customer_tool.html" style="padding: 30px;" styleClass="bg-blue-500 hover:bg-blue-600 text-white font-bold rounded mx-2 mb-2"/>
+                    </div>
+                    <div class="flex justify-center items-center">
+                        <p:button id="cowoButton_2" value="#{text['index.button.cowo']}" outcome="workflow-cowo/semantic_networks_tool.html" style="padding: 30px;" styleClass="bg-blue-500 hover:bg-blue-600 text-white font-bold rounded mx-2 mb-2"/>
+                    </div>
+                    <div class="flex justify-center items-center">
+                        <p:button id="topicsButton_2" value="#{text['index.button.topics']}" outcome="topics/topic_extraction_tool.html" style="padding: 30px;" styleClass="bg-blue-500 hover:bg-blue-600 text-white font-bold rounded mx-2 mb-2"/>
+                    </div>
+                    <div class="flex justify-center items-center">
+                        <p:button id="coocButton_2" value="#{text['index.button.cooc']}" outcome="cooc/cooccurrences-to-network-tool.html" style="padding: 30px;" styleClass="bg-blue-500 hover:bg-blue-600 text-white font-bold rounded mx-2 mb-2"/>
+                    </div>
+                    <div class="flex justify-center items-center">
+                        <p:button id="simButton_2" value="#{text['index.button.sim']}" outcome="sim/similarities-network-builder-tool.html" style="padding: 30px;" styleClass="bg-blue-500 hover:bg-blue-600 text-white font-bold rounded mx-2 mb-2"/>
+                    </div>
+                    <div class="flex justify-center items-center">
+                        <p:button value="Convert GEXF → VOSviewer"
+                                  id="gexf2vvButton_2" 
+                                  outcome="gexf2vv/gexf2vv-import.html"
+                                   style="padding: 30px;"
+                                   styleClass="bg-blue-500 hover:bg-blue-600 text-white font-bold rounded mx-2 mb-2"/>
+                    </div>
+                    <div class="flex justify-center items-center">
+                        <p:button value="Convert VOSviewer → GEXF"
+                                  id="vv2gexfButton_2" 
+                                  outcome="vv2gexf/vv2gexf-import.html"
+                                   style="padding: 30px;"
+                                   styleClass="bg-blue-500 hover:bg-blue-600 text-white font-bold rounded mx-2 mb-2"/>
+                    </div>
+                    <div class="flex justify-center items-center">
+                        <p:button id="spatializeButton_2" value="#{text['index.button.spatialize']}" outcome="spatialize/spatialize-import.html" style="padding: 30px;" styleClass="bg-blue-500 hover:bg-blue-600 text-white font-bold rounded mx-2 mb-2"/>
+                    </div>
+                    <div class="flex justify-center items-center">
+                        <p:button id="pdf_region_extractorButton_2" value="#{text['index.button.pdfregionextractor']}" outcome="regionextractor/regionextractor.html" style="padding: 30px;" styleClass="bg-blue-500 hover:bg-blue-600 text-white font-bold rounded mx-2 mb-2"/>
+                    </div>
+                </div>
+            </p:panel>
+            <p:spacer height="10" width="10"/>
+            <p:panel>
+                <p:fieldset legend="#{text['index.datapolicy']}">
+                    <p>
+                        <small>
+                            <h:outputText value="#{text['index.datapolicy.forallotherfunctions.details']}" escape="false" />
+                        </small>
+                    </p>
+                    <br/>
+                    <p:link style="text-align: center;font-size: 80%"
+                            value="#{text['index.datapolicy.link']}"
+                            href="tos.html?faces-redirect=true"/>
+                </p:fieldset>
+                <p:spacer height="20"/>
+                <p:fieldset legend="#{text['index.academic.title']}">
+                    <p>
+                        <small>
+                            <h:outputText value="#{text['index.academic.citations']}" escape="false" />
+                        </small>
+                    </p>
+                </p:fieldset>
+                <p:spacer height="20"/>
+                <span  id="Pricing">
+                    <p:fieldset legend="#{text['header.menu.pricing']}">
+                        <p>
+                            <small>
+                                <h:outputText value="#{text['index.pricing.details']}" escape="false" />
+                            </small>
+                        </p>
+                    </p:fieldset>
+                </span>
+                <p:spacer height="20"/>
+                <p:fieldset legend="#{text['header.menu.acknowledgements']}">
+                    <p:link style="text-align: center;font-size: 80%"
+                            value="#{text['index.acknowledgements.details']}"
+                            href="acknowledgements.html?faces-redirect=true"/>
+                </p:fieldset>
+            </p:panel>
+            <ui:include src="/WEB-INF/includes/footer.xhtml" />
+        </h:body>
+    </f:view>
+</html>

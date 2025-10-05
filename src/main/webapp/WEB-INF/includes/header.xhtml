@@ -1,0 +1,38 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition 
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:f="http://xmlns.jcp.org/jsf/core"
+    xmlns:h="http://xmlns.jcp.org/jsf/html"
+    xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+    xmlns:p="http://primefaces.org/ui">
+    <h:form id="header">
+        <p:growl id="messages" showDetail="true"/>
+        
+        <div class="flex justify-end flex-wrap">
+            <p:outputPanel class="flex items-center justify-center m-2" rendered="#{sessionBean.hashPresent}">
+                <p>✨ credits: #{stripeBean.remainingCredits}</p>                
+            </p:outputPanel>
+            <p:spacer width="10"/>
+            <div class="flex items-center justify-center m-2">
+                <p><a href="https://nocodefunctions.com">Nocode functions</a> 🔎</p>
+            </div>
+            <p:spacer width="10"/>
+            <div class="flex items-center justify-center m-2">
+                <p:commandButton id="dynaButton" value="Menu" type="button" icon="pi pi-bars"/>
+                <p:menu overlay="true" trigger="dynaButton" my="left top" at="left bottom">
+                    <p:menuitem value="#{text['header.menu.home']}" action="#{sessionBean.logout}" icon="pi pi-home" rendered="#{not view.viewId.contains('index')}"/>
+                    <p:menuitem value="#{text['header.menu.whodevelopsit']}" action="/who.html?faces-redirect=true" icon="pi pi-user" rendered="#{not view.viewId.contains('who')}"/>
+                    <p:menuitem value="#{text['header.menu.why']}" action="/why.html?faces-redirect=true" icon="pi pi-question-circle" rendered="#{not view.viewId.contains('why')}"/>
+                    <p:menuitem value="#{text['header.menu.getsupport']}" action="/support.html?faces-redirect=true" icon="pi pi-phone" rendered="#{not view.viewId.contains('support')}"/>
+                    <p:menuitem value="#{text['header.menu.blog']}" url="https://nocodefunctions.com/blog" target="_blank" icon="pi pi-pencil"/>
+                    <p:menuitem value="#{text['header.menu.pricing']}" action="#{indexPageBean.navigateToPricing}" icon="pi pi-dollar"/>
+                    <p:menuitem value="#{text['header.menu.billing']}" url="#{stripeBean.urlBillingPortal}" target="_blank" rendered="#{sessionBean.isHashPresent()}" icon="pi pi-wallet"/>
+                    <p:menuitem value="#{text['header.menu.isitpopular']}" url="https://public.nocodefunctions.com" target="_blank" icon="pi pi-chart-line"/>
+                    <p:menuitem value="Github" url="https://github.com/seinecle/nocodefunctions" target="_blank" icon="pi pi-github"/>
+                    <p:menuitem value="#{text['header.menu.acknowledgements']}" action="/acknowledgements.html?faces-redirect=true" icon="pi pi-heart" rendered="#{not view.viewId.contains('acknowledgements')}"/>
+                </p:menu>
+            </div>
+        </div>
+    </h:form> 
+</ui:composition>

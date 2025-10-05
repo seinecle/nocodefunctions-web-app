@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html
+    lang="#{localeBean.languageTag}"
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="jakarta.faces.html"
+    xmlns:f="jakarta.faces.core"
+    xmlns:p="http://primefaces.org/ui"
+    xmlns:ui="jakarta.faces.facelets">
+    <f:view locale="#{localeBean.currentLocale}">
+        <f:metadata>
+            <f:viewParam name="lang" value="#{localeBean.languageTag}"/>
+            <f:viewParam name="email" value="#{stripeBean.urlParamEmail}"/>
+            <f:viewParam name="hash" value="#{sessionBean.hash}"/>
+            <f:event type="preRenderView" listener="#{stripeBean.populatePlanUrls}"/>
+            <f:viewAction action="#{sessionBean.init()}"/>
+        </f:metadata>
+        <h:head>
+            <title>#{text['header.menu.billing']}</title>
+            <meta name="description" content="#{text['index.description']}"/>
+            <meta http-equiv="content-language" content="en-us"/>
+            <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+            <meta http-equiv="cleartype" content="on"/>
+            <meta name="HandheldFriendly" content="true"/>
+            <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+            <meta property="og:type" content="website"/>
+            <meta property="og:site_name" content="nocodefunctions"/>
+            <meta property="og:url" content="https://nocodefunctions.com/"/>
+            <meta property="og:title" content="#{text['index.tagline']}"/>
+            <meta property="og:description" content="#{text['index.description']}"/>
+            <meta property="og:image" content="/images/workflow_medium.jpg"/>
+            <meta property="twitter:card" content="summary_large_image"/>
+            <meta property="twitter:url" content="https://nocodefunctions.com/"/>
+            <meta property="twitter:title" content="#{text['index.tagline']}"/>
+            <meta property="twitter:description" content="#{text['index.description']}"/>
+            <meta property="twitter:image" content="/images/workflow_medium.jpg"/>
+            <link rel="apple-touch-icon" sizes="180x180" href="#{resource['images/favicons/apple-touch-icon.png']}"/>
+            <link rel="icon" type="image/png" sizes="32x32" href="#{resource['images/favicons/favicon-32x32.png']}"/>
+            <link rel="icon" type="image/png" sizes="16x16" href="#{resource['images/favicons/favicon-16x16.png']}"/>
+            <link rel="manifest" href="#{resource['images/favicons/site.webmanifest']}"/>
+            <link rel="mask-icon" href="#{resource['images/favicons/safari-pinned-tab.svg']}" color="#5bbad5"/>
+            <link rel="shortcut icon" href="#{resource['images/favicons/favicon.ico']}"/>
+            <meta name="msapplication-TileColor" content="#da532c"/>
+            <meta name="msapplication-config" content="#{resource['images/favicons/browserconfig.xml']}"/>
+            <meta name="theme-color" content="#ffffff"/>
+            <meta name="robots" content="noindex"/>
+            <h:outputScript name="js/layout.js"/>
+            <h:outputScript name="js/primeblocks.js"/>
+            <h:outputScript name="js/prism.js"/>
+        </h:head>
+        <h:body class="bg-slate-50 font-sans antialiased">
+            <h:outputStylesheet name="css/output.css"/>
+            <h:outputStylesheet name="css/custom.css"/>
+            <ui:include src="/WEB-INF/includes/header.xhtml" />
+
+
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
+
+                <div class="text-center max-w-4xl mx-auto">
+                    <h1 class="text-4xl lg:text-5xl font-extrabold tracking-tight text-slate-900">
+                        Find a plan that's right for you
+                    </h1>
+                    <p class="mt-6 text-lg lg:text-xl text-slate-600 leading-relaxed">
+                        Start with a powerful free plan and upgrade as your projects grow. No hidden fees, just pure value.
+                    </p>
+                </div>
+
+                <div class="mt-16 grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-4xl mx-auto">
+
+                    <div class="flex flex-col bg-white rounded-2xl p-8 shadow-md border border-transparent transition-all duration-300 ease-in-out hover:shadow-xl hover:-translate-y-1 hover:border-blue-500">
+                        <div>
+                            <h3 class="text-xl font-semibold text-slate-900">Pro</h3>
+                            <p class="mt-2 text-base text-slate-600">#{text['billing.message.enhanced_access']}</p>
+                        </div>
+
+                        <div class="mt-6 flex items-baseline gap-x-2">
+                            <span class="text-3xl lg:text-4xl font-mono font-bold text-slate-900">$9</span>
+                            <span class="text-base text-slate-500">/ #{text['general.nouns.month']}</span>
+                        </div>
+
+                        <ul class="mt-8 space-y-4 text-slate-600 flex-grow">
+                            <li class="flex items-center">
+                                <span>100 #{text['billing.noun.units']}</span>
+                            </li>
+                            <li class="flex items-center">
+                                <span>#{text['billing.message.increased_crawling']}</span>
+                            </li>
+                            <li class="flex items-center">
+                                <span>#{text['billing.message.more_exciting_features_to_come']}</span>
+                            </li>
+                        </ul>
+
+                        <div class="mt-10">
+                            <p:button href="#{stripeBean.urlCheckoutMonthlyProPlan}" value="#{text['general.verbs.subscribe']}"
+                                      styleClass="w-full inline-flex items-center justify-center px-6 py-3 font-semibold rounded-xl bg-white text-slate-700 border border-slate-300 shadow-md transition-all duration-200 ease-in-out hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-500"/>
+                        </div>
+                    </div>
+
+                    <div class="relative flex flex-col bg-white rounded-2xl p-8 shadow-lg border-2 border-blue-600 transition-all duration-300 ease-in-out hover:shadow-xl hover:-translate-y-1">
+                        <div class="absolute top-0 -translate-y-1/2 left-1/2 -translate-x-1/2">
+                            <span class="inline-flex items-center px-4 py-1 bg-emerald-100 text-emerald-800 text-sm font-semibold rounded-full">
+                                Most Popular
+                            </span>
+                        </div>
+
+                        <div>
+                            <h3 class="text-xl font-semibold text-slate-900">#{text['billing.message.become_patron']}</h3>
+                            <p class="mt-2 text-base text-slate-600">#{text['billing.message.become_patron_support_nocodefunctions']}</p>
+                        </div>
+
+                        <div class="mt-6 flex items-baseline gap-x-2">
+                            <span class="text-3xl lg:text-4xl font-mono font-bold text-slate-900">$19</span>
+                            <span class="text-base text-slate-500">/ #{text['general.nouns.month']}</span>
+                        </div>
+
+                        <ul class="mt-8 space-y-4 text-slate-600 flex-grow">
+                            <li class="flex items-center">
+                                <span>#{text['billing.message.all_features_pro_plan']}</span>
+                            </li>
+                            <li class="flex items-center">
+                                <span>#{text['billing.message.early_access_new_features']}</span>
+                            </li>
+                            <li class="flex items-center">
+                                <span>#{text['billing.message.become_patron_support_nocodefunctions.details']}</span>
+                            </li>
+                            <li class="flex items-start">
+                                <div>
+                                    <p:outputLabel value="#{text['billing.message.strengthen_open_source_given_back_to_gephi.title']}" escape="false" styleClass="text-slate-600"/>
+                                    <p:outputLabel styleClass="block text-sm text-slate-500 mt-1" value="#{text['billing.message.strengthen_open_source_given_back_to_gephi.details']}" escape="false"/>
+                                </div>
+                            </li>
+                        </ul>
+
+                        <div class="mt-10">
+                            <p:button href="#{stripeBean.urlCheckoutMonthlyPatronPlan}" value="#{text['general.verbs.subscribe']}"
+                                      styleClass="w-full inline-flex items-center justify-center px-6 py-3 font-semibold rounded-xl bg-blue-600 text-white shadow-md transition-all duration-200 ease-in-out hover:bg-blue-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500"/>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-16 text-center">
+                    <p class="text-sm text-slate-500">
+                        #{text['billing.message.conditions_purchase']}
+                    </p>
+                </div>
+            </div>
+
+            <ui:include src="/WEB-INF/includes/footer.xhtml"/>
+        </h:body>
+    </f:view>
+</html>

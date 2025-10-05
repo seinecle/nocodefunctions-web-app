@@ -1,0 +1,107 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+    <h:head>
+        <title>#{sessionBean.localeBundle['umigon.sentiment_analysis_tool.title']}</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+        <meta name="robots" content="noindex"/>
+        <h:outputStylesheet name="css/output.css" />
+    </h:head>
+    <h:body>
+        <ui:include src="/WEB-INF/includes/header.xhtml"/>
+        <div class="layout-content">
+            <h:form id="umigonImportForm" enctype="multipart/form-data">
+                <p:growl id="growl" showDetail="true" skipDetailIfEqualsSummary="true" life="5000"/>
+
+                <div class="card">
+                    <div class="flex justify-content-between">
+                        <div>
+                            <p:outputLabel styleClass="text-900 font-medium" value="#{sessionBean.localeBundle['general.message.import_your_data']}"/>
+                            <p>
+                                <p:outputLabel styleClass="text-500" value="#{sessionBean.localeBundle['data_import.page.subheader']}"/>
+                            </p>
+                        </div>
+                    </div>
+                    <p:divider/>
+                    <p:tabView activeIndex="#{umigonDataInputBean.selectedTab}" styleClass="mt-3">
+                        <p:ajax event="tabChange" listener="#{umigonDataInputBean.setSelectedTab(e.activeIndex)}"/>
+
+                        <!-- File Upload Tab -->
+                        <p:tab>
+                            <f:facet name="title">
+                                <i class="pi pi-upload mr-2"/>
+                                <span>#{sessionBean.localeBundle['data_import.tab.files']}</span>
+                            </f:facet>
+                            <div class="p-4">
+                                <p class="text-gray-600 mb-4">
+                                    #{sessionBean.localeBundle['data_import.tab.files.description']}
+                                </p>
+                                <p:fileUpload mode="advanced"
+                                              skinSimple="true"
+                                              multiple="true"
+                                              listener="#{umigonDataInputBean.handleFileUpload}"
+                                              label="Choose Files"
+                                              allowTypes="/(\.|\/)(txt|csv|xlsx|json)$/"
+                                              sizeLimit="10000000" />
+                            </div>
+                        </p:tab>
+
+                        <!-- Web Page Tab -->
+                        <p:tab>
+                            <f:facet name="title">
+                                <i class="pi pi-globe mr-2"/>
+                                <span>#{sessionBean.localeBundle['data_import.tab.webpage']}</span>
+                            </f:facet>
+                            <div class="p-4">
+                                <p class="text-gray-600 mb-2">#{sessionBean.localeBundle['data_import.tab.webpage.description']}</p>
+                                <p:inputText value="#{umigonDataInputBean.url}" styleClass="w-full p-inputtext-lg" placeholder="https://example.com/article"/>
+                            </div>
+                        </p:tab>
+
+                        <!-- Website Crawl Tab -->
+                        <p:tab>
+                            <f:facet name="title">
+                                <i class="pi pi-sitemap mr-2"/>
+                                <span>#{sessionBean.localeBundle['data_import.tab.website']}</span>
+                            </f:facet>
+                            <div class="p-4">
+                                <p class="text-gray-600 mb-4">#{sessionBean.localeBundle['data_import.tab.website.description']}</p>
+                                <div class="formgrid grid">
+                                    <div class="field col-12 md:col-6">
+                                        <label for="rootUrl" class="block text-900 font-medium mb-2">#{sessionBean.localeBundle['data_import.tab.website.root_url']}</label>
+                                        <p:inputText id="rootUrl" value="#{umigonDataInputBean.websiteUrl}" styleClass="w-full" placeholder="https://example.com"/>
+                                    </div>
+                                    <div class="field col-12 md:col-6">
+                                        <label for="maxUrls" class="block text-900 font-medium mb-2">#{sessionBean.localeBundle['data_import.tab.website.max_pages']}</label>
+                                        <p:spinner id="maxUrls" value="#{umigonDataInputBean.maxUrlsToCrawl}" min="1" max="100" styleClass="w-full"/>
+                                    </div>
+                                    <div class="field col-12">
+                                        <label for="exclusions" class="block text-900 font-medium mb-2">#{sessionBean.localeBundle['data_import.tab.website.exclusions']}</label>
+                                        <p:inputText id="exclusions" value="#{umigonDataInputBean.exclusionTerms}" styleClass="w-full" placeholder="blog,forum,archive"/>
+                                        <small class="block text-500 mt-1">#{sessionBean.localeBundle['data_import.tab.website.exclusions.hint']}</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </p:tab>
+                    </p:tabView>
+
+                    <p:divider/>
+
+                    <div class="flex justify-content-end mt-4">
+                        <p:commandButton value="#{sessionBean.localeBundle['data_import.start_analysis_button']}"
+                                         action="#{umigonDataInputBean.proceedToParameters()}"
+                                         styleClass="ui-button-primary"
+                                         icon="pi pi-arrow-right"
+                                         iconPos="right"
+                                         ajax="false"/>
+                    </div>
+                </div>
+            </h:form>
+        </div>
+        <ui:include src="/WEB-INF/includes/footer.xhtml" />
+    </h:body>
+</html>

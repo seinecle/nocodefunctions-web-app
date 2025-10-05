@@ -1,0 +1,139 @@
+<html 
+    lang="#{localeBean.languageTag}"
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="jakarta.faces.html"
+    xmlns:f="jakarta.faces.core"
+    xmlns:p="http://primefaces.org/ui"
+    xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+    <f:view locale="#{localeBean.currentLocale}">
+
+        <h:head>
+            <title>#{text['umigon.sentiment_analysis_tool.title']}</title>
+            <meta name="description" content="#{text['umigon.sentiment_analysis_tool.description']}"/>
+            
+            <meta http-equiv="content-language" content="en-us"/>
+            <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+            <meta http-equiv="cleartype" content="on"/>
+            <meta name="HandheldFriendly" content="true"/>
+            <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+            <link rel="apple-touch-icon" sizes="180x180" href="#{resource['images/favicons/apple-touch-icon.png']}"/>
+            <link rel="icon" type="image/png" sizes="32x32" href="#{resource['images/favicons/favicon-32x32.png']}"/>
+            <link rel="icon" type="image/png" sizes="16x16" href="#{resource['images/favicons/favicon-16x16.png']}"/>
+            <link rel="manifest" href="#{resource['images/favicons/site.webmanifest']}"/>
+            <link rel="mask-icon" href="#{resource['images/favicons/safari-pinned-tab.svg']}" color="#5bbad5"/>
+            <link rel="shortcut icon" href="#{resource['images/favicons/favicon.ico']}"/>
+            <meta name="msapplication-TileColor" content="#da532c"/>
+            <meta name="msapplication-config" content="#{resource['images/favicons/browserconfig.xml']}"/>
+            <meta name="theme-color" content="#ffffff"/>
+            <link rel="shortcut icon" type="image/x-icon" href="#{resource['images/favicons/favicon.ico']}"/>
+            <meta name="robots" content="noindex"/>
+        </h:head>
+        <h:body>
+            <h:outputStylesheet name="css/output.css" />
+
+            <script type="text/javascript">
+                //<![CDATA[
+                function start() {
+                    PF('statusDialog').show();
+                }
+
+                function stop() {
+                    PF('statusDialog').hide();
+                }
+                //]]>
+            </script>
+
+            <p:dialog modal="true" widgetVar="statusDialog" header="#{text['general.message.wait_and_authorize_popup']}" draggable="false" closable="false"
+                      resizable="false">
+                <i class="pi pi-spinner pi-spin" style="font-size:3rem"></i>
+            </p:dialog>
+            <p:panel>
+                <ui:include src="/WEB-INF/includes/header.xhtml"/>
+                <h1>#{text['umigon.results.tagline']}</h1>
+            </p:panel>
+            <p:spacer height="10"/>
+            <p:panel>
+                <h:form target="_blank" id="formDownloadButton">
+                    <p:commandButton
+                        id="downloadButton"
+                        value="#{text['general.verbs.download_results']}"
+                        ajax="false"
+                        onclick="PrimeFaces.monitorDownload(start, stop);"
+                        icon="pi pi-arrow-down" styleClass="p-mr-2">
+
+                        <p:fileDownload value="#{umigonResultsBean.fileToSave}"/>
+                    </p:commandButton>
+
+                    <p:spacer width="10"/>
+                </h:form>
+                <h:form>
+                    <div class="card">
+                        <p:dataTable
+                            id ="resultsTable"
+                            var="doc" 
+                            value="#{umigonResultsBean.results}" 
+                            filteredValue="#{umigonResultsBean.filteredDocuments}" 
+                            widgetVar="resultsTableWidgetVar" paginator="true" 
+                            rows ="200"
+                            rowIndexVar="rowId"
+                            >
+                            <p:column headerText="#{text['general.message.text_provided_as_input']}" >
+                                <h:outputText value="#{doc.text}" />
+                            </p:column>
+
+                            <p:column field="categoryLocalizedPlainText" headerText="#{text['general.nouns.sentiment']}" filterMatchMode="exact">
+                                <f:facet name="filter">
+                                    <p:selectOneMenu onchange="PF('resultsTableWidgetVar').filter()" styleClass="custom-filter">
+                                        <f:selectItem itemLabel="#{text['general.small_words.all']}" itemValue="#{null}" noSelectionOption="true" />
+                                        <f:selectItems value="#{umigonResultsBean.sentiments}"/>
+                                    </p:selectOneMenu>
+                                </f:facet>
+                                <h:outputText value="#{doc.categoryLocalizedPlainText}"/>
+                                <p:spacer width="3"/>
+                                <p:graphicImage name="images/red.png" rendered ="#{doc.categoryCode eq '_12'}" />
+                                <p:graphicImage name="images/green.png" rendered ="#{doc.categoryCode eq '_11'}"/>
+                            </p:column>
+                            <p:column headerText="#{text['general.small_words.why']} 🤔">
+                                <p:commandLink style="text-align: center;font-size: 80%"
+                                               value="#{text['general.small_words.why']} 🤔"
+                                               actionListener="#{umigonResultsBean.showExplanation(rowId)}"
+                                               rendered="#{!doc.showExplanation}"
+                                               update="resultsTable"
+                                               oncomplete="PF('resultsTableWidgetVar').filter()"/>
+                                <div style="background-color: #F0F0F0;">
+                                    <p:outputLabel 
+                                        value="#{doc.explanationHtml}" 
+                                        rendered ="#{doc.showExplanation}" 
+                                        escape="false"
+                                        style="font-size: 80%"
+                                        />
+                                </div>
+                                <p:commandLink style="text-align: center;font-size: 80%;"
+                                               value="#{text['general.verbs.hide']} ↩️"
+                                               actionListener="#{umigonResultsBean.hideExplanation(rowId)}"
+                                               rendered="#{doc.showExplanation}"
+                                               update="resultsTable"
+                                               oncomplete="PF('resultsTableWidgetVar').filter()"/>
+
+                            </p:column>
+
+                            <p:column headerText="#{text['general.verbs.signal_error']}">
+                                <p:commandButton style="text-align: center;font-size: 80%" 
+                                                 value="#{text['general.verbs.signal_error']}"
+                                                 actionListener="#{umigonResultsBean.signal(rowId)}" 
+                                                 update="resultsTable"
+                                                 rendered ="#{!doc.flaggedAsFalseLabel}"
+                                                 oncomplete="PF('resultsTableWidgetVar').filter()">
+                                </p:commandButton>
+                                <p:outputLabel style="font-size: 80%" value="#{text['general.message.reportsent']}" rendered ="#{doc.flaggedAsFalseLabel}" />
+                                <p:graphicImage name="images/check.png" width="24px" rendered ="#{doc.flaggedAsFalseLabel}" />
+                            </p:column>
+                        </p:dataTable>
+                    </div>
+                </h:form>
+            </p:panel>
+            <ui:include src="/WEB-INF/includes/footer.xhtml" />
+        </h:body>
+    </f:view>
+</html>

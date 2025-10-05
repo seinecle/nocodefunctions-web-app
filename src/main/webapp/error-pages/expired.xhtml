@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Session has expired</title>
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+            body {
+                background-color: #f1f1f1;
+                font-family: Arial, sans-serif;
+            }
+            .container {
+                max-width: 600px;
+                margin: 0 auto;
+                text-align: center;
+            }
+            h1 {
+                font-size: 2rem;
+                font-weight: bold;
+                margin: 2rem 0;
+                text-transform: uppercase;
+                color: #333333;
+            }
+            p {
+                font-size: 1.2rem;
+                font-weight: 700;
+                margin: 2rem 0;
+                color: #333333;
+            }
+            .box {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                height: 200px;
+                border: 2px solid #336699;
+                border-radius: 20px;
+                background-color: #ffffff;
+            }
+            @media only screen and (max-width: 768px) {
+                h1 {
+                    font-size: 1.5rem;
+                }
+                p {
+                    font-size: 1rem;
+                }
+                .box {
+                    height: 150px;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>Ooops.</h1>
+            <div class="box">
+                <p>Your session has expired. Please go back to the <a href="https://nocodefunctions.com">home page</a></p>
+            </div>
+        </div>
+    </body>
+</html>

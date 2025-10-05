@@ -1,0 +1,139 @@
+<html 
+    lang="#{localeBean.languageTag}"
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="jakarta.faces.html"
+    xmlns:f="jakarta.faces.core"
+    xmlns:p="http://primefaces.org/ui"
+    xmlns:ui="jakarta.faces.facelets">
+    <f:view locale="#{localeBean.currentLocale}">
+        <f:metadata>
+            <f:viewParam name="lang" value="#{localeBean.languageTag}" />
+            <f:viewParam name="email" value="#{stripeBean.urlParamEmail}" />
+            <f:viewAction action="#{sessionBean.init()}" />
+            <f:event type="preRenderView" listener="#{stripeBean.checkRefundEligibility()}" />
+        </f:metadata>
+        <h:head>
+            <!-- Primary Meta Tags -->
+            <title>#{text['index.title']}</title>
+            <meta name="description" content="#{text['index.description']}"/>
+            
+            <meta http-equiv="content-language" content="en-us"/>
+            <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+            <meta http-equiv="cleartype" content="on"/>
+            <meta name="HandheldFriendly" content="true"/>
+            <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+            <!-- Open Graph / Facebook -->
+            <meta property="og:type" content="website"/>
+            <meta property="og:site_name" content="slidelang"/>
+            <meta property="og:url" content="https://slidelang.com/"/>
+            <meta property="og:title" content="#{text['index.tagline']}"/>
+            <meta property="og:description" content="#{text['index.description']}"/>
+            <meta property="og:image" content="/images/workflow_medium.jpg"/>
+
+            <!-- Twitter -->
+            <meta property="twitter:card" content="summary_large_image"/>
+            <meta property="twitter:url" content="https://slidelang.com/"/>
+            <meta property="twitter:title" content="#{text['index.tagline']}"/>
+            <meta property="twitter:description" content="#{text['index.description']}"/>
+            <meta property="twitter:image" content="/images/workflow_medium.jpg"/>
+            <meta name="HandheldFriendly" content="true"/>
+
+            <!-- Open Graph / Facebook -->
+            <meta property="og:type" content="website"/>
+            <meta property="og:site_name" content="slidelang"/>
+
+            <link rel="apple-touch-icon" sizes="180x180" href="#{resource['images/favicons/apple-touch-icon.png']}"/>
+            <link rel="icon" type="image/png" sizes="32x32" href="#{resource['images/favicons/favicon-32x32.png']}"/>
+            <link rel="icon" type="image/png" sizes="16x16" href="#{resource['images/favicons/favicon-16x16.png']}"/>
+            <link rel="manifest" href="#{resource['images/favicons/site.webmanifest']}"/>
+            <link rel="mask-icon" href="#{resource['images/favicons/safari-pinned-tab.svg']}" color="#5bbad5"/>
+            <link rel="shortcut icon" href="#{resource['images/favicons/favicon.ico']}"/>
+            <meta name="msapplication-TileColor" content="#da532c"/>
+            <meta name="msapplication-config" content="#{resource['images/favicons/browserconfig.xml']}"/>
+            <meta name="theme-color" content="#ffffff"/>
+            <link rel="shortcut icon" type="image/x-icon" href="#{resource['images/favicons/favicon.ico']}"/>
+            <meta name="robots" content="noindex"/>
+            <h:outputScript name="js/layout.js"/>
+            <h:outputScript name="js/primeblocks.js"/>
+            <h:outputScript name="js/prism.js"/>
+        </h:head>
+        <h:body>
+            <h:outputStylesheet name="css/prism/prism.css"/>
+            <div class="bg-gray-900 px-4 py-5 md:px-6 lg:px-8">
+                <div class="flex flex-column md:align-items-center md:justify-content-between md:flex-row">
+                    <p:commandButton id="dynaButton" value="Menu" type="button" icon="pi pi-bars"/>
+                    <div class="font-medium text-3xl text-white">Slidelang</div>
+                    <ui:include src="/WEB-INF/includes/menu.xhtml" />
+                </div>
+            </div>
+            <div class="p-4">
+                <p:panel rendered="#{stripeBean.eligibleForRefund}">
+                    <div class="border-2 border-dashed surface-border border-round surface-card"
+                         style="min-height: 20rem">
+                        <h1>Self-refund on Slidelang</h1>
+
+                        <p>You can self-refund your last payment to Slidelang and cancel your subscription here</p>
+
+                        <p>✅ You're eligible for a refund!</p>
+
+                        <p>If you continue below:</p>
+                        <ul>
+                            <li> 🗑️ Your account will be deleted immediately</li>
+                            <li>🛑 Your subscription is immediately canceled and will not renew</li>
+                            <li>♻️ Your last payment will be refunded</li>
+                            <li>💸 Your refund is instant, but with some banks it might take a few days to show up</li>
+                            <li>👋 You will be logged out after this</li>
+                        </ul>
+                        <p>☢️ There is no way to restore your account after you continue below:</p>
+                        <h:form>
+                            <p:commandButton value="Yes, refund me and delete my account" action="#{stripeBean.handleRefund()}"/> 
+                        </h:form>
+                    </div>
+                </p:panel>
+
+                <p:panel rendered="#{!stripeBean.eligibleForRefund}">
+                    <div class="border-2 border-dashed surface-border border-round surface-card"
+                         style="min-height: 20rem">
+                        <h1>Self-refund on Slidelang</h1>
+
+                        <p>You are not eligible for a refund because more than #{stripeBean.MAX_USED_CREDITS_FOR_REFUND_ELIGIBILITY} translations were already performed.</p>
+
+                        <p>What you can do instead is log in to the billing portal and <a href="#{stripeBean.urlBillingPortal}">cancel your subscription</a>.</p>
+                    </div>
+                </p:panel>
+
+            </div>
+            <div class="bg-gray-900 px-4 py-8 md:px-6 lg:px-8">
+                <div class="bg-gray-900">
+                    <div class="grid">
+                        <div class="col-12 md:col-3 flex flex-wrap justify-content-start md:mb-0 mb-3">
+                            <div class="text-gray-300 font-bold text-5xl">Explore your data</div>
+                        </div>
+                        <div class="col-12 md:col-6">
+                            <div class="text-white text-lg mb-4 flex flex-wrap"
+                                 style="max-width: 290px">Made in Paris with ❤️ by @seinecle
+                            </div>
+                            <div class="text-white mb-3"><i
+                                    class="pi pi-phone p-1 mr-2"/>(33) 659 083 392
+                            </div>
+                            <div class="text-white mb-3"><i class="pi pi-inbox p-1 mr-2"/>analysis@exploreyourdata.com
+                            </div>
+                        </div>
+                        <div class="col-12 md:col-3 justify-content-start flex">
+                            <h:form id="header">
+                                <p:selectOneMenu value="#{localeBean.languageTag}" onchange="submit()">
+                                    <f:selectItems value="#{localeBean.availableLocales}" var="l"
+                                                   itemValue="#{l.toLanguageTag()}"
+                                                   itemLabel="#{l.getDisplayLanguage(l)} #{empty l.getDisplayCountry()?'':'('}#{l.getDisplayCountry(l)}#{empty l.getDisplayCountry()?'':')'}">
+                                    </f:selectItems>
+                                </p:selectOneMenu>
+                            </h:form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <h:outputStylesheet name="css/prism/prism.css"/>
+        </h:body>
+    </f:view>
+</html>

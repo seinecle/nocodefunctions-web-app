@@ -1,0 +1,67 @@
+<html 
+    lang="#{localeBean.languageTag}"
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="jakarta.faces.html"
+    xmlns:f="jakarta.faces.core"
+    xmlns:p="http://primefaces.org/ui"
+    xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+    <f:view locale="#{localeBean.currentLocale}">
+        <f:metadata>
+            <f:viewParam name="lang" value="#{localeBean.languageTag}" />
+        </f:metadata>
+
+        <h:head>
+            <title>GEXF → VOSviewer</title>
+            <meta name="robots" content="noindex"/>
+            <h:outputStylesheet name="css/output.css" />
+            <p:outputLabel value="#{sessionBean.noRobot}" escape="false" rendered="#{sessionBean.testServer}"/>
+        </h:head>
+
+        <h:body>
+            <p:panel>
+                <ui:include src="/WEB-INF/includes/header.xhtml" />
+                <h1>Convert a GEXF to VOSviewer</h1>
+            </p:panel>
+
+            <div class="grid">
+                <div class="col-12 lg:col-7">
+                    <p:panel header="Upload your .gexf">
+                        <h:form enctype="multipart/form-data">
+                            <p:fileUpload mode="advanced"
+                                          dragDropSupport="true"
+                                          sizeLimit="50000000"
+                                          update="@form"
+                                          allowTypes="/(\.|\/)(gexf)$/"
+                                          multiple="false"
+                                          label="Choose"
+                                          uploadLabel="Upload"
+                                          cancelLabel="Cancel"
+                                          listener="#{gexf2VvDataInputBean.handleFileUpload}"/>
+                            <br/>
+                            <p:commandButton value="Proceed to parameters"
+                                             styleClass="btn btn-primary"
+                                             action="#{gexf2VvDataInputBean.proceedToParameters}"
+                                             disabled="#{!gexf2VvDataInputBean.dataReady}"/>
+                        </h:form>
+                    </p:panel>
+                </div>
+
+                <div class="col-12 lg:col-5 hide-mobile">
+                    <p:panel header="Log">
+                        <p:scrollPanel style="height:20rem">
+                            <h:dataTable value="#{backToFrontMessengerBean.notifications}" var="notification">
+                                <h:column>#{notification.message}</h:column>
+                            </h:dataTable>
+                            <h:form>
+                                <f:websocket channel="logChannel" scope="session">
+                                    <p:ajax event="updateNotifications"/>
+                                </f:websocket>
+                            </h:form>
+                        </p:scrollPanel>
+                    </p:panel>
+                </div>
+            </div>
+            <ui:include src="/WEB-INF/includes/footer.xhtml" />
+        </h:body>
+    </f:view>
+</html>

@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="#{localeBean.languageTag}"
+      xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+
+    <h:head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Co-occurrence Results</title>
+        <h:outputScript name="js/vivagraph.min.js" />
+        <h:outputScript name="js/graph.js" />
+    </h:head>
+
+    <h:body class="flex flex-col min-h-screen bg-slate-50 text-slate-900">
+        <f:metadata>
+            <f:event type="preRenderView" listener="#{coocResultsBean.checkStateAndRedirect}" />
+        </f:metadata>
+
+        <h:outputStylesheet name="css/output.css" />
+        <h:outputStylesheet name="css/custom.css" />
+
+        <script type="text/javascript">
+            //<![CDATA[
+            function start() {
+                PF('statusDialog').show();
+            }
+
+            function stop() {
+                PF('statusDialog').hide();
+            }
+            //]]>
+        </script>
+
+        <p:dialog modal="true" widgetVar="statusDialog" header="#{text['general.message.wait_and_authorize_popup']}" draggable="false" closable="false"
+                  resizable="false">
+            <i class="pi pi-spinner pi-spin" style="font-size:3rem"></i>
+        </p:dialog>
+
+        <ui:include src="/WEB-INF/includes/header.xhtml" />
+
+        <main class="flex flex-col lg:flex-row flex-grow max-w-7xl mx-auto w-full p-6 gap-8">
+            <section class="flex-1 space-y-6">
+                <h2 class="text-2xl font-bold text-slate-900">
+                    #{text['cooc.results.title']}
+                </h2>
+
+                <div>
+                    <p class="text-sm font-medium text-slate-700 mb-2">Network Visualization</p>
+                    <div id="graphDiv" class="bg-slate-900 rounded-xl shadow-inner w-full h-[600px]">
+                    </div>
+                </div>
+
+                <div>
+                    <p class="text-sm font-medium text-slate-700 mb-2">Logs</p>
+                    <p:scrollPanel id="logArea" mode="native" styleClass="log-panel bg-slate-900 text-slate-100 font-mono rounded-xl p-4 shadow-inner">
+                        <h:dataTable id="notifications" value="#{backToFrontMessengerBean.notifications}" var="notification">
+                            <h:column>
+                                <h:outputText value="#{notification.message}" escape="false" />
+                            </h:column>
+                        </h:dataTable>
+                    </p:scrollPanel>
+                </div>
+            </section>
+
+            <aside class="w-full lg:w-1/3 bg-white rounded-2xl shadow-md p-6 space-y-4">
+                <h3 class="text-xl font-semibold text-slate-800">#{text['cooc.results.help.title']}</h3>
+                <p class="text-slate-600">#{text['cooc.results.help.text']}</p>
+            </aside>
+        </main>
+
+        <section class="max-w-7xl mx-auto w-full p-6">
+            <div class="bg-white rounded-2xl shadow-md p-6 lg:p-8">
+                <h:form>
+                    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+                        <div class="border border-slate-200 rounded-xl p-6 flex flex-col h-full">
+                            <div class="h-24 flex items-center justify-center">
+                                <p:graphicImage name="images/gephi.png" styleClass="max-h-full object-contain"/>
+                            </div>
+                            <div class="flex-grow"></div>
+                            <div class="pt-6">
+                                <p:commandButton
+                                    value="#{text['general.message.download_gexf']}"
+                                    ajax="false"
+                                    onclick="PrimeFaces.monitorDownload(start, stop);"
+                                    icon="pi pi-download"
+                                    styleClass="btn w-full">
+                                    <p:fileDownload value="#{coocResultsBean.fileToSave}"/>
+                                </p:commandButton>
+                            </div>
+                        </div>
+
+                        <div class="border border-slate-200 rounded-xl p-6 flex flex-col h-full">
+                            <div class="h-24 flex items-center justify-center">
+                                <p:graphicImage name="images/gephi-logo_lite_new.png" styleClass="max-h-full object-contain"/>
+                            </div>
+                            <div class="mt-4 text-left text-sm">
+                                <p:selectBooleanCheckbox value="#{coocResultsBean.shareGephiLitePublicly}" itemLabel="#{text['general.message.make_viz_public_question']}"/>
+                                <p:outputLabel escape="false" value="#{text['general.message.make_viz_public_details']}" styleClass="text-slate-500 mt-2 block"/>
+                            </div>
+                            <div class="flex-grow"></div>
+                            <div class="pt-6">
+                                <p:commandButton
+                                    value="#{text['general.message.visualize_with_gephi-lite']}"
+                                    action ="#{coocResultsBean.gotoGephiLite()}"
+                                    icon="pi pi-external-link"
+                                    styleClass="btn w-full"/>
+                            </div>
+                        </div>
+
+                        <div class="border border-slate-200 rounded-xl p-6 flex flex-col h-full">
+                            <div class="h-24 flex items-center justify-center">
+                                <p:graphicImage name="images/vosviewer_logo.jpg" styleClass="max-h-full object-contain"/>
+                            </div>
+                            <div class="mt-4 text-left text-sm">
+                                <p:selectBooleanCheckbox value="#{coocResultsBean.shareVVPublicly}" itemLabel="#{text['general.message.make_viz_public_question']}"/>
+                                <p:outputLabel escape="false" value="#{text['general.message.make_viz_public_details']}" styleClass="text-slate-500 mt-2 block"/>
+                            </div>
+                            <div class="flex-grow"></div>
+                            <div class="pt-6">
+                                <p:commandButton
+                                    value="#{text['general.message.visualize_with_vosviewer']}"
+                                    action="#{coocResultsBean.gotoVV()}"
+                                    icon="pi pi-external-link"
+                                    styleClass="btn w-full"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-8 pt-6 border-t border-slate-200">
+                        <h3 class="text-xl font-semibold text-slate-900"><p:outputLabel escape="false" value="#{text['general.message.results.options_for_visualization_title']}"/></h3>
+                        <div class="mt-2 text-slate-600">
+                            <p:outputLabel escape="false" value="#{text['general.message.results.options_for_visualization_details']}"/>
+                        </div>
+                    </div>
+                </h:form>
+            </div>
+        </section>
+        <ui:include src="/WEB-INF/includes/footer.xhtml" />
+
+        <h:outputScript rendered="#{not empty coocResultsBean and not empty coocResultsBean.nodesAsJson}">
+            const nodesData = #{coocResultsBean.nodesAsJson};
+            const edgesData = #{coocResultsBean.edgesAsJson};
+            main(nodesData, edgesData);
+        </h:outputScript>
+    </h:body>
+</html>

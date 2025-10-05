@@ -1,0 +1,104 @@
+<html 
+    lang="#{localeBean.languageTag}"
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="jakarta.faces.html"
+    xmlns:f="jakarta.faces.core"
+    xmlns:p="http://primefaces.org/ui"
+    xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+    <f:view locale="#{localeBean.currentLocale}">
+
+        <h:head>
+            <title>#{text['umigon.sentiment_analysis_tool.title']}</title>
+            <meta name="description" content="#{text['umigon.sentiment_analysis_tool.description']}"/>
+            
+            <meta http-equiv="content-language" content="en-us"/>
+            <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+            <meta http-equiv="cleartype" content="on"/>
+            <meta name="HandheldFriendly" content="true"/>
+            <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+            <link rel="apple-touch-icon" sizes="180x180" href="#{resource['images/favicons/apple-touch-icon.png']}"/>
+            <link rel="icon" type="image/png" sizes="32x32" href="#{resource['images/favicons/favicon-32x32.png']}"/>
+            <link rel="icon" type="image/png" sizes="16x16" href="#{resource['images/favicons/favicon-16x16.png']}"/>
+            <link rel="manifest" href="#{resource['images/favicons/site.webmanifest']}"/>
+            <link rel="mask-icon" href="#{resource['images/favicons/safari-pinned-tab.svg']}" color="#5bbad5"/>
+            <link rel="shortcut icon" href="#{resource['images/favicons/favicon.ico']}"/>
+            <meta name="msapplication-TileColor" content="#da532c"/>
+            <meta name="msapplication-config" content="#{resource['images/favicons/browserconfig.xml']}"/>
+            <meta name="theme-color" content="#ffffff"/>
+            <link rel="shortcut icon" type="image/x-icon" href="#{resource['images/favicons/favicon.ico']}"/>
+            <meta name="robots" content="noindex"/>
+        </h:head>
+        <h:body>
+            <h:outputStylesheet name="css/output.css" />
+            <p:panel>
+                <ui:include src="/WEB-INF/includes/header.xhtml"/>
+                <h1>#{text['general.nouns.parameters']}</h1>
+            </p:panel>
+            <p:spacer height="20"/>
+               <div class="flex w-full gap-4 flew-wrap">
+                    <div class="sm:w-[70%] flex flex-col">
+
+                    <p:panel>
+                        #{text['general.message.max_items_capacity_to_analyze']} #{umigonAnalysisBean.maxCapacity}
+                        <br/>
+                        <br/>
+                        <i>#{text['general.message.please_use_api_for_bigger_capacity']}</i>
+                        <br/>
+                        <br/>
+                        #{text['general.message.language_of_text_to_analyze']}
+                        <br/>
+                        <br/>
+                        <h:form>
+                            <p:selectOneListbox id="lang" value="#{umigonAnalysisBean.selectedLanguage}" style="width: 50px !important">
+                                <f:selectItem itemLabel="#{text['general.languages.english']}" itemValue="en"/>
+                                <f:selectItem itemLabel="#{text['general.languages.french']}" itemValue="fr"/>
+                                <f:selectItem itemLabel="#{text['general.languages.spanish']}" itemValue="es">
+                                </f:selectItem>
+                                <p:ajax event="change" update="@form" />
+                            </p:selectOneListbox>
+                        </h:form>
+                    </p:panel>
+                    <div>
+                        <p:spacer height="20"/>
+                    </div>
+                    <h:form id="formComputeButton">
+                        <p:panel>
+                            <!--RUN ANALYSIS BUTTON-->
+                            <p:commandButton
+                                id="computeButton"
+                                value="#{umigonAnalysisBean.runButtonText}"
+                                disabled="#{umigonAnalysisBean.runButtonDisabled}"
+                                widgetVar="umigonButton"
+                                action="#{umigonAnalysisBean.runAnalysis}"
+                                update=":notifications"
+                                styleClass="btn btn-primary"/>
+                            <br/>
+                            <br/>
+                            <p:poll interval="3" listener="#{umigonAnalysisBean.pollingListener}" update=":notifications"/>
+                            <!--PROGRESS BAR FOR RUN ANALYSIS-->
+                            <p:progressBar id="pb" widgetVar="pbAjaxLong" ajax="true" value="#{umigonAnalysisBean.progress}"
+                                           labelTemplate="{value}%" styleClass="p-mt-3" global="false" interval="1000">
+                            </p:progressBar>
+                        </p:panel>
+                    </h:form>
+                </div>
+                <div class="flex-1 gap-4 h-full hide-mobile">
+                    <p:panel header="Log" styleClass="flex flex-col">
+                        <p:scrollPanel id="scrollPanel" class="flex-1 overflow-auto h-full">
+                            <h:dataTable id="notifications" value="#{backToFrontMessengerBean.notifications}" var="notification">
+                                <h:column>#{notification.message}</h:column>
+                            </h:dataTable>
+                            <h:form>
+                                <f:websocket channel="logChannel"  scope="session">
+                                    <f:ajax event="updateNotifications" render=":notifications" />
+                                </f:websocket>
+                            </h:form>
+                        </p:scrollPanel>
+                    </p:panel>
+                </div>
+            </div>
+            <ui:include src="/WEB-INF/includes/footer.xhtml" />
+        </h:body>
+    </f:view>
+</html>

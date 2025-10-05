@@ -1,0 +1,129 @@
+<html 
+    lang="#{localeBean.languageTag}"
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="jakarta.faces.html"
+    xmlns:f="jakarta.faces.core"
+    xmlns:p="http://primefaces.org/ui">
+    <h:head>
+        <!-- Primary Meta Tags -->
+        <title>#{text['index.title']}</title>
+        <meta name="description" content="#{text['index.description']}"/>
+
+        <meta http-equiv="content-language" content="en-us"/>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+        <meta http-equiv="cleartype" content="on"/>
+        <meta name="HandheldFriendly" content="true"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+        <!-- Open Graph / Facebook -->
+        <meta property="og:type" content="website"/>
+        <meta property="og:site_name" content="nocodefunctions"/>
+        <meta property="og:url" content="https://nocodefunctions.com/"/>
+        <meta property="og:title" content="#{text['index.tagline']}"/>
+        <meta property="og:description" content="#{text['index.description']}"/>
+        <meta property="og:image" content="/images/workflow_medium.jpg"/>
+
+        <!-- Twitter -->
+        <meta property="twitter:card" content="summary_large_image"/>
+        <meta property="twitter:url" content="https://nocodefunctions.com/"/>
+        <meta property="twitter:title" content="#{text['index.tagline']}"/>
+        <meta property="twitter:description" content="#{text['index.description']}"/>
+        <meta property="twitter:image" content="/images/workflow_medium.jpg"/>
+        <meta name="HandheldFriendly" content="true"/>
+
+        <!-- Open Graph / Facebook -->
+        <meta property="og:type" content="website"/>
+        <meta property="og:site_name" content="nocodefunctions"/>
+
+        <link rel="apple-touch-icon" sizes="180x180" href="#{resource['images/favicons/apple-touch-icon.png']}"/>
+        <link rel="icon" type="image/png" sizes="32x32" href="#{resource['images/favicons/favicon-32x32.png']}"/>
+        <link rel="icon" type="image/png" sizes="16x16" href="#{resource['images/favicons/favicon-16x16.png']}"/>
+        <link rel="manifest" href="#{resource['images/favicons/site.webmanifest']}"/>
+        <link rel="mask-icon" href="#{resource['images/favicons/safari-pinned-tab.svg']}" color="#5bbad5"/>
+        <link rel="shortcut icon" href="#{resource['images/favicons/favicon.ico']}"/>
+        <meta name="msapplication-TileColor" content="#da532c"/>
+        <meta name="msapplication-config" content="#{resource['images/favicons/browserconfig.xml']}"/>
+        <meta name="theme-color" content="#ffffff"/>
+        <link rel="shortcut icon" type="image/x-icon" href="#{resource['images/favicons/favicon.ico']}"/>
+        <meta name="robots" content="noindex"/>
+    </h:head>
+    <h:body>
+        <h:outputStylesheet name="css/output.css" />
+        <div class="p-4">
+            <div class="border-2 border-dashed surface-border border-round surface-card"
+                 style="min-height: 20rem">
+                <h1>Terms of Service</h1>
+
+                <h2>1. Acceptance of Terms</h2>
+                Welcome to Nocodefunctions. By accessing or using our web application, you agree to be bound by these Terms of Service ("Terms") and our Privacy Policy. If you do not agree to these Terms, you are prohibited from using the service.
+
+                <h2> 2. Description of Service</h2>
+                Nocodefunctions is a web-based application designed to offer data analysis functions. The service is offered globally on a subscription basis, with options for monthly plans.
+
+                <h2> 3. User Responsibilities</h2>
+                - You affirm that you have all necessary rights and permissions to upload files for analysis.<br/>
+                - You agree to maintain the confidentiality of your account credentials and are solely responsible for all activities under your account.<br/>
+                - You shall not use the service for any unlawful, unauthorized, or prohibited purposes.<br/>
+
+                <h2> 4. Subscriptions and Billing</h2>
+                - Nocodefunctions offers subscription plans, billed on a monthly basis, which are processed securely through Stripe.<br/>
+                - By subscribing, you agree to waive your right to a retraction period, as detailed during the signup process, in accordance with applicable consumer protection laws.<br/>
+                - Subscriptions may be canceled at any time through your account dashboard. Following cancellation, you will retain access to the service until the end of the current billing cycle.<br/>
+
+                <h2> 5. Data Handling</h2>
+                - Nocodefunctions does not store files uploaded. All files are processed in-memory and permanently deleted immediately after the analysis is completed.
+                - The service retains only a UUID cookie to facilitate session management.
+
+                <h2> 6. Limitation of Liability</h2>
+                The Nocodefunctions service is provided on an "as is" and "as available" basis. While we strive to deliver high-quality analyses, we do not warrant uninterrupted operation or guarantee the accuracy of analyses. To the fullest extent permitted by law, Nocodefunctions and its founder shall not be held liable for any indirect, incidental, or consequential damages arising from your use of the service.
+
+                <h2> 7. Governing Law</h2>
+                These Terms shall be governed and construed in accordance with the laws of France. Any disputes arising from or in connection with these Terms shall be resolved exclusively in the courts of Paris, France.
+
+                <h2> 8. Amendments to Terms</h2>
+                Nocodefunctions reserves the right to modify these Terms at any time. Any changes will be posted on this page, and continued use of the service constitutes your acceptance of the updated Terms.
+
+                ---
+
+                <h1> Privacy Policy</h1>
+
+                <h2> 1. Introduction</h2>
+                This Privacy Policy outlines how Nocodefunctions collects, uses, and safeguards personal data. By using Nocodefunctions, you agree to the practices described herein.
+
+                <h2> 2. Data Collection</h2>
+                - <strong>Uploaded Files:</strong> Files uploaded for analysis are processed in-memory and deleted immediately after the analysis process is complete. No files are stored by Nocodefunctions.<br/>
+                - <strong>Billing Information:</strong> Payments are processed securely through Stripe. Nocodefunctions does not locally store any billing information.<br/>
+                - <strong>Cookies:</strong> Nocodefunctions uses a single UUID cookie for the sole purpose of managing user sessions. No other cookies or tracking mechanisms are utilized.<br/>
+
+                <h2> 3. Data Usage</h2>
+                - <strong>Uploaded Files:</strong>Data contained in the files uploaded by the user is analyzed exclusively on the servers of the application.<br/>
+                - <strong>Billing Data:</strong> Managed exclusively by Stripe to process subscription payments.<br/>
+                - <strong>UUID Cookie:</strong> Used strictly to support active user sessions.<br/>
+
+                <h2> 4. Data Sharing</h2>
+                Nocodefunctions does not sell, rent, or share your personal data with any third parties, except as necessary to process payments via Stripe or perform analyses through OpenAI’s API.
+
+                <h2> 5. Data Security</h2>
+                Nocodefunctions employs industry-standard security measures to protect your data. However, no system is entirely secure, and you acknowledge and accept this inherent risk.
+
+                <h2> 6. User Rights</h2>
+                - You may request the deletion of any personal data retained by Nocodefunctions (e.g., UUID session data).<br/>
+
+                <h2> 7. Waiver of Retraction Period</h2>
+                By subscribing to Nocodefunctions, you explicitly agree to waive your statutory right to a retraction period for digital services, as explained during the signup process. This waiver is necessary to commence the immediate performance of the service upon subscription.
+
+                <h2> 8. Amendments to Privacy Policy</h2>
+                Nocodefunctions reserves the right to update this Privacy Policy from time to time. Any changes will be posted on this page, and your continued use of the service constitutes acceptance of the updated policy.
+
+                <h2> 9. Contact Information</h2>
+                For questions or concerns regarding these Terms or the Privacy Policy, please contact us at <a href="mailto:analysis@exploreyourdata.com">analysis@exploreyourdata.com</a>.
+
+                ---
+
+                <strong>Effective Date:</strong> 01/01/2025
+
+                <p>Thank you for using Nocodefunctions!</p>
+            </div>
+        </div>
+    </h:body>
+</html>

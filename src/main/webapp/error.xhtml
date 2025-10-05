@@ -1,0 +1,29 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui">
+    <h:head>
+        <title>Error</title>
+    </h:head>
+    <h:body>
+        <p:panel header="Error">
+            <h:outputText value="An unexpected error has occurred. It is not you. It is us 😬. Get in touch at "/>
+            <h:outputLink value="mailto:analysis@exploreyourdata.com">
+                <h:outputText value="analysis@exploreyourdata.com" />
+            </h:outputLink>
+            <h:outputText value=" for a quick fix."/>
+            <br/>
+            <br/>
+            <h:outputText value="(including the error message below in the email would be quite useful actually)"/>
+            <br/>
+            <br/>
+            <h:outputText value="#{flash.errorMsg}"/>
+            <br/>
+            <br/>
+            <p:accordionPanel rendered="#{not empty flash.stackTrace}">
+                <p:tab title="Full error message to send by email">
+                    <h:outputText value="#{flash.stackTrace}" style="white-space: pre-wrap;" />
+                </p:tab>
+            </p:accordionPanel>
+        </p:panel>
+    </h:body>
+</html>

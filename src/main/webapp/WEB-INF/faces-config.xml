@@ -1,0 +1,151 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!--
+
+    Licensed to the Apache Software Foundation (ASF) under one
+    or more contributor license agreements.  See the NOTICE file
+    distributed with this work for additional information
+    regarding copyright ownership.  The ASF licenses this file
+    to you under the Apache License, Version 2.0 (the
+    "License"); you may not use this file except in compliance
+    with the License.  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing,
+    software distributed under the License is distributed on an
+    "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+    KIND, either express or implied.  See the License for the
+    specific language governing permissions and limitations
+    under the License.
+
+-->
+<faces-config
+    xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee
+        http://xmlns.jcp.org/xml/ns/javaee/web-facesconfig_3_0.xsd"
+    version="2.3">
+
+
+    <factory>
+        <external-context-factory>net.clementlevallois.nocodeapp.web.front.CustomExternalContext$Factory</external-context-factory>
+        <exception-handler-factory>net.clementlevallois.nocodeapp.web.front.exceptions.CustomExceptionHandlerFactory</exception-handler-factory>
+    </factory>
+
+    <application>
+        <locale-config>
+            <default-locale>en</default-locale>
+            <supported-locale>am</supported-locale>
+            <supported-locale>ar</supported-locale>
+            <supported-locale>az</supported-locale>
+            <supported-locale>be</supported-locale>
+            <supported-locale>bg</supported-locale>
+            <supported-locale>bn</supported-locale>
+            <supported-locale>bs</supported-locale>
+            <supported-locale>ca</supported-locale>
+            <supported-locale>ceb</supported-locale>
+            <supported-locale>co</supported-locale>
+            <supported-locale>cs</supported-locale>
+            <supported-locale>cy</supported-locale>
+            <supported-locale>da</supported-locale>
+            <supported-locale>de</supported-locale>
+            <supported-locale>el</supported-locale>
+            <supported-locale>eo</supported-locale>
+            <supported-locale>es</supported-locale>
+            <supported-locale>et</supported-locale>
+            <supported-locale>eu</supported-locale>
+            <supported-locale>fa</supported-locale>
+            <supported-locale>fi</supported-locale>
+            <supported-locale>fr</supported-locale>
+            <supported-locale>fy</supported-locale>
+            <supported-locale>ga</supported-locale>
+            <supported-locale>gd</supported-locale>
+            <supported-locale>gl</supported-locale>
+            <supported-locale>gu</supported-locale>
+            <supported-locale>ha</supported-locale>
+            <supported-locale>haw</supported-locale>
+            <supported-locale>he</supported-locale>
+            <supported-locale>hi</supported-locale>
+            <supported-locale>hmn</supported-locale>
+            <supported-locale>hr</supported-locale>
+            <supported-locale>ht</supported-locale>
+            <supported-locale>hu</supported-locale>
+            <supported-locale>hy</supported-locale>
+            <supported-locale>id</supported-locale>
+            <supported-locale>ig</supported-locale>
+            <supported-locale>is</supported-locale>
+            <supported-locale>it</supported-locale>
+            <supported-locale>ja</supported-locale>
+            <supported-locale>jv</supported-locale>
+            <supported-locale>ka</supported-locale>
+            <supported-locale>kk</supported-locale>
+            <supported-locale>km</supported-locale>
+            <supported-locale>kn</supported-locale>
+            <supported-locale>ko</supported-locale>
+            <supported-locale>ku</supported-locale>
+            <supported-locale>ky</supported-locale>
+            <supported-locale>lb</supported-locale>
+            <supported-locale>lo</supported-locale>
+            <supported-locale>lt</supported-locale>
+            <supported-locale>mg</supported-locale>
+            <supported-locale>mi</supported-locale>
+            <supported-locale>mk</supported-locale>
+            <supported-locale>ml</supported-locale>
+            <supported-locale>mn</supported-locale>
+            <supported-locale>mr</supported-locale>
+            <supported-locale>ms</supported-locale>
+            <supported-locale>mt</supported-locale>
+            <supported-locale>my</supported-locale>
+            <supported-locale>ne</supported-locale>
+            <supported-locale>nl</supported-locale>
+            <supported-locale>no</supported-locale>
+            <supported-locale>ny</supported-locale>
+            <supported-locale>pa</supported-locale>
+            <supported-locale>pl</supported-locale>
+            <supported-locale>ps</supported-locale>
+            <supported-locale>pt_BR</supported-locale>
+            <supported-locale>pt_PT</supported-locale>
+            <supported-locale>pt</supported-locale>
+            <supported-locale>or</supported-locale>
+            <supported-locale>ro</supported-locale>
+            <supported-locale>ru</supported-locale>
+            <supported-locale>rw</supported-locale>
+            <supported-locale>sd</supported-locale>
+            <supported-locale>si</supported-locale>
+            <supported-locale>sk</supported-locale>
+            <supported-locale>sl</supported-locale>
+            <supported-locale>sm</supported-locale>
+            <supported-locale>sn</supported-locale>
+            <supported-locale>so</supported-locale>
+            <supported-locale>sq</supported-locale>
+            <supported-locale>sr</supported-locale>
+            <supported-locale>st</supported-locale>
+            <supported-locale>su</supported-locale>
+            <supported-locale>sv</supported-locale>
+            <supported-locale>sw</supported-locale>
+            <supported-locale>ta</supported-locale>
+            <supported-locale>te</supported-locale>
+            <supported-locale>tg</supported-locale>
+            <supported-locale>th</supported-locale>
+            <supported-locale>tk</supported-locale>
+            <supported-locale>tl</supported-locale>
+            <supported-locale>tr</supported-locale>
+            <supported-locale>tt</supported-locale>
+            <supported-locale>ug</supported-locale>
+            <supported-locale>uk</supported-locale>
+            <supported-locale>ur</supported-locale>
+            <supported-locale>uz</supported-locale>
+            <supported-locale>vi</supported-locale>
+            <supported-locale>xh</supported-locale>
+            <supported-locale>yi</supported-locale>
+            <supported-locale>yo</supported-locale>
+            <supported-locale>zh</supported-locale>
+            <supported-locale>zh_TW</supported-locale>
+            <supported-locale>zu</supported-locale>
+        </locale-config>
+        <resource-bundle>
+            <base-name>net.clementlevallois.nocodeapp.web.front.i18n.I18nStaticFilesResourceBundle</base-name>
+            <var>text</var>
+        </resource-bundle>
+    </application>
+</faces-config>

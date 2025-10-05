@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="#{localeBean.languageTag}"
+      xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+    <h:head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Nocode Functions - Dev</title>
+        <!-- Google Fonts: Inter and JetBrains Mono -->
+        <link rel="preconnect" href="https://fonts.googleapis.com"/>
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin=""/>
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;family=JetBrains+Mono:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+        <style>
+            /* Applying fonts from the design system */
+            body {
+                font-family: 'Inter', sans-serif;
+            }
+            .font-mono {
+                font-family: 'JetBrains Mono', monospace;
+            }
+        </style>
+    </h:head>
+    <h:body class="bg-slate-50 flex flex-col min-h-screen">
+        <h:outputStylesheet name="css/output.css" />
+        <h:outputStylesheet name="css/custom.css" />
+
+        <ui:include src="/WEB-INF/includes/header.xhtml" />
+
+        <!-- Main Content Area -->
+        <main class="flex-grow">
+
+            <!-- Hero Section -->
+            <section class="py-20 lg:py-28 text-center bg-gradient-to-br from-slate-50 to-slate-100">
+                <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div class="text-6xl">🔎</div>
+                    <h1 class="mt-4 text-4xl lg:text-5xl font-extrabold tracking-tight text-slate-900">
+                        Nocode functions
+                    </h1>
+                    <h2 class="mt-4 text-xl lg:text-2xl text-slate-600">
+                        #{text['index.tagline']}
+                    </h2>
+                    <p class="mt-6 max-w-2xl mx-auto text-lg text-slate-600 leading-relaxed">
+                        #{text['index.argument1']}
+                    </p>
+                    <div class="mt-8 flex justify-center items-center gap-x-4">
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-mono bg-slate-200 text-slate-800">#gratuit</span>
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-mono bg-slate-200 text-slate-800">#sans inscription</span>
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-mono bg-slate-200 text-slate-800">#open source</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Function Cards Section -->
+            <section class="py-20 lg:py-28">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <h2 class="text-2xl lg:text-3xl font-bold text-slate-900 text-center mb-12">
+                        #{text['index.calltochooseafunction']}
+                    </h2>
+                    <!-- 
+                      - Responsive grid for function cards.
+                      - Adjusts columns for different screen sizes for optimal layout.
+                    -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6 lg:gap-8">
+
+                        <!-- Function 1: Umigon -->
+                        <h:link outcome="umigon/sentiment_analysis_tool.html" styleClass="no-underline">
+                            <div class="bg-white rounded-2xl shadow-md p-6 border border-transparent transition-all duration-300 ease-in-out hover:shadow-xl hover:-translate-y-1 hover:border-blue-500 cursor-pointer h-full min-h-44">
+                                <div class="flex items-center gap-4">
+                                    <div class="bg-blue-100 rounded-lg p-2">
+                                        <svg class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                                    </div>
+                                    <h3 class="text-base font-semibold text-slate-900 break-words">#{text['index.button.umigon']}</h3>
+                                </div>
+                                <p class="mt-3 text-sm text-slate-500 break-words">#{text['index.button.umigon.description']}</p>
+                            </div>
+                        </h:link>
+
+                        <!-- Function 2: Organic -->
+                        <h:link outcome="organic/organic_listening_voice_of_customer_tool.html" styleClass="no-underline">
+                            <div class="bg-white rounded-2xl shadow-md p-6 border border-transparent transition-all duration-300 ease-in-out hover:shadow-xl hover:-translate-y-1 hover:border-blue-500 cursor-pointer h-full min-h-44">
+                                <div class="flex items-center gap-4">
+                                    <div class="bg-emerald-100 rounded-lg p-2">
+                                        <svg class="h-6 w-6 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                                    </div>
+                                    <h3 class="text-base font-semibold text-slate-900 break-words">#{text['index.button.organic']}</h3>
+                                </div>
+                                <p class="mt-3 text-sm text-slate-500 break-words">#{text['index.button.organic.description']}</p>
+                            </div>
+                        </h:link>
+
+                        <!-- Function 3: Cowo -->
+                        <h:link outcome="workflow-cowo/semantic_networks_tool.html?function=workflow-cowo" styleClass="no-underline">
+                            <div class="bg-white rounded-2xl shadow-md p-6 border border-transparent transition-all duration-300 ease-in-out hover:shadow-xl hover:-translate-y-1 hover:border-blue-500 cursor-pointer h-full min-h-44">
+                                <div class="flex items-center gap-4">
+                                    <div class="bg-purple-100 rounded-lg p-2">
+                                        <svg class="h-6 w-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m12 0a2 2 0 100-4m0 4a2 2 0 110-4m-6 0a2 2 0 100-4m0 4a2 2 0 110-4" ></path></svg>
+                                    </div>
+                                    <h3 class="text-base font-semibold text-slate-900 break-words">#{text['index.button.cowo']}</h3>
+                                </div>
+                                <p class="mt-3 text-sm text-slate-500 break-words">#{text['index.button.cowo.description']}</p>
+                            </div>
+                        </h:link>
+
+                        <!-- Function 4: Topics -->
+                        <h:link outcome="topics/topic_extraction_tool.html" styleClass="no-underline">
+                            <div class="bg-white rounded-2xl shadow-md p-6 border border-transparent transition-all duration-300 ease-in-out hover:shadow-xl hover:-translate-y-1 hover:border-blue-500 cursor-pointer h-full min-h-44">
+                                <div class="flex items-center gap-4">
+                                    <div class="bg-amber-100 rounded-lg p-2">
+                                        <svg class="h-6 w-6 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 1v4m0 0h-4m4 0l-5-5"></path></svg>
+                                    </div>
+                                    <h3 class="text-base font-semibold text-slate-900 break-words">#{text['index.button.topics']}</h3>
+                                </div>
+                                <p class="mt-3 text-sm text-slate-500 break-words">#{text['index.button.topics.description']}</p>
+                            </div>
+                        </h:link>
+
+                        <!-- Function 5: Cooc -->
+                        <h:link outcome="cooc/cooc.html" styleClass="no-underline">
+                            <div class="bg-white rounded-2xl shadow-md p-6 border border-transparent transition-all duration-300 ease-in-out hover:shadow-xl hover:-translate-y-1 hover:border-blue-500 cursor-pointer h-full min-h-44">
+                                <div class="flex items-center gap-4">
+                                    <div class="bg-rose-100 rounded-lg p-2">
+                                        <svg class="h-6 w-6 text-rose-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.196-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.783-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path></svg>
+                                    </div>
+                                    <h3 class="text-base font-semibold text-slate-900 break-words">#{text['index.button.cooc']}</h3>
+                                </div>
+                                <p class="mt-3 text-sm text-slate-500 break-words">#{text['index.button.cooc.description']}</p>
+                            </div>
+                        </h:link>
+
+                        <!-- Function 6: Sim -->
+                        <h:link outcome="sim/similarities-network-builder-tool.html" styleClass="no-underline">
+                            <div class="bg-white rounded-2xl shadow-md p-6 border border-transparent transition-all duration-300 ease-in-out hover:shadow-xl hover:-translate-y-1 hover:border-blue-500 cursor-pointer h-full min-h-44">
+                                <div class="flex items-center gap-4">
+                                    <div class="bg-indigo-100 rounded-lg p-2">
+                                        <svg class="h-6 w-6 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" ></path></svg>
+                                    </div>
+                                    <h3 class="text-base font-semibold text-slate-900 break-words">#{text['index.button.sim']}</h3>
+                                </div>
+                                <p class="mt-3 text-sm text-slate-500 break-words">#{text['index.button.sim.description']}</p>
+                            </div>
+                        </h:link>
+
+                        <!-- Function 7: GEXF -> VOSviewer -->
+                        <h:link outcome="gexf2vv/gexf2vv-import.html" styleClass="no-underline">
+                            <div class="bg-white rounded-2xl shadow-md p-6 border border-transparent transition-all duration-300 ease-in-out hover:shadow-xl hover:-translate-y-1 hover:border-blue-500 cursor-pointer h-full min-h-44">
+                                <div class="flex items-center gap-4">
+                                    <div class="bg-blue-100 rounded-lg p-2">
+                                        <svg class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" ></path></svg>
+                                    </div>
+                                    <h3 class="text-base font-semibold text-slate-900 break-words">Convert GEXF → VOSviewer</h3>
+                                </div>
+                                <p class="mt-3 text-sm text-slate-500 break-words">#{text['index.button.gexf2vv.description']}</p>
+                            </div>
+                        </h:link>
+
+                        <!-- Function 8: VOSviewer -> GEXF -->
+                        <h:link outcome="vv2gexf/vv2gexf-import.html" styleClass="no-underline">
+                            <div class="bg-white rounded-2xl shadow-md p-6 border border-transparent transition-all duration-300 ease-in-out hover:shadow-xl hover:-translate-y-1 hover:border-blue-500 cursor-pointer h-full min-h-44">
+                                <div class="flex items-center gap-4">
+                                    <div class="bg-emerald-100 rounded-lg p-2">
+                                        <svg class="h-6 w-6 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" ></path></svg>
+                                    </div>
+                                    <h3 class="text-base font-semibold text-slate-900 break-words">Convert VOSviewer → GEXF</h3>
+                                </div>
+                                <p class="mt-3 text-sm text-slate-500 break-words">#{text['index.button.vv2gexf.description']}</p>
+                            </div>
+                        </h:link>
+
+                        <!-- Function 9: Spatialize -->
+                        <h:link outcome="spatialize/spatialize-import.html" styleClass="no-underline">
+                            <div class="bg-white rounded-2xl shadow-md p-6 border border-transparent transition-all duration-300 ease-in-out hover:shadow-xl hover:-translate-y-1 hover:border-blue-500 cursor-pointer h-full min-h-44">
+                                <div class="flex items-center gap-4">
+                                    <div class="bg-purple-100 rounded-lg p-2">
+                                        <svg class="h-6 w-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+                                    </div>
+                                    <h3 class="text-base font-semibold text-slate-900 break-words">#{text['index.button.spatialize']}</h3>
+                                </div>
+                                <p class="mt-3 text-sm text-slate-500 break-words">#{text['index.button.spatialize.description']}</p>
+                            </div>
+                        </h:link>
+
+                        <!-- Function 10: PDF Region Extractor -->
+                        <h:link outcome="regionextractor/regionextractor.html" styleClass="no-underline">
+                            <div class="bg-white rounded-2xl shadow-md p-6 border border-transparent transition-all duration-300 ease-in-out hover:shadow-xl hover:-translate-y-1 hover:border-blue-500 cursor-pointer h-full min-h-44">
+                                <div class="flex items-center gap-4">
+                                    <div class="bg-amber-100 rounded-lg p-2">
+                                        <svg class="h-6 w-6 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
+                                    </div>
+                                    <h3 class="text-base font-semibold text-slate-900 break-words">#{text['index.button.pdfregionextractor']}</h3>
+                                </div>
+                                <p class="mt-3 text-sm text-slate-500 break-words">#{text['index.button.pdfregionextractor.description']}</p>
+                            </div>
+                        </h:link>
+
+                    </div>
+                </div>
+            </section>
+
+            <!-- Testimonials Section -->
+            <section class="py-20 lg:py-28 bg-slate-100">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div class="text-center">
+                        <h2 class="text-2xl lg:text-3xl font-bold text-slate-900">
+                            Trusted by Professionals Like You
+                        </h2>
+                        <p class="mt-4 text-lg text-slate-600 max-w-2xl mx-auto">
+                            Our functions are already making an impact for data analysts, researchers, and students.
+                        </p>
+                    </div>
+                    <div class="mt-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        <!-- Testimonial Card 1 -->
+                        <div class="bg-white rounded-2xl shadow-lg p-8">
+                            <svg class="h-8 w-8 text-slate-300" fill="currentColor" viewBox="0 0 32 32" aria-hidden="true">
+                                <path d="M9.33 12.5h4.15l-1.63 4.24c-.1.26.2.51.48.51h1.5a.5.5 0 0 0 .48-.64L16 12.5h2.33a.5.5 0 0 0 .48-.64l-1.12-2.9a.5.5 0 0 0-.48-.36H6.7a.5.5 0 0 0-.48.64L9.33 12.5zm11 0h4.15l-1.63 4.24c-.1.26.2.51.48.51h1.5a.5.5 0 0 0 .48-.64L27 12.5h2.33a.5.5 0 0 0 .48-.64l-1.12-2.9a.5.5 0 0 0-.48-.36H17.7a.5.5 0 0 0-.48.64L20.33 12.5z"/>
+                            </svg>
+                            <blockquote class="mt-6 text-slate-600">
+                                <p>"This is a game-changer for quick data exploration. I can get insights in minutes, not hours. The UI is intuitive and the results are surprisingly accurate."</p>
+                            </blockquote>
+                            <footer class="mt-6">
+                                <div class="font-semibold text-slate-900">Marie Dubois</div>
+                                <div class="text-sm text-slate-500">Data Analyst, Tech Startup</div>
+                            </footer>
+                        </div>
+                        <!-- Testimonial Card 2 (Anonymous) -->
+                        <div class="bg-white rounded-2xl shadow-lg p-8">
+                            <svg class="h-8 w-8 text-slate-300" fill="currentColor" viewBox="0 0 32 32" aria-hidden="true">
+                                <path d="M9.33 12.5h4.15l-1.63 4.24c-.1.26.2.51.48.51h1.5a.5.5 0 0 0 .48-.64L16 12.5h2.33a.5.5 0 0 0 .48-.64l-1.12-2.9a.5.5 0 0 0-.48-.36H6.7a.5.5 0 0 0-.48.64L9.33 12.5zm11 0h4.15l-1.63 4.24c-.1.26.2.51.48.51h1.5a.5.5 0 0 0 .48-.64L27 12.5h2.33a.5.5 0 0 0 .48-.64l-1.12-2.9a.5.5 0 0 0-.48-.36H17.7a.5.5 0 0 0-.48.64L20.33 12.5z"/>
+                            </svg>
+                            <blockquote class="mt-6 text-slate-600">
+                                <p>"As a student, having access to these tools for free is incredible. It's helping me learn so much faster without getting bogged down in complex code."</p>
+                            </blockquote>
+                            <footer class="mt-6">
+                                <div class="font-semibold text-slate-900">A Marketing Student</div>
+                                <div class="text-sm text-slate-500">Paris, France</div>
+                            </footer>
+                        </div>
+                        <!-- Testimonial Card 3 -->
+                        <div class="bg-white rounded-2xl shadow-lg p-8">
+                            <svg class="h-8 w-8 text-slate-300" fill="currentColor" viewBox="0 0 32 32" aria-hidden="true">
+                                <path d="M9.33 12.5h4.15l-1.63 4.24c-.1.26.2.51.48.51h1.5a.5.5 0 0 0 .48-.64L16 12.5h2.33a.5.5 0 0 0 .48-.64l-1.12-2.9a.5.5 0 0 0-.48-.36H6.7a.5.5 0 0 0-.48.64L9.33 12.5zm11 0h4.15l-1.63 4.24c-.1.26.2.51.48.51h1.5a.5.5 0 0 0 .48-.64L27 12.5h2.33a.5.5 0 0 0 .48-.64l-1.12-2.9a.5.5 0 0 0-.48-.36H17.7a.5.5 0 0 0-.48.64L20.33 12.5z"/>
+                            </svg>
+                            <blockquote class="mt-6 text-slate-600">
+                                <p>"The accuracy is impressive. We've validated the results for the anomaly detection function against our internal models and it holds up remarkably well."</p>
+                            </blockquote>
+                            <footer class="mt-6">
+                                <div class="font-semibold text-slate-900">Dr. Chen</div>
+                                <div class="text-sm text-slate-500">Researcher, Institute of Statistics</div>
+                            </footer>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+        <ui:include src="/WEB-INF/includes/footer.xhtml" />
+    </h:body>
+</html>
+

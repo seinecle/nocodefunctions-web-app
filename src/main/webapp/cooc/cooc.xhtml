@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="#{localeBean.languageTag}"
+      xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ui="jakarta.faces.facelets">
+    <h:head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Co-occurrences to Network</title>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;family=JetBrains+Mono:wght@400;700&amp;display=swap" />
+        <style>
+            /* Basic font setup from design system */
+            body {
+                font-family: 'Inter', sans-serif;
+                -webkit-font-smoothing: antialiased;
+                -moz-osx-font-smoothing: grayscale;
+            }
+            .font-sans {
+                font-family: 'Inter', sans-serif;
+            }
+            .font-mono {
+                font-family: 'JetBrains Mono', monospace;
+            }
+
+            /* Styling for the details/summary accordion on all screen sizes */
+            details > summary {
+                list-style: none;
+            }
+            details > summary::-webkit-details-marker {
+                display: none;
+            }
+            details summary .chevron {
+                transition: transform 0.2s ease-in-out;
+            }
+            details[open] summary .chevron {
+                transform: rotate(90deg);
+            }
+            @media (min-width: 1024px) {
+                .lg-details-open {
+                    pointer-events: none;
+                }
+                .lg-details-open > summary {
+                    cursor: default;
+                }
+                .lg-details-open .chevron-container {
+                    display: none;
+                }
+            }
+        </style>
+    </h:head>
+    <h:body class="flex flex-col min-h-screen bg-slate-50 text-slate-600 font-sans">
+        <h:outputStylesheet name="css/output.css" />
+        <h:outputStylesheet name="css/custom.css" />
+
+        <ui:include src="/WEB-INF/includes/header.xhtml" />
+
+        <!-- =================================================================
+        MAIN CONTENT
+        ================================================================== -->
+        <main class="flex-grow">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
+                <div class="grid grid-cols-1 lg:grid-cols-5 lg:gap-12">
+
+                    <!-- LEFT COLUMN ("DO" PANEL) -->
+                    <div class="lg:col-span-3">
+                        <div class="space-y-8">
+                            <!-- Section 1: Page Header -->
+                            <div>
+                                <h1 class="text-4xl lg:text-5xl font-extrabold tracking-tight text-slate-900">Co-occurrences to Network</h1>
+                                <p class="mt-4 text-lg lg:text-xl text-slate-600 leading-relaxed">Create a network graph from your data to visualize relationships and discover hidden clusters.</p>
+                            </div>
+
+                            <!-- Section 2: Data Source Selection -->
+                            <h:form enctype="multipart/form-data" id="fileUploadForm">
+                                <div class="bg-white p-6 lg:p-8 rounded-2xl shadow-md border border-slate-200">
+                                    <h2 class="text-xl font-semibold text-slate-900 flex items-center">
+                                        <i data-lucide="upload-cloud" class="h-5 w-5 mr-3 text-slate-400"></i>
+                                        1. Upload your data file
+                                    </h2>
+                                    <div class="mt-6">
+                                        <p:fileUpload
+                                            listener="#{coocDataInputBean.handleFileUpload}"
+                                            update="whenFileUploaded"
+                                            mode="advanced"
+                                            skinSimple="true"
+                                            styleClass="w-full"
+                                            label="#{text['import_data.general.choose_csv_or_excel']}"
+                                            chooseIcon="lucide-upload"
+                                            uploadIcon="lucide-arrow-up-circle"
+                                            cancelIcon="lucide-x-circle"
+                                            >
+                                            <f:facet name="message">
+                                                <div class="text-center p-8 border-2 border-dashed border-slate-300 rounded-xl hover:border-blue-500 transition-colors duration-200">
+                                                    <i data-lucide="upload" class="mx-auto h-12 w-12 text-slate-400"></i>
+                                                    <h3 class="mt-2 text-sm font-semibold text-slate-900">Drag and drop your file here</h3>
+                                                    <p class="mt-1 text-sm text-slate-500">Supports CSV, XLSX up to 25MB.</p>
+                                                </div>
+                                            </f:facet>
+                                            <p:validateFile sizeLimit="10000000" allowTypes="/(\.|\/)(xlsx|csv)$/"/>
+                                        </p:fileUpload>
+                                        <p:outputPanel id="whenFileUploaded" styleClass="mt-4">
+                                            <p:outputPanel rendered="#{coocDataInputBean.dataReady}">
+                                                <div class="bg-emerald-50 border-l-4 border-emerald-500 rounded-r-lg p-4 flex items-start gap-3 transition-all duration-300">
+                                                    <i data-lucide="check-circle-2" class="h-5 w-5 text-emerald-600 mt-0.5"></i>
+                                                    <div>
+                                                        <p class="text-sm font-semibold text-emerald-800">Upload successful</p>
+                                                        <p class="text-sm text-emerald-700">File '#{coocDataInputBean.fileName}' is ready to be processed.</p>
+                                                    </div>
+                                                </div>
+                                            </p:outputPanel>
+                                        </p:outputPanel>
+                                    </div>
+                                </div>
+                            </h:form>
+                            <!-- Section 3: Parameters -->
+                            <h:form id="parametersForm">
+                                <div class="bg-white p-6 lg:p-8 rounded-2xl shadow-md border border-slate-200">
+                                    <h2 class="text-xl font-semibold text-slate-900 flex items-center">
+                                        <i data-lucide="sliders-horizontal" class="h-5 w-5 mr-3 text-slate-400"></i>
+                                        2. Set your parameters (optional)
+                                    </h2>
+                                    <div class="mt-6 space-y-6">
+                                        <div class="space-y-3">
+                                            <div>
+                                                <label class="block text-sm font-semibold text-slate-900">#{text['general.nouns.min_targets']}</label>
+                                                <p class="mt-1 text-sm text-slate-500">#{text['gaze.network_builder.connections_should_have_min_targets_in_common']}</p>
+                                            </div>
+                                            <div class="flex items-center gap-3">
+                                                <p:outputLabel for="minTargetsSpinner" value="#{text['general.message.at_least']}" styleClass="font-medium text-slate-700 text-sm"/>
+                                                <p:spinner id="minTargetsSpinner" value="#{coocParametersBean.minSharedTargets}" min="1"/>
+                                            </div>
+                                        </div>
+                                        <hr class="border-slate-200"/>
+                                        <div class="space-y-3 mt-6">
+                                            <div>
+                                                <label class="block text-sm font-semibold text-slate-900">Data Headers</label>
+                                                <p class="mt-1 text-sm text-slate-500">Specifies if the first row of your file should be treated as column headers.</p>
+                                            </div>
+                                            <div class="flex items-center">
+                                                <p:selectBooleanCheckbox id="renderHeaders" value="#{coocParametersBean.hasHeaders}" itemLabel="#{text['import_data.general.my_data_has_headers']}" styleClass="custom-checkbox"/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </h:form>
+                            <!-- Section 4: Launch & Progress -->
+                            <h:form id="launchForm">
+                                <div class="bg-white p-6 lg:p-8 rounded-2xl shadow-md border border-slate-200">
+                                    <h2 class="text-xl font-semibold text-slate-900 flex items-center">
+                                        <i data-lucide="play-circle" class="h-5 w-5 mr-3 text-slate-400"></i>
+                                        3. Launch and monitor
+                                    </h2>
+                                    <div class="mt-6 space-y-6">
+                                        <div>
+                                            <p:commandButton
+                                                action="#{coocAnalysisBean.runAnalysis}"
+                                                widgetVar="simButton"
+                                                onclick="PF('pbAjaxLong').start(); PF('simButton').disable();"
+                                                disabled="#{coocAnalysisBean.runButtonDisabled}"
+                                                update="logArea pb"
+                                                value="#{coocAnalysisBean.runButtonText}"
+                                                styleClass="inline-flex items-center justify-center px-6 py-3 font-semibold text-white bg-blue-600 rounded-xl shadow-md hover:bg-blue-700 transition-all duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                                            </p:commandButton>
+                                        </div>
+
+                                        <!-- Progress Bar -->
+                                        <div class="space-y-2">
+                                            <p class="text-sm font-medium text-slate-700">Progress</p>
+                                            <p:progressBar id="pb" widgetVar="pbAjaxLong" ajax="true"  labelTemplate="{value}%" value="#{coocAnalysisBean.progress}" global="false" interval="1000" styleClass="custom-progress-bar">
+                                            </p:progressBar>
+                                        </div>
+
+                                        <!-- Log Stream Area -->
+                                        <div class="mt-6">
+                                            <p class="text-sm font-semibold text-slate-700 dark:text-slate-300 tracking-wide uppercase">
+                                                Logs
+                                            </p>
+
+                                            <p:scrollPanel id="logArea" mode="native"
+                                                           styleClass="log-panel mt-2 border border-slate-200 dark:border-slate-700 
+                                                           rounded-xl bg-slate-50 dark:bg-slate-900 
+                                                           text-slate-800 dark:text-slate-100 
+                                                           font-mono text-sm shadow-inner transition-all duration-200">
+                                                <h:dataTable id="notifications" value="#{backToFrontMessengerBean.notifications}" var="notification"
+                                                             styleClass="w-full">
+                                                    <h:column>
+                                                        <h:outputText value="#{notification.message}" escape="false"
+                                                                      styleClass="block px-3 py-1 border-b border-slate-100 dark:border-slate-800 
+                                                                      last:border-0 selection:bg-blue-100 selection:text-blue-900 
+                                                                      dark:selection:bg-blue-700 dark:selection:text-white" />
+                                                    </h:column>
+                                                </h:dataTable>
+                                            </p:scrollPanel>
+                                        </div>
+                                        <p:poll interval="2" listener="#{coocAnalysisBean.pollingListener}" update="pb logArea" widgetVar="poll"/>
+                                    </div>
+                                </div>
+                            </h:form>
+                            <h:form>
+                                <f:websocket channel="logChannel" scope="session">
+                                    <f:ajax event="updateNotifications" render=":mainForm:notifications"/>
+                                </f:websocket>
+                            </h:form>
+
+                        </div>
+                    </div>
+
+                    <!-- RIGHT COLUMN ("LEARN" PANEL) -->
+                    <div class="lg:col-span-2 mt-12 lg:mt-0">
+                        <div class="sticky top-16">
+                            <details class="lg-details-open" open="true">
+                                <summary class="flex items-center justify-between p-4 bg-white rounded-2xl shadow-md cursor-pointer select-none">
+                                    <h2 class="text-xl font-semibold text-slate-900 flex items-center">
+                                        <i data-lucide="info" class="h-5 w-5 mr-3 text-slate-400"></i>
+                                        How it works
+                                    </h2>
+                                    <div class="chevron-container">
+                                        <i data-lucide="chevron-right" class="h-5 w-5 text-slate-500 chevron"></i>
+                                    </div>
+                                </summary>
+                                <div class="mt-4 bg-white p-6 lg:p-8 rounded-2xl shadow-md border border-slate-200 space-y-4">
+                                    <p>This function transforms tabular data into a network graph, allowing you to see connections between items that appear together in the same context (e.g., words in a sentence, products in a basket).</p>
+                                    <img src="https://placehold.co/600x400/e2e8f0/475569?text=Network+Graph+Viz" alt="Placeholder visualization of a network graph" class="rounded-xl w-full" />
+                                    <h3 class="text-lg font-semibold text-slate-900">Use Cases</h3>
+                                    <ul class="list-disc list-inside space-y-1 text-slate-600">
+                                        <li>Analyzing customer purchase patterns.</li>
+                                        <li>Mapping scientific research topics.</li>
+                                        <li>Visualizing social media interactions.</li>
+                                    </ul>
+                                    <a href="#" class="inline-flex items-center text-sm font-semibold text-blue-600 hover:text-blue-700">
+                                        Read full tutorial
+                                        <i data-lucide="arrow-right" class="h-4 w-4 ml-1"></i>
+                                    </a>
+                                </div>
+                            </details>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+        <ui:include src="/WEB-INF/includes/footer.xhtml" />
+        <script src="https://unpkg.com/lucide@latest"></script>
+        <script>
+                                                    lucide.createIcons();
+        </script>
+    </h:body>
+</html>

@@ -1,0 +1,40 @@
+<html 
+    lang="#{localeBean.languageTag}"
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="jakarta.faces.html"
+    xmlns:f="jakarta.faces.core"
+    xmlns:p="http://primefaces.org/ui"
+    xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+    <f:view locale="#{localeBean.currentLocale}">
+        <h:head>
+            <title>GEXF → VOSviewer — Results</title>
+            <meta name="robots" content="noindex"/>
+            <h:outputStylesheet name="css/output.css" />
+        </h:head>
+
+        <h:body>
+            <p:panel>
+                <ui:include src="/WEB-INF/includes/header.xhtml" />
+                <h1>Your VOSviewer link is ready</h1>
+            </p:panel>
+
+            <p:panel>
+                <h:panelGrid columns="2" columnClasses="w-2 w-10">
+                    <h:outputText value="URL:"/>
+                    <h:outputLink value="#{gexf2VvResultsBean.vosviewerUrl}" target="_blank">
+                        #{gexf2VvResultsBean.vosviewerUrl}
+                    </h:outputLink>
+                </h:panelGrid>
+                <p:spacer height="10"/>
+                <p:commandButton value="Open in VOSviewer"
+                                 action="#{gexf2VvResultsBean.open}"
+                                 styleClass="btn btn-primary"/>
+                <br/>
+                <br/>
+                <p:link outcome="/gexf2vv/gexf2vv-import.xhtml" value="Start a new conversion" styleClass="btn btn-secondary"/>
+            </p:panel>
+
+            <ui:include src="/WEB-INF/includes/footer.xhtml" />
+        </h:body>
+    </f:view>
+</html>

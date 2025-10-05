@@ -1,0 +1,61 @@
+<html 
+    lang="#{localeBean.languageTag}"
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="jakarta.faces.html"
+    xmlns:f="jakarta.faces.core"
+    xmlns:p="http://primefaces.org/ui"
+    xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+    <f:view locale="#{localeBean.currentLocale}">
+        <f:metadata>
+            <f:viewParam name="lang" value="#{localeBean.languageTag}" />
+        </f:metadata>
+
+        <h:head>
+            <title>GEXF → VOSviewer ✨ Parameters</title>
+            <meta name="robots" content="noindex"/>
+            <h:outputStylesheet name="css/output.css" />
+            <p:outputLabel value="#{sessionBean.noRobot}" escape="false" rendered="#{sessionBean.testServer}"/>
+        </h:head>
+
+        <h:body>
+            <p:panel>
+                <ui:include src="/WEB-INF/includes/header.xhtml" />
+                <h1>Map your columns to VOSviewer fields</h1>
+            </p:panel>
+
+            <h:form id="params">
+                <p:panel header="Column mapping">
+                    <div class="grid">
+                        <div class="col-12 md:col-6">
+                            <p:outputLabel for="item" value="Item (node label/attribute)"/>
+                            <p:inputText id="item" value="#{gexf2VvParametersBean.item}" styleClass="w-full"/>
+                        </div>
+
+                        <div class="col-12 md:col-6">
+                            <p:outputLabel for="link" value="Link (edge attribute)"/>
+                            <p:inputText id="link" value="#{gexf2VvParametersBean.link}" styleClass="w-full"/>
+                        </div>
+
+                        <div class="col-12 md:col-6">
+                            <p:outputLabel for="strength" value="Link strength (edge weight attribute)"/>
+                            <p:inputText id="strength" value="#{gexf2VvParametersBean.linkStrength}" styleClass="w-full"/>
+                        </div>
+
+                        <div class="col-12 md:col-6">
+                            <p:selectBooleanCheckbox id="share"
+                                                     value="#{gexf2VvParametersBean.shareVVPublicly}"
+                                                     itemLabel="Make the VOSviewer map public"/>
+                        </div>
+                    </div>
+
+                    <p:spacer height="10"/>
+                    <p:commandButton value="Open in VOSviewer"
+                                     action="#{gexf2VvAnalysisBean.convert}"
+                                     styleClass="btn btn-primary"/>
+                    <p:link outcome="/gexf2vv/gexf2vv-import.xhtml" value="Back" styleClass="btn btn-secondary"/>
+                </p:panel>
+            </h:form>
+            <ui:include src="/WEB-INF/includes/footer.xhtml" />
+        </h:body>
+    </f:view>
+</html>

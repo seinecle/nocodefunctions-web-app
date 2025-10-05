@@ -1,0 +1,158 @@
+<html 
+    lang="#{localeBean.languageTag}"
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="jakarta.faces.html"
+    xmlns:f="jakarta.faces.core"
+
+    xmlns:p="http://primefaces.org/ui"
+    xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+    <f:view locale="#{localeBean.currentLocale}">
+
+        <h:head>
+            <meta http-equiv="content-language" content="en-us"/>
+            <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+            <meta http-equiv="cleartype" content="on"/>
+            <meta name="HandheldFriendly" content="true"/>
+            <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+            <link rel="apple-touch-icon" sizes="180x180" href="#{resource['images/favicons/apple-touch-icon.png']}"/>
+            <link rel="icon" type="image/png" sizes="32x32" href="#{resource['images/favicons/favicon-32x32.png']}"/>
+            <link rel="icon" type="image/png" sizes="16x16" href="#{resource['images/favicons/favicon-16x16.png']}"/>
+            <link rel="manifest" href="#{resource['images/favicons/site.webmanifest']}"/>
+            <link rel="mask-icon" href="#{resource['images/favicons/safari-pinned-tab.svg']}" color="#5bbad5"/>
+            <link rel="shortcut icon" href="#{resource['images/favicons/favicon.ico']}"/>
+            <meta name="msapplication-TileColor" content="#da532c"/>
+            <meta name="msapplication-config" content="#{resource['images/favicons/browserconfig.xml']}"/>
+            <meta name="theme-color" content="#ffffff"/>
+            <link rel="shortcut icon" type="image/x-icon" href="#{resource['images/favicons/favicon.ico']}"/>
+            <meta name="robots" content="noindex"/>
+        </h:head>
+        <h:body>
+            <h:outputStylesheet name="css/output.css" />
+            <p:panel>
+                <ui:include src="/WEB-INF/includes/header.xhtml"/>
+                <h1>#{text['general.nouns.parameters']}</h1>
+            </p:panel>
+            <p:spacer height="20"/>
+            <div class="flex w-full gap-4 flew-wrap">
+                <div class="sm:w-[70%] flex flex-col">
+                    <p:panel>
+                        <p:outputLabel value="#{text['general.message.language_of_text_to_analyze']}" escape="false"/>
+                        <br/>
+                        <h:form>
+                            <p:selectOneListbox id="lang" value="#{communityInsightsBean.selectedLanguage}" style="width: 50px !important">
+                                <f:selectItems value="#{workflowTopicsBean.available}" var="l"
+                                               itemValue="#{l.toLanguageTag()}"
+                                               itemLabel="#{l.getDisplayLanguage(localeBean.currentLocale)}">
+                                </f:selectItems>
+                                <p:ajax event="change" process="@this"/>
+                            </p:selectOneListbox>
+                            <p:spacer width="10" height="10"/>
+                            <p:outputLabel value="#{text['general.message.get_in_touch_if_need_support_new_language']}" escape="false"/>
+                            <br/>
+                            <br/>
+                            <p:outputLabel value="#{text['community_insights.param_select_modularity_attribute']}" escape="false"/>
+                            <br/>
+                            <p:selectOneListbox id="textAttribute" value="#{communityInsightsBean.selectedAttributeForCommunity}" style="width: 50px !important">
+                                <f:selectItems value="#{communityInsightsBean.available}" var="l"
+                                               itemValue="#{l}"
+                                               itemLabel="#{l}">
+                                </f:selectItems>
+                                <p:ajax event="change" process="@this"/>
+                            </p:selectOneListbox>
+                            <br/>
+                            <br/>
+                            <p:outputLabel value="#{text['community_insights.param_select_textual_attribute']}" escape="false"/>
+                            <br/>
+                            <p:selectOneListbox id="communityAttribute" value="#{communityInsightsBean.selectedAttributeForText}" style="width: 50px !important">
+                                <f:selectItems value="#{communityInsightsBean.available}" var="l"
+                                               itemValue="#{l}"
+                                               itemLabel="#{l}">
+                                </f:selectItems>
+                                <p:ajax event="change" process="@this"/>
+                            </p:selectOneListbox>
+                            <br/>
+                            <br/>
+
+                        </h:form>                    
+                        <div>
+                            <p:spacer width="30" height="20"/>
+                        </div>
+                        <p:accordionPanel widgetVar="basic" activeIndex="null">
+                            <p:tab title="#{text['general.title.if_you_need_more_parameters']}">
+                                <h:form>
+                                    <p:divider align="left">
+                                        <div class="p-d-inline-flex p-ai-center">
+                                            <i class="pi pi-chart-bar p-mr-2"/>
+                                            <b>#{text['community_insights.params.min_community_size']}</b>
+                                        </div>
+                                    </p:divider>
+                                    <br/>
+                                    <br/>
+                                    <p:spinner id="spinner1" value="#{communityInsightsBean.minCommunitySize}" min="6" max="100" stepFactor="1">
+                                    </p:spinner>
+                                    <p:slider for="spinner1" minValue="6" maxValue="100" step="1"/>
+
+
+                                    <p:divider align="left">
+                                        <div class="p-d-inline-flex p-ai-center">
+                                            <i class="pi pi-chart-bar p-mr-2"/>
+                                            <b>#{text['community_insights.params.max_key_nodes']}</b>
+                                        </div>
+                                    </p:divider>
+                                    <br/>
+                                    <br/>
+                                    <p:spinner id="spinnerFreq" value="#{communityInsightsBean.maxKeyNodesPerCommunity}" min="1" max="10" stepFactor="1"/>
+                                    <p:slider for="spinnerFreq" minValue="1" maxValue="10" step="1"/>
+                                </h:form>
+                            </p:tab>
+                        </p:accordionPanel>
+                    </p:panel> 
+                    <p:spacer width="10" height="50"/>
+                    <h:form id="formComputeButton">
+                        <p:panel>
+                            <!--RUN ANALYSIS BUTTON-->
+                            <p:commandButton
+                                id="computeButton"
+                                value="#{workflowTopicsBean.runButtonText}"
+                                widgetVar="topicsButton"
+                                action="#{workflowTopicsBean.runAnalysis}"
+                                onclick="PF('pbAjaxLong').start();PF('topicsButton').disable()"
+                                styleClass="btn btn-primary"
+                                disabled="#{workflowTopicsBean.runButtonDisabled}"
+                                update=":notifications"/>
+                            <br/>
+                            <br/>
+                            <!--PROGRESS BAR FOR RUN ANALYSIS-->
+                            <p:progressBar id="pb" widgetVar="pbAjaxLong" ajax="true" value="#{workflowTopicsBean.progress}"
+                                           labelTemplate="{value}%" styleClass="p-mt-3" global="false" interval="500">
+                                <p:ajax event="complete" update=":notifications"/>
+                            </p:progressBar>
+                            <h:panelGroup id="pollingArea">
+                                <p:poll listener="#{workflowTopicsBean.pollingDidEndResultsArrive}" process="pollingArea" update="pollingArea :notifications" interval="2" />
+                            </h:panelGroup>
+                        </p:panel>
+                    </h:form>
+                </div>
+                <div class="flex-1 gap-4 h-full hide-mobile">
+                    <p:panel header="Log" styleClass="flex flex-col">
+                        <p:scrollPanel id="scrollPanel" mode="native" class="flex-1 overflow-auto h-full">
+                            <h:dataTable id="notifications" value="#{backToFrontMessengerBean.notifications}" var="notification">
+                                <h:column>#{notification.message}</h:column>
+                            </h:dataTable>
+                            <h:form>
+                                <f:websocket channel="logChannel"  scope="session">
+                                    <p:ajax event="updateNotifications" update=":notifications" />
+                                </f:websocket>
+                                <f:websocket channel="navigationChannel"  scope="session">
+                                    <p:ajax event="navigateToResultscowo" listener="#{workflowTopicsBean.navigateToResults}"/>
+                                </f:websocket>
+                            </h:form>
+                        </p:scrollPanel>
+                    </p:panel>
+                </div>
+            </div>
+            <ui:include src="/WEB-INF/includes/footer.xhtml" />
+        </h:body>
+    </f:view>
+</html>

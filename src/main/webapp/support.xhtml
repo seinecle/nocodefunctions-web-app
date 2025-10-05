@@ -1,0 +1,82 @@
+<html 
+    lang="#{localeBean.languageTag}"
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="jakarta.faces.html"
+    xmlns:f="jakarta.faces.core"
+    xmlns:p="http://primefaces.org/ui"
+    xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+    <f:view locale="#{localeBean.currentLocale}">
+        <f:metadata>
+            <f:viewParam name="lang" value="#{localeBean.languageTag}" />
+        </f:metadata>
+        <h:head>
+            <!-- Primary Meta Tags -->
+            <title>#{text['support.title']}</title>
+            <meta name="description" content="#{text['support.description']}"/>
+            
+            <meta http-equiv="content-language" content="en-us"/>
+            <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+            <meta http-equiv="cleartype" content="on"/>
+            <meta name="HandheldFriendly" content="true"/>
+            <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+            <!-- Open Graph / Facebook -->
+            <meta property="og:type" content="website"/>
+            <meta property="og:site_name" content="Nocode functions"/>
+            <meta property="og:url" content="https://nocodefunctions.com/support.html"/>
+            <meta property="og:title" content="#{text['support.title']}"/>
+            <meta property="og:description" content="#{text['support.description']}"/>
+            <meta property="og:image" content="/images/phone_support.jpg"/>
+
+            <!-- Twitter -->
+            <meta property="twitter:card" content="summary_large_image"/>
+            <meta property="twitter:url" content="https://nocodefunctions.com/support.html"/>
+            <meta property="twitter:title" content="#{text['support.title']}"/>
+            <meta property="twitter:description" content="#{text['support.description']}"/>
+            <meta property="twitter:image" content="/images/phone_support.jpg"/>
+
+            <link rel="apple-touch-icon" sizes="180x180" href="#{resource['images/favicons/apple-touch-icon.png']}"/>
+            <link rel="icon" type="image/png" sizes="32x32" href="#{resource['images/favicons/favicon-32x32.png']}"/>
+            <link rel="icon" type="image/png" sizes="16x16" href="#{resource['images/favicons/favicon-16x16.png']}"/>
+            <link rel="manifest" href="#{resource['images/favicons/site.webmanifest']}"/>
+            <link rel="mask-icon" href="#{resource['images/favicons/safari-pinned-tab.svg']}" color="#5bbad5"/>
+            <link rel="shortcut icon" href="#{resource['images/favicons/favicon.ico']}"/>
+            <meta name="msapplication-TileColor" content="#da532c"/>
+            <meta name="msapplication-config" content="#{resource['images/favicons/browserconfig.xml']}"/>
+            <meta name="theme-color" content="#ffffff"/>
+            <link rel="shortcut icon" type="image/x-icon" href="#{resource['images/favicons/favicon.ico']}"/>
+            <p:outputLabel value="#{sessionBean.noRobot}" escape="false" rendered="#{sessionBean.testServer}"/>
+        </h:head>
+        <h:body>
+            <h:outputStylesheet name="css/output.css" />
+            <p:panel>
+                <ui:include src="/WEB-INF/includes/header.xhtml"/>
+
+                <p:spacer height="60"/>
+                <div style="text-align: center; font-size: xx-large">📞</div>
+                <h1 style="text-align: center">#{text['support.tagline']}</h1>
+                <div style="text-align: center">
+                    <div id="reduce-desktop"> 
+                        <p:graphicImage name="images/phone_support.jpg" alt="Picture from The Office showing Dwight and Michael on the phone"/>
+                    </div>
+                </div>
+            </p:panel>
+            <p:spacer height="20"/>
+            <p:fieldset>
+                <p>
+                    Email: <a href="mailto:analysis@exploreyourdata.com">analysis@exploreyourdata.com</a>
+                </p>
+                <p>
+                    Bluesky <a href="https://bsky.app/profile/seinecle.bsky.social" target="_blank">@seinecle</a>
+                </p>
+                <p>
+                    #{text['support.phonecall.title']} / Whatsapp / Signal: +33(0)6 59 08 33 92
+                    <br/>
+                    <br/>
+                    <i><h:outputText value="#{text['support.phonecall.details']}" escape="false" /></i>
+                </p>
+            </p:fieldset>
+            <ui:include src="/WEB-INF/includes/footer.xhtml" />
+        </h:body>
+    </f:view>
+</html>

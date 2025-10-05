@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="#{localeBean.languageTag}"
+      xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+    <f:view locale="#{localeBean.currentLocale}">
+        <h:head>
+            <title>Spatialize Network - Analyze</title>
+            <h:outputStylesheet name="css/output.css" />
+        </h:head>
+        <h:body>
+            <ui:include src="/WEB-INF/includes/header.xhtml"/>
+            <div class="flex w-full gap-4 flew-wrap">
+                <div class="sm:w-[70%] flex flex-col">
+                    <p:panel header="2. Set Parameters and Run Analysis">
+                        <h:form>
+                            <p:outputLabel for="duration" value="Layout duration (in seconds):" />
+                            <p:spinner id="duration" value="#{spatializeAnalysisBean.durationInSeconds}" min="1" max="120" />
+                            <br/><br/>
+                            <p:commandButton value="Run Analysis"
+                                             action="#{spatializeAnalysisBean.runAnalysis}"
+                                             styleClass="btn btn-primary"
+                                             update=":notifications"
+                                             onstart="PF('pbAjaxLong').start();"
+                                             oncomplete="PF('pbAjaxLong').cancel();"/>
+                            <br/><br/>
+                            <p:progressBar widgetVar="pbAjaxLong" ajax="true" value="#{spatializeAnalysisBean.progress}" labelTemplate="{value}%" styleClass="p-mt-3" global="false"/>
+                        </h:form>
+                    </p:panel>
+                </div>
+                <div class="flex-1 gap-4 h-full hide-mobile">
+                    <p:panel header="Log" styleClass="flex flex-col">
+                        <p:scrollPanel id="scrollPanel" mode="native" class="flex-1 overflow-auto h-full">
+                            <h:dataTable id="notifications" value="#{backToFrontMessengerBean.notifications}" var="notification">
+                                <h:column>#{notification.message}</h:column>
+                            </h:dataTable>
+                            <h:form>
+                                <f:websocket channel="logChannel" scope="session">
+                                    <p:ajax event="updateNotifications"/>
+                                </f:websocket>
+                            </h:form>
+                        </p:scrollPanel>
+                    </p:panel>
+                </div>
+            </div>
+            <ui:include src="/WEB-INF/includes/footer.xhtml" />
+        </h:body>
+    </f:view>
+</html>
